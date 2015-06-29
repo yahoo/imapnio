@@ -111,7 +111,7 @@ public class IMAPClientRespHandler extends MessageToMessageDecoder<IMAPResponse>
         Map<String, Boolean> tmpCapability = new HashMap<String, Boolean>();
 
         String s;
-        while ((s = capabilityResponse.readAtom(']')) != null) {
+        while ((s = capabilityResponse.readString(']')) != null) {
             if (s.length() == 0) {
                 if (capabilityResponse.peekByte() == (byte) ']') {
                     break;

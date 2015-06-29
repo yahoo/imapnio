@@ -16,7 +16,7 @@ public class ProxyProtocol extends Protocol {
     private OutputStream outputStream;
 
     protected ProxyProtocol() throws IOException {
-        super(null, null, false);
+        super(null, null, new Properties(), false);
 
         outputStream = new OutputStreamProxy();
     }

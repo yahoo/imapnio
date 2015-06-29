@@ -34,7 +34,7 @@ public class IMAPClientIT {
         theSession = session;
 
          ChannelFuture loginFuture = session.executeLoginCommand("t1", "krinteg1@gmail.com", "1Testuser");
-        Thread.sleep(600000);
+        Thread.sleep(3600000);
 
     }
 
@@ -67,11 +67,10 @@ public class IMAPClientIT {
         final IMAPClient client = new IMAPClient(Executors.newScheduledThreadPool(5));
         final IMAPSession session = client.createSession(new URI("imaps://imap.gmail.com:993"), null, new ClientListenerOauth2());
         theSession = session;
-        final String oauth2Tok = "dXNlcj1rcmludGVnMUBnbWFpbC5jb20BYXV0aD1CZWFyZXIgeWEyOS5vUUZSRDRUVUhFLTZIUllCLUVWTmhfLVB5YW0wdjlMaVhvTl9mNzJJalV3ZkFuUkYwRmYzMXRscFFUTG1fOXBJNGFTd2RFNV9EZmdBZ0EBAQ==";
-
+        final String oauth2Tok = "dXNlcj1rcmludGVnMUBnbWFpbC5jb20BYXV0aD1CZWFyZXIgeWEyOS5vUUc4NGQ3LXBFa0EwZXVvYTFXbFQ1eThqQTJUTEVMQlM5SlQxM1hUV1p3SklzVTYzUVV0cGoxUjRIbU0yODlWQS1kNlhkTWo5eTBjdWcBAQ==";
         ChannelFuture loginFuture = session.executeOAuth2Command("t1", oauth2Tok);
         loginFuture.awaitUninterruptibly();
-        Thread.sleep(300000);
+        Thread.sleep(4000000);
 
     }
 
@@ -263,8 +262,13 @@ public class IMAPClientIT {
 
         public void onResponse(IMAPSession session, String tag, List<IMAPResponse> responses) {
             log.info(" TAG FINAL RESP " + tag);
-            for (IMAPResponse r : responses) {
-                log.info("<<<" + r);
+            if (null != tag && tag.equals("t2")) {
+            	try {
+					session.executeIdleCommand("t3");
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
             }
 
         }
