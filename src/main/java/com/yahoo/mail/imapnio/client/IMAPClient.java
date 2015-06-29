@@ -54,9 +54,9 @@ public class IMAPClient {
         this.group = new NioEventLoopGroup(config.EVENT_GROUP_NUM_THREADS);
     }
 
-    public IMAPSession createSession(URI uri, String authType) throws SSLException, NoSuchAlgorithmException,
+    public IMAPSession createSession(URI uri, String authType, IMAPClientListener listener) throws SSLException, NoSuchAlgorithmException,
             InterruptedException {
-        return new IMAPSession(uri, bootstrap, group);
+        return new IMAPSession(uri, bootstrap, group, listener);
     }
 
     /**
@@ -78,8 +78,8 @@ public class IMAPClient {
     // test
     public static void main(String args[]) throws InterruptedException, SSLException, NoSuchAlgorithmException, URISyntaxException {
         final IMAPClient client = new IMAPClient(Executors.newScheduledThreadPool(5));
-        final IMAPSession session = client.createSession(new URI("imaps://imap.gmail.com:993"), null);
-        ChannelFuture future = session.executeLoginCommand("t1", "krinteg1@gmail.com", "1Testuser", null);
+        final IMAPSession session = client.createSession(new URI("imaps://imap.gmail.com:993"), null, null);
+        ChannelFuture future = session.executeLoginCommand("t1", "krinteg1@gmail.com", "1Testuser");
         future.awaitUninterruptibly();
     }
 }

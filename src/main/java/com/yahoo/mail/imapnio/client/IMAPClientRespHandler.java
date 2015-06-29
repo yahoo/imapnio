@@ -56,29 +56,46 @@ public class IMAPClientRespHandler extends MessageToMessageDecoder<IMAPResponse>
                 log.info("idling now");
             }
         } else if (session.getState() == IMAPSessionState.IDLING) {
-            IMAPClientListener listener = session.getIdleListener();
+            IMAPClientListener listener = session.getClientListener();
             if (null != listener) {
                 session.addResponse(msg);
                 List<IMAPResponse> responses = new ArrayList<IMAPResponse>(session.getResponseList());
                 session.resetResponseList();
-                listener.onResponse(msg.getTag(), responses);
+                listener.onResponse(session, msg.getTag(), responses);
             }
-        } else if (session.getState() == IMAPSessionState.OAUTH2_INIT) {
-            session.onOAuth2Response(msg);
         } else {
+        	
+			if (null != msg.getTag()) {
+				IMAPClientListener listener = session.getClientListener();
+				if (null != listener) {
+					session.addResponse(msg);
+					List<IMAPResponse> responses = new ArrayList<IMAPResponse>(
+							session.getResponseList());
+					session.resetResponseList();
+					if (session.getState() == IMAPSessionState.OAUTH2_INIT) {
+						if (msg.isOK()) {
+							session.setState(IMAPSessionState.LoggedIn);
+							listener.onOAuth2LoggedIn(session, responses);
+						} else {
+							session.setState(IMAPSessionState.LoginFailed);
+							listener.onOAuth2LoggedIn(session, responses);
+						}
+					} else {
+						listener.onResponse(session, msg.getTag(), responses);
+					}
+				}
+			} else {
+	        	if (session.getState() == IMAPSessionState.OAUTH2_INIT) {
+					IMAPClientListener listener = session.getClientListener();
+					if (null != listener) {
+						listener.onDisconnect(session);
+					}
+	        	} else {
 
-            if (null != msg.getTag()) {
-                IMAPClientListener listener = session.removeListener(msg.getTag());
-                if (null != listener) {
-                    session.addResponse(msg);
-                    List<IMAPResponse> responses = new ArrayList<IMAPResponse>(session.getResponseList());
-                    session.resetResponseList();
-                    listener.onResponse(msg.getTag(), responses);
-                }
-            } else {
                 // Pass along message without modifying it.
                 out.add(msg);
                 session.addResponse(msg);
+	        	}
             }
 
         }

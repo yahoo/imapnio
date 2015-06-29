@@ -54,13 +54,12 @@ public class IMAPSession {
     private EventLoopGroup group;
 
 
-    private final ConcurrentHashMap<String, IMAPClientListener> listeners;
+    // private final ConcurrentHashMap<String, IMAPClientListener> listeners;
 
     private final List<IMAPResponse> responses;
-
-    private IMAPClientListener idleListener;
-
-    private IMAPClientListener oauth2LoginListener;
+    
+    private IMAPClientListener clientListener;
+    
 
     private String oauth2Tok;
 
@@ -77,7 +76,7 @@ public class IMAPSession {
      * @throws NoSuchAlgorithmException
      * @throws InterruptedException
      */
-    public IMAPSession(URI uri, Bootstrap bootstrap, EventLoopGroup group) throws SSLException,
+    public IMAPSession(URI uri, Bootstrap bootstrap, EventLoopGroup group, IMAPClientListener listener) throws SSLException,
             NoSuchAlgorithmException, InterruptedException {
 
         boolean ssl = uri.getScheme().toLowerCase().equals("imaps");
@@ -101,8 +100,9 @@ public class IMAPSession {
         bootstrap.channel(NioSocketChannel.class).handler(new IMAPClientInitializer(this, sslCtx, uri.getHost(), uri.getPort()))
                 .group(group);
         this.channel = bootstrap.connect(uri.getHost(), uri.getPort()).sync().channel();
-        listeners = new ConcurrentHashMap<String, IMAPClientListener>();
+        this.channel.closeFuture().addListener(new SessionDisconnectListener(this));
         responses = new ArrayList<IMAPResponse>();
+        this.clientListener = listener;
     }
 
 
@@ -123,9 +123,8 @@ public class IMAPSession {
      *
      * @param tag
      */
-    public ChannelFuture executeIdleCommand(String tag, IMAPClientListener listener) throws InterruptedException {
-        idleListener = listener;
-        ChannelFuture future = executeCommand(new IMAPCommand(tag, "IDLE", new Argument(), new String[] { "IDLE" }), listener);
+    public ChannelFuture executeIdleCommand(String tag/*, IMAPClientListener listener*/) throws InterruptedException {
+        ChannelFuture future = executeCommand(new IMAPCommand(tag, "IDLE", new Argument(), new String[] { "IDLE" }));
         if (null != future) {
             future.addListener(new GenericFutureListener<ChannelFuture>() {
                 public void operationComplete(ChannelFuture future) throws Exception {
@@ -136,12 +135,12 @@ public class IMAPSession {
         return future;
     }
 
-    public ChannelFuture executeSelectCommand(String tag, String mailbox, IMAPClientListener listener) throws InterruptedException {
+    public ChannelFuture executeSelectCommand(String tag, String mailbox) throws InterruptedException {
         mailbox = BASE64MailboxEncoder.encode(mailbox);
-        return executeCommand(new IMAPCommand(tag, "SELECT", new Argument().addString(mailbox), new String[] {}), listener);
+        return executeCommand(new IMAPCommand(tag, "SELECT", new Argument().addString(mailbox), new String[] {}));
     }
 
-    public ChannelFuture executeStatusCommand(String tag, String mailbox, String[] items, IMAPClientListener listener) throws InterruptedException {
+    public ChannelFuture executeStatusCommand(String tag, String mailbox, String[] items) throws InterruptedException {
         mailbox = BASE64MailboxEncoder.encode(mailbox);
 
         Argument args = new Argument();
@@ -155,7 +154,7 @@ public class IMAPSession {
             itemArgs.writeAtom(items[i]);
         args.writeArgument(itemArgs);
 
-        return executeCommand(new IMAPCommand(tag, "STATUS", args, new String[] {}), listener);
+        return executeCommand(new IMAPCommand(tag, "STATUS", args, new String[] {}));
     }
 
     /**
@@ -164,9 +163,8 @@ public class IMAPSession {
      * @param tag
      *            An auth command to execute in the session.
      */
-    public ChannelFuture executeLoginCommand(String tag, String username, String password, IMAPClientListener listener) throws InterruptedException {
-        return executeCommand(new IMAPCommand(tag, "LOGIN", new Argument().addString(username).addString(password), new String[] { "auth=plain" }),
-                listener);
+    public ChannelFuture executeLoginCommand(String tag, String username, String password) throws InterruptedException {
+        return executeCommand(new IMAPCommand(tag, "LOGIN", new Argument().addString(username).addString(password), new String[] { "auth=plain" }));
     }
 
     /**
@@ -178,11 +176,10 @@ public class IMAPSession {
      * @return
      * @throws InterruptedException
      */
-    public ChannelFuture executeOAuth2Command(final String tag, final String oauth2Tok, final IMAPClientListener listener)
+    public ChannelFuture executeOAuth2Command(final String tag, final String oauth2Tok)
             throws InterruptedException {
         this.oauth2Tok = oauth2Tok;
-        this.oauth2LoginListener = listener;
-        ChannelFuture future = executeCommand(new IMAPCommand(tag, "AUTHENTICATE XOAUTH2", new Argument(), new String[] { "auth=xoauth" }), null);
+        ChannelFuture future = executeCommand(new IMAPCommand(tag, "AUTHENTICATE XOAUTH2", new Argument().addString(oauth2Tok), new String[] { "auth=xoauth2" }));
         future.addListener(new GenericFutureListener<ChannelFuture>() {
             public void operationComplete(ChannelFuture future) throws Exception {
                 state = IMAPSessionState.OAUTH2_INIT;
@@ -201,8 +198,8 @@ public class IMAPSession {
      * @return
      * @throws InterruptedException
      */
-    public ChannelFuture executeLogoutCommand(String tag, IMAPClientListener listener) throws InterruptedException {
-        return executeCommand(new IMAPCommand(tag, "LOGOUT", new Argument(), new String[] {}), listener);
+    public ChannelFuture executeLogoutCommand(String tag) throws InterruptedException {
+        return executeCommand(new IMAPCommand(tag, "LOGOUT", new Argument(), new String[] {}));
     }
 
     /**
@@ -210,8 +207,8 @@ public class IMAPSession {
      *
      * @param tag
      */
-    public ChannelFuture executeCapabilityCommand(String tag, IMAPClientListener listener) throws InterruptedException {
-        return executeCommand(new IMAPCommand(tag, "CAPABILITY", new Argument(), new String[] {}), listener);
+    public ChannelFuture executeCapabilityCommand(String tag) throws InterruptedException {
+        return executeCommand(new IMAPCommand(tag, "CAPABILITY", new Argument(), new String[] {}));
     }
 
     /**
@@ -230,10 +227,10 @@ public class IMAPSession {
      * @return future
      * @throws InterruptedException
      */
-    public ChannelFuture executeAppendCommand(String tag, String labelName, String flags, String size, IMAPClientListener listener)
+    public ChannelFuture executeAppendCommand(String tag, String labelName, String flags, String size)
             throws InterruptedException {
         return executeCommand(new IMAPCommand(tag, "APPEND", new Argument().addString(labelName).addLiteral(flags).addLiteral("{" + size + "}"),
-                new String[] { "IMAP4REV1" }), listener);
+                new String[] { "IMAP4REV1" }));
     }
 
     /**
@@ -246,8 +243,8 @@ public class IMAPSession {
      * @return future
      * @throws InterruptedException
      */
-    public ChannelFuture executeRawTextCommand(String rawText, IMAPClientListener listener) throws InterruptedException {
-        return executeCommand(new IMAPCommand("", rawText, null, new String[] {}), listener);
+    public ChannelFuture executeRawTextCommand(String rawText) throws InterruptedException {
+        return executeCommand(new IMAPCommand("", rawText, null, new String[] {}));
     }
 
     /**
@@ -255,7 +252,7 @@ public class IMAPSession {
      *
      * @param method
      */
-    private ChannelFuture executeCommand(IMAPCommand method, IMAPClientListener listener) throws InterruptedException {
+    private ChannelFuture executeCommand(IMAPCommand method /*  , IMAPClientListener listener*/ ) throws InterruptedException {
         // First, check that capabilities match required capabilities of command
         String[] capabilitiesRequired = method.getCapabilities();
         for (String requiredCapability : capabilitiesRequired) {
@@ -272,9 +269,9 @@ public class IMAPSession {
         // Fourth, execute command.
         // TODO: make sure that everything is written before closing channel. (in whole class, not just here)
         ChannelFuture lastWriteFuture = this.channel.writeAndFlush(line + "\r\n");
-        if (null != listener) {
-            listeners.put(method.getTag(), listener);
-        }
+//        if (null != listener) {
+//            listeners.put(method.getTag(), listener);
+//        }
 
         // Fifth, wait until all messages are flushed
         if (lastWriteFuture != null) {
@@ -294,19 +291,6 @@ public class IMAPSession {
         return this.capabilities.containsKey(capability.toLowerCase()) && this.capabilities.get(capability.toLowerCase()).equals(true);
     }
 
-    /**
-     * Remove and return the future listener. To be used by client after receiving the response from remote client.
-     *
-     * @param tag
-     *            - IMAP tag used by the command
-     * @return FutureTask - the listener
-     */
-    public IMAPClientListener removeListener(String tag) {
-        if (null != tag) {
-            return listeners.remove(tag);
-        }
-        return null;
-    }
 
     public void addResponse(IMAPResponse response) {
         responses.add(response);
@@ -328,44 +312,33 @@ public class IMAPSession {
         this.state = state;
     }
 
-    public IMAPClientListener getIdleListener() {
-        return idleListener;
+    public IMAPClientListener getClientListener() {
+        return clientListener;
     }
 
     public void onOAuth2Response(IMAPResponse resp) {
         if (resp.isOK()) {
             try {
-                executeRawTextCommand(oauth2Tok, new IMAPClientListener() {
-                    public void onResponse(String tag, List<IMAPResponse> responses) {
-                        log.info(" oauth2 raw response " + responses.size());
-                        if (responses.size() > 0) {
-                            IMAPResponse resp = responses.get(0);
-                            log.info(" oauth2 raw response " + resp);
-                            if (resp.isOK()) {
-                                setState(IMAPSessionState.LoggedIn);
-                                if (oauth2LoginListener != null) {
-                                    oauth2LoginListener.onOAuth2LoggedIn(Arrays.asList(resp));
-                                }
-                            }
-                        }
-
-                    }
-
-                    public void onIdleEvent(List<IMAPResponse> messages) {
-                        // TODO Auto-generated method stub
-
-                    }
-
-                    public void onOAuth2LoggedIn(List<IMAPResponse> msgs) {
-                        // TODO Auto-generated method stub
-
-                    }
-                });
+                executeRawTextCommand(oauth2Tok);
             } catch (InterruptedException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         }
+    }
+    
+    class SessionDisconnectListener implements GenericFutureListener<ChannelFuture> {
+    	private final IMAPSession session;
+    	SessionDisconnectListener(IMAPSession session) {
+    		this.session = session;
+    	}
+    	
+		public void operationComplete(ChannelFuture future)
+				throws Exception {
+			if (null != session.clientListener) {
+				session.clientListener.onDisconnect(session);
+			}
+		}
     }
 
 }

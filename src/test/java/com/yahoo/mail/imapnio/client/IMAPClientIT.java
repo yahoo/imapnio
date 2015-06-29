@@ -30,21 +30,21 @@ public class IMAPClientIT {
     @Test
     public void testGmailPlainLoginWithIdle() throws SSLException, NoSuchAlgorithmException, InterruptedException, URISyntaxException {
         final IMAPClient client = new IMAPClient(Executors.newScheduledThreadPool(5));
-        final IMAPSession session = client.createSession(new URI("imaps://imap.gmail.com:993"), null);
+        final IMAPSession session = client.createSession(new URI("imaps://imap.gmail.com:993"), null, new ClientListenerIdle());
         theSession = session;
 
-         ChannelFuture loginFuture = session.executeLoginCommand("t1", "krinteg1@gmail.com", "1Testuser", new ClientListenerIdle());
-        Thread.sleep(60000);
+         ChannelFuture loginFuture = session.executeLoginCommand("t1", "krinteg1@gmail.com", "1Testuser");
+        Thread.sleep(600000);
 
     }
 
     @Test
     public void testGmailPlainLoginWithStatus() throws SSLException, NoSuchAlgorithmException, InterruptedException, URISyntaxException {
         final IMAPClient client = new IMAPClient(Executors.newScheduledThreadPool(5));
-        final IMAPSession session = client.createSession(new URI("imaps://imap.gmail.com:993"), null);
+        final IMAPSession session = client.createSession(new URI("imaps://imap.gmail.com:993"), null, new ClientListenerStatus());
         theSession = session;
 
-        ChannelFuture loginFuture = session.executeLoginCommand("t1", "krinteg1@gmail.com", "1Testuser", new ClientListenerStatus());
+        ChannelFuture loginFuture = session.executeLoginCommand("t1", "krinteg1@gmail.com", "1Testuser");
         loginFuture.awaitUninterruptibly();
         Thread.sleep(30000);
 
@@ -53,10 +53,10 @@ public class IMAPClientIT {
     @Test
     public void testGmailPlainLoginWithAppend() throws SSLException, NoSuchAlgorithmException, InterruptedException, URISyntaxException {
         final IMAPClient client = new IMAPClient(Executors.newScheduledThreadPool(5));
-        final IMAPSession session = client.createSession(new URI("imaps://imap.gmail.com:993"), null);
+        final IMAPSession session = client.createSession(new URI("imaps://imap.gmail.com:993"), null, new ClientListenerAppend());
         theSession = session;
 
-        ChannelFuture loginFuture = session.executeLoginCommand("t1", "krinteg1@gmail.com", "1Testuser", new ClientListenerAppend());
+        ChannelFuture loginFuture = session.executeLoginCommand("t1", "krinteg1@gmail.com", "1Testuser");
         loginFuture.awaitUninterruptibly();
         Thread.sleep(30000);
 
@@ -65,24 +65,40 @@ public class IMAPClientIT {
     @Test
     public void testGmailOauth2Login() throws SSLException, NoSuchAlgorithmException, InterruptedException, URISyntaxException {
         final IMAPClient client = new IMAPClient(Executors.newScheduledThreadPool(5));
-        final IMAPSession session = client.createSession(new URI("imaps://imap.gmail.com:993"), null);
+        final IMAPSession session = client.createSession(new URI("imaps://imap.gmail.com:993"), null, new ClientListenerOauth2());
         theSession = session;
-        final String oauth2Tok = "dXNlcj1pbWFwbmlvY2xpZW50dGVzdEBnbWFpbC5jb20BYXV0aD1CZWFyZXIgeWEyOS5hQUNLblZRM1VUQmxBU0VBQUFER2hrYWM3eFVPd05wWm83X3M1MzJqTC1pNDlvYjFJZ2VlZmJ1N09NZVp2dXVlZHBYeTlUTkxoUDZZMk5FSjFJTQEB";
+        final String oauth2Tok = "dXNlcj1rcmludGVnMUBnbWFpbC5jb20BYXV0aD1CZWFyZXIgeWEyOS5vUUZSRDRUVUhFLTZIUllCLUVWTmhfLVB5YW0wdjlMaVhvTl9mNzJJalV3ZkFuUkYwRmYzMXRscFFUTG1fOXBJNGFTd2RFNV9EZmdBZ0EBAQ==";
 
-        ChannelFuture loginFuture = session.executeOAuth2Command("t1", oauth2Tok, new ClientListenerOauth2());
+        ChannelFuture loginFuture = session.executeOAuth2Command("t1", oauth2Tok);
         loginFuture.awaitUninterruptibly();
-        Thread.sleep(30000);
+        Thread.sleep(300000);
 
     }
 
     static IMAPSession theSession;
 
     class ClientListenerIdle implements IMAPClientListener {
-        public void onResponse(IMAPResponse resp) {
-            log.info("<-- " + resp);
+
+        public void onIdleEvent(List<IMAPResponse> messages) {
+            // TODO Auto-generated method stub
+
         }
 
-        public void onResponse(String tag, List<IMAPResponse> responses) {
+        public void onOAuth2LoggedIn(List<IMAPResponse> msgs) {
+            // TODO Auto-generated method stub
+
+        }
+
+		public void onDisconnect(IMAPSession session) {
+			log.error("disconnected... ");
+			// TODO Auto-generated method stub
+			log.error("disconnected");
+
+			
+		}
+
+		public void onResponse(IMAPSession session, String tag,
+				List<IMAPResponse> responses) {
             log.info(" TAG FINAL RESP " + tag);
             for (IMAPResponse r : responses) {
 
@@ -92,7 +108,7 @@ public class IMAPClientIT {
             if (null != tag && tag.equals("t1")) {
                 ChannelFuture idleFuture;
                 try {
-                    idleFuture = theSession.executeSelectCommand("t2", "Inbox", new ClientListenerIdle());
+                    idleFuture = theSession.executeSelectCommand("t2", "Inbox");
                     idleFuture.awaitUninterruptibly();
                 } catch (InterruptedException e) {
                     // TODO Auto-generated catch block
@@ -101,25 +117,26 @@ public class IMAPClientIT {
             } else if (null != tag && tag.equals("t2")) {
                 ChannelFuture idleFuture;
                 try {
-                    idleFuture = theSession.executeIdleCommand("tt3", new ClientListenerIdle());
+                    idleFuture = theSession.executeIdleCommand("tt3");
                     idleFuture.awaitUninterruptibly();
                 } catch (InterruptedException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
             }
+			
+		}
 
-        }
+		public void onIdleEvent(IMAPSession session, List<IMAPResponse> messages) {
+			// TODO Auto-generated method stub
+			
+		}
 
-        public void onIdleEvent(List<IMAPResponse> messages) {
-            // TODO Auto-generated method stub
-
-        }
-
-        public void onOAuth2LoggedIn(List<IMAPResponse> msgs) {
-            // TODO Auto-generated method stub
-
-        }
+		public void onOAuth2LoggedIn(IMAPSession session,
+				List<IMAPResponse> msgs) {
+			// TODO Auto-generated method stub
+			
+		}
     }
 
     class ClientListenerStatus implements IMAPClientListener {
@@ -127,7 +144,7 @@ public class IMAPClientIT {
             log.info("<-- " + resp);
         }
 
-        public void onResponse(String tag, List<IMAPResponse> responses) {
+        public void onResponse(IMAPSession session, String tag, List<IMAPResponse> responses) {
             log.debug(" TAG FINAL RESP " + tag);
             for (IMAPResponse r : responses) {
                 log.info("<<<" + r);
@@ -136,7 +153,7 @@ public class IMAPClientIT {
             if (null != tag && tag.equals("t4")) {
                 ChannelFuture idleFuture;
                 try {
-                    idleFuture = theSession.executeSelectCommand("t2", "Inbox", new ClientListenerStatus());
+                    idleFuture = theSession.executeSelectCommand("t2", "Inbox");
                     idleFuture.awaitUninterruptibly();
                 } catch (InterruptedException e) {
                     // TODO Auto-generated catch block
@@ -145,7 +162,7 @@ public class IMAPClientIT {
             } else if (null != tag && tag.equals("t1")) {
                 ChannelFuture idleFuture;
                 try {
-                    idleFuture = theSession.executeStatusCommand("t3", "Inbox", new String[] { "UIDNEXT" }, new ClientListenerStatus());
+                    idleFuture = theSession.executeStatusCommand("t3", "Inbox", new String[] { "UIDNEXT" });
                     idleFuture.awaitUninterruptibly();
                 } catch (InterruptedException e) {
                     // TODO Auto-generated catch block
@@ -155,15 +172,22 @@ public class IMAPClientIT {
 
         }
 
-        public void onIdleEvent(List<IMAPResponse> messages) {
+        public void onIdleEvent(IMAPSession session, List<IMAPResponse> messages) {
             // TODO Auto-generated method stub
 
         }
 
-        public void onOAuth2LoggedIn(List<IMAPResponse> msgs) {
+        public void onOAuth2LoggedIn(IMAPSession session, List<IMAPResponse> msgs) {
             // TODO Auto-generated method stub
 
         }
+
+		public void onDisconnect(IMAPSession session) {
+			// TODO Auto-generated method stub
+			log.error("disconnected");
+
+			
+		}
     }
 
     class ClientListenerAppend implements IMAPClientListener {
@@ -171,7 +195,7 @@ public class IMAPClientIT {
             log.info("<-- " + resp);
         }
 
-        public void onResponse(String tag, List<IMAPResponse> responses) {
+        public void onResponse(IMAPSession session, String tag, List<IMAPResponse> responses) {
             log.debug(" TAG FINAL RESP " + tag);
             for (IMAPResponse r : responses) {
                 log.info("<<<" + r);
@@ -180,7 +204,7 @@ public class IMAPClientIT {
             if (null != tag && tag.equals("t4")) {
                 ChannelFuture idleFuture;
                 try {
-                    idleFuture = theSession.executeSelectCommand("t2", "Inbox", new ClientListenerAppend());
+                    idleFuture = theSession.executeSelectCommand("t2", "Inbox");
                     idleFuture.awaitUninterruptibly();
                 } catch (InterruptedException e) {
                     // TODO Auto-generated catch block
@@ -198,11 +222,11 @@ public class IMAPClientIT {
                         + "\n\n";
                 ChannelFuture appendFuture;
                 try {
-                    appendFuture = theSession.executeAppendCommand("t2", "Inbox", "(\\Seen)", String.valueOf(payload.length()), null);
+                    appendFuture = theSession.executeAppendCommand("t2", "Inbox", "(\\Seen)", String.valueOf(payload.length()));
                     appendFuture.addListener(new GenericFutureListener<ChannelFuture>() {
 
                         public void operationComplete(ChannelFuture future) throws Exception {
-                            theSession.executeRawTextCommand(payload, null);
+                            theSession.executeRawTextCommand(payload);
                         }
 
                     });
@@ -214,15 +238,22 @@ public class IMAPClientIT {
 
         }
 
-        public void onIdleEvent(List<IMAPResponse> messages) {
+        public void onIdleEvent(IMAPSession session, List<IMAPResponse> messages) {
             // TODO Auto-generated method stub
 
         }
 
-        public void onOAuth2LoggedIn(List<IMAPResponse> msgs) {
+        public void onOAuth2LoggedIn(IMAPSession session, List<IMAPResponse> msgs) {
             // TODO Auto-generated method stub
 
         }
+
+		public void onDisconnect(IMAPSession session) {
+			// TODO Auto-generated method stub
+			log.error("disconnected");
+
+			
+		}
     }
 
     class ClientListenerOauth2 implements IMAPClientListener {
@@ -230,7 +261,7 @@ public class IMAPClientIT {
             log.info("<-- " + resp);
         }
 
-        public void onResponse(String tag, List<IMAPResponse> responses) {
+        public void onResponse(IMAPSession session, String tag, List<IMAPResponse> responses) {
             log.info(" TAG FINAL RESP " + tag);
             for (IMAPResponse r : responses) {
                 log.info("<<<" + r);
@@ -238,20 +269,26 @@ public class IMAPClientIT {
 
         }
 
-        public void onIdleEvent(List<IMAPResponse> messages) {
+        public void onIdleEvent(IMAPSession session, List<IMAPResponse> messages) {
             // TODO Auto-generated method stub
 
         }
 
-        public void onOAuth2LoggedIn(List<IMAPResponse> msgs) {
+        public void onOAuth2LoggedIn(IMAPSession session, List<IMAPResponse> msgs) {
             try {
-                theSession.executeSelectCommand("t2", "Inbox", new ClientListenerOauth2());
+                theSession.executeSelectCommand("t2", "Inbox");
             } catch (InterruptedException e1) {
                 // TODO Auto-generated catch block
                 e1.printStackTrace();
             }
 
         }
+
+		public void onDisconnect(IMAPSession session) {
+			log.error("disconnected");
+			// TODO Auto-generated method stub
+			
+		}
     }
 
 }

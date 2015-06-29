@@ -12,9 +12,11 @@ import com.sun.mail.imap.protocol.IMAPResponse;
  *
  */
 public interface IMAPClientListener /* extends Future<IMAPResponse> */{
-    public void onResponse(String tag, List<IMAPResponse> responses);
+    public void onResponse(IMAPSession session, String tag, List<IMAPResponse> responses);
 
-    public void onIdleEvent(List<IMAPResponse> messages);
+    public void onIdleEvent(IMAPSession session, List<IMAPResponse> messages);
 
-    public void onOAuth2LoggedIn(List<IMAPResponse> msgs);
+    public void onOAuth2LoggedIn(IMAPSession session, List<IMAPResponse> msgs);
+    
+    public void onDisconnect(IMAPSession session);
 }
