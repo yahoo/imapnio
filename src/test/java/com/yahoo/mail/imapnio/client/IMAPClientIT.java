@@ -108,15 +108,22 @@ public class IMAPClientIT {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
-            } else if (null != tag && tag.equals("t2")) {
+            } else if (null != tag && tag.equals("t3")) {
                 ChannelFuture idleFuture;
                 try {
-                    idleFuture = theSession.executeIdleCommand("tt3");
+                    idleFuture = theSession.executeIdleCommand("t2");
                     idleFuture.awaitUninterruptibly();
                 } catch (InterruptedException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
+            } else if (null != tag && tag.equals ("t2")) {
+            	try {
+					theSession.executeNOOPCommand("t3");
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
             }
 			
 		}

@@ -246,6 +246,16 @@ public class IMAPSession {
     public ChannelFuture executeRawTextCommand(String rawText) throws InterruptedException {
         return executeCommand(new IMAPCommand("", rawText, null, new String[] {}));
     }
+    
+    /**
+     * Sends a NOOP command
+     * @param tag tag to be used
+     * @return ChannelFuture
+     * @throws InterruptedException
+     */
+    public ChannelFuture executeNOOPCommand(String tag) throws InterruptedException {
+    	return executeCommand(new IMAPCommand(tag, "NOOP", new Argument(), new String[]{}));
+    }
 
     /**
      * Execute a command against the server. To run a command you should go through specific methods like `executeLoginCommand`.
@@ -316,17 +326,6 @@ public class IMAPSession {
         return clientListener;
     }
 
-    public void onOAuth2Response(IMAPResponse resp) {
-        if (resp.isOK()) {
-            try {
-                executeRawTextCommand(oauth2Tok);
-            } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
-    }
-    
     class SessionDisconnectListener implements GenericFutureListener<ChannelFuture> {
     	private final IMAPSession session;
     	SessionDisconnectListener(IMAPSession session) {
