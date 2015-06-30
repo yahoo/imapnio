@@ -187,19 +187,35 @@ public class IMAPSession {
         });
         return future;
     }
-
+    
+    /**
+     * Send Yahoo! specific XYMLOGIN command.
+     * @param tag tag to be used for this command
+     * @param xymloginTok the login token
+     * @return ChannelFuture
+     * @throws InterruptedException
+     */
+    public ChannelFuture executeXYMLOGINCommand(final String tag, String xymloginTok) throws InterruptedException {
+    	ChannelFuture future = executeCommand (new IMAPCommand(tag, "AUTHENTICATE XYMLOGIN", new Argument().addString(xymloginTok), new String[]{}));
+        future.addListener(new GenericFutureListener<ChannelFuture>() {
+            public void operationComplete(ChannelFuture future) throws Exception {
+                state = IMAPSessionState.OAUTH2_INIT;
+            }
+        });
+    	return future;
+    }
+    
     /**
      * Execute logout command.
      *
      * @param tag
      *            IMAP tag used for this command
-     * @param listener
-     *            client listener to get callback
      * @return
      * @throws InterruptedException
      */
-    public ChannelFuture executeLogoutCommand(String tag) throws InterruptedException {
-        return executeCommand(new IMAPCommand(tag, "LOGOUT", new Argument(), new String[] {}));
+    public ChannelFuture executeLogoutCommand(final String tag) throws InterruptedException {
+    	ChannelFuture future = executeCommand(new IMAPCommand(tag, "LOGOUT", new Argument(), new String[]{}));
+    	return future;
     }
 
     /**

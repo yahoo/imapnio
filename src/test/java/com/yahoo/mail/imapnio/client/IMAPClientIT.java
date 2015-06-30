@@ -25,6 +25,8 @@ import com.sun.mail.imap.protocol.IMAPResponse;
 public class IMAPClientIT {
 
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(IMAPClientIT.class);
+    
+    
 
     @Test
     public void testGmailPlainLoginWithIdle() throws SSLException, NoSuchAlgorithmException, InterruptedException, URISyntaxException {
@@ -33,6 +35,17 @@ public class IMAPClientIT {
 
          ChannelFuture loginFuture = session.executeLoginCommand("t1", "krinteg1@gmail.com", "1Testuser");
         Thread.sleep(3600000);
+
+    }
+    
+    @Test
+    public void testYahooXYMLOGINWithStatus() throws SSLException, NoSuchAlgorithmException, InterruptedException, URISyntaxException {
+        final IMAPSession session = IMAPClient.INSTANCE.createSession(new URI("imap://localhost:4080"), new ClientListenerStatus());
+        theSession = session;
+
+        ChannelFuture loginFuture = session.executeXYMLOGINCommand("t1", "c2VjcmV0X2tleW5hbWUCaW1hcGdhdGVfaW1hcGRfc2hhcmVkX3NlY3JldAFtYnJfcmVnX2VuY29kZV9pbnRsAnVzAXNpZ25hdHVyZQIyMzMyNUcuU2RoVHVzTVFWZ1VpTkJPVldqNHctAWludGwCdXMBc2xlZGlkAjE4MDE0NDAzOTk0MjI0MDQ4AXltcmVxaWQCOTk4NWIwNzctOTJjMC03MGQyLTAwZDItYzgwMDAwMDEwYTAyAXBlZXJOYW1lAmlQaG9uZQFtc2dTaXplTGltaXQCMjYyMTQ0MDABZnVsbGVtYWlsAmtyaW50ZWcxAXNpbG9udW0COTMyNjE0AWRpc2FibGVSYXRlTGltaXQCZmFsc2UBcXVvdGECMTA3Mzc0MTgyMgFhcHBpZAJqd3MBbGFuZwJ1cwF1c2VyAmtyaW50ZWcxAXRpbWVzdGFtcAIxNDM1Njg2MjMx");
+        loginFuture.awaitUninterruptibly();
+        Thread.sleep(30000);
 
     }
 
@@ -169,6 +182,15 @@ public class IMAPClientIT {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
+            } else if (null != tag && tag.equals("t3")) {
+                ChannelFuture idleFuture;
+                try {
+                    idleFuture = theSession.executeLogoutCommand("t4");
+                    idleFuture.awaitUninterruptibly();
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }            	
             }
 
         }
@@ -178,10 +200,19 @@ public class IMAPClientIT {
 
         }
 
-        public void onOAuth2LoggedIn(IMAPSession session, List<IMAPResponse> msgs) {
-            // TODO Auto-generated method stub
+		public void onOAuth2LoggedIn(IMAPSession session,
+				List<IMAPResponse> msgs) {
+			ChannelFuture idleFuture;
+			try {
+				idleFuture = theSession.executeStatusCommand("t3", "Inbox",
+						new String[] { "UIDNEXT" });
+				idleFuture.awaitUninterruptibly();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 
-        }
+		}
 
 		public void onDisconnect(IMAPSession session) {
 			// TODO Auto-generated method stub
