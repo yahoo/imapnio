@@ -10,7 +10,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
-import java.util.concurrent.Executors;
 
 import javax.net.ssl.SSLException;
 
@@ -29,8 +28,7 @@ public class IMAPClientIT {
 
     @Test
     public void testGmailPlainLoginWithIdle() throws SSLException, NoSuchAlgorithmException, InterruptedException, URISyntaxException {
-        final IMAPClient client = new IMAPClient(Executors.newScheduledThreadPool(5));
-        final IMAPSession session = client.createSession(new URI("imaps://imap.gmail.com:993"), null, new ClientListenerIdle());
+        final IMAPSession session = IMAPClient.INSTANCE.createSession(new URI("imaps://imap.gmail.com:993"), new ClientListenerIdle());
         theSession = session;
 
          ChannelFuture loginFuture = session.executeLoginCommand("t1", "krinteg1@gmail.com", "1Testuser");
@@ -40,8 +38,7 @@ public class IMAPClientIT {
 
     @Test
     public void testGmailPlainLoginWithStatus() throws SSLException, NoSuchAlgorithmException, InterruptedException, URISyntaxException {
-        final IMAPClient client = new IMAPClient(Executors.newScheduledThreadPool(5));
-        final IMAPSession session = client.createSession(new URI("imaps://imap.gmail.com:993"), null, new ClientListenerStatus());
+        final IMAPSession session = IMAPClient.INSTANCE.createSession(new URI("imaps://imap.gmail.com:993"), new ClientListenerStatus());
         theSession = session;
 
         ChannelFuture loginFuture = session.executeLoginCommand("t1", "krinteg1@gmail.com", "1Testuser");
@@ -52,8 +49,7 @@ public class IMAPClientIT {
 
     @Test
     public void testGmailPlainLoginWithAppend() throws SSLException, NoSuchAlgorithmException, InterruptedException, URISyntaxException {
-        final IMAPClient client = new IMAPClient(Executors.newScheduledThreadPool(5));
-        final IMAPSession session = client.createSession(new URI("imaps://imap.gmail.com:993"), null, new ClientListenerAppend());
+        final IMAPSession session = IMAPClient.INSTANCE.createSession(new URI("imaps://imap.gmail.com:993"), new ClientListenerAppend());
         theSession = session;
 
         ChannelFuture loginFuture = session.executeLoginCommand("t1", "krinteg1@gmail.com", "1Testuser");
@@ -64,13 +60,12 @@ public class IMAPClientIT {
 
     @Test
     public void testGmailOauth2Login() throws SSLException, NoSuchAlgorithmException, InterruptedException, URISyntaxException {
-        final IMAPClient client = new IMAPClient(Executors.newScheduledThreadPool(5));
-        final IMAPSession session = client.createSession(new URI("imaps://imap.gmail.com:993"), null, new ClientListenerOauth2());
+        final IMAPSession session = IMAPClient.INSTANCE.createSession(new URI("imaps://imap.gmail.com:993"), new ClientListenerOauth2());
         theSession = session;
         final String oauth2Tok = "dXNlcj1rcmludGVnMUBnbWFpbC5jb20BYXV0aD1CZWFyZXIgeWEyOS5vUUc4NGQ3LXBFa0EwZXVvYTFXbFQ1eThqQTJUTEVMQlM5SlQxM1hUV1p3SklzVTYzUVV0cGoxUjRIbU0yODlWQS1kNlhkTWo5eTBjdWcBAQ==";
         ChannelFuture loginFuture = session.executeOAuth2Command("t1", oauth2Tok);
         loginFuture.awaitUninterruptibly();
-        Thread.sleep(4000000);
+        Thread.sleep(400000000);
 
     }
 
