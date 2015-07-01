@@ -17,6 +17,7 @@ import javax.net.ssl.SSLException;
 import org.slf4j.LoggerFactory;
 
 import com.yahoo.mail.imapnio.client.config.IMAPClientConfig;
+import com.yahoo.mail.imapnio.client.exception.IMAPSessionException;
 
 /**
  * Netty based NIO IMAP client.
@@ -51,9 +52,8 @@ public enum IMAPClient {
         this.group = new NioEventLoopGroup(config.EVENT_GROUP_NUM_THREADS);
     }
 
-    public IMAPSession createSession(URI uri, IMAPClientListener listener) throws SSLException, NoSuchAlgorithmException,
-            InterruptedException {
-        return new IMAPSession(uri, bootstrap, group, listener);
+    public IMAPSession createSession(URI uri) throws IMAPSessionException {
+        return new IMAPSession(uri, bootstrap, group);
     }
 
     /**
@@ -72,10 +72,4 @@ public enum IMAPClient {
         this.group.shutdownGracefully();
     }
 
-    // test
-    public static void main(String args[]) throws InterruptedException, SSLException, NoSuchAlgorithmException, URISyntaxException {
-        final IMAPSession session = IMAPClient.INSTANCE.createSession(new URI("imaps://imap.gmail.com:993"), null);
-        ChannelFuture future = session.executeLoginCommand("t1", "krinteg1@gmail.com", "1Testuser");
-        future.awaitUninterruptibly();
-    }
 }
