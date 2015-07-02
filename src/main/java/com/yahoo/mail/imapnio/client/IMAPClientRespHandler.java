@@ -8,6 +8,8 @@ import io.netty.handler.codec.MessageToMessageDecoder;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +17,7 @@ import java.util.Map;
 import org.slf4j.LoggerFactory;
 
 import com.sun.mail.imap.protocol.IMAPResponse;
+import com.yahoo.mail.imapnio.client.exception.IMAPSessionException;
 
 /**
  * @author kraman
@@ -49,30 +52,35 @@ public class IMAPClientRespHandler extends MessageToMessageDecoder<IMAPResponse>
      */
     @Override
     public void decode(ChannelHandlerContext ctx, IMAPResponse msg, List<Object> out) throws Exception {
-        log.info("< " + msg + " state:" + session.getState());
-        if (session.getState() == IMAPSessionState.IDLE_REQUEST) {
+        log.info("< " + msg + " state:" + session.getState() );
+        if (session.getState() == IMAPSessionState.ConnectRequest) {
+        	if (msg.isOK()) {
+                session.setState(IMAPSessionState.Connected);
+                session.resetResponseList();        		
+        	} else {
+        		throw new IMAPSessionException ("connect failed");
+        	}
+        } else if (session.getState() == IMAPSessionState.IDLE_REQUEST) {
         	if (msg.readAtomString().equals("idling")) {
                 session.setState(IMAPSessionState.IDLING);
+                session.resetResponseList();
             }
-        	session.addResponse(msg);
-        }
-        if (session.getState() == IMAPSessionState.IDLING) {
+        } else if (session.getState() == IMAPSessionState.IDLING) {
         	session.getClientListener(session.getIdleTag()).onResponse (session, session.getIdleTag(), Arrays.asList(msg));
 		} else {
 			if (null != msg.getTag()) {
+				session.addResponse(msg);
 				IMAPClientListener listener = session.removeClientListener(msg
 						.getTag());
 				if (null != listener) {
-					List<IMAPResponse> responses = new ArrayList<IMAPResponse>(
+					listener.onResponse(session, msg.getTag(),
 							session.getResponseList());
 					session.resetResponseList();
-					listener.onResponse(session, msg.getTag(),
-							responses);
 				}
 			} else {
 				session.addResponse(msg);
 				// Pass along message without modifying it.
-				out.add(msg);
+				//out.add(msg);
 			}
 		}
     }

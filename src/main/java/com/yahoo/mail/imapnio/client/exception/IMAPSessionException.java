@@ -17,6 +17,11 @@ public class IMAPSessionException extends Exception {
         this.id = Thread.currentThread().getName() + ":" + System.currentTimeMillis();
 	}
 	
+	public IMAPSessionException(String r) {
+		reason = r;
+        this.id = Thread.currentThread().getName() + ":" + System.currentTimeMillis();
+	}
+	
     /**
      * Convert the exception into a String for display and/or processing.
      */

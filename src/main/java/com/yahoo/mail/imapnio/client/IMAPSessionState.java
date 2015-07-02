@@ -8,6 +8,7 @@ package com.yahoo.mail.imapnio.client;
  *
  */
 public enum IMAPSessionState {
+	ConnectRequest("connect"),
     Connected("connected"), // indicates connection but no auth attempts or changes
     LoginFailed("failed"), // indicates failed login
     IDLE_REQUEST("idle"), // idle requested

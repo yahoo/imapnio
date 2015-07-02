@@ -78,6 +78,11 @@ public class IMAPSession {
      * @throws InterruptedException
      */
 	public IMAPSession(URI uri, Bootstrap bootstrap, EventLoopGroup group) throws IMAPSessionException {
+		responses = new ArrayList<IMAPResponse>();
+		listeners = new ConcurrentHashMap<String, IMAPClientListener>();
+		this.group = group;
+		// Initialize default state
+		capabilities = new HashMap<String, Boolean>();
 
 		boolean ssl = uri.getScheme().toLowerCase().equals("imaps");
 
@@ -95,11 +100,8 @@ public class IMAPSession {
 
 			// Save any other metadata
 
-			// Initialize default state
-			capabilities = new HashMap<String, Boolean>();
-			state = IMAPSessionState.Connected;
+			setState(IMAPSessionState.ConnectRequest);
 			// setIdleState(IMAPNIOClientSessionIdleState.NotIdle);
-			this.group = group;
 
 			// Open channel using the bootstrap
 			bootstrap
@@ -107,11 +109,12 @@ public class IMAPSession {
 					.handler(
 							new IMAPClientInitializer(this, sslCtx, uri
 									.getHost(), uri.getPort())).group(group);
-			this.channel = bootstrap.connect(uri.getHost(), uri.getPort())
-					.sync().channel();
+			ChannelFuture f = bootstrap.connect(uri.getHost(), uri.getPort());
+			
+			this.channel = f.sync().channel();
+
 			this.channel.closeFuture().addListener(
 					new SessionDisconnectListener(this));
-			listeners = new ConcurrentHashMap<String, IMAPClientListener>();
 		} catch (SSLException e1) {
 			throw new IMAPSessionException("ssl exception", e1);
 		} catch (InterruptedException e2) {
@@ -119,7 +122,6 @@ public class IMAPSession {
 		} catch (NoSuchAlgorithmException e3) {
 			throw new IMAPSessionException("unknown ssl algo", e3);
 		}
-		responses = new ArrayList<IMAPResponse>();
 	}
 
 
@@ -145,7 +147,7 @@ public class IMAPSession {
 			future.addListener(new GenericFutureListener<ChannelFuture>() {
 				public void operationComplete(ChannelFuture future)
 						throws Exception {
-					state = IMAPSessionState.IDLE_REQUEST;
+					setState(IMAPSessionState.IDLE_REQUEST);
 					idleTag = tag;
 				}
 			});
