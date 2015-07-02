@@ -67,7 +67,7 @@ public class IMAPClientRespHandler extends MessageToMessageDecoder<IMAPResponse>
 							session.getResponseList());
 					session.resetResponseList();
 					listener.onResponse(session, msg.getTag(),
-							session.getResponseList());
+							responses);
 				}
 			} else {
 				session.addResponse(msg);

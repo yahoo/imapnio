@@ -50,6 +50,50 @@ public class IMAPClientIT {
     	
     }
     
+    
+    class CapabilityListener implements IMAPClientListener {
+
+    	private IMAPClientListener nextListener;
+    	private final IMAPSession session;
+    	public CapabilityListener(IMAPSession session, IMAPClientListener l) {
+    		this.session = session;   
+    			nextListener = l;
+    	}
+		public void onResponse(IMAPSession session, String tag,
+				List<IMAPResponse> responses) {
+			for (IMAPResponse r:responses) {
+				log.info ("cap... " + r);
+			}
+			
+		}
+
+		public void onDisconnect(IMAPSession session) {
+			log.error("cap error disconnected");
+		}
+    	
+    }
+    
+    class ListenerToSendCapability implements IMAPClientListener {
+
+    	private IMAPClientListener nextListener;
+    	private final IMAPSession session;
+    	public ListenerToSendCapability(final IMAPSession session, IMAPClientListener l) {
+    		this.session = session;
+    			nextListener = l;
+    	}
+
+		public void onResponse(final IMAPSession session, String tag,
+				List<IMAPResponse> responses) {
+			session.executeCapabilityCommand("t01-cap", nextListener);
+		}
+
+		public void onDisconnect(final IMAPSession session) {
+			log.error("cap error.disconnected");
+		}
+    	
+    }
+
+    
     class ListenerToSendIdle implements IMAPClientListener {
 
     	private IMAPClientListener nextListener;
@@ -153,6 +197,17 @@ public class IMAPClientIT {
 //        Thread.sleep(30000);
 //
 //    }
+    
+    
+    @Test
+    public void testGamailCapability () throws IMAPSessionException, URISyntaxException, InterruptedException {
+        final IMAPSession session = IMAPClient.INSTANCE.createSession(new URI("imaps://imap.gmail.com:993"));
+ 
+        ChannelFuture loginFuture = session.executeCapabilityCommand("t1-cap", new CapabilityListener(session, null));
+        loginFuture.awaitUninterruptibly();
+        Thread.sleep(300000);
+
+    }
 
     @Test
     public void testGmailPlainLoginWithStatus() throws IMAPSessionException, URISyntaxException, InterruptedException {
