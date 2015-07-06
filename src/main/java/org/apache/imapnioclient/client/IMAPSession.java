@@ -1,7 +1,7 @@
 /**
  *
  */
-package com.yahoo.mail.imapnio.client;
+package org.apache.imapnioclient.client;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
@@ -23,13 +23,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.TrustManagerFactory;
 
+import org.apache.imapnioclient.command.Argument;
+import org.apache.imapnioclient.command.IMAPCommand;
+import org.apache.imapnioclient.exception.IMAPSessionException;
 import org.slf4j.LoggerFactory;
 
 import com.sun.mail.imap.protocol.BASE64MailboxEncoder;
 import com.sun.mail.imap.protocol.IMAPResponse;
-import com.yahoo.mail.imapnio.client.command.Argument;
-import com.yahoo.mail.imapnio.client.command.IMAPCommand;
-import com.yahoo.mail.imapnio.client.exception.IMAPSessionException;
 
 /**
  * Defines one IMAP session.

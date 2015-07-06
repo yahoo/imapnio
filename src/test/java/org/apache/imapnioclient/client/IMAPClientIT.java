@@ -1,7 +1,7 @@
 /**
  *
  */
-package com.yahoo.mail.imapnio.client;
+package org.apache.imapnioclient.client;
 
 import io.netty.channel.ChannelFuture;
 import io.netty.util.concurrent.GenericFutureListener;
@@ -13,11 +13,14 @@ import java.util.List;
 
 import javax.net.ssl.SSLException;
 
+import org.apache.imapnioclient.client.IMAPClient;
+import org.apache.imapnioclient.client.IMAPClientListener;
+import org.apache.imapnioclient.client.IMAPSession;
+import org.apache.imapnioclient.exception.IMAPSessionException;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
 import com.sun.mail.imap.protocol.IMAPResponse;
-import com.yahoo.mail.imapnio.client.exception.IMAPSessionException;
 
 /**
  * @author kraman

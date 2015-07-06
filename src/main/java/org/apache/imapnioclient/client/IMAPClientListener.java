@@ -1,4 +1,4 @@
-package com.yahoo.mail.imapnio.client;
+package org.apache.imapnioclient.client;
 
 import java.util.List;
 

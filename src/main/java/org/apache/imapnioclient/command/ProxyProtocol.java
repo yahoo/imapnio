@@ -1,4 +1,4 @@
-package com.yahoo.mail.imapnio.client.command;
+package org.apache.imapnioclient.command;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

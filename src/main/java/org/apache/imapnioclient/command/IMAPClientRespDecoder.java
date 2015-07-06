@@ -1,7 +1,7 @@
 /**
  *
  */
-package com.yahoo.mail.imapnio.client.command;
+package org.apache.imapnioclient.command;
 
 /**
  * @author kraman

@@ -1,7 +1,9 @@
 /**
  *
  */
-package com.yahoo.mail.imapnio.client;
+package org.apache.imapnioclient.client;
+
+import org.apache.imapnioclient.command.IMAPClientRespDecoder;
 
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
@@ -11,8 +13,6 @@ import io.netty.handler.codec.Delimiters;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 import io.netty.handler.ssl.SslContext;
-
-import com.yahoo.mail.imapnio.client.command.IMAPClientRespDecoder;
 
 /**
  * @author kraman

@@ -1,7 +1,7 @@
 /**
  *
  */
-package com.yahoo.mail.imapnio.client.command;
+package org.apache.imapnioclient.command;
 
 import com.sun.mail.iap.Argument;
 

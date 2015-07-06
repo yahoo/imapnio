@@ -1,7 +1,7 @@
 /**
  *
  */
-package com.yahoo.mail.imapnio.client;
+package org.apache.imapnioclient.client;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
@@ -14,10 +14,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.imapnioclient.exception.IMAPSessionException;
 import org.slf4j.LoggerFactory;
 
 import com.sun.mail.imap.protocol.IMAPResponse;
-import com.yahoo.mail.imapnio.client.exception.IMAPSessionException;
 
 /**
  * @author kraman
