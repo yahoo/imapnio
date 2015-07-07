@@ -1,7 +1,7 @@
 /**
  *
  */
-package org.apache.imapnioclient.client;
+package com.kl.mail.imapnioclient.client;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
@@ -23,11 +23,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.TrustManagerFactory;
 
-import org.apache.imapnioclient.command.Argument;
-import org.apache.imapnioclient.command.IMAPCommand;
-import org.apache.imapnioclient.exception.IMAPSessionException;
 import org.slf4j.LoggerFactory;
 
+import com.kl.mail.imapnioclient.command.Argument;
+import com.kl.mail.imapnioclient.command.IMAPCommand;
+import com.kl.mail.imapnioclient.exception.IMAPSessionException;
 import com.sun.mail.imap.protocol.BASE64MailboxEncoder;
 import com.sun.mail.imap.protocol.IMAPResponse;
 

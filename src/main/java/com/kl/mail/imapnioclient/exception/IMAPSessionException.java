@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.apache.imapnioclient.exception;
+package com.kl.mail.imapnioclient.exception;
 
 /**
  * @author kraman

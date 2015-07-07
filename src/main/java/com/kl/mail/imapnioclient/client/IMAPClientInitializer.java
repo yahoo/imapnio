@@ -1,9 +1,9 @@
 /**
  *
  */
-package org.apache.imapnioclient.client;
+package com.kl.mail.imapnioclient.client;
 
-import org.apache.imapnioclient.command.IMAPClientRespDecoder;
+import com.kl.mail.imapnioclient.command.IMAPClientRespDecoder;
 
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
@@ -51,6 +51,7 @@ public class IMAPClientInitializer extends ChannelInitializer<SocketChannel> {
         // And then business logic.
         pipeline.addLast(new IMAPClientRespDecoder());
         pipeline.addLast(new IMAPClientRespHandler(session));
+        pipeline.addLast(new SocketCloseListener(session));
     }
 
 }

@@ -1,7 +1,7 @@
 /**
  *
  */
-package org.apache.imapnioclient.client;
+package com.kl.mail.imapnioclient.client;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
@@ -14,9 +14,10 @@ import java.security.NoSuchAlgorithmException;
 
 import javax.net.ssl.SSLException;
 
-import org.apache.imapnioclient.config.IMAPClientConfig;
-import org.apache.imapnioclient.exception.IMAPSessionException;
 import org.slf4j.LoggerFactory;
+
+import com.kl.mail.imapnioclient.config.IMAPClientConfig;
+import com.kl.mail.imapnioclient.exception.IMAPSessionException;
 
 /**
  * Netty based NIO IMAP client.

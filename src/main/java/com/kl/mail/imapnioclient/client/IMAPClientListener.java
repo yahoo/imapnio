@@ -1,4 +1,4 @@
-package org.apache.imapnioclient.client;
+package com.kl.mail.imapnioclient.client;
 
 import java.util.List;
 

@@ -1,7 +1,7 @@
 /**
  *
  */
-package org.apache.imapnioclient.client;
+package com.kl.mail.imapnioclient.client;
 
 import io.netty.channel.ChannelFuture;
 import io.netty.util.concurrent.GenericFutureListener;
@@ -13,13 +13,13 @@ import java.util.List;
 
 import javax.net.ssl.SSLException;
 
-import org.apache.imapnioclient.client.IMAPClient;
-import org.apache.imapnioclient.client.IMAPClientListener;
-import org.apache.imapnioclient.client.IMAPSession;
-import org.apache.imapnioclient.exception.IMAPSessionException;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
+import com.kl.mail.imapnioclient.client.IMAPClient;
+import com.kl.mail.imapnioclient.client.IMAPClientListener;
+import com.kl.mail.imapnioclient.client.IMAPSession;
+import com.kl.mail.imapnioclient.exception.IMAPSessionException;
 import com.sun.mail.imap.protocol.IMAPResponse;
 
 /**
@@ -186,7 +186,7 @@ public class IMAPClientIT {
 
 		ChannelFuture loginFuture = session.executeLoginCommand("t1",
 				"krinteg1@gmail.com", "1Testuser", new ListenerToSendStatus(session, new ListenerToSendSelect(session, new ListenerToSendIdle(session, new IdleListener(session, null)))));
-		Thread.sleep(30000);
+		Thread.sleep(3000000);
 
 	}
     

@@ -1,7 +1,7 @@
 /**
  *
  */
-package org.apache.imapnioclient.config;
+package com.kl.mail.imapnioclient.config;
 
 /**
  * @author kraman
