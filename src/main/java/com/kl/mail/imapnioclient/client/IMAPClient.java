@@ -43,17 +43,22 @@ public enum IMAPClient {
 
     /**
      * Constructs a NIO based IMAP client.
-     * @param config
-     *            - client configuration to be used.
      */
     IMAPClient() {
         this.config = new IMAPClientConfig();
         this.bootstrap = new Bootstrap();
-        this.group = new NioEventLoopGroup(config.EVENT_GROUP_NUM_THREADS);
+        this.group = new NioEventLoopGroup(config.getNumThreads());
     }
 
-    public IMAPSession createSession(URI uri) throws IMAPSessionException {
-        return new IMAPSession(uri, bootstrap, group);
+    /**
+     * Create a new IMAP session.
+     * @param uri IMAP server URI
+     * @param listener client listener for connect/disconnect events
+     * @return newly created session object
+     * @throws IMAPSessionException on error
+     */
+    public IMAPSession createSession(URI uri, IMAPClientListener listener) throws IMAPSessionException {
+        return new IMAPSession(uri, bootstrap, group, listener);
     }
 
     /**

@@ -54,6 +54,8 @@ public class IMAPSession {
 
     private EventLoopGroup group;
 
+    /** Client listener for connect/disconnect callback events.*/
+    private final IMAPClientListener listener;
 
     private final ConcurrentHashMap<String, IMAPClientListener> listeners;
     
@@ -77,9 +79,10 @@ public class IMAPSession {
      * @throws NoSuchAlgorithmException
      * @throws InterruptedException
      */
-	public IMAPSession(URI uri, Bootstrap bootstrap, EventLoopGroup group) throws IMAPSessionException {
+	public IMAPSession(URI uri, Bootstrap bootstrap, EventLoopGroup group, IMAPClientListener listener) throws IMAPSessionException {
 		responses = new ArrayList<IMAPResponse>();
 		listeners = new ConcurrentHashMap<String, IMAPClientListener>();
+		this.listener = listener;
 		this.group = group;
 		// Initialize default state
 		capabilities = new HashMap<String, Boolean>();
@@ -101,7 +104,6 @@ public class IMAPSession {
 			// Save any other metadata
 
 			setState(IMAPSessionState.ConnectRequest);
-			// setIdleState(IMAPNIOClientSessionIdleState.NotIdle);
 
 			// Open channel using the bootstrap
 			bootstrap
@@ -109,12 +111,15 @@ public class IMAPSession {
 					.handler(
 							new IMAPClientInitializer(this, sslCtx, uri
 									.getHost(), uri.getPort())).group(group);
-			ChannelFuture f = bootstrap.connect(uri.getHost(), uri.getPort());
-			
-			this.channel = f.sync().channel();
+			ChannelFuture connectFuture = bootstrap.connect(uri.getHost(), uri.getPort());
+			this.channel = connectFuture.sync().channel();
+			connectFuture.addListener(new GenericFutureListener<ChannelFuture> () {
 
-			this.channel.closeFuture().addListener(
-					new SessionDisconnectListener(this));
+				public void operationComplete(ChannelFuture future)
+						throws Exception {
+					setState(IMAPSessionState.ConnectRequest);
+				}
+			});
 		} catch (SSLException e1) {
 			throw new IMAPSessionException("ssl exception", e1);
 		} catch (InterruptedException e2) {
@@ -199,24 +204,7 @@ public class IMAPSession {
         ChannelFuture future = executeCommand(new IMAPCommand(tag, "AUTHENTICATE XOAUTH2", new Argument().addString(oauth2Tok), new String[] { "auth=xoauth2" }), listener);
         return future;
     }
-    
-//    /**
-//     * Send Yahoo! specific XYMLOGIN command.
-//     * @param tag tag to be used for this command
-//     * @param xymloginTok the login token
-//     * @return ChannelFuture
-//     * @throws InterruptedException
-//     */
-//    public ChannelFuture executeXYMLOGINCommand(final String tag, String xymloginTok) {
-//    	ChannelFuture future = executeCommand (new IMAPCommand(tag, "AUTHENTICATE XYMLOGIN", new Argument().addString(xymloginTok), new String[]{}));
-//        future.addListener(new GenericFutureListener<ChannelFuture>() {
-//            public void operationComplete(ChannelFuture future) throws Exception {
-//                state = IMAPSessionState.OAUTH2_INIT;
-//            }
-//        });
-//    	return future;
-//    }
-    
+
     /**
      * Execute logout command.
      *
@@ -332,19 +320,31 @@ public class IMAPSession {
     }
 
 
-    public void addResponse(IMAPResponse response) {
+    /**
+     * Accumulate multi-line IMAP responses before giving the client callback.
+     * @param response IMAP response to be queued
+     */
+    protected void addResponse(IMAPResponse response) {
         responses.add(response);
     }
     
+    /**
+     * Get the IMAP tag corresponding to the IDLE command.
+     * @return the IDLE tag
+     */
     public String getIdleTag() {
     	return idleTag;
     }
 
-    public List<IMAPResponse> getResponseList() {
+    /**
+     * Return the list of IMAP response objects.
+     * @return IMAPResponse list
+     */
+    protected List<IMAPResponse> getResponseList() {
         return responses;
     }
 
-    public void resetResponseList() {
+    protected void resetResponseList() {
         responses.clear();
     }
 
@@ -352,30 +352,39 @@ public class IMAPSession {
         return state;
     }
 
-    public void setState(IMAPSessionState state) {
+    protected void setState(IMAPSessionState state) {
         this.state = state;
     }
 
-    public IMAPClientListener getClientListener(String tag) {
+    /**
+     * Returns the client listener registered for a specific tag.
+     * @param tag get listener for this tag
+     * @return ClientListener registered for the tag
+     */
+    protected IMAPClientListener getClientListener(String tag) {
         return listeners.get(tag);
     }    
     
-    public IMAPClientListener removeClientListener(String tag) {
+    /**
+     * Returns the connect/disconnect client listener.
+     * @return ClientListener
+     */
+    protected IMAPClientListener getClientListener() {
+    	return listener;
+    }
+    
+    /**
+     * Remove the listener after command for that tag is processed.
+     * @param tag remove listener for this tag
+     * @return the removed listener
+     */
+    protected IMAPClientListener removeClientListener(String tag) {
         return listeners.remove(tag);
     }
-
-    class SessionDisconnectListener implements GenericFutureListener<ChannelFuture> {
-    	private final IMAPSession session;
-    	SessionDisconnectListener(IMAPSession session) {
-    		this.session = session;
-    	}
-    	
-		public void operationComplete(ChannelFuture future)
-				throws Exception {
-			if (null != session.clientListener) {
-				session.clientListener.onDisconnect(session);
-			}
-		}
+    
+    protected void resetSession() {
+    	resetResponseList();
+    	listeners.clear();
     }
 
 }

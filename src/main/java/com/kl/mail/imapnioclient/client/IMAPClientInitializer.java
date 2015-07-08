@@ -51,7 +51,7 @@ public class IMAPClientInitializer extends ChannelInitializer<SocketChannel> {
         // And then business logic.
         pipeline.addLast(new IMAPClientRespDecoder());
         pipeline.addLast(new IMAPClientRespHandler(session));
-        pipeline.addLast(new SocketCloseListener(session));
+        pipeline.addLast(new IMAPChannelListener(session));
     }
 
 }

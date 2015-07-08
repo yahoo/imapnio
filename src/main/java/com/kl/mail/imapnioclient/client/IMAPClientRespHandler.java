@@ -57,6 +57,9 @@ public class IMAPClientRespHandler extends MessageToMessageDecoder<IMAPResponse>
         	if (msg.isOK()) {
                 session.setState(IMAPSessionState.Connected);
                 session.resetResponseList();        		
+                if (null != session.getClientListener()) {
+                	session.getClientListener().onConnect(session);
+                }
         	} else {
         		throw new IMAPSessionException ("connect failed");
         	}

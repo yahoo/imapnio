@@ -32,12 +32,7 @@ public class IMAPClientIT {
     
     
     class IdleListener implements IMAPClientListener {
-
-    	private IMAPClientListener nextListener;
-    	private final IMAPSession session;
-    	public IdleListener(IMAPSession session, IMAPClientListener l) {
-    		this.session = session;   
-    			nextListener = l;
+    	public IdleListener() {
     	}
 		public void onResponse(IMAPSession session, String tag,
 				List<IMAPResponse> responses) {
@@ -50,17 +45,15 @@ public class IMAPClientIT {
 		public void onDisconnect(IMAPSession session) {
 			log.error("idle error disconnected");
 		}
+		public void onConnect(IMAPSession session) {
+			log.error("idle connected");
+		}
     	
     }
     
     
     class CapabilityListener implements IMAPClientListener {
-
-    	private IMAPClientListener nextListener;
-    	private final IMAPSession session;
-    	public CapabilityListener(IMAPSession session, IMAPClientListener l) {
-    		this.session = session;   
-    			nextListener = l;
+    	public CapabilityListener() {
     	}
 		public void onResponse(IMAPSession session, String tag,
 				List<IMAPResponse> responses) {
@@ -73,15 +66,16 @@ public class IMAPClientIT {
 		public void onDisconnect(IMAPSession session) {
 			log.error("cap error disconnected");
 		}
+		public void onConnect(IMAPSession session) {
+			log.error("connected");
+		}
     	
     }
     
     class ListenerToSendCapability implements IMAPClientListener {
 
     	private IMAPClientListener nextListener;
-    	private final IMAPSession session;
-    	public ListenerToSendCapability(final IMAPSession session, IMAPClientListener l) {
-    		this.session = session;
+    	public ListenerToSendCapability(IMAPClientListener l) {
     			nextListener = l;
     	}
 
@@ -93,6 +87,10 @@ public class IMAPClientIT {
 		public void onDisconnect(final IMAPSession session) {
 			log.error("cap error.disconnected");
 		}
+
+		public void onConnect(IMAPSession session) {
+			log.error("connected");
+		}
     	
     }
 
@@ -100,9 +98,7 @@ public class IMAPClientIT {
     class ListenerToSendIdle implements IMAPClientListener {
 
     	private IMAPClientListener nextListener;
-    	private final IMAPSession session;
-    	public ListenerToSendIdle(final IMAPSession session, IMAPClientListener l) {
-    		this.session = session;
+    	public ListenerToSendIdle(IMAPClientListener l) {
     			nextListener = l;
     	}
 
@@ -113,6 +109,10 @@ public class IMAPClientIT {
 
 		public void onDisconnect(final IMAPSession session) {
 			log.error("login error.disconnected");
+		}
+
+		public void onConnect(IMAPSession session) {
+			log.error("connected");
 		}
     	
     }
@@ -134,6 +134,10 @@ public class IMAPClientIT {
 		public void onDisconnect(final IMAPSession session) {
 			log.error("ListenerToSendLogout error.disconnected");
 		}
+
+		public void onConnect(IMAPSession session) {
+			log.error("connected");
+		}
     	
     } 
     
@@ -141,9 +145,7 @@ public class IMAPClientIT {
     class ListenerToSendStatus implements IMAPClientListener {
     	
     	private IMAPClientListener nextListener;
-    	private final IMAPSession session;
-    	public ListenerToSendStatus(final IMAPSession session, IMAPClientListener l) {
-    		this.session = session;
+    	public ListenerToSendStatus(IMAPClientListener l) {
     			nextListener = l;
     	}
 
@@ -155,15 +157,17 @@ public class IMAPClientIT {
 		public void onDisconnect(final IMAPSession session) {
 			log.error("login error.disconnected");
 		}
+
+		public void onConnect(IMAPSession session) {
+			log.error("connected");
+		}
     	
     }
     
     class ListenerToSendSelect implements IMAPClientListener {
     	
     	private IMAPClientListener nextListener;
-    	private final IMAPSession session;
-    	public ListenerToSendSelect(final IMAPSession session, IMAPClientListener l) {
-    		this.session = session;
+    	public ListenerToSendSelect(IMAPClientListener l) {
     			nextListener = l;
     	}
 
@@ -175,18 +179,25 @@ public class IMAPClientIT {
 		public void onDisconnect(final IMAPSession session) {
 			log.error("login error.disconnected");
 		}
+
+		public void onConnect(IMAPSession session) {
+			log.error("connected");
+		}
     	
     }
 
     @Test
 	public void testGmailPlainLoginWithIdle() throws IMAPSessionException,
 			URISyntaxException, InterruptedException {
+    	final String gmailServer = "imaps://imap.gmail.com:993";
+    	// final String gmailServer = "imap://localhost:9993";
+    	
 		final IMAPSession session = IMAPClient.INSTANCE.createSession(new URI(
-				"imaps://imap.gmail.com:993"));
+				gmailServer), null);
 
 		ChannelFuture loginFuture = session.executeLoginCommand("t1",
-				"krinteg1@gmail.com", "1Testuser", new ListenerToSendStatus(session, new ListenerToSendSelect(session, new ListenerToSendIdle(session, new IdleListener(session, null)))));
-		Thread.sleep(3000000);
+				"krinteg1@gmail.com", "1Testuser", new ListenerToSendStatus(new ListenerToSendSelect(new ListenerToSendIdle(new IdleListener()))));
+		Thread.sleep(86400000);
 
 	}
     
@@ -204,9 +215,9 @@ public class IMAPClientIT {
     
     @Test
     public void testGamailCapability () throws IMAPSessionException, URISyntaxException, InterruptedException {
-        final IMAPSession session = IMAPClient.INSTANCE.createSession(new URI("imaps://imap.gmail.com:993"));
+        final IMAPSession session = IMAPClient.INSTANCE.createSession(new URI("imaps://imap.gmail.com:993"), new CapabilityListener());
  
-        ChannelFuture loginFuture = session.executeCapabilityCommand("t1-cap", new CapabilityListener(session, null));
+        ChannelFuture loginFuture = session.executeCapabilityCommand("t1-cap", new CapabilityListener());
         loginFuture.awaitUninterruptibly();
         Thread.sleep(300000);
 
@@ -214,9 +225,10 @@ public class IMAPClientIT {
 
     @Test
     public void testGmailPlainLoginWithStatus() throws IMAPSessionException, URISyntaxException, InterruptedException {
-        final IMAPSession session = IMAPClient.INSTANCE.createSession(new URI("imaps://imap.gmail.com:993"));
+    	final ListenerToSendStatus l = new ListenerToSendStatus(null);
+        final IMAPSession session = IMAPClient.INSTANCE.createSession(new URI("imaps://imap.gmail.com:993"), l);
  
-        ChannelFuture loginFuture = session.executeLoginCommand("t1", "krinteg1@gmail.com", "1Testuser", new ListenerToSendStatus(session, null));
+        ChannelFuture loginFuture = session.executeLoginCommand("t1", "krinteg1@gmail.com", "1Testuser", l);
         loginFuture.awaitUninterruptibly();
         Thread.sleep(300000);
 
@@ -224,7 +236,7 @@ public class IMAPClientIT {
     
     @Test
     public void testGmailOauth2Login() throws URISyntaxException, IMAPSessionException, InterruptedException {
-        final IMAPSession session = IMAPClient.INSTANCE.createSession(new URI("imaps://imap.gmail.com:993"));
+        final IMAPSession session = IMAPClient.INSTANCE.createSession(new URI("imaps://imap.gmail.com:993"), null);
          final String oauth2Tok = "dXNlcj1rcmludGVnMUBnbWFpbC5jb20BYXV0aD1CZWFyZXIgeWEyOS5vUUc4NGQ3LXBFa0EwZXVvYTFXbFQ1eThqQTJUTEVMQlM5SlQxM1hUV1p3SklzVTYzUVV0cGoxUjRIbU0yODlWQS1kNlhkTWo5eTBjdWcBAQ==";
         ChannelFuture loginFuture = session.executeOAuth2Command("t1", oauth2Tok, null);
         loginFuture.awaitUninterruptibly();
