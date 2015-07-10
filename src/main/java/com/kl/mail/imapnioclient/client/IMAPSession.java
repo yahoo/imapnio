@@ -57,15 +57,15 @@ public class IMAPSession {
     private EventLoopGroup group;
 
     /** Client listener for connect/disconnect callback events.*/
-    private final IMAPClientListener listener;
+    private final IMAPSessionListener listener;
 
-    private final ConcurrentHashMap<String, IMAPClientListener> listeners;
+    private final ConcurrentHashMap<String, IMAPSessionListener> listeners;
     
     private String idleTag;
 
     private final List<IMAPResponse> responses;
     
-    private IMAPClientListener clientListener;
+    private IMAPSessionListener clientListener;
     
 
     /**
@@ -82,9 +82,9 @@ public class IMAPSession {
      * @throws NoSuchAlgorithmException
      * @throws InterruptedException
      */
-	public IMAPSession(URI uri, Bootstrap bootstrap, EventLoopGroup group, IMAPClientListener listener) throws IMAPSessionException {
+	public IMAPSession(URI uri, Bootstrap bootstrap, EventLoopGroup group, IMAPSessionListener listener) throws IMAPSessionException {
 		responses = new ArrayList<IMAPResponse>();
-		listeners = new ConcurrentHashMap<String, IMAPClientListener>();
+		listeners = new ConcurrentHashMap<String, IMAPSessionListener>();
 		this.listener = listener;
 		this.group = group;
 		// Initialize default state
@@ -147,7 +147,7 @@ public class IMAPSession {
      * @param tag
      */
 	public ChannelFuture executeIdleCommand(final String tag,
-			final IMAPClientListener listener) {
+			final IMAPSessionListener listener) {
 		ChannelFuture future = executeCommand(new IMAPCommand(tag, "IDLE",
 				new Argument(), new String[] { "IDLE" }), listener);
 		if (null != future) {
@@ -162,12 +162,12 @@ public class IMAPSession {
 		return future;
 	}
 
-    public ChannelFuture executeSelectCommand(final String tag, final String mailbox, final IMAPClientListener listener) {
+    public ChannelFuture executeSelectCommand(final String tag, final String mailbox, final IMAPSessionListener listener) {
         String b64Mailbox = BASE64MailboxEncoder.encode(mailbox);
         return executeCommand(new IMAPCommand(tag, "SELECT", new Argument().addString(b64Mailbox), new String[] {}), listener);
     }
 
-    public ChannelFuture executeStatusCommand(String tag, String mailbox, String[] items, final IMAPClientListener listener) {
+    public ChannelFuture executeStatusCommand(String tag, String mailbox, String[] items, final IMAPSessionListener listener) {
         mailbox = BASE64MailboxEncoder.encode(mailbox);
 
         Argument args = new Argument();
@@ -189,7 +189,7 @@ public class IMAPSession {
      * @param tag
      *            An auth command to execute in the session.
      */
-    public ChannelFuture executeLoginCommand(String tag, String username, String password, final IMAPClientListener listener) {
+    public ChannelFuture executeLoginCommand(String tag, String username, String password, final IMAPSessionListener listener) {
         return executeCommand(new IMAPCommand(tag, "LOGIN", new Argument().addString(username).addString(password), new String[] { "auth=plain" }), listener);
     }
 
@@ -202,7 +202,7 @@ public class IMAPSession {
      * @return
      * @throws InterruptedException
      */
-    public ChannelFuture executeOAuth2Command(final String tag, final String oauth2Tok, final IMAPClientListener listener) {
+    public ChannelFuture executeOAuth2Command(final String tag, final String oauth2Tok, final IMAPSessionListener listener) {
         ChannelFuture future = executeCommand(new IMAPCommand(tag, "AUTHENTICATE XOAUTH2", new Argument().addString(oauth2Tok), new String[] { "auth=xoauth2" }), listener);
         return future;
     }
@@ -215,7 +215,7 @@ public class IMAPSession {
      * @return
      * @throws InterruptedException
      */
-    public ChannelFuture executeLogoutCommand(final String tag, IMAPClientListener listener) {
+    public ChannelFuture executeLogoutCommand(final String tag, IMAPSessionListener listener) {
     	ChannelFuture future = executeCommand(new IMAPCommand(tag, "LOGOUT", new Argument(), new String[]{}), listener);
     	return future;
     }
@@ -225,7 +225,7 @@ public class IMAPSession {
      *
      * @param tag
      */
-    public ChannelFuture executeCapabilityCommand(String tag, final IMAPClientListener listener) {
+    public ChannelFuture executeCapabilityCommand(String tag, final IMAPSessionListener listener) {
     	setState(IMAPSessionState.Connected);
         return executeCommand(new IMAPCommand(tag, "CAPABILITY", new Argument(), new String[] {}), listener);
     }
@@ -246,7 +246,7 @@ public class IMAPSession {
      * @return future
      * @throws InterruptedException
      */
-    public ChannelFuture executeAppendCommand(String tag, String labelName, String flags, String size, final IMAPClientListener listener) {
+    public ChannelFuture executeAppendCommand(String tag, String labelName, String flags, String size, final IMAPSessionListener listener) {
     	setState(IMAPSessionState.Connected);
         return executeCommand(new IMAPCommand(tag, "APPEND", new Argument().addString(labelName).addLiteral(flags).addLiteral("{" + size + "}"),
                 new String[] { "IMAP4REV1" }), listener);
@@ -272,7 +272,7 @@ public class IMAPSession {
      * @return ChannelFuture
      * @throws InterruptedException
      */
-    public ChannelFuture executeNOOPCommand(String tag, final IMAPClientListener listener) {
+    public ChannelFuture executeNOOPCommand(String tag, final IMAPSessionListener listener) {
     	return executeCommand(new IMAPCommand(tag, "NOOP", new Argument(), new String[]{}), listener);
     }
 
@@ -282,7 +282,7 @@ public class IMAPSession {
      * @param method
      */
 	private ChannelFuture executeCommand(IMAPCommand method,
-			IMAPClientListener listener) {
+			IMAPSessionListener listener) {
 		/*
 		String[] capabilitiesRequired = method.getCapabilities();
 		for (String requiredCapability : capabilitiesRequired) {
@@ -363,7 +363,7 @@ public class IMAPSession {
      * @param tag get listener for this tag
      * @return ClientListener registered for the tag
      */
-    protected IMAPClientListener getClientListener(String tag) {
+    protected IMAPSessionListener getClientListener(String tag) {
         return listeners.get(tag);
     }    
     
@@ -371,7 +371,7 @@ public class IMAPSession {
      * Returns the connect/disconnect client listener.
      * @return ClientListener
      */
-    protected IMAPClientListener getClientListener() {
+    protected IMAPSessionListener getSessionListener() {
     	return listener;
     }
     
@@ -380,7 +380,7 @@ public class IMAPSession {
      * @param tag remove listener for this tag
      * @return the removed listener
      */
-    protected IMAPClientListener removeClientListener(String tag) {
+    protected IMAPSessionListener removeClientListener(String tag) {
         return listeners.remove(tag);
     }
     

@@ -28,8 +28,8 @@ public class IMAPChannelListener implements ChannelHandler {
 	public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
 		// TODO Auto-generated method stub
 		log.info ("channel closed - removed");
-		if (null != session && session.getClientListener() != null) {
-			session.getClientListener().onDisconnect(session);
+		if (null != session && session.getSessionListener() != null) {
+			session.getSessionListener().onDisconnect(session);
 		}		
 	}
 
@@ -40,8 +40,8 @@ public class IMAPChannelListener implements ChannelHandler {
 			throws Exception {
 		// TODO Auto-generated method stub
 		log.info  ("channel closed - exception");
-		if (null != session && session.getClientListener() != null) {
-			session.getClientListener().onDisconnect(session);
+		if (null != session && session.getSessionListener() != null) {
+			session.getSessionListener().onDisconnect(session);
 		}
 	}
 

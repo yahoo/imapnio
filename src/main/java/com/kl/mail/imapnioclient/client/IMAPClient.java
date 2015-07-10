@@ -64,7 +64,7 @@ public enum IMAPClient {
      * @return newly created session object
      * @throws IMAPSessionException on error
      */
-    public IMAPSession createSession(URI uri, IMAPClientListener listener) throws IMAPSessionException {
+    public IMAPSession createSession(URI uri, IMAPSessionListener listener) throws IMAPSessionException {
         return new IMAPSession(uri, bootstrap, group, listener);
     }
 

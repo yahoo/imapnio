@@ -58,8 +58,8 @@ public class IMAPClientRespHandler extends MessageToMessageDecoder<IMAPResponse>
         	if (msg.isOK()) {
                 session.setState(IMAPSessionState.Connected);
                 session.resetResponseList();        		
-                if (null != session.getClientListener()) {
-                	session.getClientListener().onConnect(session);
+                if (null != session.getSessionListener()) {
+                	session.getSessionListener().onConnect(session);
                 }
         	} else {
         		throw new IMAPSessionException("connect failed");
@@ -68,13 +68,19 @@ public class IMAPClientRespHandler extends MessageToMessageDecoder<IMAPResponse>
         	if (msg.readAtomString().equals("idling")) {
                 session.setState(IMAPSessionState.IDLING);
                 session.resetResponseList();
+                // go back and see what that is.
+                msg.reset();
+				if (msg.readByte() == '+' && session.getSessionListener()!= null) {
+					msg.reset();
+					session.getSessionListener().onMessage(session, msg);
+				}
             }
         } else if (session.getState() == IMAPSessionState.IDLING) {
         	session.getClientListener(session.getIdleTag()).onResponse(session, session.getIdleTag(), Arrays.asList(msg));
 		} else {
 			if (null != msg.getTag()) {
 				session.addResponse(msg);
-				IMAPClientListener listener = session.removeClientListener(msg
+				IMAPSessionListener listener = session.removeClientListener(msg
 						.getTag());
 				if (null != listener) {
 					listener.onResponse(session, msg.getTag(),
@@ -82,8 +88,10 @@ public class IMAPClientRespHandler extends MessageToMessageDecoder<IMAPResponse>
 					session.resetResponseList();
 				}
 			} else {
-				if (msg.readByte() == '+') {
-					session.executeRawTextCommand("\r\n");
+				msg.reset();
+				if (msg.readByte() == '+' && session.getSessionListener()!= null) {
+					msg.reset();
+					session.getSessionListener().onMessage(session, msg);
 				} else {
 				session.addResponse(msg);
 				// Pass along message without modifying it.
