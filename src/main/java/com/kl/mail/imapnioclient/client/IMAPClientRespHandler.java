@@ -25,6 +25,7 @@ import com.sun.mail.imap.protocol.IMAPResponse;
  */
 public class IMAPClientRespHandler extends MessageToMessageDecoder<IMAPResponse> {
 
+	/** The IMAP client session. */
     private IMAPSession session;
 
     /** logger. */
@@ -36,7 +37,7 @@ public class IMAPClientRespHandler extends MessageToMessageDecoder<IMAPResponse>
      * @param session
      *            - IMAP session
      */
-    public IMAPClientRespHandler(IMAPSession session) {
+    public IMAPClientRespHandler(final IMAPSession session) {
         this.session = session;
     }
 
@@ -51,8 +52,8 @@ public class IMAPClientRespHandler extends MessageToMessageDecoder<IMAPResponse>
      *            - message to be sent to the next handler in the chain
      */
     @Override
-    public void decode(ChannelHandlerContext ctx, IMAPResponse msg, List<Object> out) throws Exception {
-        log.info("< " + msg + " state:" + session.getState() );
+    public void decode(final ChannelHandlerContext ctx, final IMAPResponse msg, final List<Object> out) throws Exception {
+        log.info("< " + msg + " state:" + session.getState());
         if (session.getState() == IMAPSessionState.ConnectRequest) {
         	if (msg.isOK()) {
                 session.setState(IMAPSessionState.Connected);
@@ -61,7 +62,7 @@ public class IMAPClientRespHandler extends MessageToMessageDecoder<IMAPResponse>
                 	session.getClientListener().onConnect(session);
                 }
         	} else {
-        		throw new IMAPSessionException ("connect failed");
+        		throw new IMAPSessionException("connect failed");
         	}
         } else if (session.getState() == IMAPSessionState.IDLE_REQUEST) {
         	if (msg.readAtomString().equals("idling")) {
@@ -69,7 +70,7 @@ public class IMAPClientRespHandler extends MessageToMessageDecoder<IMAPResponse>
                 session.resetResponseList();
             }
         } else if (session.getState() == IMAPSessionState.IDLING) {
-        	session.getClientListener(session.getIdleTag()).onResponse (session, session.getIdleTag(), Arrays.asList(msg));
+        	session.getClientListener(session.getIdleTag()).onResponse(session, session.getIdleTag(), Arrays.asList(msg));
 		} else {
 			if (null != msg.getTag()) {
 				session.addResponse(msg);
@@ -81,9 +82,13 @@ public class IMAPClientRespHandler extends MessageToMessageDecoder<IMAPResponse>
 					session.resetResponseList();
 				}
 			} else {
+				if (msg.readByte() == '+') {
+					session.executeRawTextCommand("\r\n");
+				} else {
 				session.addResponse(msg);
 				// Pass along message without modifying it.
 				//out.add(msg);
+				}
 			}
 		}
     }

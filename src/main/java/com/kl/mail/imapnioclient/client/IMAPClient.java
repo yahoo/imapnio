@@ -7,12 +7,15 @@ import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.ssl.SslContext;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.NoSuchAlgorithmException;
 
 import javax.net.ssl.SSLException;
+import javax.net.ssl.TrustManagerFactory;
 
 import org.slf4j.LoggerFactory;
 
@@ -27,11 +30,13 @@ import com.kl.mail.imapnioclient.exception.IMAPSessionException;
  */
 public enum IMAPClient {
 	
+	/** The singleton instenace. */
 	INSTANCE;
 
     /** Client configuration. */
     private final IMAPClientConfig config;
 
+    /** The netty bootstrap. */
     private Bootstrap bootstrap;
 
     /** Event loop group that will serve all channels for IMAP client. */
@@ -48,6 +53,8 @@ public enum IMAPClient {
         this.config = new IMAPClientConfig();
         this.bootstrap = new Bootstrap();
         this.group = new NioEventLoopGroup(config.getNumThreads());
+		bootstrap.channel(NioSocketChannel.class);
+		bootstrap.group(group);
     }
 
     /**

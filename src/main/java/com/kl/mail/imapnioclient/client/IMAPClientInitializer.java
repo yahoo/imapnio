@@ -34,7 +34,7 @@ public class IMAPClientInitializer extends ChannelInitializer<SocketChannel> {
     }
 
     @Override
-    public void initChannel(SocketChannel ch) {
+    public void initChannel(final SocketChannel ch) {
         ChannelPipeline pipeline = ch.pipeline();
 
         if (sslCtx != null) {

@@ -32,21 +32,27 @@ public class IMAPClientIT {
     
     
     class IdleListener implements IMAPClientListener {
+    	
+    	String logPrefix = "";
     	public IdleListener() {
+    	}
+    	
+    	public IdleListener(String p) {
+    		logPrefix = p;
     	}
 		public void onResponse(IMAPSession session, String tag,
 				List<IMAPResponse> responses) {
 			for (IMAPResponse r:responses) {
-				log.info ("idle... " + r);
+				log.info (logPrefix + "idle... " + r);
 			}
 			
 		}
 
 		public void onDisconnect(IMAPSession session) {
-			log.error("idle error disconnected");
+			log.error(logPrefix +"idle error disconnected");
 		}
 		public void onConnect(IMAPSession session) {
-			log.error("idle connected");
+			log.error(logPrefix +"idle connected");
 		}
     	
     }
@@ -104,6 +110,7 @@ public class IMAPClientIT {
 
 		public void onResponse(final IMAPSession session, String tag,
 				List<IMAPResponse> responses) {
+			log.error("got a message sending idle " + tag);
 			session.executeIdleCommand("t01-idle", nextListener);
 		}
 
@@ -185,6 +192,14 @@ public class IMAPClientIT {
 		}
     	
     }
+    
+    @Test
+    public void testMultipleSessions() throws IMAPSessionException, URISyntaxException, InterruptedException {
+    	for (int i=0; i<5; i++) {
+    		testGmailPlainLoginWithIdle();
+    	}
+		Thread.sleep(86400000);
+    }
 
     @Test
 	public void testGmailPlainLoginWithIdle() throws IMAPSessionException,
@@ -197,7 +212,7 @@ public class IMAPClientIT {
 
 		ChannelFuture loginFuture = session.executeLoginCommand("t1",
 				"krinteg1@gmail.com", "1Testuser", new ListenerToSendStatus(new ListenerToSendSelect(new ListenerToSendIdle(new IdleListener()))));
-		Thread.sleep(86400000);
+//		Thread.sleep(86400000);
 
 	}
     
@@ -236,9 +251,9 @@ public class IMAPClientIT {
     
     @Test
     public void testGmailOauth2Login() throws URISyntaxException, IMAPSessionException, InterruptedException {
-        final IMAPSession session = IMAPClient.INSTANCE.createSession(new URI("imaps://imap.gmail.com:993"), null);
-         final String oauth2Tok = "dXNlcj1rcmludGVnMUBnbWFpbC5jb20BYXV0aD1CZWFyZXIgeWEyOS5vUUc4NGQ3LXBFa0EwZXVvYTFXbFQ1eThqQTJUTEVMQlM5SlQxM1hUV1p3SklzVTYzUVV0cGoxUjRIbU0yODlWQS1kNlhkTWo5eTBjdWcBAQ==";
-        ChannelFuture loginFuture = session.executeOAuth2Command("t1", oauth2Tok, null);
+        final IMAPSession session = IMAPClient.INSTANCE.createSession(new URI("imaps://imap.gmail.com:993"), new IdleListener());
+         final String oauth2Tok = "dXNlcj1rcmludGVnMUBnbWFpbC5jb20BYXV0aD1CZWFyZXIgeWEyOS5xZ0VyWVM0TDBTbnFuTTlYSnVxX1ZwN19kWGVFTXg2dnRzcGNZMGpjeERHWlN1bDRLc2JoRmRwdTJmVlhua2l1Z1dmdjN5aTNqdmU4UEEBAQ==+";
+        ChannelFuture loginFuture = session.executeOAuth2Command("t1", oauth2Tok, new ListenerToSendIdle(new IdleListener("IDLE ")));
         loginFuture.awaitUninterruptibly();
         Thread.sleep(400000000);
 

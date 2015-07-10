@@ -11,6 +11,8 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.ssl.SslContext;
 import io.netty.util.concurrent.GenericFutureListener;
 
+import java.net.InetAddress;
+import java.net.SocketAddress;
 import java.net.URI;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -69,6 +71,7 @@ public class IMAPSession {
     /**
      * Creates a IMAP session.
      *
+     *@param localAddr - local address to bind to
      * @param uri
      *            - remote IMAP server URI
      * @param bootstrap
@@ -107,10 +110,9 @@ public class IMAPSession {
 
 			// Open channel using the bootstrap
 			bootstrap
-					.channel(NioSocketChannel.class)
 					.handler(
 							new IMAPClientInitializer(this, sslCtx, uri
-									.getHost(), uri.getPort())).group(group);
+									.getHost(), uri.getPort())); 
 			ChannelFuture connectFuture = bootstrap.connect(uri.getHost(), uri.getPort());
 			this.channel = connectFuture.sync().channel();
 			connectFuture.addListener(new GenericFutureListener<ChannelFuture> () {

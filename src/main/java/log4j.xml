@@ -29,7 +29,7 @@
     </logger>
 
     <root>
-        <priority value ="INFO" />
+        <priority value ="DEBUG" />
         <appender-ref ref="C" />
     </root>
 </log4j:configuration>
