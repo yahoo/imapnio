@@ -57,6 +57,7 @@ public class IMAPClientIT {
 
 		public void onMessage(IMAPSession session, IMAPResponse response) {
 			log.error(logPrefix +" got message " + response);
+			session.executeRawTextCommand("DONE");
 			
 		}
     	
