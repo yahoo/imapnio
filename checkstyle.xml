@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE module PUBLIC "-//Puppy Crawl//DTD Check Configuration 1.3//EN" "http://www.puppycrawl.com/dtds/configuration_1_3.dtd">
+
+<!-- Checkstyle-Configuration: checks Description: none -->
+<module name="Checker">
+    <property name="severity" value="warning" />
+    <module name="TreeWalker">
+        <property name="tabWidth" value="4" />
+        <module name="JavadocMethod">
+            <property name="suppressLoadErrors" value="true" />
+            <property name="allowUndeclaredRTE" value="true" />
+        </module>
+        <module name="JavadocType" />
+        <module name="JavadocVariable" />
+        <module name="JavadocStyle" />
+        <module name="ConstantName" />
+        <module name="LocalFinalVariableName" />
+        <module name="LocalVariableName" />
+        <module name="MemberName" />
+        <module name="MethodName" />
+        <module name="PackageName" />
+        <module name="ParameterName" />
+        <module name="StaticVariableName" />
+        <module name="TypeName" />
+        <module name="AvoidStarImport" />
+        <module name="IllegalImport" />
+        <module name="RedundantImport" />
+        <module name="UnusedImports" />
+        <module name="LineLength">
+            <property name="max" value="150" />
+        </module>
+        <module name="ParameterNumber" />
+        <module name="EmptyForIteratorPad" />
+        <module name="MethodParamPad" />
+        <module name="NoWhitespaceAfter">
+            <property name="tokens"
+                value="BNOT,DEC,DOT,INC,LNOT,UNARY_MINUS,UNARY_PLUS" />
+        </module>
+        <module name="NoWhitespaceBefore" />
+        <module name="OperatorWrap" />
+        <module name="ParenPad" />
+        <module name="TypecastParenPad" />
+        <module name="WhitespaceAfter" />
+        <module name="WhitespaceAround" />
+        <module name="ModifierOrder" />
+        <module name="RedundantModifier" />
+        <module name="AvoidNestedBlocks">
+            <property name="severity" value="ignore" />
+        </module>
+        <module name="EmptyBlock">
+            <property name="option" value="text" />
+        </module>
+        <module name="LeftCurly" />
+        <module name="NeedBraces" />
+        <module name="RightCurly" />
+        <module name="EmptyStatement" />
+        <module name="EqualsHashCode" />
+        <module name="IllegalInstantiation" />
+        <module name="InnerAssignment">
+            <property name="severity" value="ignore" />
+        </module>
+        <module name="MagicNumber" />
+        <module name="MissingSwitchDefault" />
+        <!-- <module name="RedundantThrows"> <property name="suppressLoadErrors" 
+            value="true"/> </module> -->
+        <module name="SimplifyBooleanExpression" />
+        <module name="SimplifyBooleanReturn" />
+        <module name="FinalClass" />
+        <module name="HideUtilityClassConstructor" />
+        <module name="InterfaceIsType" />
+        <module name="VisibilityModifier">
+            <property name="protectedAllowed" value="true" />
+        </module>
+        <module name="ArrayTypeStyle" />
+        <module name="FinalParameters" />
+        <module name="IllegalCatch">
+            <property name="illegalClassNames"
+                value="java.lang.Exception, java.lang.Throwable" />
+        </module>
+        <module name="TodoComment">
+            <property name="severity" value="ignore" />
+            <metadata name="net.sf.eclipsecs.core.lastEnabledSeverity"
+                value="inherit" />
+        </module>
+        <module name="UpperEll" />
+        <module name="RegexpSinglelineJava">
+            <property name="format" value="System\.(out|err|in|exit)" />
+            <property name="message"
+                value="Prohibited System.out/err/in/exit reference(s)." />
+        </module>
+        <module name="RegexpSinglelineJava">
+            <property name="format" value="@Test.*dependsOn(Groups|Methods).*" />
+            <property name="message"
+                value="Prohibited TestNG dependsOn due to issues with parallelization.  Make all tests run independently." />
+        </module>
+    </module>
+    <module name="JavadocPackage">
+        <property name="allowLegacy" value="true" />
+    </module>
+    <module name="NewlineAtEndOfFile">
+        <property name="severity" value="ignore" />
+        <metadata name="net.sf.eclipsecs.core.lastEnabledSeverity"
+            value="inherit" />
+    </module>
+    <module name="Translation" />
+    <module name="FileLength" />
+    <module name="FileTabCharacter">
+        <property name="severity" value="ignore" />
+        <metadata name="net.sf.eclipsecs.core.lastEnabledSeverity"
+            value="inherit" />
+    </module>
+    <module name="RegexpSingleline">
+        <property name="severity" value="ignore" />
+        <property name="format" value="\s+$" />
+        <property name="message" value="Line has trailing spaces." />
+        <metadata name="net.sf.eclipsecs.core.lastEnabledSeverity"
+            value="inherit" />
+    </module>
+    <!-- Eclipse-Only Suppression Filter Configuration / Fails for Maven 
+        Commandline Maven command-line build uses pom.xml suppressionLocation setting 
+        in the checkstyle configuration. Eclipse checkstyle does not recognize the 
+        pom.xml setting, only the checkstyle.xml SuppressionFilter module here. But 
+        Maven command-line does not compile with the following because no variable 
+        is defined to locate the supporessions.xml in a way that works consistently 
+        regardless of where invoked (from root of project or cd into individual projects. 
+        You can set pom.xml PropertiesLocation tag with a .properties file containing 
+        key=value pairs for such variables, but they are not relative to the checkstyle.xml 
+        location. DISABLED: Enable only if you want to see the same exclusions from 
+        eclipse, but will not build from command-line. <module name="SuppressionFilter"> 
+        <property name="file" value="${samedir}/checkstyle_suppressions.xml"/> 
+        </module> -->
+    <module name="SuppressionFilter">
+        <property name="file"
+            value="${config_loc}/checkstyle_suppressions.xml" />
+    </module>
+</module>

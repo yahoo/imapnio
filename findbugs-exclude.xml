@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+    <!-- Do not check unit test classes for NONNULL violations. -->>
+    <Match>
+        <Class name="~.*Test$" />
+        <Bug pattern="NP_NONNULL_PARAM_VIOLATION"/>
+    </Match>
+    <!-- Do not check generated source code. -->
+    <Match>
+        <Class name="com.yahoo.ymail.messageprocessor.MailBodyLex" />
+        <Method name="mDOUBLESPACE" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <!-- WTF!? -->
+    <Match>
+        <Class name="com.yahoo.ymail.xmas.sal.lsg.LSGEmailMessageContent" />
+        <Method name="encodedContentBytes" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <!-- Classes which need some cleanup. -->
+    <Match>
+        <Class name="com.yahoo.ymail.xmas.common.content.FilterResult" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.ymail.xmas.common.content.ThreeKey" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+        <Match>
+        <Class name="com.yahoo.ymail.xmas.common.throttler.ThrottlerService" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.ymail.xmas.v3.beans.Account" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.ymail.xmas.v3.beans.ErrorDetail" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.ymail.xmas.force.beans.sub.FolderEntryBean" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.ymail.xmas.force.ForceMailbox" />
+        <Method name="asLabelMetadata" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.ymail.xmas.sal.SALMailbox" />
+        <Method name="getForceConfig" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.ymail.xmas.sal.hyb.HybridMessageUpdateOps" />
+        <Method name="isForceMailbox" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.ymail.xmas.sal.hyb.HybridQueryMessagesOps" />
+        <Method name="isForceMailbox" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.ymail.xmas.sal.hyb.HybridMetadataTray" />
+        <Method name="equals" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.ymail.xmas.sal.vx.SalVxMailbox" />
+        <Method name="open" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.ymail.xmas.appbase.service.AccountService" />
+        <Method name="getEmailChannelCache" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.ymail.xmas.appbase.service.LabelService" />
+        <Method name="updateLabel" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.ymail.xmas.appbase.thumbnail.ThumbnailUrlCreator" />
+        <Method name="generateInternal" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.mail.sync.account.ExternalAccount" />
+        <Method name="fromBean" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.mail.sync.exec.Account" />
+        <Method name="toFormattedString" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.mail.sync.fetch.internal.InternalFetchServiceImpl" />
+        <Method name="execute" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.mail.sync.fetch.internal.InternalFetchServiceImpl" />
+        <Method name="init" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.mail.sync.imap.ImapClientCommand" />
+        <Method name="connect" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.mail.sync.worker.SyncWorker" />
+        <Method name="syncFolders" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.ymail.xmas.webservice.request.handler.v3.V3AccountRequestHandler" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.ymail.xmas.webservice.admin.resources.AliasUpdateAdminResource" />
+        <Method name="createExtraEmail" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.ymail.xmas.webservice.bean.BeanFactory" />
+        <Method name="createMessageInfoBean" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.ymail.xmas.webservice.bean.BeanFactory" />
+        <Method name="createMessageMetadataBean" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.ymail.xmas.webservice.request.handler.v2.GetDisplayMessageRequestHandler" />
+        <Method name="buildDisplayMessageResponse" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.ymail.xmas.webservice.request.handler.v2.GetDisplayMessageRequestHandler" />
+        <Method name="shouldShowSourceFolderName" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.ymail.xmas.webservice.request.handler.v3.MailboxRequestHandler" />
+        <Method name="buildSaveMessageResponse" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.ymail.xmas.webservice.thumbnail.ThumbnailServiceImpl" />
+        <Method name="getRawContent" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.ymail.xmas.webservice.request.handler.v3.DeleteMessageRequestHandler" />
+        <Method name="doDeleteMessages" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.ymail.xmas.webservice.filters.V2ExceptionHandlingFilter" />
+        <Method name="doFilter" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE"/>
+    </Match>
+</FindBugsFilter>
