@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import com.kl.mail.imapnioclient.config.IMAPClientConfig;
 import com.kl.mail.imapnioclient.exception.IMAPSessionException;
+import com.kl.mail.imapnioclient.listener.IMAPSessionListener;
 
 /**
  * Netty based NIO IMAP client.
@@ -64,16 +65,16 @@ public enum IMAPClient {
      * @return newly created session object
      * @throws IMAPSessionException on error
      */
-    public IMAPSession createSession(URI uri, IMAPSessionListener listener) throws IMAPSessionException {
+    public IMAPSession createSession(final URI uri, final IMAPSessionListener listener) throws IMAPSessionException {
         return new IMAPSession(uri, bootstrap, group, listener);
     }
 
     /**
      * End a session contained within a client.
      *
-     * @param session
+     * @param session the session to end
      */
-    public void endSession(IMAPSession session) {
+    public void endSession(final IMAPSession session) {
         session.disconnect();
     }
 

@@ -11,24 +11,31 @@ import com.sun.mail.iap.ProtocolException;
  *
  * Sun's IMAP Argument isn't great but its read/write methods are worthwhile.
  *
- * @author jgross
+ * @author kraman
  */
 public class Argument extends com.sun.mail.iap.Argument {
+	/**
+	 * Creates a IMAP Argument object.
+	 */
     public Argument() {
     }
 
     /**
      * Add string.
+     * @param s argument string
+     * @return this Argument object
      */
-    public Argument addString(String s) {
+    public Argument addString(final String s) {
         writeString(s);
         return this;
     }
 
     /**
      * Add string literal.
+     * @param s argument literal
+     * @return this Argument object
      */
-    public Argument addLiteral(String s) {
+    public Argument addLiteral(final String s) {
         writeAtom(s);
         return this;
     }

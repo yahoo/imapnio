@@ -17,9 +17,9 @@ import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
 import com.kl.mail.imapnioclient.client.IMAPClient;
-import com.kl.mail.imapnioclient.client.IMAPSessionListener;
 import com.kl.mail.imapnioclient.client.IMAPSession;
 import com.kl.mail.imapnioclient.exception.IMAPSessionException;
+import com.kl.mail.imapnioclient.listener.IMAPSessionListener;
 import com.sun.mail.imap.protocol.IMAPResponse;
 
 /**
@@ -204,10 +204,25 @@ public class IMAPClientIT {
     
     @Test
     public void testMultipleSessions() throws IMAPSessionException, URISyntaxException, InterruptedException {
-    	for (int i=0; i<5; i++) {
-    		testGmailPlainLoginWithIdle();
+    	
+    	final String gmailServer = "imaps://imap.gmail.com:993";
+    	final int maxSessions = 5;
+    	final IMAPSession sessions[] = new IMAPSession[maxSessions];
+    	for (int i=0; i<maxSessions; i++) {
+    	   
+        	// final String gmailServer = "imap://localhost:9993";
+        	
+    		 sessions[i]= IMAPClient.INSTANCE.createSession(new URI(gmailServer), new GenericListener("SESS"));
+
+    		ChannelFuture loginFuture = sessions[i].executeLoginCommand("t1",
+    				"krinteg1@gmail.com", "1Testuser", new ListenerToSendStatus(new ListenerToSendSelect(new ListenerToSendIdle(new GenericListener("IDLING ")))));
+
     	}
-		Thread.sleep(86400000);
+		Thread.sleep(10000);
+		
+		for (IMAPSession s:sessions) {
+			s.disconnect();
+		}
     }
 
     @Test
@@ -251,10 +266,20 @@ public class IMAPClientIT {
     @Test
     public void testGmailOauth2Login() throws URISyntaxException, IMAPSessionException, InterruptedException {
         final IMAPSession session = IMAPClient.INSTANCE.createSession(new URI("imaps://imap.gmail.com:993"), new GenericListener());
-         final String oauth2Tok = "dXNlcj1rcmludGVnMUBnbWFpbC5jb20BYXV0aD1CZWFyZXIgeWEyOS5xZ0VyWVM0TDBTbnFuTTlYSnVxX1ZwN19kWGVFTXg2dnRzcGNZMGpjeERHWlN1bDRLc2JoRmRwdTJmVlhua2l1Z1dmdjN5aTNqdmU4UEEBAQ==+";
+         final String oauth2Tok = "dXNlcj1rcmludGVnMUBnbWFpbC5jb20BYXV0aD1CZWFyZXIgeWEyOS5zQUVTb3hfblN5QjA0eEljZHNTUF9tbFZGN096dHN6WDJsa19FMXVwLUw3UGRiSG9BR2l2WG1nSWQ4Q0x2a0RLUnFEUgEB";
         ChannelFuture loginFuture = session.executeOAuth2Command("t1", oauth2Tok, new ListenerToSendIdle(new GenericListener("IDLE ")));
         loginFuture.awaitUninterruptibly();
         Thread.sleep(400000000);
 
     }
+
+	@Test
+	public void testGmailSASLOauth2Login() throws URISyntaxException, IMAPSessionException, InterruptedException {
+	    final IMAPSession session = IMAPClient.INSTANCE.createSession(new URI("imaps://imap.gmail.com:993"), new GenericListener());
+	     final String oauth2Tok = "ya29.sAESox_nSyB04xIcdsSP_mlVF7OztszX2lk_E1up-L7PdbHoAGivXmgId8CLvkDKRqDR";
+	    ChannelFuture loginFuture = session.executeSASLXOAuth2("t1", "krinteg1@gmail.com", oauth2Tok, new ListenerToSendIdle(new GenericListener("IDLE ")));
+	    loginFuture.awaitUninterruptibly();
+	    Thread.sleep(400000000);
+	
+	}
 }

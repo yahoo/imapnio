@@ -10,11 +10,17 @@ import com.sun.mail.iap.ProtocolException;
 import com.sun.mail.util.MailLogger;
 
 /**
- * jgross
+ * Class used to serialize IMAP commands.
+ * kraman
  */
 public class ProxyProtocol extends Protocol {
+	/** The OutputStream used by ProxyProtocol. */
     private OutputStream outputStream;
 
+    /**
+     * Creates a ProxyProtocol object.
+     * @throws IOException on failure
+     */
     protected ProxyProtocol() throws IOException {
         super(null, null, new Properties(), false);
 
@@ -24,20 +30,25 @@ public class ProxyProtocol extends Protocol {
     /**
      * Never used but must be implemented.
      *
-     * @param host
-     * @param port
-     * @param props
-     * @param prefix
-     * @param isSSL
-     * @param logger
-     * @throws IOException
-     * @throws ProtocolException
+     * @param host IMAP server host
+     * @param port IMAP server port
+     * @param props properties
+     * @param prefix prefix to prepend property keys
+     * @param isSSL is this an SSL connection 
+     * @param logger logger
+     * @throws IOException on network failure
+     * @throws ProtocolException on IMAP protocol errors
      */
-    private ProxyProtocol(String host, int port, Properties props, String prefix, boolean isSSL, MailLogger logger) throws IOException,
+    private ProxyProtocol(final String host, final int port, final Properties props, final String prefix, 
+    		final boolean isSSL, final MailLogger logger) throws IOException,
             ProtocolException {
         super(host, port, props, prefix, isSSL, logger);
     }
 
+    /**
+     * Close.
+     * @throws IOException on I/O failure
+     */
     public void close() throws IOException {
         outputStream.close();
         outputStream = null;
@@ -47,7 +58,7 @@ public class ProxyProtocol extends Protocol {
      * We wrap our internal outputStream as a DataOutputStream and return that for Argument to write to. The Protocol interface is really bad: this
      * actually has to be a DataOutputStream, not an OutputStream, thus the wrapping.
      *
-     * @return
+     * @return the OutputStream
      */
     @Override
     protected OutputStream getOutputStream() {
@@ -60,11 +71,17 @@ public class ProxyProtocol extends Protocol {
     }
 }
 
+/**
+ * Proxy class for th OutputStream.
+ * @author kraman
+ *
+ */
 class OutputStreamProxy extends OutputStream {
-    String result = "";
+	/** Serialized string. */
+    private String result = "";
 
     @Override
-    public void write(int b) throws IOException {
+    public void write(final int b) throws IOException {
         result = result.concat(String.valueOf((char) b));
     }
 

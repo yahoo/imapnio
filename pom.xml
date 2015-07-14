@@ -1,8 +1,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.github.krdev.imapnioclient</groupId>
+  <groupId>com.github.krdev</groupId>
   <artifactId>imapnioclient</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.0.1</version>
   <name>IMAP NIO client</name>
   <description>IMAP NIO client</description>
   <packaging>jar</packaging>
@@ -16,14 +16,15 @@
   </licenses>
   
   <scm>
-    <url>https://github.com/kraman14/imapnioclient</url>
+    <url>https://github.com/krdev/imapnioclient</url>
+    <developerConnection>https://github.com/krdev</developerConnection>
   </scm>
   
     <dependencies>
           <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
-            <version>4.0.21.Final</version>
+            <version>4.0.29.Final</version>
         </dependency>
         <dependency>
             <groupId>com.sun.mail</groupId>
@@ -82,4 +83,18 @@
   </plugins>
 </build>
 
+
+	<url>https://github.com/krdev/imapnioclient</url>
+	
+	    <developers>
+        <developer>
+            <id>krdev</id>
+            <name>Kumar Raman</name>
+            <email>kumar.raman@yahoo.com</email>
+            <url>https://github.com/krdev/imapnioclient</url>
+            <roles>
+                <role>developer</role>
+            </roles>
+        </developer>
+    </developers>
 </project>

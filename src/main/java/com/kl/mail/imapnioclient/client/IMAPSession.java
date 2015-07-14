@@ -8,15 +8,19 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.ssl.OpenSslClientContext;
 import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.util.concurrent.GenericFutureListener;
 
 import java.net.InetAddress;
 import java.net.SocketAddress;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +34,8 @@ import org.slf4j.LoggerFactory;
 import com.kl.mail.imapnioclient.command.Argument;
 import com.kl.mail.imapnioclient.command.IMAPCommand;
 import com.kl.mail.imapnioclient.exception.IMAPSessionException;
+import com.kl.mail.imapnioclient.listener.IMAPClientListener;
+import com.kl.mail.imapnioclient.listener.IMAPSessionListener;
 import com.sun.mail.imap.protocol.BASE64MailboxEncoder;
 import com.sun.mail.imap.protocol.IMAPResponse;
 
@@ -52,37 +58,39 @@ public class IMAPSession {
     /** state of the IMAP session. */
     private IMAPSessionState state;
 
+    /** The IMAP channel. */
     private Channel channel;
 
+    /** Event loop. */
     private EventLoopGroup group;
 
     /** Client listener for connect/disconnect callback events.*/
     private final IMAPSessionListener listener;
 
+    /** Map to hold tag to listener. */
     private final ConcurrentHashMap<String, IMAPSessionListener> listeners;
     
+    /** IMAP tag used for IDLE command. */
     private String idleTag;
 
+    /** List of IMAPResposne object. */
     private final List<IMAPResponse> responses;
     
+    /** The listener used for thos session. */
     private IMAPSessionListener clientListener;
     
 
     /**
      * Creates a IMAP session.
      *
-     *@param localAddr - local address to bind to
-     * @param uri
-     *            - remote IMAP server URI
-     * @param bootstrap
-     *            - the bootstrap
-     * @param executor
-     *            - the executor
-     * @throws SSLException
-     * @throws NoSuchAlgorithmException
-     * @throws InterruptedException
+     * @param uri remote IMAP server URI
+     * @param bootstrap the bootstrap
+     * @param group the event loop group
+     * @param listener the session listener
+     * @throws IMAPSessionException on SSL or connect failure
      */
-	public IMAPSession(URI uri, Bootstrap bootstrap, EventLoopGroup group, IMAPSessionListener listener) throws IMAPSessionException {
+	public IMAPSession(final URI uri, final Bootstrap bootstrap, final EventLoopGroup group, 
+			final IMAPSessionListener listener) throws IMAPSessionException {
 		responses = new ArrayList<IMAPResponse>();
 		listeners = new ConcurrentHashMap<String, IMAPSessionListener>();
 		this.listener = listener;
@@ -96,10 +104,7 @@ public class IMAPSession {
 			// Configure SSL.
 			SslContext sslCtx;
 			if (ssl) {
-				sslCtx = SslContext
-						.newClientContext(TrustManagerFactory
-								.getInstance(TrustManagerFactory
-										.getDefaultAlgorithm())); // PKIX
+				sslCtx = SslContextBuilder.forClient().build();				
 			} else {
 				sslCtx = null;
 			}
@@ -115,9 +120,9 @@ public class IMAPSession {
 									.getHost(), uri.getPort())); 
 			ChannelFuture connectFuture = bootstrap.connect(uri.getHost(), uri.getPort());
 			this.channel = connectFuture.sync().channel();
-			connectFuture.addListener(new GenericFutureListener<ChannelFuture> () {
+			connectFuture.addListener(new GenericFutureListener<ChannelFuture>() {
 
-				public void operationComplete(ChannelFuture future)
+				public void operationComplete(final ChannelFuture future)
 						throws Exception {
 					setState(IMAPSessionState.ConnectRequest);
 				}
@@ -126,8 +131,6 @@ public class IMAPSession {
 			throw new IMAPSessionException("ssl exception", e1);
 		} catch (InterruptedException e2) {
 			throw new IMAPSessionException("connect failed", e2);
-		} catch (NoSuchAlgorithmException e3) {
-			throw new IMAPSessionException("unknown ssl algo", e3);
 		}
 	}
 
@@ -144,15 +147,16 @@ public class IMAPSession {
     /**
      * Execute an IDLE command against server. We do extra book-keeping for the IDLE command to keep track of our IDLEing state.
      *
-     * @param tag
+     * @param tag IMAP tag to be used
+     * @param listener the session listener
+     * @return ChannelFuture the future object
      */
-	public ChannelFuture executeIdleCommand(final String tag,
-			final IMAPSessionListener listener) {
+	public ChannelFuture executeIdleCommand(final String tag, final IMAPSessionListener listener) {
 		ChannelFuture future = executeCommand(new IMAPCommand(tag, "IDLE",
 				new Argument(), new String[] { "IDLE" }), listener);
 		if (null != future) {
 			future.addListener(new GenericFutureListener<ChannelFuture>() {
-				public void operationComplete(ChannelFuture future)
+				public void operationComplete(final ChannelFuture future)
 						throws Exception {
 					setState(IMAPSessionState.IDLE_REQUEST);
 					idleTag = tag;
@@ -162,21 +166,37 @@ public class IMAPSession {
 		return future;
 	}
 
+	/**
+	 * Execute the IMAP select command.
+	 * @param tag IMAP tag to be used for this command
+	 * @param mailbox mailbox/label to select
+	 * @param listener the session listener
+	 * @return the future object
+	 */
     public ChannelFuture executeSelectCommand(final String tag, final String mailbox, final IMAPSessionListener listener) {
         String b64Mailbox = BASE64MailboxEncoder.encode(mailbox);
         return executeCommand(new IMAPCommand(tag, "SELECT", new Argument().addString(b64Mailbox), new String[] {}), listener);
     }
 
-    public ChannelFuture executeStatusCommand(String tag, String mailbox, String[] items, final IMAPSessionListener listener) {
-        mailbox = BASE64MailboxEncoder.encode(mailbox);
+    /**
+     * Execute the IMAP status command.
+     * @param tag IMAP tag to be used for this command
+     * @param mailbox mailbox/folder to run status command on
+     * @param items IMAP status elements
+     * @param listener the session listener
+     * @return the future object
+     */
+    public ChannelFuture executeStatusCommand(final String tag, final String mailbox, final String[] items, final IMAPSessionListener listener) {
+        String mailboxB64 = BASE64MailboxEncoder.encode(mailbox);
 
         Argument args = new Argument();
-        args.writeString(mailbox);
+        args.writeString(mailboxB64);
 
         Argument itemArgs = new Argument();
 
-        for (int i = 0, len = items.length; i < len; i++)
-            itemArgs.writeAtom(items[i]);
+        for (int i = 0, len = items.length; i < len; i++) {
+			itemArgs.writeAtom(items[i]);
+		}
         args.writeArgument(itemArgs);
 
     	setState(IMAPSessionState.Connected);
@@ -184,114 +204,116 @@ public class IMAPSession {
     }
 
     /**
-     * Execute an authentication command against server.
-     *
-     * @param tag
-     *            An auth command to execute in the session.
+     * Execute the IMAP login command.
+     * @param tag IMAP tag to be used
+     * @param username login username
+     * @param password login password
+     * @param listener the session listener
+     * @return the future object
      */
-    public ChannelFuture executeLoginCommand(String tag, String username, String password, final IMAPSessionListener listener) {
-        return executeCommand(new IMAPCommand(tag, "LOGIN", new Argument().addString(username).addString(password), new String[] { "auth=plain" }), listener);
+    public ChannelFuture executeLoginCommand(final String tag, final String username, final String password, final IMAPSessionListener listener) {
+        return executeCommand(new IMAPCommand(tag, "LOGIN", 
+        		new Argument().addString(username).addString(password), new String[] { "auth=plain" }), listener);
     }
 
     /**
      * Initiate an AUTHENTICATE XOAUTH2 command.
      *
-     * @param tag
-     * @param oauth2Tok
-     * @param listener
-     * @return
-     * @throws InterruptedException
+     * @param tag IMAP tag to be used
+     * @param oauth2Tok OAUTH token
+     * @param listener the session listener
+     * @return the future object
      */
     public ChannelFuture executeOAuth2Command(final String tag, final String oauth2Tok, final IMAPSessionListener listener) {
-        ChannelFuture future = executeCommand(new IMAPCommand(tag, "AUTHENTICATE XOAUTH2", new Argument().addString(oauth2Tok), new String[] { "auth=xoauth2" }), listener);
+        ChannelFuture future = executeCommand(new IMAPCommand(tag, "AUTHENTICATE XOAUTH2", 
+        		new Argument().addString(oauth2Tok), new String[] { "auth=xoauth2" }), listener);
         return future;
     }
+    
+    /**
+     * Initiate a SASL based XOAUTH2 command.
+     * @param tag IMAP tag to be used
+     * @param user user id
+     * @param token oauth token
+     * @param listener the session listener
+     * @return the future object
+     */
+    public ChannelFuture executeSASLXOAuth2(final String tag, final String user, final String token, final IMAPSessionListener listener) {
+    	
+    	StringBuffer buf = new StringBuffer();
+    	buf.append("user=").append(user).append("\u0001")
+    	.append("auth=Bearer ").append(token).append("\u0001").append("\u0001");
+    	String encOAuthStr = Base64.getEncoder().encodeToString(buf.toString().getBytes(StandardCharsets.UTF_8));
+    	log.info("XOAUTH2 " + encOAuthStr);
+    	return executeOAuth2Command(tag, encOAuthStr, listener);
+    }
+
 
     /**
-     * Execute logout command.
-     *
-     * @param tag
-     *            IMAP tag used for this command
-     * @return
-     * @throws InterruptedException
+     * Execute the IMAP logout command.
+     * @param tag IMAP tag to be used
+     * @param listener the session listener
+     * @return the future object
      */
-    public ChannelFuture executeLogoutCommand(final String tag, IMAPSessionListener listener) {
+    public ChannelFuture executeLogoutCommand(final String tag, final IMAPSessionListener listener) {
     	ChannelFuture future = executeCommand(new IMAPCommand(tag, "LOGOUT", new Argument(), new String[]{}), listener);
     	return future;
     }
 
     /**
-     * Execute a CAPABILITY command.
-     *
-     * @param tag
+     * Execute a IMAP capability command.
+     * @param tag IMAP tag to be used
+     * @param listener the session listener
+     * @return the future object
      */
-    public ChannelFuture executeCapabilityCommand(String tag, final IMAPSessionListener listener) {
+    public ChannelFuture executeCapabilityCommand(final String tag, final IMAPSessionListener listener) {
     	setState(IMAPSessionState.Connected);
         return executeCommand(new IMAPCommand(tag, "CAPABILITY", new Argument(), new String[] {}), listener);
     }
 
     /**
-     * Send APPEND command.
-     *
-     * @param tag
-     *            tag to be used for this command
-     * @param labelName
-     *            name of the label/folder where the message should be appended to
-     * @param flags
-     *            message flags
-     * @param size
-     *            message size
-     * @param listener
-     *            client listener to get callback
-     * @return future
-     * @throws InterruptedException
+     * Execute a IMAP append command.
+     * @param tag IMAP tag to be used
+     * @param labelName label/folder where the message is to be saved
+     * @param flags message flags
+     * @param size message size
+     * @param listener the session listener
+     * @return the future object
      */
-    public ChannelFuture executeAppendCommand(String tag, String labelName, String flags, String size, final IMAPSessionListener listener) {
+    public ChannelFuture executeAppendCommand(final String tag, final String labelName, final String flags, 
+    		final String size, final IMAPSessionListener listener) {
     	setState(IMAPSessionState.Connected);
         return executeCommand(new IMAPCommand(tag, "APPEND", new Argument().addString(labelName).addLiteral(flags).addLiteral("{" + size + "}"),
                 new String[] { "IMAP4REV1" }), listener);
     }
 
     /**
-     * Sending raw text, for APPEND
-     *
-     * @param rawText
-     *            raw text to be written to the channel
-     * @param listener
-     *            client listener to get callback
-     * @return future
-     * @throws InterruptedException
+     * Execute a IMAP raw command.
+     * @param rawText the raw text to be sent to the remote IMAP server
+     * @return the future object
      */
-    public ChannelFuture executeRawTextCommand(String rawText) {
+    public ChannelFuture executeRawTextCommand(final String rawText) {
         return executeCommand(new IMAPCommand("", rawText, null, new String[] {}), null);
     }
     
     /**
-     * Sends a NOOP command
-     * @param tag tag to be used
-     * @return ChannelFuture
-     * @throws InterruptedException
+     * Execute a IMAP NOOP command.
+     * @param tag IMAP tag to be used
+     * @param listener the session listener
+     * @return the future object
      */
-    public ChannelFuture executeNOOPCommand(String tag, final IMAPSessionListener listener) {
+    public ChannelFuture executeNOOPCommand(final String tag, final IMAPSessionListener listener) {
     	return executeCommand(new IMAPCommand(tag, "NOOP", new Argument(), new String[]{}), listener);
     }
 
     /**
-     * Execute a command against the server. To run a command you should go through specific methods like `executeLoginCommand`.
-     *
-     * @param method
+     * Format and sends the IMAP command to remote server.
+     * @param method IMAP command to be sent
+     * @param listener the session listener
+     * @return the future object
      */
-	private ChannelFuture executeCommand(IMAPCommand method,
-			IMAPSessionListener listener) {
-		/*
-		String[] capabilitiesRequired = method.getCapabilities();
-		for (String requiredCapability : capabilitiesRequired) {
-			if (!this.hasCapability(requiredCapability)) {
-				log.error("Do not have required capability: "
-						+ requiredCapability);
-			}
-		}
-		*/
+	private ChannelFuture executeCommand(final IMAPCommand method, final IMAPSessionListener listener) {
+
 
 		String args = (method.getArgs() != null ? method.getArgs().toString()
 				: "");
@@ -312,21 +334,10 @@ public class IMAPSession {
 	}
 
     /**
-     * Returns true if this server broadcasts this capability. Capability is case-insensitive.
-     *
-     * @param capability
-     * @return
-     */
-    public boolean hasCapability(String capability) {
-        return this.capabilities.containsKey(capability.toLowerCase()) && this.capabilities.get(capability.toLowerCase()).equals(true);
-    }
-
-
-    /**
      * Accumulate multi-line IMAP responses before giving the client callback.
      * @param response IMAP response to be queued
      */
-    protected void addResponse(IMAPResponse response) {
+    protected void addResponse(final IMAPResponse response) {
         responses.add(response);
     }
     
@@ -346,15 +357,26 @@ public class IMAPSession {
         return responses;
     }
 
+    /**
+     * Reset the accumulated IMAP response list.
+     */
     protected void resetResponseList() {
         responses.clear();
     }
 
+    /**
+     * Return the current session state.
+     * @return state
+     */
     public IMAPSessionState getState() {
         return state;
     }
 
-    protected void setState(IMAPSessionState state) {
+    /**
+     * Set the session state.
+     * @param state session state
+     */
+    protected void setState(final IMAPSessionState state) {
         this.state = state;
     }
 
@@ -363,7 +385,7 @@ public class IMAPSession {
      * @param tag get listener for this tag
      * @return ClientListener registered for the tag
      */
-    protected IMAPSessionListener getClientListener(String tag) {
+    protected IMAPClientListener getClientListener(final String tag) {
         return listeners.get(tag);
     }    
     
@@ -371,7 +393,7 @@ public class IMAPSession {
      * Returns the connect/disconnect client listener.
      * @return ClientListener
      */
-    protected IMAPSessionListener getSessionListener() {
+    protected IMAPClientListener getSessionListener() {
     	return listener;
     }
     
@@ -380,10 +402,13 @@ public class IMAPSession {
      * @param tag remove listener for this tag
      * @return the removed listener
      */
-    protected IMAPSessionListener removeClientListener(String tag) {
+    protected IMAPSessionListener removeClientListener(final String tag) {
         return listeners.remove(tag);
     }
     
+    /**
+     * Reset this IMAP session.
+     */
     protected void resetSession() {
     	resetResponseList();
     	listeners.clear();

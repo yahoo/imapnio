@@ -2,6 +2,8 @@ package com.kl.mail.imapnioclient.client;
 
 import org.slf4j.LoggerFactory;
 
+import com.kl.mail.imapnioclient.listener.IMAPSessionListener;
+
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 
@@ -29,7 +31,7 @@ public class IMAPChannelListener implements ChannelHandler {
 		// TODO Auto-generated method stub
 		log.info ("channel closed - removed");
 		if (null != session && session.getSessionListener() != null) {
-			session.getSessionListener().onDisconnect(session);
+			((IMAPSessionListener)session.getSessionListener()).onDisconnect(session);
 		}		
 	}
 
@@ -41,7 +43,7 @@ public class IMAPChannelListener implements ChannelHandler {
 		// TODO Auto-generated method stub
 		log.info  ("channel closed - exception");
 		if (null != session && session.getSessionListener() != null) {
-			session.getSessionListener().onDisconnect(session);
+			((IMAPSessionListener)session.getSessionListener()).onDisconnect(session);
 		}
 	}
 

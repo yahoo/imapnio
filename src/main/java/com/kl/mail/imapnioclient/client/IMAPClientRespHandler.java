@@ -17,6 +17,8 @@ import java.util.Map;
 import org.slf4j.LoggerFactory;
 
 import com.kl.mail.imapnioclient.exception.IMAPSessionException;
+import com.kl.mail.imapnioclient.listener.IMAPClientListener;
+import com.kl.mail.imapnioclient.listener.IMAPSessionListener;
 import com.sun.mail.imap.protocol.IMAPResponse;
 
 /**
@@ -59,7 +61,7 @@ public class IMAPClientRespHandler extends MessageToMessageDecoder<IMAPResponse>
                 session.setState(IMAPSessionState.Connected);
                 session.resetResponseList();        		
                 if (null != session.getSessionListener()) {
-                	session.getSessionListener().onConnect(session);
+                	((IMAPSessionListener) session.getSessionListener()).onConnect(session);
                 }
         	} else {
         		throw new IMAPSessionException("connect failed");
@@ -70,7 +72,7 @@ public class IMAPClientRespHandler extends MessageToMessageDecoder<IMAPResponse>
                 session.resetResponseList();
                 // go back and see what that is.
                 msg.reset();
-				if (msg.readByte() == '+' && session.getSessionListener()!= null) {
+				if (msg.readByte() == '+' && session.getSessionListener() != null) {
 					msg.reset();
 					session.getSessionListener().onMessage(session, msg);
 				}
@@ -89,7 +91,7 @@ public class IMAPClientRespHandler extends MessageToMessageDecoder<IMAPResponse>
 				}
 			} else {
 				msg.reset();
-				if (msg.readByte() == '+' && session.getSessionListener()!= null) {
+				if (msg.readByte() == '+' && session.getSessionListener() != null) {
 					msg.reset();
 					session.getSessionListener().onMessage(session, msg);
 				} else {
