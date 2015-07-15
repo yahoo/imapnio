@@ -20,12 +20,26 @@ import io.netty.handler.ssl.SslContext;
  */
 public class IMAPClientInitializer extends ChannelInitializer<SocketChannel> {
 
+    /** The IMAP Session. */
     private final IMAPSession session;
+    
+    /** SSL context. */
     private final SslContext sslCtx;
+    
+    /** Remote server host. */
     private final String host;
+    
+    /** Remote server port. */
     private final int port;
 
-    public IMAPClientInitializer(IMAPSession session, SslContext sslCtx, String host, int port) {
+    /**
+     * Used to initialize the client channel.
+     * @param session IMAP Session
+     * @param sslCtx SSL context
+     * @param host remote host
+     * @param port remote port
+     */
+    public IMAPClientInitializer(final IMAPSession session, final SslContext sslCtx, final String host, final int port) {
         this.session = session;
         this.sslCtx = sslCtx;
         this.host = host;

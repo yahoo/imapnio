@@ -44,9 +44,6 @@ public enum IMAPClient {
     private final EventLoopGroup group;
 
 
-    /** logger. */
-    private static final org.slf4j.Logger log = LoggerFactory.getLogger(IMAPClient.class);
-
     /**
      * Constructs a NIO based IMAP client.
      */

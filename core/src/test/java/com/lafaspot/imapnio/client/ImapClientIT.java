@@ -28,178 +28,361 @@ import com.sun.mail.imap.protocol.IMAPResponse;
  */
 public class ImapClientIT {
 
+    /** the class level logger. */
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(ImapClientIT.class);
     
-    
+    /**
+     * Generic listener.
+     * @author kraman
+     *
+     */
     class GenericListener implements SessionListener {
-    	
-    	String logPrefix = "";
-    	public GenericListener() {
-    	}
-    	
-    	public GenericListener(String p) {
-    		logPrefix = p;
-    	}
-		public void onResponse(IMAPSession session, String tag,
-				List<IMAPResponse> responses) {
-			for (IMAPResponse r:responses) {
-				log.info (logPrefix + "got rsp " + r);
-			}
-			
-		}
+        /** log prefix string. */
+        private String logPrefix = "";
 
-		public void onDisconnect(IMAPSession session) {
-			log.error(logPrefix +" error disconnected");
-		}
-		public void onConnect(IMAPSession session) {
-			log.error(logPrefix +" connected");
-		}
+        /**
+         * Constructs a Generic listener.
+         */
+        public GenericListener() {
+        }
 
-		public void onMessage(IMAPSession session, IMAPResponse response) {
-			log.error(logPrefix +" got message " + response);
-			
-		}
-    	
+        /**
+         * Constructs a Generic listener.
+         * 
+         * @param p prefix string
+         */
+        public GenericListener(final String p) {
+            logPrefix = p;
+        }
+
+        /** 
+         * Got a response. 
+         * @param session IMAP session
+         * @param tag IMAP tag
+         * @param responses response
+         */
+        public void onResponse(final IMAPSession session, final String tag, final List<IMAPResponse> responses) {
+            for (IMAPResponse r : responses) {
+                log.info(logPrefix + "got rsp " + r);
+            }
+
+        }
+
+        /**
+         * disconnected.
+         * @param session IMAP session
+         */
+        public void onDisconnect(final IMAPSession session) {
+            log.error(logPrefix + " error disconnected");
+        }
+
+        /**
+         * connected
+         * @param session IMAP session
+         */
+        public void onConnect(final IMAPSession session) {
+            log.error(logPrefix + " connected");
+        }
+
+        /**
+         * message received.
+         * @param session IMAP session
+         * @param response message
+         */
+        public void onMessage(final IMAPSession session, final IMAPResponse response) {
+            log.error(logPrefix + " got message " + response);
+
+        }
+
     }
     
     
+    /**
+     * Listener to send CAPABILITY command.
+     * @author kraman
+     *
+     */
     class CapabilityListener implements SessionListener {
-    	public CapabilityListener() {
-    	}
-		public void onResponse(IMAPSession session, String tag,
-				List<IMAPResponse> responses) {
-			for (IMAPResponse r:responses) {
-				log.info ("cap... " + r);
-			}
-			
-		}
+        /**
+         * Constructs the listener.
+         */
+        public CapabilityListener() {
+        }
 
-		public void onDisconnect(IMAPSession session) {
-			log.error("cap listener: disconnected");
-		}
-		public void onConnect(IMAPSession session) {
-			log.error("cap listener: connected");
-		}
-		public void onMessage(IMAPSession session, IMAPResponse response) {
-			log.error("cap listener: onMessage " + response);
-		}
-    	
+        /**
+         * tagged message received.
+         * @param session IMAP session
+         * @param tag IMAP tag
+         * @param responses messages
+         */
+        public void onResponse(final IMAPSession session, final String tag, final List<IMAPResponse> responses) {
+            for (IMAPResponse r : responses) {
+                log.info("cap... " + r);
+            }
+
+        }
+
+        /**
+         * disconnected.
+         * @param session IMAP session
+         */
+        public void onDisconnect(final IMAPSession session) {
+            log.error("cap listener: disconnected");
+        }
+
+        /**
+         * connected.
+         * @param session IMAP session
+         */
+        public void onConnect(final IMAPSession session) {
+            log.error("cap listener: connected");
+        }
+
+        /**
+         * message received. 
+         * @param session IMAP session
+         * @param response message
+         */
+        public void onMessage(final IMAPSession session, final IMAPResponse response) {
+            log.error("cap listener: onMessage " + response);
+        }
+
     }
     
+    /**
+     * Listener sends IDLE command
+     * @author kraman
+     *
+     */
     class ListenerToSendIdle implements SessionListener {
+        /** listener to be used for idle */
+        private SessionListener nextListener;
 
-    	private SessionListener nextListener;
-    	public ListenerToSendIdle(SessionListener l) {
-    			nextListener = l;
-    	}
+        /**
+         * Constructs the listener.
+         * 
+         * @param l next listener to use
+         */
+        public ListenerToSendIdle(final SessionListener l) {
+            nextListener = l;
+        }
 
-		public void onResponse(final IMAPSession session, String tag,
-				List<IMAPResponse> responses) {
-			for (IMAPResponse r:responses) {
-				log.info("LSI: msg " + r);
-			}
-			log.info("LSI: got a message sending idle " + tag);
-			session.executeIdleCommand("t01-idle", nextListener);
-		}
+        /**
+         * Received a tagged message response.
+         * @param session IMAP session
+         * @param tag IMAP tag
+         * @param responses messages
+         */
+        public void onResponse(final IMAPSession session, final String tag, final List<IMAPResponse> responses) {
+            for (IMAPResponse r : responses) {
+                log.info("LSI: msg " + r);
+            }
+            log.info("LSI: got a message sending idle " + tag);
+            session.executeIdleCommand("t01-idle", nextListener);
+        }
 
-		public void onDisconnect(final IMAPSession session) {
-			log.error("LSI: login error.disconnected");
-		}
+        /**
+         * disconnected.
+         * @param session IMAP session
+         */
+        public void onDisconnect(final IMAPSession session) {
+            log.error("LSI: login error.disconnected");
+        }
 
-		public void onConnect(IMAPSession session) {
-			log.error("LSI: connected");
-		}
+        /**
+         * connected.
+         * @param session IMAP session
+         */
+        public void onConnect(final IMAPSession session) {
+            log.error("LSI: connected");
+        }
 
-		public void onMessage(IMAPSession session, IMAPResponse response) {
-			log.error("LSI: msg " + response);
-		}
-    	
+        /**
+         * untagged message.
+         * @param session IMAP session
+         * @param response message
+         */
+        public void onMessage(final IMAPSession session, final IMAPResponse response) {
+            log.error("LSI: msg " + response);
+        }
+
     }
     
+    /**
+     * Listener to send logout.
+     * @author kraman
+     *
+     */
     class ListenerToSendLogout implements SessionListener {
-    	
-    	private SessionListener nextListener;
-    	private final IMAPSession session;
-    	public ListenerToSendLogout(final IMAPSession session, SessionListener l) {
-    		this.session = session;
-    			nextListener = l;
-    	}
+        /** Listener for logout. */
+        private SessionListener nextListener;
+        /** IMAP session. */
+        private final IMAPSession session;
 
-		public void onResponse(final IMAPSession session, String tag,
-				List<IMAPResponse> responses) {
-			session.executeLogoutCommand("t01-logout", nextListener);
-		}
+        /**
+         * Construct the listener to send logout.
+         * 
+         * @param session IMAP session
+         * @param l next listener
+         */
+        public ListenerToSendLogout(final IMAPSession session, final SessionListener l) {
+            this.session = session;
+            nextListener = l;
+        }
 
-		public void onDisconnect(final IMAPSession session) {
-			log.error("ListenerToSendLogout error.disconnected");
-		}
+        /**
+         * recenved tagged response.
+         * @param session IMAP session
+         * @param tag IMAP tag
+         * @param responses messages
+         */
+        public void onResponse(final IMAPSession session, final String tag, final List<IMAPResponse> responses) {
+            session.executeLogoutCommand("t01-logout", nextListener);
+        }
 
-		public void onConnect(IMAPSession session) {
-			log.error("connected");
-		}
+        /**
+         * disconnected
+         * @param session IMAP session
+         */
+        public void onDisconnect(final IMAPSession session) {
+            log.error("ListenerToSendLogout error.disconnected");
+        }
 
-		public void onMessage(IMAPSession session, IMAPResponse response) {
-			// TODO Auto-generated method stub
-			
-		}
-    	
+        /**
+         * connected
+         * @param session IMAP session
+         */
+        public void onConnect(final IMAPSession session) {
+            log.error("connected");
+        }
+
+        /**
+         * untagged message received
+         * @param session IMAP session
+         * @param response messge
+         */
+        public void onMessage(final IMAPSession session, final IMAPResponse response) {
+            // TODO Auto-generated method stub
+
+        }
+
     } 
     
     
+    /**
+     * Listener to send STATUS command.
+     * @author kraman
+     *
+     */
     class ListenerToSendStatus implements SessionListener {
-    	
-    	private SessionListener nextListener;
-    	public ListenerToSendStatus(SessionListener l) {
-    			nextListener = l;
-    	}
 
-		public void onResponse(final IMAPSession session, String tag,
-				List<IMAPResponse> responses) {
-			for (IMAPResponse r:responses) {
-				log.info("SL: rsp " + r);
-			}
-			log.error("SL: sending status");
-			session.executeStatusCommand("t01-status", "Inbox", new String[] {"UIDNEXT"}, nextListener);
-		}
+        /** listener to be used in status command. */
+        private SessionListener nextListener;
 
-		public void onDisconnect(final IMAPSession session) {
-			log.error("SL: login error.disconnected");
-		}
+        /**
+         * Constructs the listener.
+         * 
+         * @param l next listener to use
+         */
+        public ListenerToSendStatus(final SessionListener l) {
+            nextListener = l;
+        }
+        
+        /**
+         * received a tagged response.
+         * @param session IMAP session
+         * @param tag IMAP tag
+         * @param responses messages
+         */
+        public void onResponse(final IMAPSession session, final String tag, final List<IMAPResponse> responses) {
+            for (IMAPResponse r : responses) {
+                log.info("SL: rsp " + r);
+            }
+            log.error("SL: sending status");
+            session.executeStatusCommand("t01-status", "Inbox", new String[] { "UIDNEXT" }, nextListener);
+        }
 
-		public void onConnect(IMAPSession session) {
-			log.error("SL: connected");
-		}
+        /**
+         * disconnected.
+         * @param session IMAP session
+         */
+        public void onDisconnect(final IMAPSession session) {
+            log.error("SL: login error.disconnected");
+        }
 
-		public void onMessage(IMAPSession session, IMAPResponse response) {
-			log.error("SL: msg  " + response);
-		}
-    	
+        /**
+         * connected.
+         * @param session IMAP session
+         */
+        public void onConnect(final IMAPSession session) {
+            log.error("SL: connected");
+        }
+
+        /**
+         * received untagged response.
+         * @param session IMAP session
+         * @param response message
+         */
+        public void onMessage(final IMAPSession session, final IMAPResponse response) {
+            log.error("SL: msg  " + response);
+        }
+
     }
     
+    /**
+     * Listener to send SELECT command.
+     * @author kraman
+     *
+     */
     class ListenerToSendSelect implements SessionListener {
-    	
-    	private SessionListener nextListener;
-    	public ListenerToSendSelect(SessionListener l) {
-    			nextListener = l;
-    	}
 
-		public void onResponse(final IMAPSession session, String tag,
-				List<IMAPResponse> responses) {
-			session.executeSelectCommand("t01-sel", "Inbox", nextListener);
-		}
+        /** listener to be used for SELECT command. */
+        private SessionListener nextListener;
 
-		public void onDisconnect(final IMAPSession session) {
-			log.error("SEL: login error.disconnected");
-		}
+        /**
+         * Constructs the listener.
+         * 
+         * @param l next listener
+         */
+        public ListenerToSendSelect(final SessionListener l) {
+            nextListener = l;
+        }
 
-		public void onConnect(IMAPSession session) {
-			log.error("SEL: connected");
-		}
+        /**
+         * Received tagged message.
+         * @param session IMAP session
+         * @param tag IMAP tag
+         * @param responses messages
+         */
+        public void onResponse(final IMAPSession session, final String tag, final List<IMAPResponse> responses) {
+            session.executeSelectCommand("t01-sel", "Inbox", nextListener);
+        }
 
-		public void onMessage(IMAPSession session, IMAPResponse response) {
-			log.error("SEL: msg " + response);
-		}
-    	
+        /**
+         * disconnected.
+         * @param session IMAP session
+         */
+        public void onDisconnect(final IMAPSession session) {
+            log.error("SEL: login error.disconnected");
+        }
+
+        /**
+         * connected.
+         * @param session IMAP session
+         */
+        public void onConnect(final IMAPSession session) {
+            log.error("SEL: connected");
+        }
+
+        /**
+         * received message without tag.
+         * @param session IMAP session
+         * @param response message
+         */
+        public void onMessage(final IMAPSession session, final IMAPResponse response) {
+            log.error("SEL: msg " + response);
+        }
+
     }
     
     @Test
@@ -207,15 +390,17 @@ public class ImapClientIT {
     	
     	final String gmailServer = "imaps://imap.gmail.com:993";
     	final int maxSessions = 5;
-    	final IMAPSession sessions[] = new IMAPSession[maxSessions];
-    	for (int i=0; i<maxSessions; i++) {
+    	final IMAPSession[] sessions = new IMAPSession[maxSessions];
+    	for (int i = 0; i < maxSessions; i++) {
     	   
         	// final String gmailServer = "imap://localhost:9993";
         	
-    		 sessions[i]= IMAPClient.INSTANCE.createSession(new URI(gmailServer), new GenericListener("SESS"));
+    		 sessions[i] = IMAPClient.INSTANCE.createSession(new URI(gmailServer), new GenericListener("SESS"));
 
     		ChannelFuture loginFuture = sessions[i].executeLoginCommand("t1",
-    				"krinteg1@gmail.com", "1Testuser", new ListenerToSendStatus(new ListenerToSendSelect(new ListenerToSendIdle(new GenericListener("IDLING ")))));
+    				"krinteg1@gmail.com", "1Testuser", 
+    				new ListenerToSendStatus(new ListenerToSendSelect(new ListenerToSendIdle(
+    				        new GenericListener("IDLING ")))));
 
     	}
 		Thread.sleep(10000);
@@ -234,7 +419,8 @@ public class ImapClientIT {
 		final IMAPSession session = IMAPClient.INSTANCE.createSession(new URI(gmailServer), new GenericListener("SESS"));
 
 		ChannelFuture loginFuture = session.executeLoginCommand("t1",
-				"krinteg1@gmail.com", "1Testuser", new ListenerToSendStatus(new ListenerToSendSelect(new ListenerToSendIdle(new GenericListener("IDLING ")))));
+				"krinteg1@gmail.com", "1Testuser", new ListenerToSendStatus(
+				        new ListenerToSendSelect(new ListenerToSendIdle(new GenericListener("IDLING ")))));
 	Thread.sleep(86400000);
 
 	}
@@ -243,7 +429,7 @@ public class ImapClientIT {
     
     
     @Test
-    public void testGamailCapability () throws ImapSessionException, URISyntaxException, InterruptedException {
+    public void testGamailCapability() throws ImapSessionException, URISyntaxException, InterruptedException {
         final IMAPSession session = IMAPClient.INSTANCE.createSession(new URI("imaps://imap.gmail.com:993"), new CapabilityListener());
  
         ChannelFuture loginFuture = session.executeCapabilityCommand("t1-cap", new CapabilityListener());
@@ -266,7 +452,8 @@ public class ImapClientIT {
     @Test
     public void testGmailOauth2Login() throws URISyntaxException, ImapSessionException, InterruptedException {
         final IMAPSession session = IMAPClient.INSTANCE.createSession(new URI("imaps://imap.gmail.com:993"), new GenericListener());
-         final String oauth2Tok = "dXNlcj1rcmludGVnMUBnbWFpbC5jb20BYXV0aD1CZWFyZXIgeWEyOS5zQUVTb3hfblN5QjA0eEljZHNTUF9tbFZGN096dHN6WDJsa19FMXVwLUw3UGRiSG9BR2l2WG1nSWQ4Q0x2a0RLUnFEUgEB";
+         final String oauth2Tok = 
+                 "dXNlcj1rcmludGVnMUBnbWFpbC5jb20BYXV0aD1CZWFyZXIgeWEyOS5zQUVTb3hfblN5QjA0eEljZHNTUF9tbFZGN096dHN6WDJsa19FMXVwLUw3UGRiSG9BR2l2WG1nSWQ4Q0x2a0RLUnFEUgEB";
         ChannelFuture loginFuture = session.executeOAuth2Command("t1", oauth2Tok, new ListenerToSendIdle(new GenericListener("IDLE ")));
         loginFuture.awaitUninterruptibly();
         Thread.sleep(400000000);
@@ -277,7 +464,8 @@ public class ImapClientIT {
 	public void testGmailSASLOauth2Login() throws URISyntaxException, ImapSessionException, InterruptedException {
 	    final IMAPSession session = IMAPClient.INSTANCE.createSession(new URI("imaps://imap.gmail.com:993"), new GenericListener());
 	     final String oauth2Tok = "ya29.sAESox_nSyB04xIcdsSP_mlVF7OztszX2lk_E1up-L7PdbHoAGivXmgId8CLvkDKRqDR";
-	    ChannelFuture loginFuture = session.executeSASLXOAuth2("t1", "krinteg1@gmail.com", oauth2Tok, new ListenerToSendIdle(new GenericListener("IDLE ")));
+	    ChannelFuture loginFuture = session.executeSASLXOAuth2("t1", "krinteg1@gmail.com", 
+	            oauth2Tok, new ListenerToSendIdle(new GenericListener("IDLE ")));
 	    loginFuture.awaitUninterruptibly();
 	    Thread.sleep(400000000);
 	

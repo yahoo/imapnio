@@ -7,44 +7,60 @@ import com.lafaspot.imapnio.listener.SessionListener;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 
+/** 
+ * Listener for the channel.
+ * @author kraman
+ *
+ */
 public class IMAPChannelListener implements ChannelHandler {
-	
 
     /** logger. */
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(IMAPChannelListener.class);
-	
-	private final IMAPSession session;
-	public IMAPChannelListener(IMAPSession session) {
-		this.session = session;
-	}
 
-	public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
-		// TODO Auto-generated method stub
-		log.info ("channel - added");	
-	}
+    /** The IMAP session. */
+    private final IMAPSession session;
 
-	/**
-	 * A channel has been removed, socket disconnect event. Call the client listener if one was registered.
-	 * @param ctx the channel handler context
-	 */
-	public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
-		// TODO Auto-generated method stub
-		log.info ("channel closed - removed");
-		if (null != session && session.getSessionListener() != null) {
-			((SessionListener)session.getSessionListener()).onDisconnect(session);
-		}		
-	}
+    /**
+     * Constructs a listner.
+     * @param session IMAP session
+     */
+    public IMAPChannelListener(final IMAPSession session) {
+        this.session = session;
+    }
 
-	/**
-	 * Got exception from channel. Call the client listener if one was registered.
-	 */
-	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
-			throws Exception {
-		// TODO Auto-generated method stub
-		log.info  ("channel closed - exception");
-		if (null != session && session.getSessionListener() != null) {
-			((SessionListener)session.getSessionListener()).onDisconnect(session);
-		}
-	}
+     /** 
+      * Callback when a new handler has been added to channel.
+      * @param ctx the channel handler context
+      */
+    public void handlerAdded(final ChannelHandlerContext ctx)  {
+        // TODO Auto-generated method stub
+        log.info("channel - added");
+    }
+
+    /**
+     * A channel has been removed, socket disconnect event. Call the client listener if one was registered.
+     * 
+     * @param ctx the channel handler context
+     */
+    public void handlerRemoved(final ChannelHandlerContext ctx) {
+        // TODO Auto-generated method stub
+        log.info("channel closed - removed");
+        if (null != session && session.getSessionListener() != null) {
+            ((SessionListener) session.getSessionListener()).onDisconnect(session);
+        }
+    }
+
+    /**
+     * Got exception from channel. Call the client listener if one was registered.
+     * @param ctx context
+     * @param cause failure reason
+     */
+    public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) {
+        // TODO Auto-generated method stub
+        log.info("channel closed - exception");
+        if (null != session && session.getSessionListener() != null) {
+            ((SessionListener) session.getSessionListener()).onDisconnect(session);
+        }
+    }
 
 }
