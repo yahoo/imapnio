@@ -13,7 +13,7 @@
 	<artifactId>imapnio.core</artifactId>
 	<packaging>jar</packaging>
 	<name>${project.artifactId}</name>
-	<url>https://github.com/krdev/imapnioclient</url>
+	<url>https://github.com/lafaspot/imapnioclient</url>
 	<description>imapnio component ${project.name}</description>
 
 	<licenses>
@@ -23,12 +23,24 @@
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
+	
+	
+	<distributionManagement>
+		<snapshotRepository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
+		<repository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
+	</distributionManagement>
 
-	<properties>
-		<main.basedir>${project.parent.basedir}</main.basedir>
-		<testTimeLimitInSeconds>5</testTimeLimitInSeconds>
-		<checkstyle.maxAllowedViolations>0</checkstyle.maxAllowedViolations>
-	</properties>
+    <properties>
+        <main.basedir>${project.parent.basedir}</main.basedir>
+        <testTimeLimitInSeconds>5</testTimeLimitInSeconds>
+        <checkstyle.maxAllowedViolations>114</checkstyle.maxAllowedViolations>
+    </properties>
 
 	<dependencies>
 		<!-- Test dependencies -->
@@ -61,70 +73,71 @@
 			<artifactId>mail</artifactId>
 		</dependency>
 	</dependencies>
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.jacoco</groupId>
-				<artifactId>jacoco-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>default-check</id>
-						<goals>
-							<goal>check</goal>
-						</goals>
-						<configuration>
-							<rules>
-								<rule>
-									<element>BUNDLE</element>
-									<limits>
-										<limit>
-											<counter>INSTRUCTION</counter>
-											<value>COVEREDRATIO</value>
-											<minimum>0.72</minimum>
-										</limit>
-										<limit>
-											<counter>COMPLEXITY</counter>
-											<value>COVEREDRATIO</value>
-											<minimum>0.64</minimum>
-										</limit>
-										<limit>
-											<counter>LINE</counter>
-											<value>COVEREDRATIO</value>
-											<minimum>0.75</minimum>
-										</limit>
-										<limit>
-											<counter>CLASS</counter>
-											<value>COVEREDRATIO</value>
-											<minimum>0.88</minimum>
-										</limit>
-										<limit>
-											<counter>METHOD</counter>
-											<value>COVEREDRATIO</value>
-											<minimum>0.73</minimum>
-										</limit>
-										<limit>
-											<counter>BRANCH</counter>
-											<value>COVEREDRATIO</value>
-											<minimum>0.60</minimum>
-										</limit>
-										<limit>
-											<counter>CLASS</counter>
-											<value>MISSEDCOUNT</value>
-											<maximum>80</maximum>
-										</limit>
-									</limits>
-								</rule>
-							</rules>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-		<pluginManagement>
-			<plugins>
-				<!--This plugin's configuration is used to store Eclipse m2e settings 
-					only. It has no influence on the Maven build itself. -->
-			</plugins>
-		</pluginManagement>
-	</build>
+  <build>
+        <plugins>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-check</id>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <rule>
+                                    <element>BUNDLE</element>
+                                    <limits>
+                                        <limit>
+                                            <counter>INSTRUCTION</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.72</minimum>
+                                        </limit>
+                                        <limit>
+                                            <counter>COMPLEXITY</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.64</minimum>
+                                        </limit>
+                                        <limit>
+                                            <counter>LINE</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.75</minimum>
+                                        </limit>
+                                        <limit>
+                                            <counter>CLASS</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.88</minimum>
+                                        </limit>
+                                        <limit>
+                                            <counter>METHOD</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.73</minimum>
+                                        </limit>
+                                        <limit>
+                                            <counter>BRANCH</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.60</minimum>
+                                        </limit>
+                                        <limit>
+                                            <counter>CLASS</counter>
+                                            <value>MISSEDCOUNT</value>
+                                            <maximum>80</maximum>
+                                        </limit>
+                                    </limits>
+                                </rule>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+        <pluginManagement>
+            <plugins>
+                <!--This plugin's configuration is used to store Eclipse 
+                    m2e settings only. It has no influence on the Maven build itself. -->
+            </plugins>
+        </pluginManagement>
+    </build>	
+	
 </project>

@@ -7,12 +7,36 @@
 	<packaging>pom</packaging>
 	<version>1.0-SNAPSHOT</version>
 	<name>${project.artifactId}</name>
-	<url>https://github.com/krdev/imapnioclient</url>
+	<url>https://github.com/lafaspot/imapnioclient</url>
 	<description>Parent POM file for imapnio project</description>
 	<prerequisites>
 		<maven>3.0</maven>
 	</prerequisites>
-	
+
+	<modules>
+		<module>core</module>
+	</modules>
+
+	<developers>
+		<developer>
+			<id>lafa</id>
+			<name>Lafa</name>
+			<email>luis.alves@lafaspot.com</email>
+		</developer>
+		<developer>
+			<id>kraman</id>
+			<name>Kumar Raman</name>
+			<email>kumar.raman@yahoo.com</email>
+		</developer>
+	</developers>
+
+	<scm>
+		<developerConnection>scm:git:https://github.com/lafaspot/imapnioclient.git</developerConnection>
+		<connection>scm:git:https://github.com/lafaspot/imapnioclient.git</connection>
+		<url>https://github.com/lafaspot/imapnioclient.git</url>
+		<tag>imapnioclient-1.0</tag>
+	</scm>
+
 	<licenses>
 		<license>
 			<name>Apache License, Version 2.0</name>
@@ -21,22 +45,23 @@
 		</license>
 	</licenses>
 
-	<modules>
-		<module>core</module>
-	</modules>
-	
-	<scm>
-		<developerConnection>scm:git:git://github.com/krdev/imapnioclient.git</developerConnection>
-		<connection>scm:git:git://github.com/krdev/imapnioclient.git</connection>
-		<url>https://github.com/krdev/imapnioclient.git</url>
-	</scm>
-	
+	<distributionManagement>
+		<snapshotRepository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
+		<repository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
+	</distributionManagement>
+
 	<properties>
 		<project-name>imapnio</project-name>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>${project.build.sourceEncoding}</project.reporting.outputEncoding>
-		<excludedJNILibraries></excludedJNILibraries>
-		<excludedWarJNILibraries></excludedWarJNILibraries>
+		<excludedJNILibraries />
+		<excludedWarJNILibraries />
 		<jdk.version>1.8</jdk.version>
 		<maven-findbugs-plugin.version>3.0.1</maven-findbugs-plugin.version>
 		<maven-surefire-plugin.version>2.17</maven-surefire-plugin.version>
@@ -48,6 +73,7 @@
 		<testTimeLimitInSeconds>0</testTimeLimitInSeconds>
 		<main.basedir>${project.basedir}</main.basedir>
 	</properties>
+
 	<dependencies>
 		<!-- DO NOT ADD DEPENDENCIES TO THIS FILE -->
 	</dependencies>
@@ -101,6 +127,7 @@
 
 		</dependencies>
 	</dependencyManagement>
+
 	<build>
 		<finalName>${project.artifactId}</finalName>
 		<extensions>
@@ -118,31 +145,31 @@
 					<version>${jacoco-maven-plugin.version}</version>
 				</plugin>
 				<plugin>
-					<groupId>org.codehaus.mojo</groupId>
-					<artifactId>build-helper-maven-plugin</artifactId>
-					<version>1.7</version>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>3.3</version>
 				</plugin>
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
-					<artifactId>javacc-maven-plugin</artifactId>
-					<version>2.6</version>
+					<artifactId>build-helper-maven-plugin</artifactId>
+					<version>1.9.1</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-release-plugin</artifactId>
-					<version>2.0-beta-8</version>
+					<version>2.5.2</version>
 				</plugin>
 				<plugin>
 					<artifactId>maven-assembly-plugin</artifactId>
-					<version>2.4.1</version>
+					<version>2.5.5</version>
 				</plugin>
 				<plugin>
 					<artifactId>maven-clean-plugin</artifactId>
-					<version>2.6</version>
+					<version>2.6.1</version>
 				</plugin>
 				<plugin>
 					<artifactId>maven-enforcer-plugin</artifactId>
-					<version>1.3.1</version>
+					<version>1.4</version>
 				</plugin>
 				<plugin>
 					<artifactId>maven-pmd-plugin</artifactId>
@@ -155,15 +182,15 @@
 				</plugin>
 				<plugin>
 					<artifactId>maven-project-info-reports-plugin</artifactId>
-					<version>2.7</version>
+					<version>2.8</version>
 				</plugin>
 				<plugin>
 					<artifactId>maven-site-plugin</artifactId>
-					<version>2.1.1</version>
+					<version>3.4</version>
 				</plugin>
 				<plugin>
 					<artifactId>maven-source-plugin</artifactId>
-					<version>2.3</version>
+					<version>2.4</version>
 				</plugin>
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
@@ -178,7 +205,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-scm-plugin</artifactId>
-					<version>1.9.2</version>
+					<version>1.9.4</version>
 					<inherited>false</inherited>
 				</plugin>
 				<plugin>
@@ -257,7 +284,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.1</version>
 				<configuration>
 					<fork>true</fork>
 					<meminitial>128m</meminitial>
@@ -433,6 +459,59 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>2.2.1</version>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar-no-fork</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.9.1</version>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-gpg-plugin</artifactId>
+				<version>1.5</version>
+				<executions>
+					<execution>
+						<id>sign-artifacts</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>sign</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.sonatype.plugins</groupId>
+				<artifactId>nexus-staging-maven-plugin</artifactId>
+				<version>1.6.3</version>
+				<extensions>true</extensions>
+				<configuration>
+					<serverId>ossrh</serverId>
+					<nexusUrl>https://oss.sonatype.org/</nexusUrl>
+					<autoReleaseAfterClose>true</autoReleaseAfterClose>
+				</configuration>
+			</plugin>
+
 		</plugins>
 	</build>
 	<profiles>
@@ -451,5 +530,33 @@
 				</plugins>
 			</build>
 		</profile>
+		<profile>
+			<id>release-sign-artifacts</id>
+			<activation>
+				<property>
+					<name>performRelease</name>
+					<value>true</value>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
 	</profiles>
+
+
 </project>
