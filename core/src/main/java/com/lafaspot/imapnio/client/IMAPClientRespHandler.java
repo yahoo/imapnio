@@ -16,7 +16,7 @@ import java.util.Map;
 
 import org.slf4j.LoggerFactory;
 
-import com.lafaspot.imapnio.exception.ImapSessionException;
+import com.lafaspot.imapnio.exception.IMAPSessionException;
 import com.lafaspot.imapnio.listener.ClientListener;
 import com.lafaspot.imapnio.listener.SessionListener;
 import com.sun.mail.imap.protocol.IMAPResponse;
@@ -64,7 +64,7 @@ public class IMAPClientRespHandler extends MessageToMessageDecoder<IMAPResponse>
                 	((SessionListener) session.getSessionListener()).onConnect(session);
                 }
         	} else {
-        		throw new ImapSessionException("connect failed");
+        		throw new IMAPSessionException("connect failed");
         	}
         } else if (session.getState() == IMAPSessionState.IDLE_REQUEST) {
         	if (msg.readAtomString().equals("idling")) {

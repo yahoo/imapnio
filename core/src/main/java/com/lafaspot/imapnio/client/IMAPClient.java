@@ -20,7 +20,7 @@ import javax.net.ssl.TrustManagerFactory;
 import org.slf4j.LoggerFactory;
 
 import com.lafaspot.imapnio.config.ImapClientConfig;
-import com.lafaspot.imapnio.exception.ImapSessionException;
+import com.lafaspot.imapnio.exception.IMAPSessionException;
 import com.lafaspot.imapnio.listener.SessionListener;
 
 /**
@@ -29,10 +29,10 @@ import com.lafaspot.imapnio.listener.SessionListener;
  * @author kraman
  *
  */
-public enum IMAPClient {
+public class IMAPClient {
 	
 	/** The singleton instenace. */
-	INSTANCE;
+	private static final IMAPClient instance = new IMAPClient();
 
     /** Client configuration. */
     private final ImapClientConfig config;
@@ -47,12 +47,20 @@ public enum IMAPClient {
     /**
      * Constructs a NIO based IMAP client.
      */
-    IMAPClient() {
+    private IMAPClient() {
         this.config = new ImapClientConfig();
         this.bootstrap = new Bootstrap();
         this.group = new NioEventLoopGroup(config.getNumThreads());
 		bootstrap.channel(NioSocketChannel.class);
 		bootstrap.group(group);
+    }
+    
+    /** 
+     * Return the singleton instance.
+     * @return IMAPClient
+     */
+    public static IMAPClient getInstance() {
+    	return instance;
     }
 
     /**
@@ -60,9 +68,9 @@ public enum IMAPClient {
      * @param uri IMAP server URI
      * @param listener client listener for connect/disconnect events
      * @return newly created session object
-     * @throws ImapSessionException on error
+     * @throws IMAPSessionException on error
      */
-    public IMAPSession createSession(final URI uri, final SessionListener listener) throws ImapSessionException {
+    public IMAPSession createSession(final URI uri, final SessionListener listener) throws IMAPSessionException {
         return new IMAPSession(uri, bootstrap, group, listener);
     }
 

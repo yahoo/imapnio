@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import com.lafaspot.imapnio.command.Argument;
 import com.lafaspot.imapnio.command.ImapCommand;
-import com.lafaspot.imapnio.exception.ImapSessionException;
+import com.lafaspot.imapnio.exception.IMAPSessionException;
 import com.lafaspot.imapnio.listener.ClientListener;
 import com.lafaspot.imapnio.listener.SessionListener;
 import com.sun.mail.imap.protocol.BASE64MailboxEncoder;
@@ -72,6 +72,12 @@ public class IMAPSession {
     /** The listener used for thos session. */
     private SessionListener clientListener;
     
+    /** Server to connect to. */
+    private final URI serverUri;
+    
+    /** Bootstrap. */
+    private final Bootstrap bootstrap;
+    
 
     /**
      * Creates a IMAP session.
@@ -80,14 +86,16 @@ public class IMAPSession {
      * @param bootstrap the bootstrap
      * @param group the event loop group
      * @param listener the session listener
-     * @throws ImapSessionException on SSL or connect failure
+     * @throws IMAPSessionException on SSL or connect failure
      */
 	public IMAPSession(final URI uri, final Bootstrap bootstrap, final EventLoopGroup group, 
-			final SessionListener listener) throws ImapSessionException {
+			final SessionListener listener) throws IMAPSessionException {
 		responses = new ArrayList<IMAPResponse>();
 		listeners = new ConcurrentHashMap<String, SessionListener>();
 		this.listener = listener;
 		this.group = group;
+		this.serverUri = uri;
+		this.bootstrap = bootstrap;
 		// Initialize default state
 		capabilities = new HashMap<String, Boolean>();
 
@@ -111,19 +119,17 @@ public class IMAPSession {
 					.handler(
 							new IMAPClientInitializer(this, sslCtx, uri
 									.getHost(), uri.getPort())); 
-			ChannelFuture connectFuture = bootstrap.connect(uri.getHost(), uri.getPort());
-			this.channel = connectFuture.sync().channel();
-			connectFuture.addListener(new GenericFutureListener<ChannelFuture>() {
-
-				public void operationComplete(final ChannelFuture future)
-						throws Exception {
-					setState(IMAPSessionState.ConnectRequest);
-				}
-			});
+//			ChannelFuture connectFuture = bootstrap.connect(uri.getHost(), uri.getPort());
+//			this.channel = connectFuture.sync().channel();
+//			connectFuture.addListener(new GenericFutureListener<ChannelFuture>() {
+//
+//				public void operationComplete(final ChannelFuture future)
+//						throws Exception {
+//					setState(IMAPSessionState.ConnectRequest);
+//				}
+//			});
 		} catch (SSLException e1) {
-			throw new ImapSessionException("ssl exception", e1);
-		} catch (InterruptedException e2) {
-			throw new ImapSessionException("connect failed", e2);
+			throw new IMAPSessionException("ssl exception", e1);
 		}
 	}
 
@@ -134,6 +140,29 @@ public class IMAPSession {
     protected void disconnect() {
         group.shutdownGracefully();
         channel.close();
+    }
+    
+    /**
+     * Connects to the remote server.
+     * @return the ChannelFuture object
+     * @throws IMAPSessionException on connection failure
+     */
+    public ChannelFuture connect() throws IMAPSessionException {
+		ChannelFuture connectFuture = bootstrap.connect(serverUri.getHost(), serverUri.getPort());
+		try {
+			this.channel = connectFuture.sync().channel();
+		} catch (InterruptedException e) {
+			throw new IMAPSessionException (" ", e);
+		}
+		connectFuture.addListener(new GenericFutureListener<ChannelFuture>() {
+
+			public void operationComplete(final ChannelFuture future)
+					throws Exception {
+				setState(IMAPSessionState.ConnectRequest);
+			}
+		});
+		return connectFuture;
+    	
     }
 
 

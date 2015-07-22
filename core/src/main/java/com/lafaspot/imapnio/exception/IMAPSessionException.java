@@ -7,7 +7,7 @@ package com.lafaspot.imapnio.exception;
  * @author kraman
  *
  */
-public class ImapSessionException extends Exception {
+public class IMAPSessionException extends Exception {
 
     /** The reason for the exception. */
     private final String reason;
@@ -19,7 +19,7 @@ public class ImapSessionException extends Exception {
      * @param r reason string
      * @param t the throwable
      */
-    public ImapSessionException(final String r, final Throwable t) {
+    public IMAPSessionException(final String r, final Throwable t) {
         super(t);
         reason = r;
         this.id = Thread.currentThread().getName() + ":" + System.currentTimeMillis();
@@ -29,7 +29,7 @@ public class ImapSessionException extends Exception {
      * Constructs a session exception.
      * @param r reason string
      */
-    public ImapSessionException(final String r) {
+    public IMAPSessionException(final String r) {
         reason = r;
         this.id = Thread.currentThread().getName() + ":" + System.currentTimeMillis();
     }
