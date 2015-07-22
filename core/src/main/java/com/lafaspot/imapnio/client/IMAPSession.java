@@ -237,7 +237,7 @@ public class IMAPSession {
     	buf.append("user=").append(user).append("\u0001")
     	.append("auth=Bearer ").append(token).append("\u0001").append("\u0001");
     	String encOAuthStr = Base64.getEncoder().encodeToString(buf.toString().getBytes(StandardCharsets.UTF_8));
-    	log.info("XOAUTH2 " + encOAuthStr);
+    	log.debug("XOAUTH2 " + encOAuthStr);
     	return executeOAuth2Command(tag, encOAuthStr, listener);
     }
 
@@ -312,7 +312,7 @@ public class IMAPSession {
 				: "");
 		String line = method.getTag() + (method.getTag() != "" ? " " : "")
 				+ method.getCommand() + (args.length() > 0 ? " " + args : "");
-		log.info("--> " + line);
+		log.debug("--> " + line);
 
 		ChannelFuture lastWriteFuture = this.channel.writeAndFlush(line
 				+ "\r\n");

@@ -421,7 +421,7 @@ public class ImapClientIT {
 		ChannelFuture loginFuture = session.executeLoginCommand("t1",
 				"krinteg1@gmail.com", "1Testuser", new ListenerToSendStatus(
 				        new ListenerToSendSelect(new ListenerToSendIdle(new GenericListener("IDLING ")))));
-	Thread.sleep(86400000);
+	Thread.sleep(3000);
 
 	}
     

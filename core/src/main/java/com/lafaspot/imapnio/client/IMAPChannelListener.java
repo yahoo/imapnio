@@ -34,7 +34,7 @@ public class IMAPChannelListener implements ChannelHandler {
       */
     public void handlerAdded(final ChannelHandlerContext ctx)  {
         // TODO Auto-generated method stub
-        log.info("channel - added");
+        log.debug("channel - added");
     }
 
     /**
@@ -44,7 +44,7 @@ public class IMAPChannelListener implements ChannelHandler {
      */
     public void handlerRemoved(final ChannelHandlerContext ctx) {
         // TODO Auto-generated method stub
-        log.info("channel closed - removed");
+        log.debug("channel closed - removed");
         if (null != session && session.getSessionListener() != null) {
             ((SessionListener) session.getSessionListener()).onDisconnect(session);
         }
@@ -57,7 +57,7 @@ public class IMAPChannelListener implements ChannelHandler {
      */
     public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) {
         // TODO Auto-generated method stub
-        log.info("channel closed - exception");
+        log.debug("channel closed - exception");
         if (null != session && session.getSessionListener() != null) {
             ((SessionListener) session.getSessionListener()).onDisconnect(session);
         }

@@ -55,7 +55,7 @@ public class IMAPClientRespHandler extends MessageToMessageDecoder<IMAPResponse>
      */
     @Override
     public void decode(final ChannelHandlerContext ctx, final IMAPResponse msg, final List<Object> out) throws Exception {
-        log.info("< " + msg + " state:" + session.getState());
+        log.debug("< " + msg + " state:" + session.getState());
         if (session.getState() == IMAPSessionState.ConnectRequest) {
         	if (msg.isOK()) {
                 session.setState(IMAPSessionState.Connected);
