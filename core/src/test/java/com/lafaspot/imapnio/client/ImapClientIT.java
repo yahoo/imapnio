@@ -3,23 +3,15 @@
  */
 package com.lafaspot.imapnio.client;
 
-import io.netty.channel.ChannelFuture;
-import io.netty.util.concurrent.GenericFutureListener;
-
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
-
-import javax.net.ssl.SSLException;
 
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import com.lafaspot.imapnio.channel.IMAPClientChannelFuture;
-import com.lafaspot.imapnio.client.IMAPClient;
-import com.lafaspot.imapnio.client.IMAPSession;
+import com.lafaspot.imapnio.channel.IMAPChannelFuture;
 import com.lafaspot.imapnio.exception.IMAPSessionException;
 import com.lafaspot.imapnio.listener.SessionListener;
 import com.sun.mail.imap.protocol.IMAPResponse;
@@ -31,7 +23,7 @@ import com.sun.mail.imap.protocol.IMAPResponse;
 public class ImapClientIT {
 
     /** the class level logger. */
-    private static final org.slf4j.Logger log = LoggerFactory.getLogger(ImapClientIT.class);
+    private final org.slf4j.Logger log = LoggerFactory.getLogger(ImapClientIT.class);
     
     /**
      * Generic listener.
@@ -389,6 +381,9 @@ public class ImapClientIT {
     
     private IMAPClient theClient;
     
+    /**
+     * Setup.
+     */
     @BeforeClass
     public void setup() {
     	final int threads = 5;
@@ -408,7 +403,7 @@ public class ImapClientIT {
     		 sessions[i] = theClient.createSession(new URI(gmailServer), new GenericListener("SESS"));
     		 sessions[i].connect();
 
-    		 IMAPClientChannelFuture loginFuture = sessions[i].executeLoginCommand("t1",
+    		 IMAPChannelFuture loginFuture = sessions[i].executeLoginCommand("t1",
     				"krinteg1@gmail.com", "1Testuser", 
     				new ListenerToSendStatus(new ListenerToSendSelect(new ListenerToSendIdle(
     				        new GenericListener("IDLING ")))));
@@ -430,7 +425,7 @@ public class ImapClientIT {
 		final IMAPSession session = theClient.createSession(new URI(gmailServer), new GenericListener("SESS"));
 		session.connect();
 
-		IMAPClientChannelFuture loginFuture = session.executeLoginCommand("t1",
+		IMAPChannelFuture loginFuture = session.executeLoginCommand("t1",
 				"krinteg1@gmail.com", "1Testuser", new ListenerToSendStatus(
 				        new ListenerToSendSelect(new ListenerToSendIdle(new GenericListener("IDLING ")))));
 	Thread.sleep(30000);
@@ -444,7 +439,7 @@ public class ImapClientIT {
     public void testGamailCapability() throws IMAPSessionException, URISyntaxException, InterruptedException {
         final IMAPSession session = theClient.createSession(new URI("imaps://imap.gmail.com:993"), new CapabilityListener());
         session.connect();
-        IMAPClientChannelFuture loginFuture = session.executeCapabilityCommand("t1-cap", new CapabilityListener());
+        IMAPChannelFuture loginFuture = session.executeCapabilityCommand("t1-cap", new CapabilityListener());
         loginFuture.awaitUninterruptibly();
         Thread.sleep(300000);
 
@@ -456,7 +451,7 @@ public class ImapClientIT {
         final IMAPSession session = theClient.createSession(new URI("imaps://imap.gmail.com:993"), l);
         session.connect();
         
-        IMAPClientChannelFuture loginFuture = session.executeLoginCommand("t1", "krinteg1@gmail.com", "1Testuser", l);
+        IMAPChannelFuture loginFuture = session.executeLoginCommand("t1", "krinteg1@gmail.com", "1Testuser", l);
         loginFuture.awaitUninterruptibly();
         Thread.sleep(300000);
 
@@ -468,7 +463,7 @@ public class ImapClientIT {
         session.connect();
          final String oauth2Tok = 
                  "dXNlcj1rcmludGVnMUBnbWFpbC5jb20BYXV0aD1CZWFyZXIgeWEyOS5zQUVTb3hfblN5QjA0eEljZHNTUF9tbFZGN096dHN6WDJsa19FMXVwLUw3UGRiSG9BR2l2WG1nSWQ4Q0x2a0RLUnFEUgEB";
-         IMAPClientChannelFuture loginFuture = session.executeOAuth2Command("t1", oauth2Tok, new ListenerToSendIdle(new GenericListener("IDLE ")));
+         IMAPChannelFuture loginFuture = session.executeOAuth2Command("t1", oauth2Tok, new ListenerToSendIdle(new GenericListener("IDLE ")));
         loginFuture.awaitUninterruptibly();
         Thread.sleep(400000000);
 
@@ -479,7 +474,7 @@ public class ImapClientIT {
 	    final IMAPSession session = theClient.createSession(new URI("imaps://imap.gmail.com:993"), new GenericListener());
 	    session.connect();
 	     final String oauth2Tok = "ya29.sAESox_nSyB04xIcdsSP_mlVF7OztszX2lk_E1up-L7PdbHoAGivXmgId8CLvkDKRqDR";
-	     IMAPClientChannelFuture loginFuture = session.executeSASLXOAuth2("t1", "krinteg1@gmail.com", 
+	     IMAPChannelFuture loginFuture = session.executeSASLXOAuth2("t1", "krinteg1@gmail.com", 
 	            oauth2Tok, new ListenerToSendIdle(new GenericListener("IDLE ")));
 	    loginFuture.awaitUninterruptibly();
 	    Thread.sleep(400000000);

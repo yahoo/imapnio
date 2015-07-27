@@ -21,7 +21,7 @@ import com.sun.mail.imap.protocol.IMAPResponse;
 public class ImapClientRespEchoHandler extends MessageToMessageDecoder<IMAPResponse> {
 
     /** logger. */
-    private static final org.slf4j.Logger log = LoggerFactory.getLogger(ImapClientRespEchoHandler.class);
+    private final org.slf4j.Logger log = LoggerFactory.getLogger(ImapClientRespEchoHandler.class);
     @Override
     protected void decode(ChannelHandlerContext ctx, IMAPResponse msg, List<Object> out) {
         log.debug(" <<< " + msg.toString());

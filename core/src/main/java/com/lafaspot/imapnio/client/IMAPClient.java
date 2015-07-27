@@ -4,22 +4,12 @@
 package com.lafaspot.imapnio.client;
 
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.ssl.SslContext;
 
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.security.NoSuchAlgorithmException;
 
-import javax.net.ssl.SSLException;
-import javax.net.ssl.TrustManagerFactory;
-
-import org.slf4j.LoggerFactory;
-
-import com.lafaspot.imapnio.config.ImapClientConfig;
 import com.lafaspot.imapnio.exception.IMAPSessionException;
 import com.lafaspot.imapnio.listener.SessionListener;
 
@@ -31,9 +21,6 @@ import com.lafaspot.imapnio.listener.SessionListener;
  */
 public class IMAPClient {
 	
-    /** Client configuration. */
-    private final ImapClientConfig config;
-
     /** The netty bootstrap. */
     private Bootstrap bootstrap;
 
@@ -46,7 +33,6 @@ public class IMAPClient {
      * @param threads number of threads to be used by IMAP client
      */
     public IMAPClient(final int threads) {
-        this.config = new ImapClientConfig();
         this.bootstrap = new Bootstrap();
         this.group = new NioEventLoopGroup(threads);
 		bootstrap.channel(NioSocketChannel.class);
