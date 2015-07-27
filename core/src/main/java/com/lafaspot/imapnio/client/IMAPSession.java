@@ -13,6 +13,7 @@ import io.netty.util.concurrent.GenericFutureListener;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
@@ -20,10 +21,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLException;
+import javax.net.ssl.TrustManagerFactory;
 
 import org.slf4j.LoggerFactory;
 
+import com.lafaspot.imapnio.channel.IMAPClientChannelFuture;
 import com.lafaspot.imapnio.command.Argument;
 import com.lafaspot.imapnio.command.ImapCommand;
 import com.lafaspot.imapnio.exception.IMAPSessionException;
@@ -105,7 +109,7 @@ public class IMAPSession {
 			// Configure SSL.
 			SslContext sslCtx;
 			if (ssl) {
-				sslCtx = SslContextBuilder.forClient().build();				
+				sslCtx = SslContext.newClientContext(TrustManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm())); //SslContextBuilder.forClient().build();
 			} else {
 				sslCtx = null;
 			}
@@ -130,6 +134,8 @@ public class IMAPSession {
 //			});
 		} catch (SSLException e1) {
 			throw new IMAPSessionException("ssl exception", e1);
+		} catch (NoSuchAlgorithmException e2) {
+			throw new IMAPSessionException("no such algo exception", e2);
 		}
 	}
 
@@ -173,7 +179,7 @@ public class IMAPSession {
      * @param listener the session listener
      * @return ChannelFuture the future object
      */
-	public ChannelFuture executeIdleCommand(final String tag, final SessionListener listener) {
+	public IMAPClientChannelFuture executeIdleCommand(final String tag, final SessionListener listener) {
 		ChannelFuture future = executeCommand(new ImapCommand(tag, "IDLE",
 				new Argument(), new String[] { "IDLE" }), listener);
 		if (null != future) {
@@ -185,7 +191,7 @@ public class IMAPSession {
 				}
 			});
 		}
-		return future;
+		return new IMAPClientChannelFuture(future);
 	}
 
 	/**
@@ -195,9 +201,9 @@ public class IMAPSession {
 	 * @param listener the session listener
 	 * @return the future object
 	 */
-    public ChannelFuture executeSelectCommand(final String tag, final String mailbox, final SessionListener listener) {
+    public IMAPClientChannelFuture executeSelectCommand(final String tag, final String mailbox, final SessionListener listener) {
         String b64Mailbox = BASE64MailboxEncoder.encode(mailbox);
-        return executeCommand(new ImapCommand(tag, "SELECT", new Argument().addString(b64Mailbox), new String[] {}), listener);
+        return new IMAPClientChannelFuture (executeCommand(new ImapCommand(tag, "SELECT", new Argument().addString(b64Mailbox), new String[] {}), listener));
     }
 
     /**
@@ -208,7 +214,7 @@ public class IMAPSession {
      * @param listener the session listener
      * @return the future object
      */
-    public ChannelFuture executeStatusCommand(final String tag, final String mailbox, final String[] items, final SessionListener listener) {
+    public IMAPClientChannelFuture executeStatusCommand(final String tag, final String mailbox, final String[] items, final SessionListener listener) {
         String mailboxB64 = BASE64MailboxEncoder.encode(mailbox);
 
         Argument args = new Argument();
@@ -222,7 +228,7 @@ public class IMAPSession {
         args.writeArgument(itemArgs);
 
     	setState(IMAPSessionState.Connected);
-        return executeCommand(new ImapCommand(tag, "STATUS", args, new String[] {}), listener);
+        return new IMAPClientChannelFuture(executeCommand(new ImapCommand(tag, "STATUS", args, new String[] {}), listener));
     }
 
     /**
@@ -233,9 +239,9 @@ public class IMAPSession {
      * @param listener the session listener
      * @return the future object
      */
-    public ChannelFuture executeLoginCommand(final String tag, final String username, final String password, final SessionListener listener) {
-        return executeCommand(new ImapCommand(tag, "LOGIN", 
-        		new Argument().addString(username).addString(password), new String[] { "auth=plain" }), listener);
+    public IMAPClientChannelFuture executeLoginCommand(final String tag, final String username, final String password, final SessionListener listener) {
+        return new IMAPClientChannelFuture(executeCommand(new ImapCommand(tag, "LOGIN", 
+        		new Argument().addString(username).addString(password), new String[] { "auth=plain" }), listener));
     }
 
     /**
@@ -246,10 +252,10 @@ public class IMAPSession {
      * @param listener the session listener
      * @return the future object
      */
-    public ChannelFuture executeOAuth2Command(final String tag, final String oauth2Tok, final SessionListener listener) {
+    public IMAPClientChannelFuture executeOAuth2Command(final String tag, final String oauth2Tok, final SessionListener listener) {
         ChannelFuture future = executeCommand(new ImapCommand(tag, "AUTHENTICATE XOAUTH2", 
         		new Argument().addString(oauth2Tok), new String[] { "auth=xoauth2" }), listener);
-        return future;
+        return new IMAPClientChannelFuture(future);
     }
     
     /**
@@ -260,7 +266,7 @@ public class IMAPSession {
      * @param listener the session listener
      * @return the future object
      */
-    public ChannelFuture executeSASLXOAuth2(final String tag, final String user, final String token, final SessionListener listener) {
+    public IMAPClientChannelFuture executeSASLXOAuth2(final String tag, final String user, final String token, final SessionListener listener) {
     	
     	StringBuffer buf = new StringBuffer();
     	buf.append("user=").append(user).append("\u0001")
@@ -277,9 +283,9 @@ public class IMAPSession {
      * @param listener the session listener
      * @return the future object
      */
-    public ChannelFuture executeLogoutCommand(final String tag, final SessionListener listener) {
+    public IMAPClientChannelFuture executeLogoutCommand(final String tag, final SessionListener listener) {
     	ChannelFuture future = executeCommand(new ImapCommand(tag, "LOGOUT", new Argument(), new String[]{}), listener);
-    	return future;
+    	return new IMAPClientChannelFuture(future);
     }
 
     /**
@@ -288,9 +294,9 @@ public class IMAPSession {
      * @param listener the session listener
      * @return the future object
      */
-    public ChannelFuture executeCapabilityCommand(final String tag, final SessionListener listener) {
+    public IMAPClientChannelFuture executeCapabilityCommand(final String tag, final SessionListener listener) {
     	setState(IMAPSessionState.Connected);
-        return executeCommand(new ImapCommand(tag, "CAPABILITY", new Argument(), new String[] {}), listener);
+        return new IMAPClientChannelFuture(executeCommand(new ImapCommand(tag, "CAPABILITY", new Argument(), new String[] {}), listener));
     }
 
     /**
@@ -302,11 +308,11 @@ public class IMAPSession {
      * @param listener the session listener
      * @return the future object
      */
-    public ChannelFuture executeAppendCommand(final String tag, final String labelName, final String flags, 
+    public IMAPClientChannelFuture executeAppendCommand(final String tag, final String labelName, final String flags, 
     		final String size, final SessionListener listener) {
     	setState(IMAPSessionState.Connected);
-        return executeCommand(new ImapCommand(tag, "APPEND", new Argument().addString(labelName).addLiteral(flags).addLiteral("{" + size + "}"),
-                new String[] { "IMAP4REV1" }), listener);
+        return new IMAPClientChannelFuture(executeCommand(new ImapCommand(tag, "APPEND", new Argument().addString(labelName).addLiteral(flags).addLiteral("{" + size + "}"),
+                new String[] { "IMAP4REV1" }), listener));
     }
 
     /**
@@ -314,8 +320,8 @@ public class IMAPSession {
      * @param rawText the raw text to be sent to the remote IMAP server
      * @return the future object
      */
-    public ChannelFuture executeRawTextCommand(final String rawText) {
-        return executeCommand(new ImapCommand("", rawText, null, new String[] {}), null);
+    public IMAPClientChannelFuture executeRawTextCommand(final String rawText) {
+        return new IMAPClientChannelFuture(executeCommand(new ImapCommand("", rawText, null, new String[] {}), null));
     }
     
     /**
@@ -324,8 +330,8 @@ public class IMAPSession {
      * @param listener the session listener
      * @return the future object
      */
-    public ChannelFuture executeNOOPCommand(final String tag, final SessionListener listener) {
-    	return executeCommand(new ImapCommand(tag, "NOOP", new Argument(), new String[]{}), listener);
+    public IMAPClientChannelFuture executeNOOPCommand(final String tag, final SessionListener listener) {
+    	return new IMAPClientChannelFuture(executeCommand(new ImapCommand(tag, "NOOP", new Argument(), new String[]{}), listener));
     }
 
     /**

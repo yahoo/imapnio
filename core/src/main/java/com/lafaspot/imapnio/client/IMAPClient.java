@@ -31,9 +31,6 @@ import com.lafaspot.imapnio.listener.SessionListener;
  */
 public class IMAPClient {
 	
-	/** The singleton instenace. */
-	private static final IMAPClient instance = new IMAPClient();
-
     /** Client configuration. */
     private final ImapClientConfig config;
 
@@ -46,23 +43,16 @@ public class IMAPClient {
 
     /**
      * Constructs a NIO based IMAP client.
+     * @param threads number of threads to be used by IMAP client
      */
-    private IMAPClient() {
+    public IMAPClient(final int threads) {
         this.config = new ImapClientConfig();
         this.bootstrap = new Bootstrap();
-        this.group = new NioEventLoopGroup(config.getNumThreads());
+        this.group = new NioEventLoopGroup(threads);
 		bootstrap.channel(NioSocketChannel.class);
 		bootstrap.group(group);
     }
     
-    /** 
-     * Return the singleton instance.
-     * @return IMAPClient
-     */
-    public static IMAPClient getInstance() {
-    	return instance;
-    }
-
     /**
      * Create a new IMAP session.
      * @param uri IMAP server URI
