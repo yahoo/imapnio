@@ -6,18 +6,12 @@ package com.lafaspot.imapnio.client;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.slf4j.LoggerFactory;
 
 import com.lafaspot.imapnio.exception.IMAPSessionException;
-import com.lafaspot.imapnio.listener.ClientListener;
 import com.lafaspot.imapnio.listener.SessionListener;
 import com.sun.mail.imap.protocol.IMAPResponse;
 

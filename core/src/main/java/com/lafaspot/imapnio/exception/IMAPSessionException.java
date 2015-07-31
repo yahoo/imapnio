@@ -36,6 +36,7 @@ public class IMAPSessionException extends Exception {
 
     /**
      * Convert the exception into a String for display and/or processing.
+     * @return the string value
      */
     @Override
     public String toString() {
