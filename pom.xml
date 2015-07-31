@@ -214,7 +214,7 @@
 					<version>${maven-surefire-plugin.version}</version>
 				</plugin>
 				<plugin>
-					<!-- Ignore/Execute plugin execution for eclipse indigo until this is 
+					<!-- Ignore/Execute plugin execution for eclipse indigo until this is
 						fixed -->
 					<groupId>org.eclipse.m2e</groupId>
 					<artifactId>lifecycle-mapping</artifactId>
@@ -337,10 +337,10 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>findbugs-maven-plugin</artifactId>
-				<!-- http://gleclaire.github.io/findbugs-maven-plugin/faq.html When running 
-					findbugs on a project, the default heap size might not be enough to complete 
-					the build. For now there is no way to fork findbugs and run with its own 
-					memory requirements, but the following system variable will allow you to 
+				<!-- http://gleclaire.github.io/findbugs-maven-plugin/faq.html When running
+					findbugs on a project, the default heap size might not be enough to complete
+					the build. For now there is no way to fork findbugs and run with its own
+					memory requirements, but the following system variable will allow you to
 					do so for Maven: export MAVEN_OPTS=-Xmx1024M -->
 				<configuration>
 					<fork>true</fork>
@@ -362,7 +362,7 @@
 					<!-- Ensures that FindBugs inspects source code when project is compiled. -->
 					<execution>
 						<id>check-compile</id>
-						<phase>validate</phase>
+						<phase>verify</phase>
 						<goals>
 							<goal>check</goal>
 						</goals>
@@ -373,7 +373,7 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-pmd-plugin</artifactId>
 				<configuration>
-					<skip>true</skip>
+					<skip>false</skip>
 					<failOnViolation>true</failOnViolation>
 					<failurePriority>1</failurePriority>
 					<rulesets>
@@ -403,7 +403,7 @@
 						-Djava.library.path=
 						-javaagent:"${settings.localRepository}"/org/jacoco/org.jacoco.agent/${jacoco-maven-plugin.version}/org.jacoco.agent-${jacoco-maven-plugin.version}-runtime.jar=destfile=${basedir}/target/jacoco.exec</argLine>
 					<excludedGroups>notIsolate,EventListenersRegression</excludedGroups>
-					<!-- DO NOT TOUCH: SETTINGS BELOW ALLOW THE CONFIG LOADER TO FIND CONFIG 
+					<!-- DO NOT TOUCH: SETTINGS BELOW ALLOW THE CONFIG LOADER TO FIND CONFIG
 						TEST RESOURCES :- LAFA -->
 					<useSystemClassLoader>true</useSystemClassLoader>
 					<useManifestOnlyJar>false</useManifestOnlyJar>

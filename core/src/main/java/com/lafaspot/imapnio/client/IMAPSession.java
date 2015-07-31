@@ -65,22 +65,22 @@ public class IMAPSession {
 
     /** Map to hold tag to listener. */
     private final ConcurrentHashMap<String, SessionListener> listeners;
-    
+
     /** IMAP tag used for IDLE command. */
     private String idleTag;
 
     /** List of IMAPResposne object. */
     private final List<IMAPResponse> responses;
-    
+
     /** The listener used for this session. */
     private SessionListener clientListener;
-    
+
     /** Server to connect to. */
     private final URI serverUri;
-    
+
     /** Bootstrap. */
     private final Bootstrap bootstrap;
-    
+
 
     /**
      * Creates a IMAP session.
@@ -91,7 +91,7 @@ public class IMAPSession {
      * @param listener the session listener
      * @throws IMAPSessionException on SSL or connect failure
      */
-	public IMAPSession(final URI uri, final Bootstrap bootstrap, final EventLoopGroup group, 
+	public IMAPSession(final URI uri, final Bootstrap bootstrap, final EventLoopGroup group,
 			final SessionListener listener) throws IMAPSessionException {
 		responses = new ArrayList<IMAPResponse>();
 		listeners = new ConcurrentHashMap<String, SessionListener>();
@@ -121,7 +121,7 @@ public class IMAPSession {
 			bootstrap
 					.handler(
 							new IMAPClientInitializer(this, sslCtx, uri
-									.getHost(), uri.getPort())); 
+									.getHost(), uri.getPort()));
 //			ChannelFuture connectFuture = bootstrap.connect(uri.getHost(), uri.getPort());
 //			this.channel = connectFuture.sync().channel();
 //			connectFuture.addListener(new GenericFutureListener<ChannelFuture>() {
@@ -146,7 +146,7 @@ public class IMAPSession {
         group.shutdownGracefully();
         channel.close();
     }
-    
+
     /**
      * Connects to the remote server.
      * @return the ChannelFuture object
@@ -167,7 +167,7 @@ public class IMAPSession {
 			}
 		});
 		return new IMAPChannelFuture(connectFuture);
-    	
+
     }
 
 
@@ -239,7 +239,7 @@ public class IMAPSession {
      * @return the future object
      */
     public IMAPChannelFuture executeLoginCommand(final String tag, final String username, final String password, final SessionListener listener) {
-        return new IMAPChannelFuture(executeCommand(new ImapCommand(tag, "LOGIN", 
+        return new IMAPChannelFuture(executeCommand(new ImapCommand(tag, "LOGIN",
         		new Argument().addString(username).addString(password), new String[] { "auth=plain" }), listener));
     }
 
@@ -252,11 +252,11 @@ public class IMAPSession {
      * @return the future object
      */
     public IMAPChannelFuture executeOAuth2Command(final String tag, final String oauth2Tok, final SessionListener listener) {
-        ChannelFuture future = executeCommand(new ImapCommand(tag, "AUTHENTICATE XOAUTH2", 
+        ChannelFuture future = executeCommand(new ImapCommand(tag, "AUTHENTICATE XOAUTH2",
         		new Argument().addString(oauth2Tok), new String[] { "auth=xoauth2" }), listener);
         return new IMAPChannelFuture(future);
     }
-    
+
     /**
      * Initiate a SASL based XOAUTH2 command.
      * @param tag IMAP tag to be used
@@ -266,7 +266,7 @@ public class IMAPSession {
      * @return the future object
      */
     public IMAPChannelFuture executeSASLXOAuth2(final String tag, final String user, final String token, final SessionListener listener) {
-    	
+
     	StringBuffer buf = new StringBuffer();
     	buf.append("user=").append(user).append("\u0001")
     	.append("auth=Bearer ").append(token).append("\u0001").append("\u0001");
@@ -309,7 +309,7 @@ public class IMAPSession {
      * @param listener the session listener
      * @return the future object
      */
-    public IMAPChannelFuture executeAppendCommand(final String tag, final String labelName, final String flags, 
+    public IMAPChannelFuture executeAppendCommand(final String tag, final String labelName, final String flags,
     		final String size, final SessionListener listener) {
     	setState(IMAPSessionState.Connected);
         return new IMAPChannelFuture(executeCommand(new ImapCommand(tag, "APPEND", new Argument().addString(labelName).addLiteral(flags).addLiteral("{" + size + "}"),
@@ -324,7 +324,7 @@ public class IMAPSession {
     public IMAPChannelFuture executeRawTextCommand(final String rawText) {
         return new IMAPChannelFuture(executeCommand(new ImapCommand("", rawText, null, new String[] {}), listener));
     }
-    
+
     /**
      * Execute a IMAP NOOP command.
      * @param tag IMAP tag to be used
@@ -346,7 +346,7 @@ public class IMAPSession {
 
 		String args = (method.getArgs() != null ? method.getArgs().toString()
 				: "");
-		String line = method.getTag() + (method.getTag() != "" ? " " : "")
+		String line = method.getTag() + (!method.getTag().isEmpty() ? " " : "")
 				+ method.getCommand() + (args.length() > 0 ? " " + args : "");
 	        if (log.isDebugEnabled()) {
 	            log.debug("--> " + line);
@@ -371,7 +371,7 @@ public class IMAPSession {
     protected void addResponse(final IMAPResponse response) {
         responses.add(response);
     }
-    
+
     /**
      * Get the IMAP tag corresponding to the IDLE command.
      * @return the IDLE tag
@@ -418,8 +418,8 @@ public class IMAPSession {
      */
     protected ClientListener getClientListener(final String tag) {
         return listeners.get(tag);
-    }    
-    
+    }
+
     /**
      * Returns the connect/disconnect client listener.
      * @return ClientListener
@@ -427,7 +427,7 @@ public class IMAPSession {
     protected ClientListener getSessionListener() {
     	return listener;
     }
-    
+
     /**
      * Remove the listener after command for that tag is processed.
      * @param tag remove listener for this tag
@@ -436,7 +436,7 @@ public class IMAPSession {
     protected SessionListener removeClientListener(final String tag) {
         return listeners.remove(tag);
     }
-    
+
     /**
      * Reset this IMAP session.
      */
