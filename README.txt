@@ -7,4 +7,5 @@ $ mvn clean install
 $ mvn clean deploy -Dgpg.passphrase=[pathPhrase]
 
 - All Pull requests need to pass continous integration before being merged.
-  Please goto https://github.com/lafaspot/imapnio
+  Please goto https://travis-ci.org/lafaspot/imapnio
+  
