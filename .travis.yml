@@ -1,0 +1,17 @@
+branches:
+  only:
+  - master
+  - stable
+language: java
+jdk:
+- oraclejdk8
+before_install:
+install:
+- mvn clean install -Dgpg.skip=true
+before_script: 
+script: 
+after_success:
+- mvn clean deploy  -Dgpg.skip=true
+after_failure:
+- cat com.github.lafa.logfast/target/surefire-reports/*.txt
+- cat com.github.lafa.logfast/core/target/surefire-reports/*.txt
