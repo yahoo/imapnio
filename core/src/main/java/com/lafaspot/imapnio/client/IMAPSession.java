@@ -8,7 +8,6 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoopGroup;
 import io.netty.handler.ssl.SslContext;
-import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.util.concurrent.GenericFutureListener;
 
 import java.net.URI;
@@ -73,7 +72,7 @@ public class IMAPSession {
     /** List of IMAPResposne object. */
     private final List<IMAPResponse> responses;
     
-    /** The listener used for thos session. */
+    /** The listener used for this session. */
     private SessionListener clientListener;
     
     /** Server to connect to. */
@@ -272,7 +271,9 @@ public class IMAPSession {
     	buf.append("user=").append(user).append("\u0001")
     	.append("auth=Bearer ").append(token).append("\u0001").append("\u0001");
     	String encOAuthStr = Base64.getEncoder().encodeToString(buf.toString().getBytes(StandardCharsets.UTF_8));
-    	log.debug("XOAUTH2 " + encOAuthStr);
+    	if (log.isDebugEnabled()) {
+    	    log.debug("XOAUTH2 " + encOAuthStr);
+    	}
     	return executeOAuth2Command(tag, encOAuthStr, listener);
     }
 
@@ -321,7 +322,7 @@ public class IMAPSession {
      * @return the future object
      */
     public IMAPClientChannelFuture executeRawTextCommand(final String rawText) {
-        return new IMAPClientChannelFuture(executeCommand(new ImapCommand("", rawText, null, new String[] {}), null));
+        return new IMAPClientChannelFuture(executeCommand(new ImapCommand("", rawText, null, new String[] {}), listener));
     }
     
     /**
@@ -347,7 +348,9 @@ public class IMAPSession {
 				: "");
 		String line = method.getTag() + (method.getTag() != "" ? " " : "")
 				+ method.getCommand() + (args.length() > 0 ? " " + args : "");
-		log.debug("--> " + line);
+	        if (log.isDebugEnabled()) {
+	            log.debug("--> " + line);
+	        }
 
 		ChannelFuture lastWriteFuture = this.channel.writeAndFlush(line
 				+ "\r\n");
