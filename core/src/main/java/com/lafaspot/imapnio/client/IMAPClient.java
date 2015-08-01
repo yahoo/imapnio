@@ -38,7 +38,7 @@ public class IMAPClient {
 		bootstrap.channel(NioSocketChannel.class);
 		bootstrap.group(group);
     }
-    
+
     /**
      * Create a new IMAP session.
      * @param uri IMAP server URI

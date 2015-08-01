@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.lafaspot.imapnio.listener;
 
@@ -21,7 +21,7 @@ public interface ClientListener {
 	 * @param responses IMAPResponse
 	 */
     void onResponse(final IMAPSession session, final String tag, final List<IMAPResponse> responses);
-    
+
     /**
      * Will be called when an untagged message is received from remote server.
      * @param session IMAPSession

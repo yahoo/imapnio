@@ -22,13 +22,13 @@ public class IMAPClientInitializer extends ChannelInitializer<SocketChannel> {
 
     /** The IMAP Session. */
     private final IMAPSession session;
-    
+
     /** SSL context. */
     private final SslContext sslCtx;
-    
+
     /** Remote server host. */
     private final String host;
-    
+
     /** Remote server port. */
     private final int port;
 

@@ -61,7 +61,7 @@
         </module>
         <module name="MagicNumber" />
         <module name="MissingSwitchDefault" />
-        <!-- <module name="RedundantThrows"> <property name="suppressLoadErrors" 
+        <!-- <module name="RedundantThrows"> <property name="suppressLoadErrors"
             value="true"/> </module> -->
         <module name="SimplifyBooleanExpression" />
         <module name="SimplifyBooleanReturn" />
@@ -110,24 +110,24 @@
             value="inherit" />
     </module>
     <module name="RegexpSingleline">
-        <property name="severity" value="ignore" />
+        <property name="severity" value="error" />
         <property name="format" value="\s+$" />
         <property name="message" value="Line has trailing spaces." />
         <metadata name="net.sf.eclipsecs.core.lastEnabledSeverity"
             value="inherit" />
     </module>
-    <!-- Eclipse-Only Suppression Filter Configuration / Fails for Maven 
-        Commandline Maven command-line build uses pom.xml suppressionLocation setting 
-        in the checkstyle configuration. Eclipse checkstyle does not recognize the 
-        pom.xml setting, only the checkstyle.xml SuppressionFilter module here. But 
-        Maven command-line does not compile with the following because no variable 
-        is defined to locate the supporessions.xml in a way that works consistently 
-        regardless of where invoked (from root of project or cd into individual projects. 
-        You can set pom.xml PropertiesLocation tag with a .properties file containing 
-        key=value pairs for such variables, but they are not relative to the checkstyle.xml 
-        location. DISABLED: Enable only if you want to see the same exclusions from 
-        eclipse, but will not build from command-line. <module name="SuppressionFilter"> 
-        <property name="file" value="${samedir}/checkstyle_suppressions.xml"/> 
+    <!-- Eclipse-Only Suppression Filter Configuration / Fails for Maven
+        Commandline Maven command-line build uses pom.xml suppressionLocation setting
+        in the checkstyle configuration. Eclipse checkstyle does not recognize the
+        pom.xml setting, only the checkstyle.xml SuppressionFilter module here. But
+        Maven command-line does not compile with the following because no variable
+        is defined to locate the supporessions.xml in a way that works consistently
+        regardless of where invoked (from root of project or cd into individual projects.
+        You can set pom.xml PropertiesLocation tag with a .properties file containing
+        key=value pairs for such variables, but they are not relative to the checkstyle.xml
+        location. DISABLED: Enable only if you want to see the same exclusions from
+        eclipse, but will not build from command-line. <module name="SuppressionFilter">
+        <property name="file" value="${samedir}/checkstyle_suppressions.xml"/>
         </module> -->
     <module name="SuppressionFilter">
         <property name="file"

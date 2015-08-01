@@ -18,12 +18,12 @@ public interface SessionListener extends ClientListener {
 	 * @param session IMAPSession
 	 */
 	void onConnect(final IMAPSession session);
-    
+
     /**
      * Will be called when the session/socket is disconnected.
      * @param session IMAPSession
      */
     void onDisconnect(final IMAPSession session);
-    
-    
+
+
 }
