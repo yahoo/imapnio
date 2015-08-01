@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.lafaspot.imapnio.exception;
 
@@ -15,7 +15,7 @@ public class IMAPSessionException extends Exception {
     protected final String id;
 
     /**
-     * Constructs a session exception. 
+     * Constructs a session exception.
      * @param r reason string
      * @param t the throwable
      */
@@ -25,7 +25,7 @@ public class IMAPSessionException extends Exception {
         this.id = Thread.currentThread().getName() + ":" + System.currentTimeMillis();
     }
 
-    /** 
+    /**
      * Constructs a session exception.
      * @param r reason string
      */

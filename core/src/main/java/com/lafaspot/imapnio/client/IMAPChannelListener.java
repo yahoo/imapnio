@@ -8,7 +8,7 @@ import com.lafaspot.imapnio.listener.SessionListener;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 
-/** 
+/**
  * Listener for the channel.
  * @author kraman
  *
@@ -29,7 +29,7 @@ public class IMAPChannelListener implements ChannelHandler {
         this.session = session;
     }
 
-     /** 
+     /**
       * Callback when a new handler has been added to channel.
       * @param ctx the channel handler context
       */
@@ -41,7 +41,7 @@ public class IMAPChannelListener implements ChannelHandler {
 
     /**
      * A channel has been removed, socket disconnect event. Call the client listener if one was registered.
-     * 
+     *
      * @param ctx the channel handler context
      */
     public void handlerRemoved(final ChannelHandlerContext ctx) {

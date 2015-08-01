@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.lafaspot.imapnio.channel;
 
@@ -53,7 +53,7 @@ public class IMAPChannelFuture {
     	
     	return this;
     }
-    
+
     /**
      * Waits for this future to be completed without
      * interruption.  This method catches an InterruptedException and
@@ -72,7 +72,7 @@ public class IMAPChannelFuture {
     public boolean isSuccess() {
     	return future.isSuccess();
     }
-    
+
     /**
      * returns true if and only if the operation can be cancelled via cancel() API}.
      * @return is the task cancel-able
@@ -80,7 +80,7 @@ public class IMAPChannelFuture {
     public boolean isCancellable() {
     	return future.isCancellable();
     }
-    
+
     /**
      * Returns the cause of the failed I/O operation if the I/O operation has
      * failed.
@@ -92,7 +92,7 @@ public class IMAPChannelFuture {
     public Throwable cause() {
     	return future.cause();
     }
-    
+
 
     /**
      * Returns {@code true} if this task completed.

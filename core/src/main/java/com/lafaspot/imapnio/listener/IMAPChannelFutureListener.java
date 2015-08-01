@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.lafaspot.imapnio.listener;
 

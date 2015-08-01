@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.lafaspot.imapnio.channel;
 
@@ -12,10 +12,10 @@ import io.netty.util.concurrent.GenericFutureListener;
  * @author kraman
  *
  */
-public class IMAPClientChannelFuture {	
+public class IMAPClientChannelFuture {
 	/** The ChannelFuture object.*/
 	private final ChannelFuture future;
-	
+
 	/**
 	 * Constructs a IMAPClientChannelFuture.
 	 * @param future the channel future object
@@ -23,7 +23,7 @@ public class IMAPClientChannelFuture {
 	public IMAPClientChannelFuture(final ChannelFuture future) {
 		this.future = future;
 	}
-	
+
 	   /**
      * Adds the specified listener to this future.  The
      * specified listener is notified when this future is
@@ -35,7 +35,7 @@ public class IMAPClientChannelFuture {
     public ChannelFuture addListener(GenericFutureListener<? extends Future<? super Void>> listener) {
     	return future.addListener(listener);
     }
-    
+
     /**
      * Waits for this future to be completed without
      * interruption.  This method catches an InterruptedException and

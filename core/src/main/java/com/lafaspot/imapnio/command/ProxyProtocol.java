@@ -34,12 +34,12 @@ public class ProxyProtocol extends Protocol {
      * @param port IMAP server port
      * @param props properties
      * @param prefix prefix to prepend property keys
-     * @param isSSL is this an SSL connection 
+     * @param isSSL is this an SSL connection
      * @param logger logger
      * @throws IOException on network failure
      * @throws ProtocolException on IMAP protocol errors
      */
-    private ProxyProtocol(final String host, final int port, final Properties props, final String prefix, 
+    private ProxyProtocol(final String host, final int port, final Properties props, final String prefix,
     		final boolean isSSL, final MailLogger logger) throws IOException,
             ProtocolException {
         super(host, port, props, prefix, isSSL, logger);

@@ -11,19 +11,19 @@ import com.sun.mail.iap.Argument;
  *
  */
 public class ImapCommand {
-    
+
     /** IMAP command tag. */
     protected String tag;
-    
+
     /** IMAP command. */
     protected String command;
-    
+
     /** Command arguments. */
     protected Argument args;
-    
+
     /** capabilities needed for this command. */
     protected String[] capabilities;
-    
+
     /** command type. */
     protected  CommandType type;
 
@@ -73,7 +73,7 @@ public class ImapCommand {
     public String getTag() {
         return tag;
     }
-    
+
     /**
      * Returns command type.
      * @return command type
@@ -81,7 +81,7 @@ public class ImapCommand {
     public CommandType getType() {
     	return type;
     }
-    
+
     /**
      * Defines the types of commands supported.
      * @author kraman
@@ -106,9 +106,9 @@ public class ImapCommand {
     	/** the command. */
     	private final String command;
     	
-    	/** 
+    	/**
     	 * Constructs a command type enum.
-    	 * @param c command 
+    	 * @param c command
     	 */
     	CommandType(final String c) {
     		this.command = c;
