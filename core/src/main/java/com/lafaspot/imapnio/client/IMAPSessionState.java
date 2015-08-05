@@ -9,8 +9,7 @@ package com.lafaspot.imapnio.client;
  */
 public enum IMAPSessionState {
     /** socket connect reauest. */
-	ConnectRequest("connect"),
-	/** socket connected. */
+    ConnectRequest("connect"), /** socket connected. */
     Connected("connected"), // indicates connection but no auth attempts or changes
     /** login failed. */
     LoginFailed("failed"), // indicates failed login
@@ -19,12 +18,14 @@ public enum IMAPSessionState {
     /** entered idle mode. */
     IDLING("idling"); // idling
 
-	/** session state. */
+    /** session state. */
     private final String state;
 
     /**
      * Constructs a session state.
-     * @param state string representing the state
+     * 
+     * @param state
+     *            string representing the state
      */
     private IMAPSessionState(final String state) {
         this.state = state;

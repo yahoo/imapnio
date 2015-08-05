@@ -34,10 +34,15 @@ public class IMAPClientInitializer extends ChannelInitializer<SocketChannel> {
 
     /**
      * Used to initialize the client channel.
-     * @param session IMAP Session
-     * @param sslCtx SSL context
-     * @param host remote host
-     * @param port remote port
+     * 
+     * @param session
+     *            IMAP Session
+     * @param sslCtx
+     *            SSL context
+     * @param host
+     *            remote host
+     * @param port
+     *            remote port
      */
     public IMAPClientInitializer(final IMAPSession session, final SslContext sslCtx, final String host, final int port) {
         this.session = session;
@@ -49,7 +54,7 @@ public class IMAPClientInitializer extends ChannelInitializer<SocketChannel> {
 
     @Override
     public void initChannel(final SocketChannel ch) {
-        ChannelPipeline pipeline = ch.pipeline();
+        final ChannelPipeline pipeline = ch.pipeline();
 
         if (sslCtx != null) {
             pipeline.addLast(sslCtx.newHandler(ch.alloc(), host, port));
