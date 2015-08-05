@@ -25,6 +25,7 @@ import com.lafaspot.imapnio.exception.IMAPSessionException;
 import com.lafaspot.imapnio.listener.ClientListener;
 import com.lafaspot.imapnio.listener.SessionListener;
 import com.lafaspot.logfast.logging.LogContext;
+import com.lafaspot.logfast.logging.LogDataUtil;
 import com.lafaspot.logfast.logging.LogManager;
 import com.lafaspot.logfast.logging.Logger;
 import com.sun.mail.imap.protocol.BASE64MailboxEncoder;
@@ -86,6 +87,8 @@ public class IMAPSession {
     /**
      * Creates a IMAP session.
      *
+     * @param sessionId
+     *            identifier for the session
      * @param uri
      *            remote IMAP server URI
      * @param bootstrap
@@ -100,15 +103,9 @@ public class IMAPSession {
      *             on SSL or connect failure
      */
     @SuppressWarnings({ "deprecation", "checkstyle:linelength" })
-    public IMAPSession(@Nonnull final URI uri, @Nonnull final Bootstrap bootstrap, @Nonnull final EventLoopGroup group,
+    public IMAPSession(@Nonnull final String sessionId, @Nonnull final URI uri, @Nonnull final Bootstrap bootstrap, @Nonnull final EventLoopGroup group,
                     @Nonnull final SessionListener listener, @Nonnull final LogManager logManager) throws IMAPSessionException {
-        LogContext context = new LogContext("IMAPSession-" + uri.toASCIIString()) {
-            @Override
-            public String getSerial() {
-                // Log data related to this session
-                return "{" + getName() + "}";
-            }
-        };
+        LogContext context = new SessionLogContext("IMAPSession-" + uri.toASCIIString(), sessionId);
         log = logManager.getLogger(context);
         responses = new ArrayList<IMAPResponse>();
         listeners = new ConcurrentHashMap<String, SessionListener>();
@@ -304,10 +301,12 @@ public class IMAPSession {
      * @return the future object
      */
     public IMAPChannelFuture executeSASLXOAuth2(final String tag, final String user, final String token, final SessionListener listener) {
-
         final StringBuffer buf = new StringBuffer();
         buf.append("user=").append(user).append("\u0001").append("auth=Bearer ").append(token).append("\u0001").append("\u0001");
         final String encOAuthStr = Base64.getEncoder().encodeToString(buf.toString().getBytes(StandardCharsets.UTF_8));
+        if (log.isDebug()) {
+            log.debug(new LogDataUtil().set(this.getClass(), "XOAUTH2", encOAuthStr), null);
+        }
         return executeOAuth2Command(tag, encOAuthStr, listener);
     }
 
@@ -514,5 +513,4 @@ public class IMAPSession {
     Logger getLogger() {
         return log;
     }
-
 }
