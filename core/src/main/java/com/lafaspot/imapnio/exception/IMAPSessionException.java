@@ -16,8 +16,11 @@ public class IMAPSessionException extends Exception {
 
     /**
      * Constructs a session exception.
-     * @param r reason string
-     * @param t the throwable
+     * 
+     * @param r
+     *            reason string
+     * @param t
+     *            the throwable
      */
     public IMAPSessionException(final String r, final Throwable t) {
         super(t);
@@ -27,7 +30,9 @@ public class IMAPSessionException extends Exception {
 
     /**
      * Constructs a session exception.
-     * @param r reason string
+     * 
+     * @param r
+     *            reason string
      */
     public IMAPSessionException(final String r) {
         reason = r;
@@ -36,6 +41,7 @@ public class IMAPSessionException extends Exception {
 
     /**
      * Convert the exception into a String for display and/or processing.
+     * 
      * @return the string value
      */
     @Override
