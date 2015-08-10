@@ -4,6 +4,8 @@
 package com.lafaspot.imapnio.client;
 
 import java.net.URI;
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.Nonnull;
 
@@ -23,6 +25,11 @@ import io.netty.channel.socket.nio.NioSocketChannel;
  *
  */
 public class IMAPClient {
+    /** instance id used for debug. */
+    private final String instanceId = Integer.toString(new Random(System.nanoTime()).nextInt());
+
+    /** counter for sessins. */
+    private AtomicInteger sessionCounter = new AtomicInteger(1);
 
     /** The netty bootstrap. */
     private final Bootstrap bootstrap;
@@ -58,7 +65,10 @@ public class IMAPClient {
      */
     public IMAPSession createSession(@Nonnull final URI uri, @Nonnull final SessionListener listener, @Nonnull final LogManager logManager)
                     throws IMAPSessionException {
-        return new IMAPSession(uri, bootstrap, group, listener, logManager);
+        return new IMAPSession(new StringBuffer("[")
+        .append(instanceId)
+        .append(sessionCounter.incrementAndGet()).append("]")
+        .toString(), uri, bootstrap, group, listener, logManager);
     }
 
     /**
