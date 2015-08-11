@@ -3,9 +3,16 @@
  */
 package com.lafaspot.imapnio.client;
 
+import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.EventLoopGroup;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.util.concurrent.GenericFutureListener;
+
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
@@ -14,9 +21,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.Nonnull;
-import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLException;
-import javax.net.ssl.TrustManagerFactory;
 
 import com.lafaspot.imapnio.channel.IMAPChannelFuture;
 import com.lafaspot.imapnio.command.Argument;
@@ -30,13 +35,6 @@ import com.lafaspot.logfast.logging.LogManager;
 import com.lafaspot.logfast.logging.Logger;
 import com.sun.mail.imap.protocol.BASE64MailboxEncoder;
 import com.sun.mail.imap.protocol.IMAPResponse;
-
-import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.EventLoopGroup;
-import io.netty.handler.ssl.SslContext;
-import io.netty.util.concurrent.GenericFutureListener;
 
 /**
  * Defines one IMAP session.
@@ -122,7 +120,8 @@ public class IMAPSession {
             // Configure SSL.
             SslContext sslCtx;
             if (ssl) {
-                sslCtx = SslContext.newClientContext(TrustManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm())); // SslContextBuilder.forClient().build();
+            	sslCtx = SslContextBuilder.forClient().build();
+                // sslCtx = SslContext.newClientContext(TrustManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm()));
             } else {
                 sslCtx = null;
             }
@@ -133,20 +132,12 @@ public class IMAPSession {
 
             // Open channel using the bootstrap
             bootstrap.handler(new IMAPClientInitializer(this, sslCtx, uri.getHost(), uri.getPort()));
-            // ChannelFuture connectFuture = bootstrap.connect(uri.getHost(), uri.getPort());
-            // this.channel = connectFuture.sync().channel();
-            // connectFuture.addListener(new GenericFutureListener<ChannelFuture>() {
-            //
-            // public void operationComplete(final ChannelFuture future)
-            // throws Exception {
-            // setState(IMAPSessionState.ConnectRequest);
-            // }
-            // });
+
         } catch (final SSLException e1) {
             throw new IMAPSessionException("ssl exception", e1);
-        } catch (final NoSuchAlgorithmException e2) {
+        } /*catch (final NoSuchAlgorithmException e2) {
             throw new IMAPSessionException("no such algo exception", e2);
-        }
+        }*/
     }
 
     /**
