@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.github.krdev.imapnio</groupId>
         <artifactId>imapnio</artifactId>
-        <version>1.0.6</version>
+        <version>1.0.7</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -71,6 +71,21 @@
             <groupId>javax.mail</groupId>
             <artifactId>mail</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+
+                    <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+        </dependency>
+            
+        
     </dependencies>
     <build>
         <plugins>

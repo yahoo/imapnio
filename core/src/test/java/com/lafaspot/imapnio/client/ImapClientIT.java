@@ -14,6 +14,7 @@ import com.lafaspot.imapnio.listener.SessionListener;
 import com.lafaspot.logfast.logging.LogContext;
 import com.lafaspot.logfast.logging.LogManager;
 import com.lafaspot.logfast.logging.Logger;
+import com.lafaspot.logfast.logging.Logger.Level;
 import com.sun.mail.imap.protocol.IMAPResponse;
 
 /**
@@ -61,7 +62,7 @@ public class ImapClientIT {
         @Override
         public void onResponse(final IMAPSession session, final String tag, final List<IMAPResponse> responses) {
             for (final IMAPResponse r : responses) {
-                log.info(logPrefix + "got rsp " + r, null);
+                log.debug(logPrefix + "got rsp " + r, null);
             }
 
         }
@@ -382,7 +383,7 @@ public class ImapClientIT {
          */
         @Override
         public void onConnect(final IMAPSession session) {
-            log.error("SL: connected", null);
+            log.info("SL: connected", null);
         }
 
         /**
@@ -473,7 +474,84 @@ public class ImapClientIT {
 
     }
 
-    private IMAPClient theClient;
+    /**
+	 * Listener to send STATUS command.
+	 *
+	 * @author kraman
+	 *
+	 */
+	class ListenerToSendList implements SessionListener {
+
+	    /** listener to be used in status command. */
+	    private final SessionListener nextListener;
+
+	    /**
+	     * Constructs the listener.
+	     *
+	     * @param l
+	     *            next listener to use
+	     */
+	    public ListenerToSendList(final SessionListener l) {
+	        nextListener = l;
+	    }
+
+	    /**
+	     * received a tagged response.
+	     *
+	     * @param session
+	     *            IMAP session
+	     * @param tag
+	     *            IMAP tag
+	     * @param responses
+	     *            messages
+	     */
+	    @Override
+	    public void onResponse(final IMAPSession session, final String tag, final List<IMAPResponse> responses) {
+	        for (final IMAPResponse r : responses) {
+	            log.info("SL: rsp " + r, null);
+	        }
+	        log.error("SL: sending list", null);
+	        session.executeListCommand("t0-list", "", "*", nextListener);
+	    }
+
+	    /**
+	     * disconnected.
+	     *
+	     * @param session
+	     *            IMAP session
+	     */
+	    @Override
+	    public void onDisconnect(final IMAPSession session) {
+	        log.error("SL: login error.disconnected", null);
+	    }
+
+	    /**
+	     * connected.
+	     *
+	     * @param session
+	     *            IMAP session
+	     */
+	    @Override
+	    public void onConnect(final IMAPSession session) {
+	        log.info("SL: connected", null);
+	    }
+
+	    /**
+	     * received untagged response.
+	     *
+	     * @param session
+	     *            IMAP session
+	     * @param response
+	     *            message
+	     */
+	    @Override
+	    public void onMessage(final IMAPSession session, final IMAPResponse response) {
+	        log.error("SL: msg  " + response, null);
+	    }
+
+	}
+
+	private IMAPClient theClient;
     private LogManager logManager;
     private Logger log;
 
@@ -484,7 +562,8 @@ public class ImapClientIT {
     public void setup() {
         final int threads = 5;
         theClient = new IMAPClient(threads);
-        logManager = new LogManager();
+        logManager = new LogManager(Level.DEBUG, 5);
+        logManager.setLegacy(true);
         log = logManager.getLogger(new LogContext("ImapClientIT") {
         });
     }
@@ -557,6 +636,22 @@ public class ImapClientIT {
     public void testGmailPlainLoginWithStatus() throws Exception {
         final ListenerToSendStatus l = new ListenerToSendStatus(new GenericListener("STATUS "));
         final IMAPSession session = theClient.createSession(new URI("imaps://imap.gmail.com:993"), l, logManager);
+        session.connect();
+
+        final IMAPChannelFuture loginFuture = session.executeLoginCommand("t1", "krinteg1@gmail.com", "1Testuser", l);
+        loginFuture.awaitUninterruptibly();
+        Thread.sleep(300000);
+
+    }
+
+    /**
+     * @throws Exception
+     *             failed data
+     */
+    @Test
+    public void testGmailPlainLoginWithList() throws Exception {
+        final ListenerToSendList l = new ListenerToSendList(new GenericListener("LIST "));
+        final IMAPSession session = theClient.createSession(new URI("imaps://imap.gmail.com:993"), new GenericListener("LIST"), logManager);
         session.connect();
 
         final IMAPChannelFuture loginFuture = session.executeLoginCommand("t1", "krinteg1@gmail.com", "1Testuser", l);
