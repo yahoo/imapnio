@@ -376,6 +376,23 @@ public class IMAPSession {
     }
 
     /**
+     * Execute a IMAP LIST command.
+     * @param tag IMAP tag to be used
+     * @param reference name of mailbox or level of mailbox hierarchy
+     * @param name mailbox name
+     * @param listener the session listener
+     * @return the future object
+     */
+    public IMAPChannelFuture executeListCommand(final String tag, final String reference, final String name, final SessionListener listener) {
+        final String b64Mailbox = BASE64MailboxEncoder.encode(name);
+        final Argument args = new Argument();
+        args.writeString(reference);
+        args.writeString(b64Mailbox);
+        setState(IMAPSessionState.Connected);
+        return new IMAPChannelFuture(executeCommand(new ImapCommand(tag, "LIST", args, new String[] {}), listener));
+     }
+
+    /**
      * Format and sends the IMAP command to remote server.
      *
      * @param method
