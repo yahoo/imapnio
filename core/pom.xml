@@ -14,7 +14,6 @@
     <name>${project.artifactId}</name>
     <url>https://github.com/lafaspot/imapnioclient</url>
     <description>imapnio component ${project.name}</description>
-
     <licenses>
         <license>
             <name>Apache License, Version 2.0</name>
@@ -22,8 +21,6 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
-
-
     <distributionManagement>
         <snapshotRepository>
             <id>ossrh</id>
@@ -84,8 +81,6 @@
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
         </dependency>
-            
-        
     </dependencies>
     <build>
         <plugins>

@@ -62,7 +62,7 @@ public class ImapClientIT {
         @Override
         public void onResponse(final IMAPSession session, final String tag, final List<IMAPResponse> responses) {
             for (final IMAPResponse r : responses) {
-                log.debug(logPrefix + "got rsp " + r, null);
+                log.info(logPrefix + "got rsp " + r, null);
             }
 
         }
@@ -75,7 +75,7 @@ public class ImapClientIT {
          */
         @Override
         public void onDisconnect(final IMAPSession session) {
-            log.error(logPrefix + " error disconnected", null);
+            log.info(logPrefix + " error disconnected", null);
         }
 
         /**
