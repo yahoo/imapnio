@@ -3,17 +3,18 @@
  */
 package com.lafaspot.imapnio.client;
 
-import java.util.Arrays;
-import java.util.List;
-
-import com.lafaspot.imapnio.exception.IMAPSessionException;
-import com.lafaspot.imapnio.listener.SessionListener;
-import com.sun.mail.imap.protocol.IMAPResponse;
-
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
 
+import java.util.Arrays;
+import java.util.List;
+
+import com.lafaspot.imapnio.listener.IMAPCommandListener;
+import com.sun.mail.imap.protocol.IMAPResponse;
+
 /**
+ * Handles all responses from the server, parases it and calls the client if a listener is registered. Maintains session state.
+ *
  * @author kraman
  *
  */
@@ -35,61 +36,76 @@ public class IMAPClientRespHandler extends MessageToMessageDecoder<IMAPResponse>
     /**
      * Decode the incoming IMAP command/response from server. Call the client listener when done.
      *
-     * @param ctx
-     *            - channel context
-     * @param msg
-     *            - incoming IMAP message
-     * @param out
-     *            - message to be sent to the next handler in the chain
-     * @throws Exception
-     *             FIXME: why are we throwing exception -- lafa
+     * @param ctx - channel context
+     * @param msg - incoming IMAP message
+     * @param out - message to be sent to the next handler in the chain
      */
     @Override
-    public void decode(final ChannelHandlerContext ctx, final IMAPResponse msg, final List<Object> out) throws Exception {
-        // log.debug("< " + msg + " state:" + session.getState());
-        if (session.getState() == IMAPSessionState.ConnectRequest) {
+    public void decode(final ChannelHandlerContext ctx, final IMAPResponse msg, final List<Object> out) {
+    	switch (session.getState().get()) {
+    	case CONNECT_SENT:
             if (msg.isOK()) {
-                session.setState(IMAPSessionState.Connected);
+                session.getState().set(IMAPSessionState.CONNECTED);
                 session.resetResponseList();
-                if (null != session.getSessionListener()) {
-                    ((SessionListener) session.getSessionListener()).onConnect(session);
+                if (null != session.getConnectionListener()) {
+                    session.getConnectionListener().onConnect(session);
                 }
             } else {
-                throw new IMAPSessionException("connect failed");
+                session.getState().set(IMAPSessionState.DISCONNECTED);
+                session.getConnectionListener().onDisconnect(session);
             }
-        } else if (session.getState() == IMAPSessionState.IDLE_REQUEST) {
+            break;
+    	case IDLE_SENT:
             if (msg.readAtomString().equals("idling")) {
-                session.setState(IMAPSessionState.IDLING);
+                session.getState().set(IMAPSessionState.IDLING);
                 session.resetResponseList();
-                // go back and see what that is.
+                // go back so the listener gets everything
                 msg.reset();
-                if (msg.readByte() == '+' && session.getSessionListener() != null) {
+                if (msg.readByte() == '+' && session.getConnectionListener() != null) {
+                    // go back so the listener gets everything
                     msg.reset();
-                    session.getSessionListener().onMessage(session, msg);
+                    session.getClientListener(session.getIdleTag()).onMessage(session, msg);
                 }
             }
-        } else if (session.getState() == IMAPSessionState.IDLING) {
-            session.getClientListener(session.getIdleTag()).onResponse(session, session.getIdleTag(), Arrays.asList(msg));
-        } else {
+            break;
+    	case IDLING:
+            session.getClientListener(session.getIdleTag()).onMessage(session, msg);
+            break;
+        case DONE_SENT:
+            boolean idleDone = false;
+            if (msg.isOK()) {
+                if (msg.readAtomString().equals("IDLE") && msg.readAtomString().equals("terminated")) {
+                    msg.reset();
+                    session.getState().set(IMAPSessionState.CONNECTED);
+                    session.getClientListener(session.getIdleTag()).onResponse(session, session.getIdleTag(), Arrays.asList(msg));
+                    idleDone = true;
+                }
+
+                if (!idleDone) {
+                    // assume still in idle
+                    session.getClientListener(session.getIdleTag()).onMessage(session, msg);
+                }
+            }
+            break;
+    	case CONNECTED:
+        default: // TODO remove??
             if (null != msg.getTag()) {
                 session.addResponse(msg);
-                final SessionListener listener = session.removeClientListener(msg.getTag());
-                if (null != listener) {
-                    listener.onResponse(session, msg.getTag(), session.getResponseList());
+                final IMAPCommandListener commandListener = session.removeClientListener(msg.getTag());
+                if (null != commandListener) {
+                    commandListener.onResponse(session, msg.getTag(), session.getResponseList());
                     session.resetResponseList();
                 }
             } else {
                 msg.reset();
-                if (msg.readByte() == '+' && session.getSessionListener() != null) {
+                if (msg.readByte() == '+' && session.getConnectionListener() != null) { // TODO remove, should never happen
                     msg.reset();
-                    session.getSessionListener().onMessage(session, msg);
+                    session.getConnectionListener().onMessage(session, msg);
                 } else {
                     session.addResponse(msg);
-                    // Pass along message without modifying it.
-                    // out.add(msg);
                 }
             }
-        }
+    	}
     }
 
 }
