@@ -22,7 +22,7 @@
         <queueSize>512</queueSize>
     </appender>
 
-    <root level="DEBUG">
+    <root level="WARN">
         <appender-ref ref="ASYNC" />
     </root>
 </configuration>
