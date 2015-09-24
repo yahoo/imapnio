@@ -1,6 +1,6 @@
 package com.lafaspot.imapnio.client;
 
-import com.lafaspot.imapnio.listener.SessionListener;
+import com.lafaspot.imapnio.listener.IMAPConnectionListener;
 import com.lafaspot.logfast.logging.LogDataUtil;
 import com.lafaspot.logfast.logging.Logger;
 
@@ -56,8 +56,8 @@ public class IMAPChannelListener implements ChannelHandler {
         if (log.isDebug()) {
             log.debug(new LogDataUtil().set(this.getClass(), "channel closed - removed"), null);
         }
-        if (null != session && session.getSessionListener() != null) {
-            ((SessionListener) session.getSessionListener()).onDisconnect(session);
+        if (null != session && session.getConnectionListener() != null) {
+            ((IMAPConnectionListener) session.getConnectionListener()).onDisconnect(session);
         }
     }
 
@@ -74,8 +74,8 @@ public class IMAPChannelListener implements ChannelHandler {
         if (log.isDebug()) {
             log.debug(new LogDataUtil().set(this.getClass(), "channel closed - exception"), cause);
         }
-        if (null != session && session.getSessionListener() != null) {
-            ((SessionListener) session.getSessionListener()).onDisconnect(session);
+        if (null != session && session.getConnectionListener() != null) {
+            ((IMAPConnectionListener) session.getConnectionListener()).onDisconnect(session);
         }
     }
 

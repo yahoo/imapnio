@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nonnull;
 
 import com.lafaspot.imapnio.exception.IMAPSessionException;
-import com.lafaspot.imapnio.listener.SessionListener;
+import com.lafaspot.imapnio.listener.IMAPConnectionListener;
 import com.lafaspot.logfast.logging.LogManager;
 
 import io.netty.bootstrap.Bootstrap;
@@ -63,7 +63,7 @@ public class IMAPClient {
      * @throws IMAPSessionException
      *             on error
      */
-    public IMAPSession createSession(@Nonnull final URI uri, @Nonnull final SessionListener listener, @Nonnull final LogManager logManager)
+    public IMAPSession createSession(@Nonnull final URI uri, @Nonnull final IMAPConnectionListener listener, @Nonnull final LogManager logManager)
                     throws IMAPSessionException {
         return new IMAPSession(new StringBuffer("[")
         .append(instanceId)
