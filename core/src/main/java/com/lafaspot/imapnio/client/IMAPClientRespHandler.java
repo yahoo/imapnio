@@ -61,15 +61,15 @@ public class IMAPClientRespHandler extends MessageToMessageDecoder<IMAPResponse>
                 session.resetResponseList();
                 // go back so the listener gets everything
                 msg.reset();
-                if (msg.readByte() == '+' && session.getConnectionListener() != null) {
+                if (msg.isContinuation() && session.getConnectionListener() != null) {
                     // go back so the listener gets everything
                     msg.reset();
-                    session.getClientListener(session.getIdleTag()).onMessage(session, msg);
+                    session.getCommandListener(session.getIdleTag()).onMessage(session, msg);
                 }
             }
             break;
     	case IDLING:
-            session.getClientListener(session.getIdleTag()).onMessage(session, msg);
+            session.getCommandListener(session.getIdleTag()).onMessage(session, msg);
             break;
         case DONE_SENT:
             boolean idleDone = false;
@@ -77,30 +77,35 @@ public class IMAPClientRespHandler extends MessageToMessageDecoder<IMAPResponse>
                 if (msg.readAtomString().equals("IDLE") && msg.readAtomString().equals("terminated")) {
                     msg.reset();
                     session.getState().set(IMAPSessionState.CONNECTED);
-                    session.getClientListener(session.getIdleTag()).onResponse(session, session.getIdleTag(), Arrays.asList(msg));
+                    session.getCommandListener(session.getIdleTag()).onResponse(session, session.getIdleTag(), Arrays.asList(msg));
                     idleDone = true;
                 }
 
                 if (!idleDone) {
                     // assume still in idle
-                    session.getClientListener(session.getIdleTag()).onMessage(session, msg);
+                    session.getCommandListener(session.getIdleTag()).onMessage(session, msg);
+                } else {
+                    session.removeCommandListener(session.getIdleTag());
+                    session.resetIdleTag();
                 }
             }
             break;
     	case CONNECTED:
         default: // TODO remove??
-            if (null != msg.getTag()) {
+            if (msg.isTagged()) {
                 session.addResponse(msg);
-                final IMAPCommandListener commandListener = session.removeClientListener(msg.getTag());
+                final IMAPCommandListener commandListener = session.removeCommandListener(msg.getTag());
                 if (null != commandListener) {
                     commandListener.onResponse(session, msg.getTag(), session.getResponseList());
                     session.resetResponseList();
                 }
             } else {
-                msg.reset();
-                if (msg.readByte() == '+' && session.getConnectionListener() != null) { // TODO remove, should never happen
-                    msg.reset();
-                    session.getConnectionListener().onMessage(session, msg);
+                if (msg.isContinuation()) {
+                    if (null != session.getCurrentTag() && null != session.getCommandListener(session.getCurrentTag())) {
+                        session.getCommandListener(session.getCurrentTag()).onMessage(session, msg);
+                    } else {
+                        session.getConnectionListener().onMessage(session, msg);
+                    }
                 } else {
                     session.addResponse(msg);
                 }

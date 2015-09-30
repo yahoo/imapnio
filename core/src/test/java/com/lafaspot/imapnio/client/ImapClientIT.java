@@ -277,7 +277,7 @@ public class ImapClientIT {
         };
 
         session.executeLoginCommand("t1", "krinteg1@gmail.com", "1Testuser", listenerToSendSelect);
-        Thread.sleep(5000);
+        Thread.sleep(20000);
         session.executeDoneCommand(new TestCommandListener("testGmailPlainLoginWithIdle"));
         Thread.sleep(1000);
 
@@ -480,7 +480,6 @@ public class ImapClientIT {
                 for (IMAPResponse r : responses) {
                     if (r.getTag() != null) {
                         Assert.assertTrue(r.isOK());
-
                         try {
                             session.executeIdleCommand("t1-idle", new TestCommandListener("testGmailSASLOauth2Login"));
                         } catch (SecurityException e) {
@@ -508,6 +507,7 @@ public class ImapClientIT {
             public void onResponse(IMAPSession session, String tag, List<IMAPResponse> responses) {
 
                 for (IMAPResponse r : responses) {
+                    log.info(r, null);
                     if (r.getTag() != null) {
                         Assert.assertTrue(r.isOK());
                         log.info("testGmailSASLOauth2Login sending select", null);
@@ -525,11 +525,15 @@ public class ImapClientIT {
 
             @Override
             public void onMessage(IMAPSession session, IMAPResponse response) {
-                throw new RuntimeException("unknown message " + response.toString());
+                if (response.isContinuation()) {
+                    session.executeRawTextCommand("ya29.-QHOsbpZG-1AT0b8YWEGWwl1g375kNTFKpardSF3gGyBMttOG_LJj-At3CS-B6evvRYz");
+                } else {
+                    throw new RuntimeException("unknown message " + response.toString());
+                }
             }
         };
 
-        final String oauth2Tok = "ya29.sAESox_nSyB04xIcdsSP_mlVF7OztszX2lk_E1up-L7PdbHoAGivXmgId8CLvkDKRqDR";
+        final String oauth2Tok = "ya29.-QHOsbpZG-1AT0b8YWEGWwl1g375kNTFKpardSF3gGyBMttOG_LJj-At3CS-B6evvRYz";
         final IMAPChannelFuture loginFuture = session.executeSASLXOAuth2("t1", "krinteg1@gmail.com", oauth2Tok, listenerToSendSelect);
         loginFuture.awaitUninterruptibly();
         Thread.sleep(2000);
