@@ -3,6 +3,11 @@
  */
 package com.lafaspot.imapnio.client;
 
+import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioSocketChannel;
+
 import java.net.URI;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -12,11 +17,6 @@ import javax.annotation.Nonnull;
 import com.lafaspot.imapnio.exception.IMAPSessionException;
 import com.lafaspot.imapnio.listener.IMAPConnectionListener;
 import com.lafaspot.logfast.logging.LogManager;
-
-import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.EventLoopGroup;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.nio.NioSocketChannel;
 
 /**
  * Netty based NIO IMAP client.
@@ -72,19 +72,9 @@ public class IMAPClient {
     }
 
     /**
-     * End a session contained within a client.
-     *
-     * @param session
-     *            the session to end
-     */
-    public void endSession(final IMAPSession session) {
-        session.disconnect();
-    }
-
-    /**
      * Close all of the sessions within a client, and shutdown the event group.
      */
-    public void close() {
+    public void shutdown() {
         this.group.shutdownGracefully();
     }
 

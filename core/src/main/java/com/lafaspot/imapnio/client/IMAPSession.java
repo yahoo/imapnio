@@ -71,6 +71,9 @@ public class IMAPSession {
     /** IMAP tag used for IDLE command. */
     private String idleTag;
 
+    /** IMAP tag used for the currently running command. */
+    private String currentTag;
+
     /** List of IMAPResposne object. */
     private final List<IMAPResponse> responses;
 
@@ -139,8 +142,7 @@ public class IMAPSession {
     /**
      * Close socket connection to IMAP server. Must be closed by the client for book-keeping purposes.
      */
-    protected void disconnect() {
-        group.shutdownGracefully();
+    public void disconnect() {
         channel.close();
     }
 
@@ -394,9 +396,9 @@ public class IMAPSession {
      *            the raw text to be sent to the remote IMAP server
      * @return the future object
      */
-//    public IMAPChannelFuture executeRawTextCommand(final String rawText) {
-//        return new IMAPChannelFuture(executeCommand(new ImapCommand("", rawText, null, new String[] {}), connectionListener));
-//    }
+    public IMAPChannelFuture executeRawTextCommand(final String rawText) {
+        return new IMAPChannelFuture(executeCommand(new ImapCommand("", rawText, null, new String[] {}), null));
+    }
 
     /**
      * Execute a IMAP NOOP command.
@@ -455,8 +457,9 @@ public class IMAPSession {
         }
 
         final ChannelFuture lastWriteFuture = this.channel.writeAndFlush(line + "\r\n");
-        if (null != listener) {
-            commandListeners.put(method.getTag(), listener);
+        if (null != listener && !method.getTag().isEmpty()) {
+            currentTag = method.getTag();
+            commandListeners.put(currentTag, listener);
         }
 
         return lastWriteFuture;
@@ -473,12 +476,27 @@ public class IMAPSession {
     }
 
     /**
+     * Get the IMAP tag corresponding to the currently running command.
+     *
+     * @return the current tag
+     */
+    String getCurrentTag() {
+        return currentTag;
+    }
+    /**
      * Get the IMAP tag corresponding to the IDLE command.
      *
      * @return the IDLE tag
      */
-    public String getIdleTag() {
+    String getIdleTag() {
         return idleTag;
+    }
+
+    /**
+     * IDLE done, reset the tag.
+     */
+    void resetIdleTag() {
+        idleTag = null;
     }
 
     /**
@@ -514,7 +532,7 @@ public class IMAPSession {
      *            get listener for this tag
      * @return ClientListener registered for the tag
      */
-    protected IMAPCommandListener getClientListener(final String tag) {
+    protected IMAPCommandListener getCommandListener(final String tag) {
         return commandListeners.get(tag);
     }
 
@@ -534,7 +552,8 @@ public class IMAPSession {
      *            remove listener for this tag
      * @return the removed listener
      */
-    protected IMAPCommandListener removeClientListener(final String tag) {
+    protected IMAPCommandListener removeCommandListener(final String tag) {
+        currentTag = null;
         return commandListeners.remove(tag);
     }
 
