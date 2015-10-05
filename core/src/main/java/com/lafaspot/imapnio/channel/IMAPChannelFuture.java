@@ -3,15 +3,15 @@
  */
 package com.lafaspot.imapnio.channel;
 
-import com.lafaspot.imapnio.listener.IMAPChannelFutureListener;
-
 import io.netty.channel.ChannelFuture;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 
+import com.lafaspot.imapnio.listener.IMAPChannelFutureListener;
+
 /**
  * Wraps the Netty ChannelFuture.
- * 
+ *
  * @author kraman
  *
  */
@@ -24,9 +24,8 @@ public class IMAPChannelFuture {
 
     /**
      * Constructs a IMAPClientChannelFuture.
-     * 
-     * @param future
-     *            the channel future object
+     *
+     * @param future the channel future object
      */
     public IMAPChannelFuture(final ChannelFuture future) {
         this.future = future;
@@ -35,7 +34,7 @@ public class IMAPChannelFuture {
     /**
      * Adds the specified listener to this future. The specified listener is notified when this future is is done. If this future is already
      * completed, the specified listener is notified immediately.
-     * 
+     *
      * @param listener
      *            the future listener
      * @return the channel future object
@@ -58,7 +57,7 @@ public class IMAPChannelFuture {
 
     /**
      * Waits for this future to be completed without interruption. This method catches an InterruptedException and discards it silently.
-     * 
+     *
      * @return the channel future object
      */
 
@@ -68,7 +67,7 @@ public class IMAPChannelFuture {
 
     /**
      * Returns {@code true} if and only if the I/O operation was completed successfully.
-     * 
+     *
      * @return if the task was success
      */
     public boolean isSuccess() {
@@ -77,11 +76,20 @@ public class IMAPChannelFuture {
 
     /**
      * returns true if and only if the operation can be cancelled via cancel() API}.
-     * 
+     *
      * @return is the task cancel-able
      */
     public boolean isCancellable() {
         return future.isCancellable();
+    }
+
+    /**
+     * Cancel an ongoing operation.
+     *
+     * @param mayInterruptIfRunning force the cancel even if operation is running
+     */
+    public void cancel(final boolean mayInterruptIfRunning) {
+        future.cancel(mayInterruptIfRunning);
     }
 
     /**
@@ -103,4 +111,5 @@ public class IMAPChannelFuture {
     public boolean isDone() {
         return future.isDone();
     }
+
 }

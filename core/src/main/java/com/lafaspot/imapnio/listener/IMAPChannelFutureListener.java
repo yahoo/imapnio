@@ -6,6 +6,8 @@ package com.lafaspot.imapnio.listener;
 import com.lafaspot.imapnio.channel.IMAPChannelFuture;
 
 /**
+ * Listener for IMAPChannelFuture - wraps ChannelFuture.
+ * 
  * @author kraman
  *
  */

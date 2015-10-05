@@ -15,7 +15,7 @@ import com.sun.mail.imap.protocol.IMAPResponse;
 public interface IMAPConnectionListener {
     /**
      * Will be called when the session/socket is connected.
-     * 
+     *
      * @param session
      *            IMAPSession
      */
@@ -23,27 +23,24 @@ public interface IMAPConnectionListener {
 
     /**
      * Will be called when the session/socket is disconnected.
-     * 
-     * @param session
-     *            IMAPSession
+     *
+     * @param session IMAPSession
+     * @param cause the reason for disconnect
      */
-    void onDisconnect(final IMAPSession session);
+    void onDisconnect(final IMAPSession session, final Throwable cause);
 
     /**
      * Will be called when there is a tagged response from the remote server.
-     * 
-     * @param session
-     *            IMAPSession
-     * @param tag
-     *            IMAP tag being used
-     * @param responses
-     *            IMAPResponse
+     *
+     * @param session IMAPSession
+     * @param tag IMAP tag being used
+     * @param responses IMAPResponse
      */
     void onResponse(final IMAPSession session, final String tag, final List<IMAPResponse> responses);
 
     /**
      * Will be called when an untagged message is received from remote server.
-     * 
+     *
      * @param session
      *            IMAPSession
      * @param response

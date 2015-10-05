@@ -3,8 +3,6 @@
  */
 package com.lafaspot.imapnio.client;
 
-import com.lafaspot.imapnio.command.ImapClientRespDecoder;
-
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
@@ -13,6 +11,9 @@ import io.netty.handler.codec.Delimiters;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 import io.netty.handler.ssl.SslContext;
+import io.netty.handler.timeout.ReadTimeoutHandler;
+
+import com.lafaspot.imapnio.command.ImapClientRespDecoder;
 
 /**
  * @author kraman
@@ -34,7 +35,7 @@ public class IMAPClientInitializer extends ChannelInitializer<SocketChannel> {
 
     /**
      * Used to initialize the client channel.
-     * 
+     *
      * @param session
      *            IMAP Session
      * @param sslCtx
@@ -54,7 +55,13 @@ public class IMAPClientInitializer extends ChannelInitializer<SocketChannel> {
 
     @Override
     public void initChannel(final SocketChannel ch) {
+        // TODO why parse this every time?
+        final Integer connectTimeoutValue = Integer.parseInt(session.getConfig().getProperty(IMAPSession.CONFIG_CONNECTION_TIMEOUT_KEY));
+        final Integer imapTimeoutValue = Integer.parseInt(session.getConfig().getProperty(IMAPSession.CONFIG_IMAP_TIMEOUT_KEY));
         final ChannelPipeline pipeline = ch.pipeline();
+
+        ch.config().setConnectTimeoutMillis(connectTimeoutValue);
+        pipeline.addLast("readTimeoutHandler", new ReadTimeoutHandler(imapTimeoutValue));
 
         if (sslCtx != null) {
             pipeline.addLast(sslCtx.newHandler(ch.alloc(), host, port));

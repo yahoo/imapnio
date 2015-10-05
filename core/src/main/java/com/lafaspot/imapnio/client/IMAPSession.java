@@ -18,6 +18,7 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -44,6 +45,20 @@ import com.sun.mail.imap.protocol.IMAPResponse;
  *
  */
 public class IMAPSession {
+
+    /** Socket connect timeout. */
+    public static final String CONFIG_CONNECTION_TIMEOUT_KEY = "mail.imap.connectiontimeout";
+    /** IMAP command timeout. */
+    public static final String CONFIG_IMAP_TIMEOUT_KEY = "mail.imap.timeout";
+
+    /** Socket connect timeout value. */
+    public static final String CONFIG_CONNECTION_TIMEOUT_VALUE = "60000";
+
+    /** IMAP command timeout value. */
+    public static final String CONFIG_IMAP_TIMEOUT_VALUE = "60000";
+
+    /** Configuration for this session. */
+    private final Properties config;
 
     /** logger. */
     private final Logger log;
@@ -89,24 +104,19 @@ public class IMAPSession {
     /**
      * Creates a IMAP session.
      *
-     * @param sessionId
-     *            identifier for the session
-     * @param uri
-     *            remote IMAP server URI
-     * @param bootstrap
-     *            the bootstrap
-     * @param group
-     *            the event loop group
-     * @param listener
-     *            the session listener
-     * @param logManager
-     *            the LogManager instance
-     * @throws IMAPSessionException
-     *             on SSL or connect failure
+     * @param sessionId identifier for the session
+     * @param uri remote IMAP server URI
+     * @param configVal configuration for this session
+     * @param bootstrap the bootstrap
+     * @param group the event loop group
+     * @param listener the session listener
+     * @param logManager the LogManager instance
+     * @throws IMAPSessionException on SSL or connect failure
      */
-    @SuppressWarnings({ "deprecation", "checkstyle:linelength" })
-    public IMAPSession(@Nonnull final String sessionId, @Nonnull final URI uri, @Nonnull final Bootstrap bootstrap, @Nonnull final EventLoopGroup group,
-                    @Nonnull final IMAPConnectionListener listener, @Nonnull final LogManager logManager) throws IMAPSessionException {
+    public IMAPSession(@Nonnull final String sessionId, @Nonnull final URI uri, @Nonnull final Properties configVal,
+            @Nonnull final Bootstrap bootstrap,
+            @Nonnull final EventLoopGroup group, @Nonnull final IMAPConnectionListener listener, @Nonnull final LogManager logManager)
+            throws IMAPSessionException {
         LogContext context = new SessionLogContext("IMAPSession-" + uri.toASCIIString(), sessionId);
         log = logManager.getLogger(context);
         responses = new ArrayList<IMAPResponse>();
@@ -114,9 +124,18 @@ public class IMAPSession {
         this.connectionListener = listener;
         this.group = group;
         this.serverUri = uri;
+        this.config = configVal;
         this.bootstrap = bootstrap;
         // Initialize default state
         capabilities = new HashMap<String, Boolean>();
+
+        // default values
+        if (!config.containsKey(CONFIG_CONNECTION_TIMEOUT_KEY)) {
+            config.put(CONFIG_CONNECTION_TIMEOUT_KEY, CONFIG_CONNECTION_TIMEOUT_VALUE);
+        }
+        if (!config.containsKey(CONFIG_IMAP_TIMEOUT_KEY)) {
+            config.put(CONFIG_IMAP_TIMEOUT_KEY, CONFIG_IMAP_TIMEOUT_VALUE);
+        }
 
         final boolean ssl = uri.getScheme().toLowerCase().equals("imaps");
 
@@ -572,5 +591,14 @@ public class IMAPSession {
      */
     Logger getLogger() {
         return log;
+    }
+
+    /**
+     * Return IMAPSession configuration.
+     *
+     * @return
+     */
+    Properties getConfig() {
+        return config;
     }
 }
