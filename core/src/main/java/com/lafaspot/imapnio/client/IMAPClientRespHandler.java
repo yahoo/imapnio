@@ -52,7 +52,8 @@ public class IMAPClientRespHandler extends MessageToMessageDecoder<IMAPResponse>
                 }
             } else {
                 session.getState().set(IMAPSessionState.DISCONNECTED);
-                session.getConnectionListener().onDisconnect(session);
+                ctx.channel().close();
+                session.getConnectionListener().onDisconnect(session, new Throwable("Invalid response from server " + msg));
             }
             break;
     	case IDLE_SENT:

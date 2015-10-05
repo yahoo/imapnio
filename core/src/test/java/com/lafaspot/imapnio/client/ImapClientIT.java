@@ -5,6 +5,7 @@ package com.lafaspot.imapnio.client;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Properties;
 
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
@@ -79,7 +80,7 @@ public class ImapClientIT {
         }
 
         @Override
-        public void onDisconnect(IMAPSession session) {
+        public void onDisconnect(IMAPSession session, Throwable cause) {
             log.info(logPrefix + " got onDisconnect", null);
 
         }
@@ -127,7 +128,7 @@ public class ImapClientIT {
             }
 
             @Override
-            public void onDisconnect(IMAPSession session) {
+            public void onDisconnect(IMAPSession session, Throwable cause) {
                 // throw new RuntimeException("testMultipleSessions onDisconnect");
             }
 
@@ -204,8 +205,8 @@ public class ImapClientIT {
 
             // final String gmailServer = "imap://localhost:9993";
 
-            sessions[i] = theClient.createSession(new URI(gmailServer), new TestMultipleSessionsSendLoginListener(sessions[i], listenerToSendSelect),
-                    logManager);
+            sessions[i] = theClient.createSession(new URI(gmailServer), new Properties(),
+                    new TestMultipleSessionsSendLoginListener(sessions[i], listenerToSendSelect), logManager);
             sessions[i].connect();
 
         }
@@ -225,8 +226,8 @@ public class ImapClientIT {
     @Test
     public void testGmailPlainLoginWithIdle() throws Exception {
         final String gmailServer = "imaps://imap.gmail.com:993";
-        final IMAPSession session = theClient.createSession(new URI(gmailServer), new TestConnectionListener("testGmailPlainLoginWithIdle"),
-                logManager);
+        final IMAPSession session = theClient.createSession(new URI(gmailServer), new Properties(),
+                new TestConnectionListener("testGmailPlainLoginWithIdle"), logManager);
         session.connect();
         Thread.sleep(500);
 
@@ -290,7 +291,8 @@ public class ImapClientIT {
     @Test
     public void testGamailCapability() throws Exception {
         final String gmailServer = "imaps://imap.gmail.com:993";
-        final IMAPSession session = theClient.createSession(new URI(gmailServer), new TestConnectionListener("testGamailCapability"), logManager);
+        final IMAPSession session = theClient.createSession(new URI(gmailServer), new Properties(),
+                new TestConnectionListener("testGamailCapability"), logManager);
         session.connect();
         Thread.sleep(1000);
 
@@ -306,8 +308,8 @@ public class ImapClientIT {
     @Test
     public void testGmailPlainLoginWithStatus() throws Exception {
         final String gmailServer = "imaps://imap.gmail.com:993";
-        final IMAPSession session = theClient.createSession(new URI(gmailServer), new TestConnectionListener("testGmailPlainLoginWithStatus"),
-                logManager);
+        final IMAPSession session = theClient.createSession(new URI(gmailServer), new Properties(),
+                new TestConnectionListener("testGmailPlainLoginWithStatus"), logManager);
 
         session.connect();
         Thread.sleep(1000);
@@ -353,8 +355,8 @@ public class ImapClientIT {
     @Test
     public void testGmailPlainLoginWithList() throws Exception {
         final String gmailServer = "imaps://imap.gmail.com:993";
-        final IMAPSession session = theClient.createSession(new URI(gmailServer), new TestConnectionListener("testGmailPlainLoginWithList"),
-                logManager);
+        final IMAPSession session = theClient.createSession(new URI(gmailServer), new Properties(),
+                new TestConnectionListener("testGmailPlainLoginWithList"), logManager);
 
         session.connect();
         Thread.sleep(1000);
@@ -396,7 +398,8 @@ public class ImapClientIT {
     @Test
     public void testGmailOauth2Login() throws Exception {
         final String gmailServer = "imaps://imap.gmail.com:993";
-        final IMAPSession session = theClient.createSession(new URI(gmailServer), new TestConnectionListener("testGmailOauth2Login"), logManager);
+        final IMAPSession session = theClient.createSession(new URI(gmailServer), new Properties(),
+                new TestConnectionListener("testGmailOauth2Login"), logManager);
 
         session.connect();
         Thread.sleep(1000);
@@ -469,7 +472,8 @@ public class ImapClientIT {
     public void testGmailSASLOauth2Login() throws Exception {
 
         final String gmailServer = "imaps://imap.gmail.com:993";
-        final IMAPSession session = theClient.createSession(new URI(gmailServer), new TestConnectionListener("testGmailSASLOauth2Login"), logManager);
+        final IMAPSession session = theClient.createSession(new URI(gmailServer), new Properties(), new TestConnectionListener(
+                "testGmailSASLOauth2Login"), logManager);
 
         session.connect();
         Thread.sleep(500);
@@ -538,5 +542,55 @@ public class ImapClientIT {
         loginFuture.awaitUninterruptibly();
         Thread.sleep(2000);
 
+    }
+
+    /**
+     * @throws Exception
+     *             failed data
+     */
+    @Test
+    public void testYahooPlainLoginWithStatus() throws Exception {
+        final String gmailServer = "imaps://imap.mail.yahoo.com:993";
+        final IMAPSession session = theClient.createSession(new URI(gmailServer), new Properties(),
+                new TestConnectionListener("testGmailPlainLoginWithStatus"), logManager);
+
+        session.connect();
+        Thread.sleep(1000);
+
+        IMAPCommandListener listenerToSendStatus = new IMAPCommandListener() {
+
+            @Override
+            public void onResponse(IMAPSession session, String tag, List<IMAPResponse> responses) {
+                for (final IMAPResponse r : responses) {
+                    if (r.getTag() != null) {
+                        Assert.assertTrue(r.isOK());
+                        log.info("testGmailPlainLoginWithStatus sending status", null);
+                        try {
+                            session.executeStatusCommand("t01-status", "Inbox",
+ new String[] { "UIDNEXT", "UIDVALIDITY", "UNSEEN", "MESSAGES",
+                                    "RECENT" }, new TestCommandListener(
+                                    "testGmailPlainLoginWithStatus"));
+                        } catch (SecurityException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        } catch (IMAPSessionException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
+                    } else {
+                        log.info("testGmailPlainLoginWithStatus " + r, null);
+                    }
+                }
+            }
+
+            @Override
+            public void onMessage(IMAPSession session, IMAPResponse response) {
+            }
+        };
+
+        final IMAPChannelFuture loginFuture = session.executeLoginCommand("t1", "yqa_mail_14400270489891894@yahoo.com", "OBeBNBgWIeCMLHY",
+                listenerToSendStatus);
+        loginFuture.awaitUninterruptibly();
+        Thread.sleep(2000);
     }
 }
