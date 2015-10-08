@@ -18,7 +18,7 @@ public class ProxyProtocol extends Protocol {
 
     /**
      * Creates a ProxyProtocol object.
-     * 
+     *
      * @throws IOException
      *             on failure
      */
@@ -55,7 +55,7 @@ public class ProxyProtocol extends Protocol {
 
     /**
      * Close.
-     * 
+     *
      * @throws IOException
      *             on I/O failure
      */
@@ -79,11 +79,16 @@ public class ProxyProtocol extends Protocol {
     public String toString() {
         return outputStream.toString();
     }
+
+    @Override
+    protected synchronized boolean supportsNonSyncLiterals() {
+        return true;
+    }
 }
 
 /**
- * Proxy class for th OutputStream.
- * 
+ * Proxy class for the OutputStream.
+ *
  * @author kraman
  *
  */

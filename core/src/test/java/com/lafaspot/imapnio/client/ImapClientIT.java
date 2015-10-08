@@ -4,6 +4,8 @@
 package com.lafaspot.imapnio.client;
 
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.List;
 import java.util.Properties;
 
@@ -458,8 +460,12 @@ public class ImapClientIT {
         };
 
         @SuppressWarnings("checkstyle:linelength")
-        final String oauth2Tok = "dXNlcj1rcmludGVnMUBnbWFpbC5jb20BYXV0aD1CZWFyZXIgeWEyOS5zQUVTb3hfblN5QjA0eEljZHNTUF9tbFZGN096dHN6WDJsa19FMXVwLUw3UGRiSG9BR2l2WG1nSWQ4Q0x2a0RLUnFEUgEB";
-        final IMAPChannelFuture loginFuture = session.executeOAuth2Command("t1", oauth2Tok, listenerToSendSelect);
+        final String oauth2Tok = "ya29.BQLRvf5tGjARtiTLgWNDZvrUXOX-08YOq67TObA2wRN7iiJ-dLaBA3aCHiI3HTmQ7LSH";
+        final StringBuffer buf = new StringBuffer();
+        buf.append("user=").append("krinteg1@gmail.com").append("\u0001").append("auth=Bearer ").append(oauth2Tok).append("\u0001").append("\u0001");
+        final String encOAuthStr = Base64.getEncoder().encodeToString(buf.toString().getBytes(StandardCharsets.UTF_8));
+
+        final IMAPChannelFuture loginFuture = session.executeOAuth2Command("t1", encOAuthStr, listenerToSendSelect);
         loginFuture.awaitUninterruptibly();
         Thread.sleep(1000);
     }
@@ -538,7 +544,7 @@ public class ImapClientIT {
         };
 
         final String oauth2Tok = "ya29.-QHOsbpZG-1AT0b8YWEGWwl1g375kNTFKpardSF3gGyBMttOG_LJj-At3CS-B6evvRYz";
-        final IMAPChannelFuture loginFuture = session.executeSASLXOAuth2("t1", "krinteg1@gmail.com", oauth2Tok, listenerToSendSelect);
+        final IMAPChannelFuture loginFuture = session.executeSASLXOAuth2("t1", "krinteg1@outlook.com", oauth2Tok, listenerToSendSelect);
         loginFuture.awaitUninterruptibly();
         Thread.sleep(2000);
 
@@ -592,5 +598,136 @@ public class ImapClientIT {
                 listenerToSendStatus);
         loginFuture.awaitUninterruptibly();
         Thread.sleep(2000);
+    }
+
+    /**
+     * @throws Exception
+     *             failed data
+     */
+    @Test
+    public void testOutlookPlainLoginWithList() throws Exception {
+        final String gmailServer = "imaps://imap-mail.outlook.com:993";
+        final IMAPSession session = theClient.createSession(new URI(gmailServer), new Properties(),
+                new TestConnectionListener("testGmailPlainLoginWithList"), logManager);
+
+        session.connect();
+        Thread.sleep(1000);
+
+        IMAPCommandListener listenerToSendList = new IMAPCommandListener() {
+
+            @Override
+            public void onResponse(IMAPSession session, String tag, List<IMAPResponse> responses) {
+                for (final IMAPResponse r : responses) {
+                    if (r.getTag() != null) {
+                        Assert.assertTrue(r.isOK());
+                        log.info("testGmailPlainLoginWithList sending list", null);
+                        try {
+                            session.executeListCommand("t0-list", "", "*", new TestCommandListener("testGmailPlainLoginWithList"));
+                        } catch (IMAPSessionException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
+                    } else {
+                        log.info("testGmailPlainLoginWithList " + r, null);
+                    }
+                }
+            }
+
+            @Override
+            public void onMessage(IMAPSession session, IMAPResponse response) {
+            }
+        };
+        final IMAPChannelFuture loginFuture = session.executeLoginCommand("t1", "krinteg1@outlook.com", "1Testuser", listenerToSendList);
+        loginFuture.awaitUninterruptibly();
+        Thread.sleep(2000);
+
+    }
+
+    /**
+     * @throws Exception
+     *             failed data
+     */
+    @Test
+    public void testOutlookSASLOauth2Login() throws Exception {
+
+        final String gmailServer = "imaps://imap-mail.outlook.com:993";
+        final IMAPSession session = theClient.createSession(new URI(gmailServer), new Properties(), new TestConnectionListener(
+                "testGmailSASLOauth2Login"), logManager);
+
+        session.connect();
+        Thread.sleep(3000);
+
+        IMAPCommandListener listenerToSendIdle = new IMAPCommandListener() {
+            @Override
+            public void onResponse(IMAPSession session, String tag, List<IMAPResponse> responses) {
+                for (IMAPResponse r : responses) {
+                    if (r.getTag() != null) {
+                        Assert.assertTrue(r.isOK());
+                        try {
+                            session.executeIdleCommand("t1-idle", new TestCommandListener("testGmailSASLOauth2Login"));
+                        } catch (SecurityException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        } catch (IMAPSessionException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
+                    } else {
+                        log.info("testGmailSASLOauth2Login " + r, null);
+                    }
+                }
+            }
+
+            @Override
+            public void onMessage(IMAPSession session, IMAPResponse response) {
+                throw new RuntimeException("unknown response " + response.toString());
+            }
+        };
+
+        IMAPCommandListener listenerToSendSelect = new IMAPCommandListener() {
+
+            @Override
+            public void onResponse(IMAPSession session, String tag, List<IMAPResponse> responses) {
+
+                for (IMAPResponse r : responses) {
+                    log.info(r, null);
+                    if (r.getTag() != null) {
+                        Assert.assertTrue(r.isOK());
+                        log.info("testGmailSASLOauth2Login sending select", null);
+                        try {
+                            session.executeSelectCommand("t01-sel", "Inbox", listenerToSendIdle);
+                        } catch (IMAPSessionException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
+                    } else {
+                        log.info("testGmailSASLOauth2Login " + r, null);
+                    }
+                }
+            }
+
+            @Override
+            public void onMessage(IMAPSession session, IMAPResponse response) {
+                if (response.isContinuation()) {
+                    session.executeRawTextCommand("EwBwAq1DBAAUGCCXc8wU/zFu9QnLdZXy+YnElFkAAfvtBPUVvlDGqq2YGiQUl7XyuIqhjv4V+iwsdiArXRTNcATxLXKTsjRYqwU99DRl89cMAfg5STNKGC6+iCDDOSYxsmHBuHHHwqW25euHXoksbUfgYHdEMkzkSV7iyeb/I6BgLCUYRvGhks2pwNSPGeLIHmc/r6IxlV+zls1nX6/Rp6FjyniIXS8m5atEoyuwjxBBHvl2M8xfw0p3Mw865YZlvtlapcy8AYIFZ094U5Rp3TKU3DAMBQ4QFkeVOMboy/dK1AuPJnwQiuMsWMlUnaT6s0ZmJoKawE1HNkKUpwWfcck2f3lnIKlSYFZnaAN1MW+p1WmYdW700DJhbMpbOZcDZgAACDn4zVs8RjlMQAFRpUeLuEm0zGzJ+TVCxgAFqm+JR+DbEOosq1zAp5/KkaZOOhmwxNGb9zDiNjSCD+/pQlns9y83P+ZMGqUpPsXgAfulyevwLxxXANnBkj7yX9MrJebdLyxsB0FF64WnimVc2MohNQDWS9YmY2fr48qO8E03L4LmL4GKC6jG5Nrc+NQJXnNGJnTEL2xHZnR3u1Z9X1k0YFlQReD0+yef63JuRKHF//cYP01C2I/TBxIIifiMFQbhNjfGFUaP7B/5L0QhG8WG/2vVoYrqlr0PKHLuR26Fst8OeylFYBSEv78KRCoC+pYUIUx0tVvUeAus6VBUACTIouZLvVd8kuwD3diNP7/wChrJjUn4HI6ToTJhfLMarPKtr0U9+aRaUqZQXBmXZDdYR2+e/q16LPRq3+RT1uXqnI+2nlWuzYfSsvpupl8B");
+                } else {
+                    throw new RuntimeException("unknown message " + response.toString());
+                }
+            }
+        };
+
+
+        final String oauth2Tok = "EwBwAq1DBAAUGCCXc8wU/zFu9QnLdZXy+YnElFkAAfo4mqnJTbVydFJf/ferxtZEHmdZnpXdOkOFIAG4q1DUnu2Vl1gow+kTZzJrnxxVSZGmyrfjAZjmKcsj8/HnK5DHFHX+PqJF3jitNJ8k7JkipL41JH9R2crL9eqYiarmhzzz1hQBED4it/P3HnjWN46jAOKC8uMpEnG+N9XtMb/g9NBnGtL/QQetBJ5eifV0Te24HoccJJYiNxj/Rs8KxMlMvfrg9oy5kulzmFLFBccRFJQADw3jyIl/q17ZFbfjO6RfKcNrVCw8Tt2D92UfPf0ZG+3381JHfWo3jiqQX630aIZG09W5SRJ6Fp/T318mGOgg00wcOhmAo3PSpxsTao4DZgAACHi5inzeHelHQAGxJh+JTw/5sWu1f15iLdp4W6yEJXZLfIsNsidjQclCUyb/O18PMnqWFKexTJxvzitEYg9R4oZqzYKWZVnBCTry6FhVhewXBph3uunSlGO3Q72OMzdTb7qTi4jAZNwm9yDfybZEcwYn7rJC7sGaZhKM4JFyLgjj2AedDyKa1zOYLZREw9kpaS4V4x5xW4wOeExoJCcCWqs0dqr4Sq50aY0RLGjDztoHKpD9UadlxGVXvLzKL5Tuj94AxJRTvEk2U1TmnOCByGsSf5p2dsKt2W/o3ItW5aSzeAtjD8tHtNAh50E6rfVbptjXrCjhF0ytGBzSPF4m+TaBI4SZh77uV4WlpNWCSZKNYBDPgBLuUQ8ZQPoj/X6zdxRNWpIKW7B1ERlUA5VTZI3CGmnT4W2aBHR3ji2Tq1H+tu9E1lKpQ5xu/18B";
+        final StringBuffer buf = new StringBuffer();
+        buf.append("user=").append("krinteg1@outlook.com").append("\u0001").append("auth=Bearer ").append(oauth2Tok).append("\u0001")
+                .append("\u0001");
+        final String encOAuthStr = Base64.getEncoder().encodeToString(buf.toString().getBytes(StandardCharsets.UTF_8));
+
+        // final IMAPChannelFuture loginFuture = session.executeSASLXOAuth2("t1", "krinteg1@outlook.com", oauth2Tok, listenerToSendSelect);
+
+        final IMAPChannelFuture loginFuture = session.executeOAuth2Command("t22", encOAuthStr, listenerToSendSelect);
+        loginFuture.awaitUninterruptibly();
+        Thread.sleep(2000);
+
     }
 }
