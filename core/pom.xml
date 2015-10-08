@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.github.krdev.imapnio</groupId>
         <artifactId>imapnio</artifactId>
-        <version>1.0.10</version>
+        <version>1.0.12</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -62,11 +62,7 @@
         </dependency>
         <dependency>
             <groupId>com.sun.mail</groupId>
-            <artifactId>imap</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>javax.mail</groupId>
-            <artifactId>mail</artifactId>
+            <artifactId>javax.mail</artifactId>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>

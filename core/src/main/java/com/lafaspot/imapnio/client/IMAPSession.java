@@ -324,8 +324,12 @@ public class IMAPSession {
             throw new IMAPSessionException("Sending OAuth2 in invalid state " + state.get());
         }
 
-        final ChannelFuture future = executeCommand(
-                        new ImapCommand(tag, "AUTHENTICATE XOAUTH2", new Argument().addString(oauth2Tok), new String[] { "auth=xoauth2" }), listener);
+        final Argument args = new Argument();
+        args.addLiteral(oauth2Tok);
+        final ImapCommand cmd = new ImapCommand(tag, "AUTHENTICATE XOAUTH2", args, new String[] { "auth=xoauth2" });
+
+        final ChannelFuture future = executeCommand(cmd, listener);
+
         return new IMAPChannelFuture(future);
     }
 
