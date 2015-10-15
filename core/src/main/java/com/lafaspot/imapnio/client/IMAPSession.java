@@ -162,7 +162,9 @@ public class IMAPSession {
      * Close socket connection to IMAP server. Must be closed by the client for book-keeping purposes.
      */
     public void disconnect() {
-        channel.close();
+        if (null != channel) {
+            channel.close();
+        }
     }
 
     /**
