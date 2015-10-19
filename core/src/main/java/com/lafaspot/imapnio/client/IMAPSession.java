@@ -11,6 +11,7 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.util.concurrent.GenericFutureListener;
 
+import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -23,6 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.net.ssl.SSLException;
 
 import com.lafaspot.imapnio.channel.IMAPChannelFuture;
@@ -170,15 +172,24 @@ public class IMAPSession {
     /**
      * Connects to the remote server.
      *
+     * @param localAddress the local network interface to use
      * @return the ChannelFuture object
-     * @throws IMAPSessionException
-     *             on connection failure
+     * @throws IMAPSessionException on connection failure
      */
-    public IMAPChannelFuture connect() throws IMAPSessionException {
+    public IMAPChannelFuture connect(@Nullable final InetSocketAddress localAddress) throws IMAPSessionException {
+
+        // SocketAddress lo = new InetAddress("192.168.0.1");
+
         if (state.get() != IMAPSessionState.DISCONNECTED) {
             throw new IMAPSessionException("Invalid state " + state.get());
         }
-        final ChannelFuture connectFuture = bootstrap.connect(serverUri.getHost(), serverUri.getPort());
+        final ChannelFuture connectFuture;
+        if (null != localAddress) {
+            final InetSocketAddress remoteAddress = new InetSocketAddress(serverUri.getHost(), serverUri.getPort());
+            connectFuture = bootstrap.connect(remoteAddress, localAddress);
+        } else {
+            connectFuture = bootstrap.connect(serverUri.getHost(), serverUri.getPort());
+        }
         try {
             this.channel = connectFuture.sync().channel();
         } catch (final InterruptedException e) {
@@ -191,6 +202,16 @@ public class IMAPSession {
             }
         });
         return new IMAPChannelFuture(connectFuture);
+    }
+
+    /**
+     * Connects to the remote server.
+     *
+     * @return the ChannelFuture object
+     * @throws IMAPSessionException on connection failure
+     */
+    public IMAPChannelFuture connect() throws IMAPSessionException {
+        return connect(null);
     }
 
     /**
@@ -463,6 +484,30 @@ public class IMAPSession {
         args.writeString(b64Mailbox);
         return new IMAPChannelFuture(executeCommand(new ImapCommand(tag, "LIST", args, new String[] {}), listener));
      }
+
+    /**
+     * Sends out an IMAP ID command.
+     *
+     * @param tag IMAP tag to be used with this command
+     * @param items arguments for ID command
+     * @param listener the callback
+     * @return future object
+     * @throws IMAPSessionException when session is not connected
+     */
+    public IMAPChannelFuture executeIDCommand(final String tag, final String[] items, final IMAPCommandListener listener)
+            throws IMAPSessionException {
+        if (state.get() != IMAPSessionState.CONNECTED) {
+            throw new IMAPSessionException("Sending ID in invalid state " + state.get());
+        }
+
+        final Argument imapArgs = new Argument();
+        final Argument itemArgs = new Argument();
+        for (int i = 0, len = items.length; i < len; i++) {
+            itemArgs.writeAtom(items[i]);
+        }
+        imapArgs.writeArgument(itemArgs);
+        return new IMAPChannelFuture(executeCommand(new ImapCommand(tag, "ID", imapArgs, new String[] {}), listener));
+    }
 
     /**
      * Format and sends the IMAP command to remote server.
