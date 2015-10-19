@@ -494,7 +494,8 @@ public class IMAPSession {
      * @return future object
      * @throws IMAPSessionException
      */
-    public IMAPChannelFuture executeIDCommand(final String tag, final String items[], final IMAPCommandListener listener) throws IMAPSessionException {
+    public IMAPChannelFuture executeIDCommand(final String tag, final String items[], final IMAPCommandListener listener) 
+    		throws IMAPSessionException {
         if (state.get() != IMAPSessionState.CONNECTED) {
             throw new IMAPSessionException("Sending ID in invalid state " + state.get());
         }
