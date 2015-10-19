@@ -3,6 +3,7 @@
  */
 package com.lafaspot.imapnio.client;
 
+import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -283,6 +284,43 @@ public class ImapClientIT {
         Thread.sleep(20000);
         session.executeDoneCommand(new TestCommandListener("testGmailPlainLoginWithIdle"));
         Thread.sleep(1000);
+
+    }
+
+    /**
+     * @throws Exception failed data
+     */
+    @Test
+    public void testGmailPlainLoginWithID() throws Exception {
+        final String gmailServer = "imaps://imap.gmail.com:993";
+        final IMAPSession session = theClient.createSession(new URI(gmailServer), new Properties(), new TestConnectionListener(
+                "testGmailPlainLoginWithIdle"), logManager);
+
+        final InetSocketAddress localAddress = null; // new InetSocketAddress("10.101.30.252", 0);
+        session.connect(localAddress);
+        Thread.sleep(500);
+
+        IMAPCommandListener listenerToSendSelect = new IMAPCommandListener() {
+
+            @Override
+            public void onResponse(IMAPSession session, String tag, List<IMAPResponse> responses) {
+                try {
+                    session.executeIDCommand("t01-id", new String[] { "name", "roadrunner", "version", "1.0" },
+                            new TestCommandListener("ID command"));
+                } catch (IMAPSessionException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onMessage(IMAPSession session, IMAPResponse response) {
+                log.info("onMessage " + response, null);
+            }
+        };
+
+        session.executeLoginCommand("t1", "krinteg1@gmail.com", "1Testuser", listenerToSendSelect);
+        Thread.sleep(10000);
 
     }
 
