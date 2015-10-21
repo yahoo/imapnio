@@ -98,8 +98,8 @@ public class IMAPClientRespHandler extends MessageToMessageDecoder<IMAPResponse>
                 final IMAPCommandListener commandListener = session.removeCommandListener(msg.getTag());
                 if (null != commandListener) {
                     commandListener.onResponse(session, msg.getTag(), session.getResponseList());
-                    session.resetResponseList();
                 }
+                session.resetResponseList();
             } else {
                 if (msg.isContinuation()) {
                     if (null != session.getCurrentTag() && null != session.getCommandListener(session.getCurrentTag())) {
