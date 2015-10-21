@@ -316,17 +316,21 @@ public class ImapClientIT {
         final InetSocketAddress localAddress = null; // new InetSocketAddress("10.101.30.252", 0);
         session.connect(localAddress);
         Thread.sleep(500);
+        // try {
+            session.executeIDCommand("t01-id", new String[] { "name", "roadrunner", "version", "1.0" },null); /* new TestCommandListener(
+                    "ID command"));
+        } catch (IMAPSessionException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        */
 
         IMAPCommandListener listenerToSendSelect = new IMAPCommandListener() {
 
             @Override
             public void onResponse(IMAPSession session, String tag, List<IMAPResponse> responses) {
-                try {
-                    session.executeIDCommand("t01-id", new String[] { "name", "roadrunner", "version", "1.0" }, new TestCommandListener(
-                            "ID command"));
-                } catch (IMAPSessionException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                for (final IMAPResponse r : responses) {
+                    log.info(" <-- " + r, null);
                 }
             }
 
