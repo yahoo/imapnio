@@ -684,6 +684,20 @@ public class ImapClientIT {
 
     }
 
+    @Test
+    public void testOutlookWithID() throws Exception {
+        final String gmailServer = "imaps://imap-mail.outlook.com:993";
+        final IMAPSession session = theClient.createSession(new URI(gmailServer), new Properties(), new TestConnectionListener(
+                "testGmailPlainLoginWithList"), logManager);
+
+        session.connect();
+        Thread.sleep(1000);
+
+        session.executeIDCommand("id-tag", new String[] { "version", "some version" }, new TestCommandListener("OutlookID"));
+        Thread.sleep(2000);
+
+    }
+
     /**
      * @throws Exception
      *             failed data

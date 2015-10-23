@@ -503,7 +503,7 @@ public class IMAPSession {
         final Argument imapArgs = new Argument();
         final Argument itemArgs = new Argument();
         for (int i = 0, len = items.length; i < len; i++) {
-            itemArgs.writeAtom(items[i]);
+            itemArgs.writeNString(items[i]);
         }
         imapArgs.writeArgument(itemArgs);
         return new IMAPChannelFuture(executeCommand(new ImapCommand(tag, "ID", imapArgs, new String[] {}), listener));
