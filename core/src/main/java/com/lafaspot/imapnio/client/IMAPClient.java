@@ -20,7 +20,7 @@ import com.lafaspot.imapnio.listener.IMAPConnectionListener;
 import com.lafaspot.logfast.logging.LogManager;
 
 /**
- * Netty based NIO IMAP client.
+ * Netty based IMAP NIO client.
  *
  * @author kraman
  *
@@ -30,7 +30,7 @@ public class IMAPClient {
     /** instance id used for debug. */
     private final String instanceId = Integer.toString(new Random(System.nanoTime()).nextInt());
 
-    /** counter for sessins. */
+    /** counter for session. */
     private AtomicInteger sessionCounter = new AtomicInteger(1);
 
     /** The netty bootstrap. */

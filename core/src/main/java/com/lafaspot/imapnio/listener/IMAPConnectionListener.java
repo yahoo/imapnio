@@ -48,4 +48,11 @@ public interface IMAPConnectionListener {
      */
     void onMessage(final IMAPSession session, final IMAPResponse response);
 
+    /**
+     * Will be called when there is no activity (read/write) on the channel for the configured amount of time.
+     *
+     * @param session IMAP session where the timeout occurred
+     */
+    void onInactivityTimeout(final IMAPSession session);
+
 }

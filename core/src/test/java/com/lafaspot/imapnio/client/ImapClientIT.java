@@ -5,6 +5,7 @@ package com.lafaspot.imapnio.client;
 
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
@@ -100,6 +101,11 @@ public class ImapClientIT {
 
         }
 
+        @Override
+        public void onInactivityTimeout(IMAPSession session) {
+            log.info(" inactivity detected", null);
+        }
+
     }
     /**
      * @throws Exception
@@ -143,6 +149,12 @@ public class ImapClientIT {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
+            }
+
+            @Override
+            public void onInactivityTimeout(IMAPSession session) {
+                log.info(" inactivity timeout ", null);
+
             }
         }
         ;
@@ -489,6 +501,9 @@ public class ImapClientIT {
                         }
 
                     } else {
+                        if (r.isContinuation()) {
+                            session.executeRawTextCommand("ya29.GAICzwISAW6B3l0T4fCE1Ol5jNBOBeUs8RS0DSeyA9fWCaInxOCUaRt-qVkg6qIevtCu");
+                        } else
                         log.info("testGmailOauth2Login " + r, null);
                     }
                 }
@@ -501,10 +516,8 @@ public class ImapClientIT {
         };
 
         @SuppressWarnings("checkstyle:linelength")
-        final String oauth2Tok = "ya29.BQLRvf5tGjARtiTLgWNDZvrUXOX-08YOq67TObA2wRN7iiJ-dLaBA3aCHiI3HTmQ7LSH";
-        final StringBuffer buf = new StringBuffer();
-        buf.append("user=").append("krinteg1@gmail.com").append("\u0001").append("auth=Bearer ").append(oauth2Tok).append("\u0001").append("\u0001");
-        final String encOAuthStr = Base64.getEncoder().encodeToString(buf.toString().getBytes(StandardCharsets.UTF_8));
+        final String oauth2Tok = "ya29.GAICzwISAW6B3l0T4fCE1Ol5jNBOBeUs8RS0DSeyA9fWCaInxOCUaRt-qVkg6qIevtCu";
+        final String encOAuthStr = getSASLAuthStr("krinteg1@gmail.com", oauth2Tok);
 
         final IMAPChannelFuture loginFuture = session.executeOAuth2Command("t1", encOAuthStr, listenerToSendSelect);
         loginFuture.awaitUninterruptibly();
@@ -518,6 +531,7 @@ public class ImapClientIT {
     @Test
     public void testGmailSASLOauth2Login() throws Exception {
 
+        final String oauth2Tok = "ya29.GAKMFTnclqZ9zqcKVJjTRDKVTSGvAHLnj2Q3D540kiOS6AO0MfVm_aWYD_WoyjcMibIu";
         final String gmailServer = "imaps://imap.gmail.com:993";
         final IMAPSession session = theClient.createSession(new URI(gmailServer), new Properties(), new TestConnectionListener(
                 "testGmailSASLOauth2Login"), logManager);
@@ -558,7 +572,7 @@ public class ImapClientIT {
             public void onResponse(IMAPSession session, String tag, List<IMAPResponse> responses) {
 
                 for (IMAPResponse r : responses) {
-                    log.info(r, null);
+                    log.info("RESP " + r, null);
                     if (r.getTag() != null) {
                         Assert.assertTrue(r.isOK());
                         log.info("testGmailSASLOauth2Login sending select", null);
@@ -577,17 +591,20 @@ public class ImapClientIT {
             @Override
             public void onMessage(IMAPSession session, IMAPResponse response) {
                 if (response.isContinuation()) {
-                    session.executeRawTextCommand("ya29.-QHOsbpZG-1AT0b8YWEGWwl1g375kNTFKpardSF3gGyBMttOG_LJj-At3CS-B6evvRYz");
+                    log.info(" got continuation..." + response, null);
+                    session.executeRawTextCommand(oauth2Tok);
                 } else {
                     throw new RuntimeException("unknown message " + response.toString());
                 }
             }
         };
 
-        final String oauth2Tok = "ya29.-QHOsbpZG-1AT0b8YWEGWwl1g375kNTFKpardSF3gGyBMttOG_LJj-At3CS-B6evvRYz";
-        final IMAPChannelFuture loginFuture = session.executeSASLXOAuth2("t1", "krinteg1@outlook.com", oauth2Tok, listenerToSendSelect);
+        final IMAPChannelFuture loginFuture = session.executeSASLXOAuth2("t1", "krinteg1@gmail.com", oauth2Tok, listenerToSendSelect);
         loginFuture.awaitUninterruptibly();
-        Thread.sleep(2000);
+
+        Thread.sleep(20000);
+        session.executeDoneCommand(null);
+        Thread.sleep(3000);
 
     }
 
@@ -773,16 +790,44 @@ public class ImapClientIT {
 
 
         final String oauth2Tok = "EwBwAq1DBAAUGCCXc8wU/zFu9QnLdZXy+YnElFkAAfo4mqnJTbVydFJf/ferxtZEHmdZnpXdOkOFIAG4q1DUnu2Vl1gow+kTZzJrnxxVSZGmyrfjAZjmKcsj8/HnK5DHFHX+PqJF3jitNJ8k7JkipL41JH9R2crL9eqYiarmhzzz1hQBED4it/P3HnjWN46jAOKC8uMpEnG+N9XtMb/g9NBnGtL/QQetBJ5eifV0Te24HoccJJYiNxj/Rs8KxMlMvfrg9oy5kulzmFLFBccRFJQADw3jyIl/q17ZFbfjO6RfKcNrVCw8Tt2D92UfPf0ZG+3381JHfWo3jiqQX630aIZG09W5SRJ6Fp/T318mGOgg00wcOhmAo3PSpxsTao4DZgAACHi5inzeHelHQAGxJh+JTw/5sWu1f15iLdp4W6yEJXZLfIsNsidjQclCUyb/O18PMnqWFKexTJxvzitEYg9R4oZqzYKWZVnBCTry6FhVhewXBph3uunSlGO3Q72OMzdTb7qTi4jAZNwm9yDfybZEcwYn7rJC7sGaZhKM4JFyLgjj2AedDyKa1zOYLZREw9kpaS4V4x5xW4wOeExoJCcCWqs0dqr4Sq50aY0RLGjDztoHKpD9UadlxGVXvLzKL5Tuj94AxJRTvEk2U1TmnOCByGsSf5p2dsKt2W/o3ItW5aSzeAtjD8tHtNAh50E6rfVbptjXrCjhF0ytGBzSPF4m+TaBI4SZh77uV4WlpNWCSZKNYBDPgBLuUQ8ZQPoj/X6zdxRNWpIKW7B1ERlUA5VTZI3CGmnT4W2aBHR3ji2Tq1H+tu9E1lKpQ5xu/18B";
-        final StringBuffer buf = new StringBuffer();
-        buf.append("user=").append("krinteg1@outlook.com").append("\u0001").append("auth=Bearer ").append(oauth2Tok).append("\u0001")
-                .append("\u0001");
-        final String encOAuthStr = Base64.getEncoder().encodeToString(buf.toString().getBytes(StandardCharsets.UTF_8));
-
+        final String encOAuthStr = getSASLAuthStr("krinteg1@outlook.com", oauth2Tok);
         // final IMAPChannelFuture loginFuture = session.executeSASLXOAuth2("t1", "krinteg1@outlook.com", oauth2Tok, listenerToSendSelect);
 
         final IMAPChannelFuture loginFuture = session.executeOAuth2Command("t22", encOAuthStr, listenerToSendSelect);
         loginFuture.awaitUninterruptibly();
         Thread.sleep(2000);
 
+    }
+
+    @Test
+    public void testInactivityTimeout() throws IMAPSessionException, URISyntaxException, InterruptedException {
+        final String gmailServer = "imaps://imap-mail.outlook.com:993";
+        final Properties conf = new Properties();
+        conf.put(IMAPSession.CONFIG_IMAP_INACTIVITY_TIMEOUT_KEY, "1");
+        final IMAPSession session = theClient.createSession(new URI(gmailServer), conf, new TestConnectionListener("testInactivity"),
+                logManager);
+        final TestCommandListener listener = new TestCommandListener("testInactivity");
+
+        session.connect();
+        Thread.sleep(1000);
+        final IMAPChannelFuture loginFuture = session.executeLoginCommand("t1", "krinteg1@outlook.com", "1Testuser", null);
+        Thread.sleep(3000);
+
+        for (int i = 0; i < 20; i++) {
+            Thread.sleep(2000);
+            session.executeNOOPCommand("noop" + i, listener);
+            Thread.sleep(500);
+        }
+        Thread.sleep(2000);
+        session.executeLogoutCommand("lo", null);
+
+        Thread.sleep(5000);
+    }
+
+    String getSASLAuthStr(final String user, final String token) {
+        final StringBuffer buf = new StringBuffer();
+        buf.append("user=").append(user).append("\u0001").append("auth=Bearer ").append(token).append("\u0001").append("\u0001");
+        final String encOAuthStr = Base64.getEncoder().encodeToString(buf.toString().getBytes(StandardCharsets.UTF_8));
+        return encOAuthStr;
     }
 }

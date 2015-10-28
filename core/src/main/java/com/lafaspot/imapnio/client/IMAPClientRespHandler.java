@@ -7,9 +7,11 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import com.lafaspot.imapnio.listener.IMAPCommandListener;
+import com.lafaspot.imapnio.listener.IMAPConnectionListener;
 import com.sun.mail.imap.protocol.IMAPResponse;
 
 /**
@@ -42,76 +44,120 @@ public class IMAPClientRespHandler extends MessageToMessageDecoder<IMAPResponse>
      */
     @Override
     public void decode(final ChannelHandlerContext ctx, final IMAPResponse msg, final List<Object> out) {
-    	switch (session.getState().get()) {
-    	case CONNECT_SENT:
+        final IMAPSessionState state = session.getState().get();
+        switch (state) {
+        case CONNECT_SENT: {
+            final IMAPConnectionListener connectionListener = session.getConnectionListener();
             if (msg.isOK()) {
-                session.getState().set(IMAPSessionState.CONNECTED);
-                session.resetResponseList();
-                if (null != session.getConnectionListener()) {
-                    session.getConnectionListener().onConnect(session);
+                if (!session.getState().compareAndSet(IMAPSessionState.CONNECT_SENT, IMAPSessionState.CONNECTED)) {
+                    session.getLogger().error("Connect success in invalid state " + session.getState(), null);
+                    break;
+                }
+                if (null != connectionListener) {
+                    connectionListener.onConnect(session);
                 }
             } else {
                 session.getState().set(IMAPSessionState.DISCONNECTED);
                 ctx.channel().close();
-                session.getConnectionListener().onDisconnect(session, new Throwable("Invalid response from server " + msg));
-            }
-            break;
-    	case IDLE_SENT:
-            if (msg.readAtomString().equals("idling")) {
-                session.getState().set(IMAPSessionState.IDLING);
-                session.resetResponseList();
-                // go back so the listener gets everything
-                msg.reset();
-                if (msg.isContinuation() && session.getConnectionListener() != null) {
-                    // go back so the listener gets everything
-                    msg.reset();
-                    session.getCommandListener(session.getIdleTag()).onMessage(session, msg);
+                if (null != connectionListener) {
+                    connectionListener.onDisconnect(session, new Throwable("Invalid response from server " + msg));
                 }
             }
             break;
-    	case IDLING:
-            session.getCommandListener(session.getIdleTag()).onMessage(session, msg);
+        }
+        case IDLE_SENT: {
+            if (msg.readAtomString().equals("idling")) {
+                if (!session.getState().compareAndSet(IMAPSessionState.IDLE_SENT, IMAPSessionState.IDLING)) {
+                    session.getLogger().error("Received idling in invalid state " + session.getState(), null);
+                    return;
+                }
+                final IMAPConnectionListener connectionListener = session.getConnectionListener();
+                // go back so the listener gets everything
+                msg.reset();
+                if (msg.isContinuation() && connectionListener != null) {
+                    // go back so the listener gets everything
+                    msg.reset();
+                    connectionListener.onMessage(session, msg);
+                }
+            }
             break;
-        case DONE_SENT:
-            boolean idleDone = false;
+        }
+        case IDLING: {
+            final String idleTag = session.getCurrentTagRef().get();
+            final IMAPCommandListener callback = session.getCommandListener(idleTag);
+            if (null == callback) {
+                session.getLogger().error("IDLING - no callback set for tag " + idleTag, null);
+                break;
+            }
+            callback.onMessage(session, msg);
+            break;
+        }
+        case DONE_SENT: {
+            final String idleTag = session.getCurrentTagRef().get();
+            final IMAPCommandListener callback = (idleTag != null) ? session.getCommandListener(idleTag) : null;
             if (msg.isOK()) {
                 if (msg.readAtomString().equals("IDLE") && msg.readAtomString().equals("terminated")) {
                     msg.reset();
-                    session.getState().set(IMAPSessionState.CONNECTED);
-                    session.getCommandListener(session.getIdleTag()).onResponse(session, session.getIdleTag(), Arrays.asList(msg));
-                    idleDone = true;
+                    if (!session.getState().compareAndSet(IMAPSessionState.DONE_SENT, IMAPSessionState.CONNECTED)) {
+                        session.getLogger().error("IDLE terminated in invalid state " + session.getState(), null);
+                        break;
+                    }
+                    // reset IDLE tag
+                    session.getCurrentTagRef().set(null);
+                    if (null != idleTag) {
+                        session.removeCommandListener(idleTag);
+                    }
+                    if (null == callback) {
+                        session.getLogger().error("IDLE terminated - no callback for tag " + idleTag, null);
+                        break;
+                    }
+                    callback.onResponse(session, idleTag, Arrays.asList(msg));
+                    break;
                 }
 
-                if (!idleDone) {
-                    // assume still in idle
-                    session.getCommandListener(session.getIdleTag()).onMessage(session, msg);
-                } else {
-                    session.removeCommandListener(session.getIdleTag());
-                    session.resetIdleTag();
+                // if we still got some IDLE command responses
+                if (null == callback) {
+                    session.getLogger().error("IDLING - no callback for tag " + idleTag, null);
+                    break;
                 }
+                callback.onMessage(session, msg);
             }
             break;
-    	case CONNECTED:
-        default: // TODO remove??
+        }
+        case CONNECTED: {
             if (msg.isTagged()) {
+                final String msgTag = msg.getTag();
+                if (!session.getCurrentTagRef().compareAndSet(msgTag, null)) {
+                    // TODO - should error out
+                    session.getLogger().error("Unknown tag - " + msgTag + ", expected " + session.getCurrentTagRef().get(), null);
+                }
+
                 session.addResponse(msg);
-                final IMAPCommandListener commandListener = session.removeCommandListener(msg.getTag());
+                final IMAPCommandListener commandListener = session.removeCommandListener(msgTag);
                 if (null != commandListener) {
-                    commandListener.onResponse(session, msg.getTag(), session.getResponseList());
+                    commandListener.onResponse(session, msgTag, Collections.unmodifiableList(session.getResponseList()));
                 }
                 session.resetResponseList();
             } else {
                 if (msg.isContinuation()) {
-                    if (null != session.getCurrentTag() && null != session.getCommandListener(session.getCurrentTag())) {
-                        session.getCommandListener(session.getCurrentTag()).onMessage(session, msg);
-                    } else {
-                        session.getConnectionListener().onMessage(session, msg);
+                    final String currentTag = session.getCurrentTagRef().get();
+                    final IMAPCommandListener commandCallback = (currentTag != null) ? session.getCommandListener(currentTag) : null;
+                    final IMAPConnectionListener connectionCallback = session.getConnectionListener();
+                    if (null != commandCallback) {
+                        commandCallback.onMessage(session, msg);
+                    } else if (null != connectionCallback) {
+                        connectionCallback.onMessage(session, msg);
                     }
                 } else {
                     session.addResponse(msg);
                 }
             }
-    	}
+            break;
+        }
+        default: {
+            session.getLogger().error("Message in invalid state " + state, null);
+        }
+        }
     }
 
 }

@@ -9,16 +9,13 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoopGroup;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
-import io.netty.util.concurrent.GenericFutureListener;
 
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
@@ -59,25 +56,20 @@ public class IMAPSession {
     /** IMAP command timeout value. */
     public static final String CONFIG_IMAP_TIMEOUT_VALUE = "60000";
 
+    /** config key for inactivity timeout value - in seconds. */
+    public static final String CONFIG_IMAP_INACTIVITY_TIMEOUT_KEY = "mail.imap.inactivity";
+
     /** Configuration for this session. */
     private final Properties config;
 
     /** logger. */
     private final Logger log;
 
-    /**
-     * List of capabilities returned by the server upon login.
-     */
-    protected Map<String, Boolean> capabilities;
-
     /** state of the IMAP session. */
     private final AtomicReference<IMAPSessionState> state = new AtomicReference<>(IMAPSessionState.DISCONNECTED);
 
     /** The IMAP channel. */
-    private Channel channel;
-
-    /** Event loop. */
-    private final EventLoopGroup group;
+    private final AtomicReference<Channel> channelRef = new AtomicReference<Channel>();
 
     /** Client listener for connect/disconnect callback events. */
     private final IMAPConnectionListener connectionListener;
@@ -85,14 +77,11 @@ public class IMAPSession {
     /** Map to hold tag to listener. */
     private final ConcurrentHashMap<String, IMAPCommandListener> commandListeners;
 
-    /** IMAP tag used for IDLE command. */
-    private String idleTag;
-
     /** IMAP tag used for the currently running command. */
-    private String currentTag;
+    private final AtomicReference<String> currentTagRef = new AtomicReference<String>();
 
     /** List of IMAPResposne object. */
-    private final List<IMAPResponse> responses;
+    private final List<IMAPResponse> responses = new ArrayList<IMAPResponse>();
 
     /** The listener used for this session. */
     // private SessionListener clientListener; -- lafa was here
@@ -121,16 +110,11 @@ public class IMAPSession {
             throws IMAPSessionException {
         LogContext context = new SessionLogContext("IMAPSession-" + uri.toASCIIString(), sessionId);
         log = logManager.getLogger(context);
-        responses = new ArrayList<IMAPResponse>();
         commandListeners = new ConcurrentHashMap<String, IMAPCommandListener>();
         this.connectionListener = listener;
-        this.group = group;
         this.serverUri = uri;
         this.config = configVal;
         this.bootstrap = bootstrap;
-        // Initialize default state
-        capabilities = new HashMap<String, Boolean>();
-
         // default values
         if (!config.containsKey(CONFIG_CONNECTION_TIMEOUT_KEY)) {
             config.put(CONFIG_CONNECTION_TIMEOUT_KEY, CONFIG_CONNECTION_TIMEOUT_VALUE);
@@ -164,9 +148,11 @@ public class IMAPSession {
      * Close socket connection to IMAP server. Must be closed by the client for book-keeping purposes.
      */
     public void disconnect() {
+        final Channel channel = channelRef.get();
         if (null != channel) {
             channel.close();
         }
+        channelRef.set(null);
     }
 
     /**
@@ -177,10 +163,7 @@ public class IMAPSession {
      * @throws IMAPSessionException on connection failure
      */
     public IMAPChannelFuture connect(@Nullable final InetSocketAddress localAddress) throws IMAPSessionException {
-
-        // SocketAddress lo = new InetAddress("192.168.0.1");
-
-        if (state.get() != IMAPSessionState.DISCONNECTED) {
+        if (!state.compareAndSet(IMAPSessionState.DISCONNECTED, IMAPSessionState.CONNECT_SENT)) {
             throw new IMAPSessionException("Invalid state " + state.get());
         }
         final ChannelFuture connectFuture;
@@ -191,16 +174,14 @@ public class IMAPSession {
             connectFuture = bootstrap.connect(serverUri.getHost(), serverUri.getPort());
         }
         try {
-            this.channel = connectFuture.sync().channel();
-        } catch (final InterruptedException e) {
-            throw new IMAPSessionException(" ", e);
-        }
-        connectFuture.addListener(new GenericFutureListener<ChannelFuture>() {
-            @Override
-            public void operationComplete(final ChannelFuture future) throws Exception {
-                state.set(IMAPSessionState.CONNECT_SENT);
+            Channel channel = connectFuture.sync().channel();
+            if (!channelRef.compareAndSet(null, channel)) {
+                connectFuture.cancel(true);
+                throw new IMAPSessionException("Invalid session state");
             }
-        });
+        } catch (final InterruptedException e) {
+            throw new IMAPSessionException("Could not get channel ", e);
+        }
         return new IMAPChannelFuture(connectFuture);
     }
 
@@ -223,19 +204,10 @@ public class IMAPSession {
      * @return ChannelFuture the future object
      */
     public IMAPChannelFuture executeIdleCommand(final String tag, final IMAPCommandListener listener) throws IMAPSessionException {
-        if (state.get() != IMAPSessionState.CONNECTED) {
+        if (!state.compareAndSet(IMAPSessionState.CONNECTED, IMAPSessionState.IDLE_SENT)) {
             throw new IMAPSessionException("Sending IDLE in invalid state " + state.get());
         }
         final ChannelFuture future = executeCommand(new ImapCommand(tag, "IDLE", new Argument(), new String[] { "IDLE" }), listener);
-        if (null != future) {
-            future.addListener(new GenericFutureListener<ChannelFuture>() {
-                @Override
-                public void operationComplete(final ChannelFuture future) throws Exception {
-                    state.set(IMAPSessionState.IDLE_SENT);
-                    idleTag = tag;
-                }
-            });
-        }
         return new IMAPChannelFuture(future);
     }
 
@@ -247,18 +219,10 @@ public class IMAPSession {
      * @throws IMAPSessionException when session is not in IDLE state
      */
     public IMAPChannelFuture executeDoneCommand(final IMAPCommandListener listener) throws IMAPSessionException {
-        if (state.get() != IMAPSessionState.IDLING) {
+        if (!state.compareAndSet(IMAPSessionState.IDLING, IMAPSessionState.DONE_SENT)) {
             throw new IMAPSessionException("Sending DONE in invalid state " + state.get());
         }
         final ChannelFuture future = executeCommand(new ImapCommand("", "DONE", null, new String[] {}), listener);
-        if (null != future) {
-            future.addListener(new GenericFutureListener<ChannelFuture>() {
-                @Override
-                public void operationComplete(final ChannelFuture future) throws Exception {
-                    state.set(IMAPSessionState.DONE_SENT);
-                }
-            });
-        }
         return new IMAPChannelFuture(future);
     }
 
@@ -352,7 +316,6 @@ public class IMAPSession {
         final ImapCommand cmd = new ImapCommand(tag, "AUTHENTICATE XOAUTH2", args, new String[] { "auth=xoauth2" });
 
         final ChannelFuture future = executeCommand(cmd, listener);
-
         return new IMAPChannelFuture(future);
     }
 
@@ -526,10 +489,11 @@ public class IMAPSession {
             log.debug(line, null);
         }
 
-        final ChannelFuture lastWriteFuture = this.channel.writeAndFlush(line + "\r\n");
+        final ChannelFuture lastWriteFuture = this.channelRef.get().writeAndFlush(line + "\r\n");
         if (null != listener && !method.getTag().isEmpty()) {
-            currentTag = method.getTag();
-            commandListeners.put(currentTag, listener);
+            final String tag = method.getTag();
+            currentTagRef.set(tag);
+            commandListeners.put(tag, listener);
         }
 
         return lastWriteFuture;
@@ -543,30 +507,6 @@ public class IMAPSession {
      */
     void addResponse(final IMAPResponse response) {
         responses.add(response);
-    }
-
-    /**
-     * Get the IMAP tag corresponding to the currently running command.
-     *
-     * @return the current tag
-     */
-    String getCurrentTag() {
-        return currentTag;
-    }
-    /**
-     * Get the IMAP tag corresponding to the IDLE command.
-     *
-     * @return the IDLE tag
-     */
-    String getIdleTag() {
-        return idleTag;
-    }
-
-    /**
-     * IDLE done, reset the tag.
-     */
-    void resetIdleTag() {
-        idleTag = null;
     }
 
     /**
@@ -623,16 +563,16 @@ public class IMAPSession {
      * @return the removed listener
      */
     protected IMAPCommandListener removeCommandListener(final String tag) {
-        currentTag = null;
         return commandListeners.remove(tag);
     }
 
     /**
-     * Reset this IMAP session.
+     * Return the reference to the current tag being used.
+     *
+     * @return current tag ref
      */
-    protected void resetSession() {
-        resetResponseList();
-        commandListeners.clear();
+    AtomicReference<String> getCurrentTagRef() {
+        return currentTagRef;
     }
 
     /**
@@ -647,7 +587,7 @@ public class IMAPSession {
     /**
      * Return IMAPSession configuration.
      *
-     * @return
+     * @return session configuration
      */
     Properties getConfig() {
         return config;
