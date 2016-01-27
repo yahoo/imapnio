@@ -11,7 +11,6 @@ import io.netty.handler.codec.Delimiters;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 import io.netty.handler.ssl.SslContext;
-import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 
 import com.lafaspot.imapnio.command.ImapClientRespDecoder;
@@ -66,19 +65,6 @@ public class IMAPClientInitializer extends ChannelInitializer<SocketChannel> {
         ch.config().setConnectTimeoutMillis(connectTimeoutValue);
         pipeline.addLast("readTimeoutHandler", new ReadTimeoutHandler(imapTimeoutValue));
 
-        if (null != session.getConfig().getProperty(IMAPSession.CONFIG_IMAP_INACTIVITY_TIMEOUT_KEY)) {
-            final String strVal = session.getConfig().getProperty(IMAPSession.CONFIG_IMAP_INACTIVITY_TIMEOUT_KEY);
-            int inactivityTimeout = Integer.parseInt(strVal);
-            final int sixtySecs = 60;
-            final int oneSec = 1;
-            // check for range and default
-            if (inactivityTimeout > sixtySecs || inactivityTimeout < oneSec) {
-                inactivityTimeout = sixtySecs;
-            }
-            pipeline.addLast("idleStateHandler", new IdleStateHandler(0, 0, inactivityTimeout));
-            pipeline.addLast("inactivityHandler", new IMAPClientInactivityHandler(session));
-        }
-
         if (sslCtx != null) {
             pipeline.addLast(sslCtx.newHandler(ch.alloc(), host, port));
         }
@@ -89,11 +75,8 @@ public class IMAPClientInitializer extends ChannelInitializer<SocketChannel> {
         pipeline.addLast(new DelimiterBasedFrameDecoder(Integer.MAX_VALUE, Delimiters.lineDelimiter()));
         pipeline.addLast(new StringDecoder());
         pipeline.addLast(new StringEncoder());
-
         // And then business logic.
         pipeline.addLast(new ImapClientRespDecoder());
-        pipeline.addLast(new IMAPClientRespHandler(session));
-        pipeline.addLast(new IMAPChannelListener(session));
     }
 
 }

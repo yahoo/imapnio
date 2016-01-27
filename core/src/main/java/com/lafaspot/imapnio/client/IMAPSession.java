@@ -9,6 +9,9 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoopGroup;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.timeout.IdleStateHandler;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GenericFutureListener;
 
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -130,7 +133,6 @@ public class IMAPSession {
             SslContext sslCtx;
             if (ssl) {
             	sslCtx = SslContextBuilder.forClient().build();
-                // sslCtx = SslContext.newClientContext(TrustManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm()));
             } else {
                 sslCtx = null;
             }
@@ -139,9 +141,7 @@ public class IMAPSession {
             bootstrap.handler(new IMAPClientInitializer(this, sslCtx, uri.getHost(), uri.getPort()));
         } catch (final SSLException e1) {
             throw new IMAPSessionException("ssl exception", e1);
-        } /*catch (final NoSuchAlgorithmException e2) {
-            throw new IMAPSessionException("no such algo exception", e2);
-        }*/
+        }
     }
 
     /**
@@ -173,6 +173,49 @@ public class IMAPSession {
         } else {
             connectFuture = bootstrap.connect(serverUri.getHost(), serverUri.getPort());
         }
+
+        //
+
+        final IMAPSession thisSession = this;
+        connectFuture.addListener(new GenericFutureListener<Future<? super Void>>() {
+
+            @Override
+            public void operationComplete(final Future<? super Void> future) throws Exception {
+                if (future.isSuccess()) {
+                    if (!getState().compareAndSet(IMAPSessionState.CONNECT_SENT, IMAPSessionState.CONNECTED)) {
+                        getLogger().error("Connect success in invalid state " + getState().get().name(), null);
+                        return;
+                    }
+
+                    if (null != getConfig().getProperty(IMAPSession.CONFIG_IMAP_INACTIVITY_TIMEOUT_KEY)) {
+                        final String strVal = getConfig().getProperty(IMAPSession.CONFIG_IMAP_INACTIVITY_TIMEOUT_KEY);
+                        int inactivityTimeout = Integer.parseInt(strVal);
+                        final int sixtySecs = 60;
+                        final int oneSec = 1;
+                        // check for range and default
+                        if (inactivityTimeout > sixtySecs || inactivityTimeout < oneSec) {
+                            inactivityTimeout = sixtySecs;
+                        }
+                        connectFuture.channel().pipeline().addLast("idleStateHandler", new IdleStateHandler(0, 0, inactivityTimeout));
+                        connectFuture.channel().pipeline().addLast("inactivityHandler", new IMAPClientInactivityHandler(thisSession));
+                    }
+
+                    connectFuture.channel().pipeline().addLast(new IMAPClientRespHandler(thisSession));
+                    connectFuture.channel().pipeline().addLast(new IMAPChannelListener(thisSession));
+
+                    if (null != connectionListener) {
+                        connectionListener.onConnect(thisSession);
+                    }
+
+                    channelRef.set(connectFuture.sync().channel());
+                } else {
+                    if (null != connectionListener) {
+                        connectionListener.onDisconnect(thisSession, new Throwable("connect failure"));
+                    }
+                }
+            }
+        });
+
         try {
             Channel channel = connectFuture.sync().channel();
             if (!channelRef.compareAndSet(null, channel)) {
@@ -220,7 +263,7 @@ public class IMAPSession {
      */
     public IMAPChannelFuture executeDoneCommand(final IMAPCommandListener listener) throws IMAPSessionException {
         if (!state.compareAndSet(IMAPSessionState.IDLING, IMAPSessionState.DONE_SENT)) {
-            throw new IMAPSessionException("Sending DONE in invalid state " + state.get());
+            throw new IMAPSessionException("Sending DONE in invalid state " + state.get().name());
         }
         final ChannelFuture future = executeCommand(new ImapCommand("", "DONE", null, new String[] {}), listener);
         return new IMAPChannelFuture(future);
@@ -258,7 +301,7 @@ public class IMAPSession {
     public IMAPChannelFuture executeStatusCommand(final String tag, final String mailbox, final String[] items, final IMAPCommandListener listener)
             throws IMAPSessionException {
         if (state.get() != IMAPSessionState.CONNECTED) {
-            throw new IMAPSessionException("Sending STATUS in invalid state " + state.get());
+            throw new IMAPSessionException("Sending STATUS in invalid state " + state.get().name());
         }
 
         final String mailboxB64 = BASE64MailboxEncoder.encode(mailbox);
@@ -288,7 +331,7 @@ public class IMAPSession {
     public IMAPChannelFuture executeLoginCommand(final String tag, final String username, final String password, final IMAPCommandListener listener)
             throws IMAPSessionException {
         if (state.get() != IMAPSessionState.CONNECTED) {
-            throw new IMAPSessionException("Sending Login in invalid state " + state.get());
+            throw new IMAPSessionException("Sending Login in invalid state " + state.get().name());
         }
 
         return new IMAPChannelFuture(executeCommand(
@@ -401,11 +444,11 @@ public class IMAPSession {
     /**
      * Execute a IMAP raw command.
      *
-     * @param rawText
-     *            the raw text to be sent to the remote IMAP server
+     * @param rawText the raw text to be sent to the remote IMAP server
      * @return the future object
+     * @throws IMAPSessionException when channel is invalid
      */
-    public IMAPChannelFuture executeRawTextCommand(final String rawText) {
+    public IMAPChannelFuture executeRawTextCommand(final String rawText) throws IMAPSessionException {
         return new IMAPChannelFuture(executeCommand(new ImapCommand("", rawText, null, new String[] {}), null));
     }
 
@@ -480,8 +523,9 @@ public class IMAPSession {
      * @param listener
      *            the session listener
      * @return the future object
+     * @throws IMAPSessionException when channel is invalid
      */
-    private ChannelFuture executeCommand(final ImapCommand method, final IMAPCommandListener listener) {
+    private ChannelFuture executeCommand(final ImapCommand method, final IMAPCommandListener listener) throws IMAPSessionException {
 
         final String args = (method.getArgs() != null ? method.getArgs().toString() : "");
         final String line = method.getTag() + (!method.getTag().isEmpty() ? " " : "") + method.getCommand() + (args.length() > 0 ? " " + args : "");
@@ -489,14 +533,17 @@ public class IMAPSession {
             log.debug(line, null);
         }
 
-        final ChannelFuture lastWriteFuture = this.channelRef.get().writeAndFlush(line + "\r\n");
-        if (null != listener && !method.getTag().isEmpty()) {
-            final String tag = method.getTag();
-            currentTagRef.set(tag);
-            commandListeners.put(tag, listener);
+        final Channel channel = this.channelRef.get();
+        if (null != channel) {
+            final ChannelFuture lastWriteFuture = channel.writeAndFlush(line + "\r\n");
+            if (null != listener && !method.getTag().isEmpty()) {
+                final String tag = method.getTag();
+                currentTagRef.set(tag);
+                commandListeners.put(tag, listener);
+            }
+            return lastWriteFuture;
         }
-
-        return lastWriteFuture;
+        throw new IMAPSessionException("Invalid channel closed");
     }
 
     /**

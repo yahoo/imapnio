@@ -5,7 +5,7 @@
     <groupId>com.github.krdev.imapnio</groupId>
     <artifactId>imapnio</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.17</version>
+    <version>1.0.18</version>
     <name>${project.artifactId}</name>
     <url>https://github.com/lafaspot/imapnioclient</url>
     <description>Parent POM file for imapnio project</description>
@@ -103,7 +103,7 @@
             <dependency>
                 <groupId>com.github.lafa.logfast</groupId>
                 <artifactId>logfast.core</artifactId>
-                <version>1.0.5</version>
+                <version>1.0.6</version>
             </dependency>
             <dependency>
                 <groupId>com.google.code.findbugs</groupId>
