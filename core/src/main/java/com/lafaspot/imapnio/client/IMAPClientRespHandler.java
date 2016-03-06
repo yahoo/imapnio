@@ -50,7 +50,7 @@ public class IMAPClientRespHandler extends MessageToMessageDecoder<IMAPResponse>
             final IMAPConnectionListener connectionListener = session.getConnectionListener();
             if (msg.isOK()) {
                 if (!session.getState().compareAndSet(IMAPSessionState.CONNECT_SENT, IMAPSessionState.CONNECTED)) {
-                    session.getLogger().error("Connect success in invalid state " + session.getState(), null);
+                    session.getLogger().error("Connect success in invalid state " + session.getState().get().name(), null);
                     break;
                 }
                 if (null != connectionListener) {
@@ -127,9 +127,12 @@ public class IMAPClientRespHandler extends MessageToMessageDecoder<IMAPResponse>
         case CONNECTED: {
             if (msg.isTagged()) {
                 final String msgTag = msg.getTag();
-                if (!session.getCurrentTagRef().compareAndSet(msgTag, null)) {
+                final String currentTag = session.getCurrentTagRef().get();
+                if (null != currentTag && currentTag.equals(msgTag)) {
+                    session.getCurrentTagRef().set(null);
+                } else {
                     // TODO - should error out
-                    session.getLogger().error("Unknown tag - " + msgTag + ", expected " + session.getCurrentTagRef().get(), null);
+                    session.getLogger().error("Unknown tag - (" + msgTag + "), expected (" + currentTag + "), sess " + session, null);
                 }
 
                 session.addResponse(msg);
