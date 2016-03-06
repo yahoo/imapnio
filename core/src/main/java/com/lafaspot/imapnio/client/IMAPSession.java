@@ -203,11 +203,11 @@ public class IMAPSession {
                     connectFuture.channel().pipeline().addLast(new IMAPClientRespHandler(thisSession));
                     connectFuture.channel().pipeline().addLast(new IMAPChannelListener(thisSession));
 
+                    channelRef.set(connectFuture.sync().channel());
                     if (null != connectionListener) {
                         connectionListener.onConnect(thisSession);
                     }
 
-                    channelRef.set(connectFuture.sync().channel());
                 } else {
                     if (null != connectionListener) {
                         connectionListener.onDisconnect(thisSession, new Throwable("connect failure"));
