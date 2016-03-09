@@ -216,15 +216,6 @@ public class IMAPSession {
             }
         });
 
-        try {
-            Channel channel = connectFuture.sync().channel();
-            if (!channelRef.compareAndSet(null, channel)) {
-                connectFuture.cancel(true);
-                throw new IMAPSessionException("Invalid session state");
-            }
-        } catch (final InterruptedException e) {
-            throw new IMAPSessionException("Could not get channel ", e);
-        }
         return new IMAPChannelFuture(connectFuture);
     }
 
