@@ -444,6 +444,24 @@ public class IMAPSession {
     }
 
     /**
+     * Execute a IMAP raw command handling tag and listener.
+     *
+     * @param tag IMAP tag to be used
+     * @param rawText the raw text to be sent to the remote IMAP server
+     * @param listener the session listener
+     * @return the future object
+     * @throws IMAPSessionException when channel is invalid
+     */
+    public IMAPChannelFuture executeTaggedRawTextCommand(final String tag, final String rawText,
+            final IMAPCommandListener listener) throws IMAPSessionException {
+        if (state.get() != IMAPSessionState.CONNECTED) {
+            throw new IMAPSessionException("Sending raw command in invalid state " + state.get());
+        }
+
+        return new IMAPChannelFuture(executeCommand(new ImapCommand(tag, rawText, null, new String[] {}), listener));
+    }
+
+    /**
      * Execute a IMAP NOOP command.
      *
      * @param tag IMAP tag to be used
