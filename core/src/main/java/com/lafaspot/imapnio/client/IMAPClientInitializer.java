@@ -6,8 +6,6 @@ package com.lafaspot.imapnio.client;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.handler.codec.DelimiterBasedFrameDecoder;
-import io.netty.handler.codec.Delimiters;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 import io.netty.handler.ssl.SslContext;
@@ -72,7 +70,7 @@ public class IMAPClientInitializer extends ChannelInitializer<SocketChannel> {
         // Add the text line codec combination first
         // Many discussions say that 8000 or 10000 is a large enough max value for line length here - but Gmail easily
         // sends lines >10k characters in length. (FETCH 1:* (ALL))
-        pipeline.addLast(new DelimiterBasedFrameDecoder(Integer.MAX_VALUE, Delimiters.lineDelimiter()));
+        pipeline.addLast(new ImapClientRespReader(Integer.MAX_VALUE));
         pipeline.addLast(new StringDecoder());
         pipeline.addLast(new StringEncoder());
         // And then business logic.

@@ -12,7 +12,7 @@ package com.lafaspot.imapnio.client;
 public enum IMAPSessionState {
     /** session is in disconnected state. */
     DISCONNECTED("disconnected"),
-    /** socket connect reauest. */
+    /** socket connect request. */
     CONNECT_SENT("connect"), /** socket connected. */
     CONNECTED("connected"), // indicates connection but no auth attempts or changes
     /** idle command sent. */

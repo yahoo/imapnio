@@ -174,8 +174,6 @@ public class IMAPSession {
             connectFuture = bootstrap.connect(serverUri.getHost(), serverUri.getPort());
         }
 
-        //
-
         final IMAPSession thisSession = this;
         connectFuture.addListener(new GenericFutureListener<Future<? super Void>>() {
 
@@ -199,7 +197,6 @@ public class IMAPSession {
                         connectFuture.channel().pipeline().addLast("idleStateHandler", new IdleStateHandler(0, 0, inactivityTimeout));
                         connectFuture.channel().pipeline().addLast("inactivityHandler", new IMAPClientInactivityHandler(thisSession));
                     }
-
                     connectFuture.channel().pipeline().addLast(new IMAPClientRespHandler(thisSession));
                     connectFuture.channel().pipeline().addLast(new IMAPChannelListener(thisSession));
 
@@ -522,6 +519,53 @@ public class IMAPSession {
         }
         imapArgs.writeArgument(itemArgs);
         return new IMAPChannelFuture(executeCommand(new ImapCommand(tag, "ID", imapArgs, new String[] {}), listener));
+    }
+
+    /**
+     * Sends out an Fetch command.
+     *
+     * @param tag IMAP tag to be used with this command
+     * @param isUid true if it is UID Fetch, otherwise normal Fetch
+     * @param sequence sequence set
+     * @param fetchArguments message data item names or macro
+     * @param listener the session listener
+     * @return the future object
+     * @throws IMAPSessionException when session is not connected
+     */
+    public IMAPChannelFuture executeFetchCommand(final String tag, final boolean isUid, final String sequence, final String fetchArguments,
+            final IMAPCommandListener listener) throws IMAPSessionException {
+        if (state.get() != IMAPSessionState.CONNECTED) {
+            throw new IMAPSessionException("Sending FETCH in invalid state " + state.get());
+        }
+
+        final Argument fetchArgs = new Argument();
+        fetchArgs.writeAtom(sequence);
+        fetchArgs.writeAtom(fetchArguments);
+
+        final String fetch = isUid ? "UID FETCH" : "FETCH";
+        return new IMAPChannelFuture(executeCommand(new ImapCommand(tag, fetch, fetchArgs, new String[] {}), listener));
+    }
+
+    /**
+     * Sends out an Search command.
+     *
+     * @param tag IMAP tag to be used with this command
+     * @param isUid true if it is UID Search, otherwise normal Search
+     * @param searchArguments message data item names or macro
+     * @param listener the session listener
+     * @return the future object
+     * @throws IMAPSessionException when session is not connected
+     */
+    public IMAPChannelFuture executeSearchCommand(final String tag, final boolean isUid, final String searchArguments,
+            final IMAPCommandListener listener) throws IMAPSessionException {
+        if (state.get() != IMAPSessionState.CONNECTED) {
+            throw new IMAPSessionException("Sending SEARCH in invalid state " + state.get());
+        }
+
+        final Argument searchArgs = new Argument();
+        searchArgs.writeAtom(searchArguments);
+        final String search = isUid ? "UID SEARCH" : "SEARCH";
+        return new IMAPChannelFuture(executeCommand(new ImapCommand(tag, search, searchArgs, new String[] {}), listener));
     }
 
     /**
