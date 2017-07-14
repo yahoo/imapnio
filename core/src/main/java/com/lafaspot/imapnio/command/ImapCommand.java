@@ -99,13 +99,23 @@ public class ImapCommand {
      */
     enum CommandType {
         /** OAUTH command. */
-        AUTHENTICATE_XOAUTH2("AUTHENTICATE XOAUTH2"), /** LOGIN command. */
-        LOGIN("LOGIN"), /** IDLE command. */
-        IDLE("IDLE"), /** LOGOUT command. */
-        LOGOUT("LOGOUT"), /** CAPABILITY command. */
-        CAPABILITY("CAPABILITY"), /** STATUS command. */
-        STATUS("STATUS"), /** SELECT command. */
-        SELECT("SELECT");
+        AUTHENTICATE_XOAUTH2("AUTHENTICATE XOAUTH2"),
+        /** LOGIN command. */
+        LOGIN("LOGIN"),
+        /** IDLE command. */
+        IDLE("IDLE"),
+        /** LOGOUT command. */
+        LOGOUT("LOGOUT"),
+        /** CAPABILITY command. */
+        CAPABILITY("CAPABILITY"),
+        /** STATUS command. */
+        STATUS("STATUS"),
+        /** SELECT command. */
+        SELECT("SELECT"),
+        /** FETCH command. */
+        FETCH("FETCH"),
+        /** SEARCH command. */
+        SEARCH("SEARCH");
 
         /** the command. */
         @SuppressWarnings("unused")
