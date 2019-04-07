@@ -588,13 +588,12 @@ public class IMAPSession {
 
         final Channel channel = this.channelRef.get();
         if (null != channel) {
-            final ChannelFuture lastWriteFuture = channel.writeAndFlush(line + "\r\n");
             if (null != listener && !method.getTag().isEmpty()) {
                 final String tag = method.getTag();
                 currentTagRef.set(tag);
                 commandListeners.put(tag, listener);
             }
-            return lastWriteFuture;
+            return channel.writeAndFlush(line + "\r\n");
         }
         throw new IMAPSessionException("Invalid channel closed");
     }
