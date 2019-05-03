@@ -36,18 +36,20 @@ This project is ideal for applications that have a high requirement to optimize 
 This is a Java library. After downloading it, compile it using `mvn clean install`
 
 Then, update your project's pom.xml file dependencies, as follows:
+
 ```
   <dependency>
       <groupId>com.github.krdev.imapnio</groupId>
       <artifactId>imapnio.core</artifactId>
-      <version>1.0.23</version>
+      <version>2.0.0</version>
   </dependency>
 ```
 Finally, import the relevant classes and use this library according to the usage section below.
 
 - For contributors run deploy to do a push to nexus servers
+
 ```
-$ mvn clean deploy -Dgpg.passphrase=[pathPhrase]
+	$ mvn clean deploy -Dgpg.passphrase=[pathPhrase]
 ```
 
 ## Usage
@@ -56,39 +58,52 @@ The following code examples demonstrate basic functionality relate to connecting
 
 ### Create a client
 ```java
-  // Create a IMAPClient instance with number of threads to handle the server requests
+  // Create a ImapAsyncClient instance with number of threads to handle the server requests
   final int numOfThreadsServed = 5;
-  final IMAPClient imapClient = new IMAPClient(numOfThreadsServed);
+  final ImapAsyncClient imapClient = new ImapAsyncClient(numOfThreads);
 ```
 ### Establish a session with an IMAP server
 ```java
-  // Create a new session via the imap client created above and connect to that server.  For the illustration purpose, 
+  // Create a new session via the ImapAsyncClient instance created above and connect to that server.  For the illustration purpose, 
   // "imaps://imap.server.com:993" is used
-  final IMAPSession session = imapClient.createSession(new URI("imaps://imap.server.com:993"), new GenericListener(), new LogManager());
-  // connect to the remote server
-  session.connect();
+  final URI serverUri = new URI("imaps://imap.server.com:993");
+  final Properties properties = new Properties();
+  properties.put(CONNECTION_TIMEOUT, String.valueOf("5000"));
+  properties.put("mail.imap.timeout", String.valueOf("60000"));
+  properties.put("mail.imap.inactivity", "3");
+  final List<String> sniNames = null;
+
+  final LogManager logManager = new LogManager(Level.DEBUG, LogPage.DEFAULT_SIZE);
+  logManager.setLegacy(true);
+  final InetSocketAddress localAddress = null;
+  final ImapFuture<ImapAsyncSession> future = aclient.createSession(serverUri, properties, localAddress, sniNames);
+  
+  //this version is a future-based nio client.  Check whether future is done by following code.
+  if (future.isDone()) {
+	System.out.println("Future is done.");
+  }
 ```
 
 ### Execute the IMAP command to IMAP server
 Following codes uses a Capability command as an example.
 
 ```java
-  // Instantiates your own IMAPCommandListener instance
-  final IMAPCommandListener listener = new MyOwnIMAPCommandListener();
-  // fire CAPABILITY command with the tag name you want to track
-  final String tagName = "A0001";
-  session.executeCapabilityCommand(tagName, listener);
+  // Executes the capability command
+  final ImapFuture<ImapAsyncResponse> capaCmdFuture = session.execute(new CapaCommand());
+
 ```
 
 ### Handle the response from IMAP server
-onMessage() method will be called on the registered IMAPCommandListener.  
-Following example shows how to read IMAPResponse sent from the server.
+If the future of the executed command is done, obtain the response.
+Following example shows how to read ImapAsyncResponse which wraps the content sent from the server.
 
 ```java
-  @Override
-  public void onMessage(final IMAPSession session, final IMAPResponse response) {
-    System.out.println("Response from IMAPServer is==>tag:" + response.getTag() + ",getRest():"
-        + response.getRest() + ",toString():" + response.toString());
+  if (capaCmdFuture.isDone()) {
+	System.out.println("Capability command is done.");
+	final ImapAsyncResponse resp = future.get(5, TimeUnit.MILLISECONDS);
+	final ImapResponseMapper mapper = new ImapResponseMapper();
+	final Capability capa = mapper.readValue(resp.getResponseLines().toArray(new IMAPResponse[0]), Capability.class);
+	final List<String> values = capa.getCapability("AUTH");
   }
 ```
 
