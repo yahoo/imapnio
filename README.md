@@ -1,16 +1,15 @@
 
 
 # imapnio
-A Java library supporting NIO (Non-blocking I/O) based IMAP client.
+A Java library that supports NIO (Non-blocking I/O) based IMAP clients.
 
-IMAP NIO client provides a framework to allow access to an IMAP message store using None-blocking I/O mechanism.  This design scales well for thousands of connections per machine and reduces contention when using a large number of threads and CPUs.
+The IMAP NIO client provides a framework to access an IMAP message store using None-blocking I/O mechanism.  This design scales well for thousands of connections per machine and reduces contention when using a large number of threads and CPUs.
 
 
 ## Table of Contents
 
 - [Background](#background)
 - [Install](#install)
-- [Configuration](#configuration)
 - [Usage](#usage)
 - [Contribute](#contribute)
 - [License](#license)
@@ -18,11 +17,11 @@ IMAP NIO client provides a framework to allow access to an IMAP message store us
 
 ## Background
 
-Traditional accessing IMAP message store uses [JavaMail API](https://www.oracle.com/technetwork/java/javamail/index.html), which requires blocking I/O where a thread is blocked when performing I/O with the other end.This project was developed to allow for relieving the waiting thread to perform other tasks.  This design efficiently improves the threads utilization and allows the consuming application to maximize the hardware throughput and capacity.
+The traditional accessing IMAP message store uses [JavaMail API](https://www.oracle.com/technetwork/java/javamail/index.html), which requires a blocking I/O. In this case, threads are blocked when performing I/O with the other end. This project was developed to relieve the waiting thread to perform other tasks, and it's design efficiently improves thread utilization to maximize hardware throughput and capacity.
 
-Following is a list of distinguishing features in this project:
+Some of the more distinguishing features of this library are:
 - Highly customizable thread model and server/client idle max limit.
-- Leverages the well-established framework - [Netty](https://netty.io/)
+- Leverages the well-established framework [Netty](https://netty.io/)
 - Future-based design enables a clean separation of IMAP client threads pool versus consumers threads pool. 
 - IMAPv4, [RFC3501](https://tools.ietf.org/html/rfc3501) support.
 - ID command, [RFC2971](https://tools.ietf.org/html/rfc2971) support.
@@ -30,31 +29,13 @@ Following is a list of distinguishing features in this project:
 - MOVE command, [RFC6851](https://tools.ietf.org/html/rfc6851) support
 - UNSELECT command, [RFC3691](https://tools.ietf.org/html/rfc3691) support
 
-This project is ideal for applications that have a high requirement to optimize the threads utilization for improving its overall resource capacity.  Mostly appropriate for consumers performing a great amount of sessions and communications with the IMAP server.
-
-Following external references will establish the foundation for understanding this project:
-[Netty](https://netty.io/)
-[IMAP4rev1](https://tools.ietf.org/html/rfc3501)
-
+This project is ideal for applications that have a high requirement to optimize thread utilization and improve overall resource capacity. Specifically, this is best for situations where users perform a very high level of sessions and communication with the IMAP server.
  
 ## Install
 
-If you've never used git before, please take a moment to familiarize yourself with [what it is and how it works](https://git-scm.com/book/en/v2/Getting-Started-Git-Basics). To install this project, you'll [need to have git installed and set up](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) on your local development environment.
+This is a Java library. After downloading it, compile it using `mvn clean install`
 
-Install by running the following command.
-
-```
-git clone https://github.com/lafaspot/imapnio.git
-```
-
-This will create a directory called imapnio and download the contents of this repo to it.
-
-
-## Configuration
-This is a Java library.  After downloading it,  compile it using the following command.
-$ mvn clean install
-
-Then update your project's pom.xml file dependencies, as follows:
+Then, update your project's pom.xml file dependencies, as follows:
 ```
   <dependency>
       <groupId>com.github.krdev.imapnio</groupId>
@@ -71,7 +52,7 @@ $ mvn clean deploy -Dgpg.passphrase=[pathPhrase]
 
 ## Usage
 
-Following code examples provide a list of usages on how to connect and communicate with any IMAP server.
+The following code examples demonstrate basic functionality relate to connecting to and communicating with IMAP servers.
 
 ### Create a client
 ```java
