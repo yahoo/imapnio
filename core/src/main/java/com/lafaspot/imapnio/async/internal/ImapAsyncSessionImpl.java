@@ -11,6 +11,7 @@ import javax.mail.search.SearchException;
 
 import org.slf4j.Logger;
 
+import com.lafaspot.imapnio.async.client.ImapAsyncClient;
 import com.lafaspot.imapnio.async.client.ImapAsyncSession;
 import com.lafaspot.imapnio.async.client.ImapFuture;
 import com.lafaspot.imapnio.async.exception.ImapAsyncClientException;
@@ -28,6 +29,9 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.ChannelPromise;
+import io.netty.handler.codec.compression.JdkZlibDecoder;
+import io.netty.handler.codec.compression.JdkZlibEncoder;
+import io.netty.handler.codec.compression.ZlibWrapper;
 import io.netty.handler.timeout.IdleStateEvent;
 
 /**
@@ -44,11 +48,17 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
     /** Debug log record for this class, due to channel or client input error, first {} is sessionId, 2nd {} is for message. */
     private static final String INTERNAL_LOG_REC = "[{}] I:{}";
 
-    /** Debug message for donoting client error. */
+    /** Debug message for denoting client error. */
     private static final String CLIENT_ERROR = " Client Error.";
 
     /** Tag prefix. */
     private static final char A = 'a';
+
+    /** Deflater handler name for enabling server compress. */
+    private static final String ZLIB_DECODER = "DEFLATER";
+
+    /** Inflater handler name for enabling server compress. */
+    private static final String ZLIB_ENCODER = "INFLATER";
 
     /** The Netty channel object. */
     private AtomicReference<Channel> channelRef = new AtomicReference<Channel>();
@@ -64,6 +74,9 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
 
     /** Sequence number for tag. */
     private AtomicLong tagSequence;
+
+    /** Flag to indicate compression is sent and pending to server. */
+    private boolean isCompressionRequestPending;
 
     /**
      * This class handles and manages response from server and determines whether the job for this request is done. When the request is done, it sets
@@ -135,6 +148,7 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
         this.sessionId = sessionId;
         this.requestsQueue = new ConcurrentLinkedQueue<ImapCommandEntry>();
         this.tagSequence = new AtomicLong(0);
+        this.isCompressionRequestPending = false;
         pipeline.addLast(ImapClientCommandRespHandler.HANDLER_NAME, new ImapClientCommandRespHandler(this));
     }
 
@@ -164,6 +178,14 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
         sendRequest(sb.toString());
 
         return cmdFuture;
+    }
+
+    @Override
+    public <T> ImapFuture<ImapAsyncResponse> startCompression() throws ImapAsyncClientException, SearchException, IOException {
+        final ImapFuture<ImapAsyncResponse> future = execute(new CompressCommand());
+        // set it to true only after submitted without failure
+        isCompressionRequestPending = true;
+        return future;
     }
 
     /**
@@ -201,6 +223,7 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
 
     /**
      * Listens to write to server complete future.
+     * 
      * @param future ChannelFuture instance to check whether the future has completed successfully
      */
     @Override
@@ -269,6 +292,7 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
         if (entry == null) {
             return;
         }
+        isCompressionRequestPending = false; // always shut it off
         entry.getFuture().done(cause);
     }
 
@@ -317,6 +341,23 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
             return;
 
         } else if (serverResponse.isTagged()) {
+            if (isCompressionRequestPending) {
+                isCompressionRequestPending = false; // no longer pending after server responds
+                if (serverResponse.isOK()) {
+                    final Channel ch = channelRef.get();
+                    final ChannelPipeline pipeline = ch.pipeline();
+                    final JdkZlibDecoder decoder = new JdkZlibDecoder(ZlibWrapper.NONE);
+                    final JdkZlibEncoder encoder = new JdkZlibEncoder(ZlibWrapper.NONE, 5);
+                    if (pipeline.get(ImapAsyncClient.SSL_HANDLER) == null) {
+                        // no SSL handler, deflater/enflater has to be first
+                        pipeline.addFirst(ZLIB_DECODER, decoder);
+                        pipeline.addFirst(ZLIB_ENCODER, encoder);
+                    } else {
+                        pipeline.addAfter(ImapAsyncClient.SSL_HANDLER, ZLIB_DECODER, decoder);
+                        pipeline.addAfter(ImapAsyncClient.SSL_HANDLER, ZLIB_ENCODER, encoder);
+                    }
+                }
+            }
             // see rfc3501, page 63 for details, since we always give a tagged command, response completion should be the first tagged response
             final ImapAsyncResponse doneResponse = new ImapAsyncResponse(responses);
             removeFirstEntry();

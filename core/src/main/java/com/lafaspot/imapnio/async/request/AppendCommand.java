@@ -55,10 +55,10 @@ public class AppendCommand implements ImapRequest<ByteBuf> {
 
     @Override
     public void cleanup() {
-        this.folderName =  null;
+        this.folderName = null;
         this.flags = null;
         this.date = null;
-        this.data =  null;
+        this.data = null;
     }
 
     @Override

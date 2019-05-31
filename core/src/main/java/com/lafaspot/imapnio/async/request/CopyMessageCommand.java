@@ -15,23 +15,21 @@ public class CopyMessageCommand extends AbstractMessageActionCommand {
     /**
      * Initializes a @{code CopyMessageCommand} with the message sequence syntax.
      *
-     * @param isUid true if it is a uid sequence
      * @param msgsets the set of message set
      * @param targetFolder the targetFolder to be stored
      */
-    public CopyMessageCommand(final boolean isUid, @Nonnull final MessageSet[] msgsets, @Nonnull final String targetFolder) {
-        super(COPY, isUid, msgsets, targetFolder);
+    public CopyMessageCommand(@Nonnull final MessageSet[] msgsets, @Nonnull final String targetFolder) {
+        super(COPY, false, msgsets, targetFolder);
     }
 
     /**
      * Initializes a @{code CopyMessageCommand} with the start and end message sequence.
      *
-     * @param isUid true if it is a uid sequence
      * @param start the starting message sequence
      * @param end the ending message sequence
      * @param targetFolder the targetFolder to be stored
      */
-    public CopyMessageCommand(final boolean isUid, final int start, final int end, @Nonnull final String targetFolder) {
-        super(COPY, isUid, start, end, targetFolder);
+    public CopyMessageCommand(final int start, final int end, @Nonnull final String targetFolder) {
+        super(COPY, false, start, end, targetFolder);
     }
 }
