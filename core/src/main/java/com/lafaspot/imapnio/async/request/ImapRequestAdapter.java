@@ -38,4 +38,9 @@ public abstract class ImapRequestAdapter implements ImapRequest<String> {
     public String getTerminateCommandLine() throws ImapAsyncClientException {
         throw new ImapAsyncClientException(FailureType.OPERATION_NOT_SUPPORTED_FOR_COMMAND);
     }
+
+    @Override
+    public boolean isCompressionRequested() {
+        return false;
+    }
 }

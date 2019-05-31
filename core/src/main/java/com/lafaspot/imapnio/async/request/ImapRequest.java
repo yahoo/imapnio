@@ -63,6 +63,13 @@ public interface ImapRequest<T> {
     String getTerminateCommandLine() throws ImapAsyncClientException;
 
     /**
+     * Returns true if compression is requested in the command; false otherwise.
+     * 
+     * @return true if compression is requested in the command; false otherwise
+     */
+    boolean isCompressionRequested();
+
+    /**
      * Avoids loitering.
      */
     @Nullable
