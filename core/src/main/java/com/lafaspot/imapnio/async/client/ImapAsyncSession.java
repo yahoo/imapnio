@@ -10,14 +10,26 @@ import com.lafaspot.imapnio.async.request.ImapRequest;
 import com.lafaspot.imapnio.async.response.ImapAsyncResponse;
 
 /**
- * A class that defines the behavior of Asynchronous imap session.
+ * A class that defines the behavior of Asynchronous IMAP session.
  */
 public interface ImapAsyncSession {
 
     /**
-     * Sends a imap command to the server.
+     * Starts the compression, assuming caller verified the support of compression capability in server.
      *
-     * @param <T> the data type for retruning in getNextCommandLineAfterContinuation call
+     * @param <T> the data type for returning in getNextCommandLineAfterContinuation call
+     *
+     * @return the future object for this command
+     * @throws ImapAsyncClientException on failure
+     * @throws IOException when encountering IO exception
+     * @throws SearchException when a search expression cannot be handled, conformed to RFC3501 standard
+     */
+    <T> ImapFuture<ImapAsyncResponse> startCompression() throws ImapAsyncClientException, SearchException, IOException;
+
+    /**
+     * Sends a IMAP command to the server.
+     *
+     * @param <T> the data type for returning in getNextCommandLineAfterContinuation call
      *
      * @param command the command request.
      * @return the future object for this command
@@ -28,7 +40,7 @@ public interface ImapAsyncSession {
     <T> ImapFuture<ImapAsyncResponse> execute(ImapRequest<T> command) throws ImapAsyncClientException, IOException, SearchException;
 
     /**
-     * Terminates the currenct running command.
+     * Terminates the current running command.
      *
      * @param command the command request.
      * @return the future object for this command

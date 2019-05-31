@@ -53,6 +53,9 @@ public class ImapAsyncClientException extends Exception {
         /** Timeout from server. */
         CHANNEL_TIMEOUT("Timeout from server after command is sent."),
 
+        /** Given class type to parse to is unknown. */
+        UNKNOWN_PARSE_RESULT_TYPE("Given class type to parse to is unknown."),
+
         /** Invalid input. */
         INVALID_INPUT("Input is invalid.");
 

@@ -11,6 +11,7 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import com.lafaspot.imapnio.async.data.Capability;
+import com.lafaspot.imapnio.async.data.IdResult;
 import com.lafaspot.imapnio.async.data.ListInfoList;
 import com.lafaspot.imapnio.async.exception.ImapAsyncClientException;
 import com.lafaspot.imapnio.async.exception.ImapAsyncClientException.FailureType;
@@ -18,9 +19,11 @@ import com.lafaspot.imapnio.async.response.ImapResponseMapper;
 import com.sun.mail.iap.ProtocolException;
 import com.sun.mail.imap.AppendUID;
 import com.sun.mail.imap.CopyUID;
+import com.sun.mail.imap.protocol.ID;
 import com.sun.mail.imap.protocol.IMAPResponse;
 import com.sun.mail.imap.protocol.ListInfo;
 import com.sun.mail.imap.protocol.MailboxInfo;
+import com.sun.mail.imap.protocol.Status;
 
 /**
  * Unit test for {@code ImapResponseMapper}.
@@ -345,7 +348,7 @@ public class ImapResponseMapperTest {
     }
 
     /**
-     * Tests parseMailboxInfo method sucessfully with READ-WRITE mode.
+     * Tests parseMailboxInfo method successfully with READ-WRITE mode.
      *
      * @throws IOException will not throw
      * @throws ProtocolException will not throw
@@ -380,7 +383,7 @@ public class ImapResponseMapperTest {
     }
 
     /**
-     * Tests parseMailboxInfo method sucessfully with READ-WRITE mode.
+     * Tests parseMailboxInfo method successfully with READ-WRITE mode.
      *
      * @throws IOException will not throw
      * @throws ProtocolException will not throw
@@ -412,6 +415,28 @@ public class ImapResponseMapperTest {
         Assert.assertEquals(minfo.highestmodseq, 614, "highestmodseq mismatched.");
         Assert.assertEquals(minfo.uidvalidity, 1459808247, "uidvalidity mismatched.");
         Assert.assertEquals(minfo.uidnext, 150400, "uidnext mismatched.");
+    }
+
+    /**
+     * Tests parseMailboxInfo method successfully with READ-WRITE mode.
+     *
+     * @throws IOException will not throw
+     * @throws ProtocolException will not throw
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testParseMailboxInfoResponseArray0() throws IOException, ProtocolException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final IMAPResponse[] content = new IMAPResponse[0];
+        ImapAsyncClientException cause = null;
+        try {
+            mapper.readValue(content, MailboxInfo.class);
+        } catch (final ImapAsyncClientException e) {
+            cause = e;
+        }
+        // verify the result
+        Assert.assertNotNull(cause, "cause mismatched.");
+        Assert.assertEquals(cause.getFaiureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
     }
 
     /**
@@ -518,5 +543,317 @@ public class ImapResponseMapperTest {
 
         // verify the result
         Assert.assertNotNull(infos, "result mismatched.");
+    }
+
+    /**
+     * Tests parseStatus method with response array 0.
+     *
+     * @throws IOException will not throw
+     * @throws ProtocolException will not throw
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testParseStatusArray0() throws IOException, ProtocolException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final IMAPResponse[] content = new IMAPResponse[0];
+        ImapAsyncClientException cause = null;
+        try {
+            mapper.readValue(content, Status.class);
+        } catch (final ImapAsyncClientException e) {
+            cause = e;
+        }
+        // verify the result
+        Assert.assertNotNull(cause, "cause mismatched.");
+        Assert.assertEquals(cause.getFaiureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
+    }
+
+    /**
+     * Tests parse a class that mapper does not support.
+     * 
+     * @throws IOException will not throw
+     * @throws ProtocolException will not throw
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testParseClassUnknown() throws IOException, ProtocolException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final IMAPResponse[] content = new IMAPResponse[1];
+        content[0] = new IMAPResponse("002 OK"); // make it bad so it does not update mode
+
+        ImapAsyncClientException cause = null;
+        try {
+            mapper.readValue(content, ID.class);
+        } catch (final ImapAsyncClientException e) {
+            cause = e;
+        }
+        // verify the result
+        Assert.assertNotNull(cause, "cause mismatched.");
+        Assert.assertEquals(cause.getFaiureType(), FailureType.UNKNOWN_PARSE_RESULT_TYPE, "Failure type mismatched.");
+    }
+    /**
+     * Tests parseStatus method with not OK response.
+     *
+     * @throws IOException will not throw
+     * @throws ProtocolException will not throw
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testParseStatusNotOK() throws IOException, ProtocolException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final IMAPResponse[] content = new IMAPResponse[1];
+        content[0] = new IMAPResponse("002 BAD"); // make it bad so it does not update mode
+
+        // verify the result
+        ImapAsyncClientException cause = null;
+        try {
+            mapper.readValue(content, Status.class);
+        } catch (final ImapAsyncClientException e) {
+            cause = e;
+        }
+        // verify the result
+        Assert.assertNotNull(cause, "cause mismatched.");
+        Assert.assertEquals(cause.getFaiureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
+    }
+
+    /**
+     * Tests parseStatus method successfully.
+     *
+     * @throws IOException will not throw
+     * @throws ProtocolException will not throw
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testParseStatusNoStatusResponse() throws IOException, ProtocolException, ImapAsyncClientException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final IMAPResponse[] content = new IMAPResponse[2];
+        content[0] = new IMAPResponse("* NOSTATUS blurdybloop (MESSAGES 231 UIDNEXT 44292)");
+        content[1] = new IMAPResponse("A042 OK STATUS completed");
+
+        // verify the result
+        ImapAsyncClientException cause = null;
+        try {
+            mapper.readValue(content, Status.class);
+        } catch (final ImapAsyncClientException e) {
+            cause = e;
+        }
+        // verify the result
+        Assert.assertNotNull(cause, "cause mismatched.");
+        Assert.assertEquals(cause.getFaiureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
+    }
+
+    /**
+     * Tests parseStatus method successfully.
+     *
+     * @throws IOException will not throw
+     * @throws ProtocolException will not throw
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testParseStatusOK() throws IOException, ProtocolException, ImapAsyncClientException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final IMAPResponse[] content = new IMAPResponse[3];
+        content[0] = new IMAPResponse("* STATUS blurdybloop (MESSAGES 231 UIDNEXT 44292)");
+        content[1] = new IMAPResponse("* S2TATUS blurdybloop (MESSAGES 232 UIDNEXT 44293)");
+        content[2] = new IMAPResponse("A042 OK STATUS completed");
+
+        final Status status = mapper.readValue(content, Status.class);
+
+        // verify the result
+        Assert.assertNotNull(status, "status mismatched.");
+        Assert.assertEquals(status.uidnext, 44292, "uidnext mismatched.");
+        Assert.assertEquals(status.total, 231, "uidnext mismatched.");
+    }
+
+    /**
+     * Tests parseToID method with response array 0.
+     *
+     * @throws IOException will not throw
+     * @throws ProtocolException will not throw
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testParseToIdResultArray0() throws IOException, ProtocolException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final IMAPResponse[] content = new IMAPResponse[0];
+        ImapAsyncClientException cause = null;
+        try {
+            mapper.readValue(content, IdResult.class);
+        } catch (final ImapAsyncClientException e) {
+            cause = e;
+        }
+        // verify the result
+        Assert.assertNotNull(cause, "cause mismatched.");
+        Assert.assertEquals(cause.getFaiureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
+    }
+
+    /**
+     * Tests parseToID method with not OK response.
+     *
+     * @throws IOException will not throw
+     * @throws ProtocolException will not throw
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testParseToIdResultNotOK() throws IOException, ProtocolException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final IMAPResponse[] content = new IMAPResponse[1];
+        content[0] = new IMAPResponse("002 BAD"); // make it bad so it does not update mode
+
+        // verify the result
+        ImapAsyncClientException cause = null;
+        try {
+            mapper.readValue(content, IdResult.class);
+        } catch (final ImapAsyncClientException e) {
+            cause = e;
+        }
+        // verify the result
+        Assert.assertNotNull(cause, "cause mismatched.");
+        Assert.assertEquals(cause.getFaiureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
+    }
+
+    /**
+     * Tests parseToIdResult with first byte is N.
+     * 
+     * @throws IOException will not throw
+     * @throws ProtocolException will not throw
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testParseToIdResultFirstByteIsN() throws IOException, ProtocolException, ImapAsyncClientException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final IMAPResponse[] content = new IMAPResponse[2];
+        content[0] = new IMAPResponse("* ID NIL \n");
+        content[1] = new IMAPResponse("a042 OK ID command completed");
+
+        final IdResult id = mapper.readValue(content, IdResult.class);
+
+        // verify the result
+        Assert.assertNotNull(id, "id mismatched.");
+        Assert.assertFalse(id.hasKey("name"), "name key mismatched.");
+        Assert.assertNull(id.getValue("name"), "name value mismatched.");
+    }
+
+    /**
+     * Tests parseToIdResult with first byte is n.
+     * 
+     * @throws IOException will not throw
+     * @throws ProtocolException will not throw
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testParseToIdResultFirstByteIsLowercaseN() throws IOException, ProtocolException, ImapAsyncClientException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final IMAPResponse[] content = new IMAPResponse[2];
+        content[0] = new IMAPResponse("* ID nIL \n");
+        content[1] = new IMAPResponse("a042 OK ID command completed");
+
+        final IdResult id = mapper.readValue(content, IdResult.class);
+
+        // verify the result
+        Assert.assertNotNull(id, "id mismatched.");
+        Assert.assertFalse(id.hasKey("name"), "name key mismatched.");
+        Assert.assertNull(id.getValue("name"), "name value mismatched.");
+    }
+
+    /**
+     * Tests parseToIdResult with first byte not left parenthesis.
+     * 
+     * @throws IOException will not throw
+     * @throws ProtocolException will not throw
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testParseToIdResultNotStartWithLeftParenthesis() throws IOException, ProtocolException, ImapAsyncClientException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final IMAPResponse[] content = new IMAPResponse[2];
+        content[0] = new IMAPResponse("* ID X \n");
+        content[1] = new IMAPResponse("a042 OK ID command completed");
+
+        // verify the result
+        ImapAsyncClientException cause = null;
+        try {
+            mapper.readValue(content, IdResult.class);
+        } catch (final ImapAsyncClientException e) {
+            cause = e;
+        }
+        // verify the result
+        Assert.assertNotNull(cause, "cause mismatched.");
+        Assert.assertEquals(cause.getFaiureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
+    }
+
+    /**
+     * Tests parseToIdResult with first byte not left parenthesis.
+     * 
+     * @throws IOException will not throw
+     * @throws ProtocolException will not throw
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testParseToIdResultNameAbsent() throws IOException, ProtocolException, ImapAsyncClientException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final IMAPResponse[] content = new IMAPResponse[2];
+        content[0] = new IMAPResponse("* ID () \n");
+        content[1] = new IMAPResponse("a042 OK ID command completed");
+
+        // verify the result
+        ImapAsyncClientException cause = null;
+        try {
+            mapper.readValue(content, IdResult.class);
+        } catch (final ImapAsyncClientException e) {
+            cause = e;
+        }
+        // verify the result
+        Assert.assertNotNull(cause, "cause mismatched.");
+        Assert.assertEquals(cause.getFaiureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
+    }
+
+    /**
+     * Tests parseToIdResult with first byte not left parenthesis.
+     * 
+     * @throws IOException will not throw
+     * @throws ProtocolException will not throw
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testParseToIdResultValueAbsent() throws IOException, ProtocolException, ImapAsyncClientException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final IMAPResponse[] content = new IMAPResponse[2];
+        content[0] = new IMAPResponse("* ID (') \n");
+        content[1] = new IMAPResponse("a042 OK ID command completed");
+
+        // verify the result
+        ImapAsyncClientException cause = null;
+        try {
+            mapper.readValue(content, IdResult.class);
+        } catch (final ImapAsyncClientException e) {
+            cause = e;
+        }
+        // verify the result
+        Assert.assertNotNull(cause, "cause mismatched.");
+        Assert.assertEquals(cause.getFaiureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
+    }
+
+    /**
+     * Tests parseToID method successfully.
+     *
+     * @throws IOException will not throw
+     * @throws ProtocolException will not throw
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testParseToIdResultOK() throws IOException, ProtocolException, ImapAsyncClientException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final IMAPResponse[] content = new IMAPResponse[3];
+        content[0] = new IMAPResponse("* ID (\"name\" \"Cyrus\" \"version\" \"1.5\" \"os\" \"sunos\"\n\"os-version\" \"5.5\" \"support-url\"\n"
+                + "\"mailto:cyrus-bugs+@andrew.cmu.edu\")\n");
+        content[1] = new IMAPResponse("junk");
+        content[2] = new IMAPResponse("a042 OK ID command completed");
+
+        final IdResult id = mapper.readValue(content, IdResult.class);
+
+        // verify the result
+        Assert.assertNotNull(id, "id mismatched.");
+        Assert.assertTrue(id.hasKey("name"), "name should be present.");
+        Assert.assertEquals(id.getValue("name"), "Cyrus", "name value mismatched.");
     }
 }

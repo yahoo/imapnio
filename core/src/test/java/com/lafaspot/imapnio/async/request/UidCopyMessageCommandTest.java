@@ -6,24 +6,24 @@ import java.lang.reflect.Modifier;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.mail.Flags;
-import javax.mail.search.FlagTerm;
 import javax.mail.search.SearchException;
-import javax.mail.search.SubjectTerm;
 
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import com.lafaspot.imapnio.async.exception.ImapAsyncClientException;
+import com.lafaspot.imapnio.async.request.UidCopyMessageCommand;
 import com.lafaspot.imapnio.async.request.ImapRequest;
-import com.lafaspot.imapnio.async.request.SearchCommand;
 import com.sun.mail.imap.protocol.MessageSet;
+import com.sun.mail.imap.protocol.UIDSet;
 
 /**
- * Unit test for {@code SearchCommand}.
+ * Unit test for {@code UidCopyMessageCommand}.
  */
-public class SearchCommandTest {
+public class UidCopyMessageCommandTest {
+    /** Literal for COPY. */
+    private static final String COPY = "COPY ";
 
     /** Fields to check for cleanup. */
     private Set<Field> fieldsToCheck;
@@ -34,7 +34,7 @@ public class SearchCommandTest {
     @BeforeClass
     public void setUp() {
         // Use reflection to get all declared non-primitive non-static fields (We do not care about inherited fields)
-        final Class<?> classUnderTest = SearchCommand.class;
+        final Class<?> classUnderTest = UidCopyMessageCommand.class;
         fieldsToCheck = new HashSet<>();
         for (Class<?> c = classUnderTest; c != null; c = c.getSuperclass()) {
             for (final Field declaredField : c.getDeclaredFields()) {
@@ -47,26 +47,22 @@ public class SearchCommandTest {
     }
 
     /**
-     * Tests getCommandLine method using Message sequences.
+     * Tests getCommandLine method.
      *
+     * @throws ImapAsyncClientException will not throw
+     * @throws SearchException will not throw
      * @throws IOException will not throw
      * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
-     * @throws ImapAsyncClientException will not throw
-     * @throws SearchException will not throw
      */
     @Test
-    public void testGetCommandLineWithMessageSequence()
-            throws IOException, IllegalArgumentException, IllegalAccessException, SearchException, ImapAsyncClientException {
-
-        final int[] msgs = { 1, 2, 3 };
-        final MessageSet[] msgsets = MessageSet.createMessageSets(msgs);
-        final Flags flags = new Flags();
-        flags.add(Flags.Flag.SEEN);
-        flags.add(Flags.Flag.DELETED);
-        final FlagTerm messageFlagTerms = new FlagTerm(flags, true);
-        final ImapRequest cmd = new SearchCommand(msgsets, messageFlagTerms);
-        Assert.assertEquals(cmd.getCommandLine(), "SEARCH DELETED SEEN 1:3\r\n", "Expected result mismatched.");
+    public void testMessageSequenceGetCommandLine()
+            throws IOException, ImapAsyncClientException, SearchException, IllegalArgumentException, IllegalAccessException {
+        final String folderName = "folderABC";
+        final long[] uids = { 4294967293L, 4294967294L, 4294967295L };
+        final UIDSet[] msgsets = UIDSet.createUIDSets(uids);
+        final ImapRequest cmd = new UidCopyMessageCommand(msgsets, folderName);
+        Assert.assertEquals(cmd.getCommandLine(), "UID COPY 4294967293:4294967295 folderABC\r\n", "Expected result mismatched.");
 
         cmd.cleanup();
         // Verify if cleanup happened correctly.
@@ -76,23 +72,20 @@ public class SearchCommandTest {
     }
 
     /**
-     * Tests getCommandLine method using none ascii search strings.
+     * Tests getCommandLine method.
      *
+     * @throws ImapAsyncClientException will not throw
+     * @throws SearchException will not throw
      * @throws IOException will not throw
      * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
-     * @throws ImapAsyncClientException will not throw
-     * @throws SearchException will not throw
      */
     @Test
-    public void testGetCommandLineWithNoneAscii()
-            throws IOException, IllegalArgumentException, IllegalAccessException, SearchException, ImapAsyncClientException {
-        final int[] msgs = { 1, 2, 3 };
-        final MessageSet[] msgsets = MessageSet.createMessageSets(msgs);
-
-        final SubjectTerm term = new SubjectTerm("ΩΩ"); // have none-ascii characters
-        final ImapRequest cmd = new SearchCommand(msgsets, term);
-        Assert.assertEquals(cmd.getCommandLine(), "SEARCH CHARSET UTF-8 SUBJECT {4+}\r\nￎﾩￎﾩ 1:3\r\n", "Expected result mismatched.");
+    public void testMessageUidGetCommandLine()
+            throws IOException, ImapAsyncClientException, SearchException, IllegalArgumentException, IllegalAccessException {
+        final String folderName = "folderABC";
+        final ImapRequest cmd = new UidCopyMessageCommand("37850:37852", folderName);
+        Assert.assertEquals(cmd.getCommandLine(), "UID COPY 37850:37852 folderABC\r\n", "Expected result mismatched.");
 
         cmd.cleanup();
         // Verify if cleanup happened correctly.
