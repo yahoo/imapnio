@@ -22,7 +22,7 @@ abstract class AbstractMessageActionCommand extends ImapRequestAdapter {
     /** A collection of messages specified based on RFC3501 syntax. */
     private String msgset;
 
-    /** The destionation folder for the email to copy to. */
+    /** The destination folder for the email to copy to. */
     private String targetFolder;
 
     /**
@@ -58,10 +58,10 @@ abstract class AbstractMessageActionCommand extends ImapRequestAdapter {
      *
      * @param op the command
      * @param isUid true if it is a uid sequence
-     * @param msgset the messages set
+     * @param msgset the messages set string
      * @param targetFolder the targetFolder to be stored
      */
-    private AbstractMessageActionCommand(@Nonnull final String op, final boolean isUid, @Nonnull final String msgset,
+    protected AbstractMessageActionCommand(@Nonnull final String op, final boolean isUid, @Nonnull final String msgset,
             @Nonnull final String targetFolder) {
         this.op = op;
         this.isUid = isUid;
