@@ -12,6 +12,7 @@ import javax.annotation.Nullable;
 import javax.mail.Folder;
 
 import com.lafaspot.imapnio.async.data.Capability;
+import com.lafaspot.imapnio.async.data.IdResult;
 import com.lafaspot.imapnio.async.data.ListInfoList;
 import com.lafaspot.imapnio.async.exception.ImapAsyncClientException;
 import com.lafaspot.imapnio.async.exception.ImapAsyncClientException.FailureType;
@@ -22,8 +23,8 @@ import com.sun.mail.imap.CopyUID;
 import com.sun.mail.imap.protocol.IMAPResponse;
 import com.sun.mail.imap.protocol.ListInfo;
 import com.sun.mail.imap.protocol.MailboxInfo;
+import com.sun.mail.imap.protocol.Status;
 import com.sun.mail.imap.protocol.UIDSet;
-
 
 /**
  * This class parses the imap response to the proper Imap object that sun supports.
@@ -80,8 +81,13 @@ public class ImapResponseMapper {
         if (valueType == ListInfoList.class) {
             return (T) parser.parseToListInfoList(content);
         }
-
-        throw new ImapAsyncClientException(FailureType.INVALID_INPUT);
+        if (valueType == Status.class) {
+            return (T) parser.parseToStatus(content);
+        }
+        if (valueType == IdResult.class) {
+            return (T) parser.parseToIdResult(content);
+        }
+        throw new ImapAsyncClientException(FailureType.UNKNOWN_PARSE_RESULT_TYPE);
     }
 
     /**
@@ -250,7 +256,7 @@ public class ImapResponseMapper {
                 throw new ImapAsyncClientException(FailureType.INVALID_INPUT);
             }
 
-            // command succesful reaching here
+            // command successful reaching here
             final List<ListInfo> v = new ArrayList<ListInfo>();
             for (int i = 0, len = r.length - 1; i < len; i++) {
                 final IMAPResponse ir = r[i];
@@ -261,6 +267,80 @@ public class ImapResponseMapper {
             // a002 LIST "" "*t3*"
             // a002 OK LIST completed
             return new ListInfoList(v);
+        }
+
+        /**
+         * Parses the Status responses to a @{code Status}.
+         *
+         * @param r the list of responses from Status command, the input responses array should contain the tagged/final one
+         * @return Status object constructed based on the r array
+         * @throws ParsingException when encountering parsing exception
+         * @throws ImapAsyncClientException when input value is not valid
+         */
+        @Nullable
+        public Status parseToStatus(@Nonnull final IMAPResponse[] r) throws ParsingException, ImapAsyncClientException {
+            if (r.length < 1) {
+                throw new ImapAsyncClientException(FailureType.INVALID_INPUT);
+            }
+            final Response taggedResponse = r[r.length - 1];
+            if (!taggedResponse.isOK()) {
+                throw new ImapAsyncClientException(FailureType.INVALID_INPUT);
+            }
+            for (int i = 0, len = r.length; i < len; i++) {
+                final IMAPResponse ir = r[i];
+                if (ir.keyEquals("STATUS")) {
+                    return new Status(ir);
+                }
+            }
+            throw new ImapAsyncClientException(FailureType.INVALID_INPUT); // when r length is 0 or no Status response
+        }
+
+        /**
+         * Parses the ID responses to a @{code IdResult} object.
+         *
+         * @param r the list of responses from ID command, the input responses array should contain the tagged/final one
+         * @return Status object constructed based on the r array
+         * @throws ParsingException when encountering parsing exception
+         * @throws ImapAsyncClientException when input value is not valid
+         */
+        @Nullable
+        public IdResult parseToIdResult(@Nonnull final IMAPResponse[] ir) throws ParsingException, ImapAsyncClientException {
+            if (ir.length < 1) {
+                throw new ImapAsyncClientException(FailureType.INVALID_INPUT);
+            }
+            final Response taggedResponse = ir[ir.length - 1];
+            if (!taggedResponse.isOK()) {
+                throw new ImapAsyncClientException(FailureType.INVALID_INPUT);
+            }
+
+            final Map<String, String> serverParams = new HashMap<String, String>();
+            for (int j = 0, len = ir.length; j < len; j++) {
+                final IMAPResponse r = ir[j];
+                if (r.keyEquals("ID")) {
+                    r.skipSpaces();
+                    int c = r.peekByte();
+                    if (c == 'N' || c == 'n') { // assume NIL
+                        return new IdResult(Collections.unmodifiableMap(Collections.EMPTY_MAP));
+                    }
+
+                    final String[] v = r.readStringList();
+                    if (v == null) {
+                        //this means it does not start with (, ID result is expected to have () enclosed
+                        throw new ImapAsyncClientException(FailureType.INVALID_INPUT);
+                    }
+
+                    for (int i = 0; i < v.length; i += 2) {
+                        final String name = v[i];
+                        if (name == null || (i + 1 >= v.length)) {
+                            throw new ImapAsyncClientException(FailureType.INVALID_INPUT);
+                        }
+                        final String value = v[i + 1];
+                        serverParams.put(name, value);
+                    }
+                }
+            }
+
+            return new IdResult(Collections.unmodifiableMap(serverParams));
         }
     }
 }

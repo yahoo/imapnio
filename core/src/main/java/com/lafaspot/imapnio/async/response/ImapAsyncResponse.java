@@ -14,7 +14,7 @@ public class ImapAsyncResponse {
     /**
      * Initializes an @{code ImapAsyncResponse} object.
      *
-     * @param responses list of resonse lines
+     * @param responses list of response lines
      */
     public ImapAsyncResponse(final Collection<IMAPResponse> responses) {
         this.responses = responses;

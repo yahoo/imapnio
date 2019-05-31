@@ -62,4 +62,9 @@ public class IdleCommand implements ImapRequest<String> {
         return new StringBuilder(LINE_LEN).append(DONE).append(ImapClientConstants.CRLF).toString();
     }
 
+    @Override
+    public boolean isCompressionRequested() {
+        return false;
+    }
+
 }

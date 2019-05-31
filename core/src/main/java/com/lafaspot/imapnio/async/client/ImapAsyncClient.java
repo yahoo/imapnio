@@ -4,7 +4,6 @@ import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -52,18 +51,6 @@ public class ImapAsyncClient {
 
     /** Literal for imaps. */
     private static final String IMAPS = "imaps";
-
-    /** Socket connect timeout key. */
-    public static final String CONFIG_CONNECTION_TIMEOUT_KEY_MILLIS = "mail.imap.connectiontimeout";
-
-    /** IMAP response read from server timeout key. */
-    public static final String CONFIG_IMAP_TIMEOUT_KEY_MILLIS = "mail.imap.timeout";
-
-    /** Socket connect timeout value. */
-    public static final String DEFAULT_CONNECTION_TIMEOUT_MILLIS = "60000";
-
-    /** IMAP command timeout value. */
-    public static final String DEFAULT_IMAP_TIMEOUT_MILLIS = "60000";
 
     /** Handler name for ssl handler. */
     public static final String SSL_HANDLER = "sslHandler";
@@ -163,27 +150,24 @@ public class ImapAsyncClient {
      * Connects to the remote server asynchronously and returns a future for the ImapSession if connection is established.
      **
      * @param serverUri IMAP server URI
-     * @param properties configuration to be used for this session
+     * @param config configuration to be used for this session/connection
      * @param localAddress the local network interface to us
      * @param sniNames Server Name Indication names list
      * @return the ChannelFuture object
      */
-    public ImapFuture<ImapAsyncSession> createSession(@Nonnull final URI serverUri, @Nonnull final Properties properties,
+    public ImapFuture<ImapAsyncSession> createSession(@Nonnull final URI serverUri, @Nonnull final ImapAsyncSessionConfig config,
             @Nullable final InetSocketAddress localAddress, @Nullable final List<String> sniNames) {
         // ------------------------------------------------------------
-        // check if required properties are present
-        properties.putIfAbsent(CONFIG_CONNECTION_TIMEOUT_KEY_MILLIS, DEFAULT_CONNECTION_TIMEOUT_MILLIS);
-        properties.putIfAbsent(CONFIG_IMAP_TIMEOUT_KEY_MILLIS, DEFAULT_IMAP_TIMEOUT_MILLIS);
-
+        // obtain config values
+        final int connectionTimeMillis = config.getConnectionTimeoutMillis();
+        final int readTimeMillis = config.getReadTimeoutMillis();
         // ------------------------------------------------------------
         // setup ChannelInitializer, handlers here need to be session-less
-        bootstrap.handler(
-                new ImapClientChannelInitializer(Integer.parseInt(properties.getProperty(CONFIG_IMAP_TIMEOUT_KEY_MILLIS)), TimeUnit.MILLISECONDS));
+        bootstrap.handler(new ImapClientChannelInitializer(readTimeMillis, TimeUnit.MILLISECONDS));
 
         // ------------------------------------------------------------
         // connect to remote server now, setup connection timeout time before connection
-        final Integer connectTimeout = Integer.parseInt(properties.getProperty(CONFIG_CONNECTION_TIMEOUT_KEY_MILLIS));
-        bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectTimeout);
+        bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectionTimeMillis);
 
         final ImapFuture<ImapAsyncSession> sessionFuture = new ImapFuture<ImapAsyncSession>();
         final ChannelFuture nettyConnectFuture;

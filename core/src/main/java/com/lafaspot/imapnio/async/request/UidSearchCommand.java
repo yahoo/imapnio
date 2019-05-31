@@ -9,50 +9,50 @@ import javax.mail.search.SearchException;
 import javax.mail.search.SearchTerm;
 
 import com.lafaspot.imapnio.command.Argument;
-import com.sun.mail.imap.protocol.MessageSet;
 import com.sun.mail.imap.protocol.SearchSequence;
+import com.sun.mail.imap.protocol.UIDSet;
 
 /**
- * This class defines IMAP search command request from client.
+ * This class defines IMAP UID search command request from client.
  */
-public class SearchCommand extends ImapRequestAdapter {
+public class UidSearchCommand extends ImapRequestAdapter {
 
     /** Charset literal following by a space. */
     private static final String CHARSET = "CHARSET ";
 
-    /** Command name. */
-    private static final String SEARCH_SP = "SEARCH ";
+    /** UID SEARCH and space. */
+    private static final String UID_SEARCH_SPACE = "UID SEARCH ";
 
-    /** A collection of messages specified based on RFC3501 syntax. */
-    private String msgIds;
+    /** A collection of message UID specified based on RFC3501 syntax. */
+    private String uids;
 
     /** The search expression tree. */
     private SearchTerm term;
 
     /**
-     * Initializes a @{code SearchCommand} object with required parameters.
+     * Initializes a @{code UidSearchCommand} object with required parameters.
      *
-     * @param msgsets the set of message set
+     * @param uidsets the list of UID set
      * @param term the search expression tree
      */
-    public SearchCommand(@Nonnull final MessageSet[] msgsets, @Nonnull final SearchTerm term) {
-        this(MessageSet.toString(msgsets), term);
+    public UidSearchCommand(@Nonnull final UIDSet[] uidsets, @Nonnull final SearchTerm term) {
+        this(UIDSet.toString(uidsets), term);
     }
 
     /**
-     * Initializes a @{code SearchCommand} with the msg string directly.
+     * Initializes a @{code UidSearchCommand} with the msg UID string directly.
      *
-     * @param msgIds the messages id string
+     * @param uids the messages UID string
      * @param term the search expression tree
      */
-    private SearchCommand(@Nonnull final String msgIds, @Nonnull final SearchTerm term) {
-        this.msgIds = msgIds;
+    private UidSearchCommand(@Nonnull final String uids, @Nonnull final SearchTerm term) {
+        this.uids = uids;
         this.term = term;
     }
 
     @Override
     public void cleanup() {
-        this.msgIds = null;
+        this.uids = null;
         this.term = null;
     }
 
@@ -65,11 +65,11 @@ public class SearchCommand extends ImapRequestAdapter {
         final SearchSequence searchSeq = new SearchSequence();
         final Argument args = new Argument();
         args.append(searchSeq.generateSequence(term, charset == null ? null : MimeUtility.javaCharset(charset)));
-        args.writeAtom(msgIds);
+        args.writeAtom(uids);
 
         final String searchStr = args.toString();
 
-        final StringBuilder sb = new StringBuilder(searchStr.length() + ImapClientConstants.PAD_LEN).append(SEARCH_SP);
+        final StringBuilder sb = new StringBuilder(searchStr.length() + ImapClientConstants.PAD_LEN).append(UID_SEARCH_SPACE);
 
         if (charset != null) {
             sb.append(CHARSET).append(charset).append(ImapClientConstants.SPACE);
