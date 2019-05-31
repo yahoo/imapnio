@@ -58,10 +58,9 @@ public class CopyMessageCommandTest {
     public void testMessageSequenceGetCommandLine()
             throws IOException, ImapAsyncClientException, SearchException, IllegalArgumentException, IllegalAccessException {
         final String folderName = "folderABC";
-        final boolean isUid = false;
         final int[] msgs = { 1, 2, 3 };
         final MessageSet[] msgsets = MessageSet.createMessageSets(msgs);
-        final ImapRequest cmd = new CopyMessageCommand(isUid, msgsets, folderName);
+        final ImapRequest cmd = new CopyMessageCommand(msgsets, folderName);
         Assert.assertEquals(cmd.getCommandLine(), "COPY 1:3 folderABC\r\n", "Expected result mismatched.");
 
         cmd.cleanup();
@@ -84,9 +83,8 @@ public class CopyMessageCommandTest {
     public void testMessageUidGetCommandLine()
             throws IOException, ImapAsyncClientException, SearchException, IllegalArgumentException, IllegalAccessException {
         final String folderName = "folderABC";
-        final boolean isUid = true;
-        final ImapRequest cmd = new CopyMessageCommand(isUid, 37850, 37852, folderName);
-        Assert.assertEquals(cmd.getCommandLine(), "UID COPY 37850:37852 folderABC\r\n", "Expected result mismatched.");
+        final ImapRequest cmd = new CopyMessageCommand( 37850, 37852, folderName);
+        Assert.assertEquals(cmd.getCommandLine(), "COPY 37850:37852 folderABC\r\n", "Expected result mismatched.");
 
         cmd.cleanup();
         // Verify if cleanup happened correctly.
@@ -105,9 +103,8 @@ public class CopyMessageCommandTest {
     @Test
     public void testGetCommandLineWithEscapeChar() throws IOException, ImapAsyncClientException, SearchException {
         final String folderName = "folder ABC";
-        final boolean isUid = true;
-        final ImapRequest cmd = new CopyMessageCommand(isUid, 37850, 37852, folderName);
-        Assert.assertEquals(cmd.getCommandLine(), "UID COPY 37850:37852 \"folder ABC\"\r\n", "Expected result mismatched.");
+        final ImapRequest cmd = new CopyMessageCommand( 37850, 37852, folderName);
+        Assert.assertEquals(cmd.getCommandLine(), "COPY 37850:37852 \"folder ABC\"\r\n", "Expected result mismatched.");
 
     }
 
@@ -121,8 +118,7 @@ public class CopyMessageCommandTest {
     @Test
     public void testGetCommandLineWithOtherCharSet() throws IOException, ImapAsyncClientException, SearchException {
         final String folderName = "测试";
-        final boolean isUid = true;
-        final ImapRequest cmd = new CopyMessageCommand(isUid, 37850, 37852, folderName);
-        Assert.assertEquals(cmd.getCommandLine(), "UID COPY 37850:37852 &bUuL1Q-\r\n", "Expected result mismatched.");
+        final ImapRequest cmd = new CopyMessageCommand(37850, 37852, folderName);
+        Assert.assertEquals(cmd.getCommandLine(), "COPY 37850:37852 &bUuL1Q-\r\n", "Expected result mismatched.");
     }
 }

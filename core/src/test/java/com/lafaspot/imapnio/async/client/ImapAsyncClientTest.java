@@ -7,6 +7,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.Future;
 
 import javax.net.ssl.SSLException;
 
@@ -43,12 +44,9 @@ import io.netty.util.concurrent.GenericFutureListener;
 public class ImapAsyncClientTest {
 
     /** Timeout for connection. */
-    private static final String CONNECTION_TIMEOUT = "mail.imap.connectiontimeout";
-
-    /** Timeout for connection. */
     private static final String SERVER_URI_STR = "imaps://one.two.three.yahoo.com:993";
 
-    /** Timeout for connection. */
+    /** Server URI without SSL protocol. */
     private static final String NO_SSL_SERVER_URI_STR = "imap://one.two.three.yahoo.com:993";
 
     /**
@@ -76,17 +74,15 @@ public class ImapAsyncClientTest {
 
         final ImapAsyncClient aclient = new ImapAsyncClient(bootstrap, group, logger);
 
-
-        final Properties properties = new Properties();
-        properties.put(CONNECTION_TIMEOUT, String.valueOf("5000"));
-        properties.put("mail.imap.timeout", String.valueOf("60000"));
-        properties.put("mail.imap.inactivity", "3");
+        final ImapAsyncSessionConfig config = new ImapAsyncSessionConfig();
+        config.setConnectionTimeoutMillis(5000);
+        config.setReadTimeoutMillis(6000);
         final List<String> sniNames = null;
 
-        // test create sesssion
+        // test create session
         final InetSocketAddress localAddress = null;
         final URI serverUri = new URI(SERVER_URI_STR);
-        final ImapFuture<ImapAsyncSession> future = aclient.createSession(serverUri, properties, localAddress, sniNames);
+        final ImapFuture<ImapAsyncSession> future = aclient.createSession(serverUri, config, localAddress, sniNames);
 
         // verify session creation
         Assert.assertNotNull(future, "Future for ImapAsyncSession should not be null.");
@@ -165,16 +161,15 @@ public class ImapAsyncClientTest {
 
         final ImapAsyncClient aclient = new ImapAsyncClient(bootstrap, group, logger);
 
-        final Properties properties = new Properties();
-        properties.put(CONNECTION_TIMEOUT, String.valueOf("5000"));
-        properties.put("mail.imap.timeout", String.valueOf("60000"));
-        properties.put("mail.imap.inactivity", "3");
+        final ImapAsyncSessionConfig config = new ImapAsyncSessionConfig();
+        config.setConnectionTimeoutMillis(5000);
+        config.setReadTimeoutMillis(6000);
         final List<String> sniNames = null;
 
         // test create sesssion
         final InetSocketAddress localAddress = null;
         final URI serverUri = new URI(NO_SSL_SERVER_URI_STR);
-        final ImapFuture<ImapAsyncSession> future = aclient.createSession(serverUri, properties, localAddress, sniNames);
+        final ImapFuture<ImapAsyncSession> future = aclient.createSession(serverUri, config, localAddress, sniNames);
 
         // verify session creation
         Assert.assertNotNull(future, "Future for ImapAsyncSession should not be null.");
@@ -252,16 +247,15 @@ public class ImapAsyncClientTest {
 
         final ImapAsyncClient aclient = new ImapAsyncClient(bootstrap, group, logger);
 
-        final Properties properties = new Properties();
-        properties.put(CONNECTION_TIMEOUT, String.valueOf("5000"));
-        properties.put("mail.imap.timeout", String.valueOf("60000"));
-        properties.put("mail.imap.inactivity", "3");
+        final ImapAsyncSessionConfig config = new ImapAsyncSessionConfig();
+        config.setConnectionTimeoutMillis(5000);
+        config.setReadTimeoutMillis(6000);
         final List<String> sniNames = new ArrayList<String>();
 
         // test create sesssion
         final InetSocketAddress localAddress = null;
         final URI serverUri = new URI(SERVER_URI_STR);
-        final ImapFuture<ImapAsyncSession> future = aclient.createSession(serverUri, properties, localAddress, sniNames);
+        final ImapFuture<ImapAsyncSession> future = aclient.createSession(serverUri, config, localAddress, sniNames);
 
         // verify session creation
         Assert.assertNotNull(future, "Future for ImapAsyncSession should not be null.");
@@ -336,16 +330,15 @@ public class ImapAsyncClientTest {
 
         final ImapAsyncClient aclient = new ImapAsyncClient(bootstrap, group, logger);
 
-        final Properties properties = new Properties();
-        properties.put(CONNECTION_TIMEOUT, String.valueOf("5000"));
-        properties.put("mail.imap.timeout", String.valueOf("60000"));
-        properties.put("mail.imap.inactivity", "3");
+        final ImapAsyncSessionConfig config = new ImapAsyncSessionConfig();
+        config.setConnectionTimeoutMillis(5000);
+        config.setReadTimeoutMillis(6000);
         final List<String> sniNames = new ArrayList<String>();
         sniNames.add("imap.mail.yahoo.com");
         // test create sesssion
         final InetSocketAddress localAddress = new InetSocketAddress("10.10.10.10", 23112);
         final URI serverUri = new URI(SERVER_URI_STR);
-        final ImapFuture<ImapAsyncSession> future = aclient.createSession(serverUri, properties, localAddress, sniNames);
+        final ImapFuture<ImapAsyncSession> future = aclient.createSession(serverUri, config, localAddress, sniNames);
 
         // verify session creation
         Assert.assertNotNull(future, "Future for ImapAsyncSession should not be null.");
@@ -420,16 +413,15 @@ public class ImapAsyncClientTest {
 
         final ImapAsyncClient aclient = new ImapAsyncClient(bootstrap, group, logger);
 
-        final Properties properties = new Properties();
-        properties.put(CONNECTION_TIMEOUT, String.valueOf("5000"));
-        properties.put("mail.imap.timeout", String.valueOf("60000"));
-        properties.put("mail.imap.inactivity", "3");
+        final ImapAsyncSessionConfig config = new ImapAsyncSessionConfig();
+        config.setConnectionTimeoutMillis(5000);
+        config.setReadTimeoutMillis(6000);;
         final List<String> sniNames = null;
 
         // test create sesssion
         final InetSocketAddress localAddress = null;
         final URI serverUri = new URI(SERVER_URI_STR);
-        final ImapFuture<ImapAsyncSession> future = aclient.createSession(serverUri, properties, localAddress, sniNames);
+        final ImapFuture<ImapAsyncSession> future = aclient.createSession(serverUri, config, localAddress, sniNames);
 
         // verify session creation
         Assert.assertNotNull(future, "Future for ImapAsyncSession should not be null.");

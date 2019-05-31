@@ -56,10 +56,9 @@ public class MoveMessageCommandTest {
     public void testMessageSequenceGetCommandLine()
             throws IOException, ImapAsyncClientException, SearchException, IllegalArgumentException, IllegalAccessException {
         final String folderName = "folderABC";
-        final boolean isUid = false;
         final int[] msgs = { 1, 2, 3 };
         final MessageSet[] msgsets = MessageSet.createMessageSets(msgs);
-        final ImapRequest cmd = new MoveMessageCommand(isUid, msgsets, folderName);
+        final ImapRequest cmd = new MoveMessageCommand(msgsets, folderName);
         Assert.assertEquals(cmd.getCommandLine(), "MOVE 1:3 folderABC\r\n", "Expected result mismatched.");
 
         cmd.cleanup();
@@ -82,9 +81,8 @@ public class MoveMessageCommandTest {
     public void testMessageUidGetCommandLine()
             throws IOException, ImapAsyncClientException, SearchException, IllegalArgumentException, IllegalAccessException {
         final String folderName = "folderABC";
-        final boolean isUid = true;
-        final ImapRequest cmd = new MoveMessageCommand(isUid, 37850, 37852, folderName);
-        Assert.assertEquals(cmd.getCommandLine(), "UID MOVE 37850:37852 folderABC\r\n", "Expected result mismatched.");
+        final ImapRequest cmd = new MoveMessageCommand(37850, 37852, folderName);
+        Assert.assertEquals(cmd.getCommandLine(), "MOVE 37850:37852 folderABC\r\n", "Expected result mismatched.");
 
         cmd.cleanup();
         // Verify if cleanup happened correctly.
@@ -103,9 +101,8 @@ public class MoveMessageCommandTest {
     @Test
     public void testGetCommandLineWithEscapeChar() throws ImapAsyncClientException, SearchException, IOException {
         final String folderName = "folder ABC";
-        final boolean isUid = true;
-        final ImapRequest cmd = new MoveMessageCommand(isUid, 37850, 37852, folderName);
-        Assert.assertEquals(cmd.getCommandLine(), "UID MOVE 37850:37852 \"folder ABC\"\r\n", "Expected result mismatched.");
+        final ImapRequest cmd = new MoveMessageCommand(37850, 37852, folderName);
+        Assert.assertEquals(cmd.getCommandLine(), "MOVE 37850:37852 \"folder ABC\"\r\n", "Expected result mismatched.");
 
     }
 
@@ -119,8 +116,7 @@ public class MoveMessageCommandTest {
     @Test
     public void testGetCommandLineWithOtherCharSet() throws ImapAsyncClientException, SearchException, IOException {
         final String folderName = "测试";
-        final boolean isUid = true;
-        final ImapRequest cmd = new MoveMessageCommand(isUid, 37850, 37852, folderName);
-        Assert.assertEquals(cmd.getCommandLine(), "UID MOVE 37850:37852 &bUuL1Q-\r\n", "Expected result mismatched.");
+        final ImapRequest cmd = new MoveMessageCommand(37850, 37852, folderName);
+        Assert.assertEquals(cmd.getCommandLine(), "MOVE 37850:37852 &bUuL1Q-\r\n", "Expected result mismatched.");
     }
 }

@@ -68,16 +68,15 @@ The following code examples demonstrate basic functionality relate to connecting
   // Create a new session via the ImapAsyncClient instance created above and connect to that server.  For the illustration purpose, 
   // "imaps://imap.server.com:993" is used
   final URI serverUri = new URI("imaps://imap.server.com:993");
-  final Properties properties = new Properties();
-  properties.put(CONNECTION_TIMEOUT, String.valueOf("5000"));
-  properties.put("mail.imap.timeout", String.valueOf("60000"));
-  properties.put("mail.imap.inactivity", "3");
+  final ImapAsyncSessionConfig config = new ImapAsyncSessionConfig();
+  config.setConnectionTimeoutMillis(5000);
+  config.setReadTimeoutMillis(6000);
   final List<String> sniNames = null;
 
   final LogManager logManager = new LogManager(Level.DEBUG, LogPage.DEFAULT_SIZE);
   logManager.setLegacy(true);
   final InetSocketAddress localAddress = null;
-  final ImapFuture<ImapAsyncSession> future = aclient.createSession(serverUri, properties, localAddress, sniNames);
+  final Future<ImapAsyncSession> future = aclient.createSession(serverUri, config, localAddress, sniNames);
   
   //this version is a future-based nio client.  Check whether future is done by following code.
   if (future.isDone()) {
@@ -90,7 +89,7 @@ Following codes uses a Capability command as an example.
 
 ```java
   // Executes the capability command
-  final ImapFuture<ImapAsyncResponse> capaCmdFuture = session.execute(new CapaCommand());
+  final Future<ImapAsyncResponse> capaCmdFuture = session.execute(new CapaCommand());
 
 ```
 

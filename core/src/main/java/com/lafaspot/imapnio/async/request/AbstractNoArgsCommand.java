@@ -5,17 +5,17 @@ import javax.annotation.Nonnull;
 /**
  * This class defines an Imap command that has no arguments sent from client.
  */
-abstract class AbstractNoArgsCommand extends ImapRequestAdapter {
+public abstract class AbstractNoArgsCommand extends ImapRequestAdapter {
 
     /** The Command. */
     private String op;
 
     /**
-     * Initalizes an IMAP command that has no arguments.
+     * Initializes an IMAP command that has no arguments.
      *
      * @param op imap command string. For example, "NOOP"
      */
-    AbstractNoArgsCommand(@Nonnull final String op) {
+    protected AbstractNoArgsCommand(@Nonnull final String op) {
         super();
         this.op = op;
     }
