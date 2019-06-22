@@ -3,16 +3,16 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
-        <groupId>com.github.krdev.imapnio</groupId>
+        <groupId>com.yahoo.imapnio</groupId>
         <artifactId>imapnio</artifactId>
-        <version>2.0.0</version>
+        <version>2.0.5</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>imapnio.core</artifactId>
     <packaging>jar</packaging>
     <name>${project.artifactId}</name>
-    <url>https://github.com/lafaspot/imapnioclient</url>
+    <url>https://github.com/yahoo/imapnio</url>
     <description>imapnio component ${project.name}</description>
     <licenses>
         <license>
@@ -21,16 +21,6 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
-    <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-        <repository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-    </distributionManagement>
 
     <properties>
         <main.basedir>${project.parent.basedir}</main.basedir>
