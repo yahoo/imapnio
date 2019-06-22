@@ -2,12 +2,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.github.krdev.imapnio</groupId>
+    <groupId>com.yahoo.imapnio</groupId>
     <artifactId>imapnio</artifactId>
     <packaging>pom</packaging>
     <version>2.0.0</version>
     <name>${project.artifactId}</name>
-    <url>https://github.com/lafaspot/imapnioclient</url>
+    <url>https://github.com/yahoo/imapnio</url>
     <description>Parent POM file for imapnio project</description>
     <prerequisites>
         <maven>3.0</maven>
@@ -31,15 +31,15 @@
     </developers>
 
     <scm>
-        <developerConnection>scm:git:https://github.com/lafaspot/imapnioclient.git</developerConnection>
-        <connection>scm:git:https://github.com/lafaspot/imapnioclient.git</connection>
-        <url>https://github.com/lafaspot/imapnioclient.git</url>
-        <tag>imapnioclient-1.0</tag>
+        <developerConnection>scm:git:https://github.com/yahoo/imapnio.git</developerConnection>
+        <connection>scm:git:https://github.com/yahoo/imapnio.git</connection>
+        <url>https://github.com/yahoo/imapnio.git</url>
+        <tag>imapnio-1.0</tag>
     </scm>
 
     <issueManagement>
         <system>GitHub</system>
-        <url>https://github.com/lafaspot/imapnio/issues</url>
+        <url>https://github.com/yahoo/imapnio/issues</url>
     </issueManagement>
 
     <licenses>
@@ -52,12 +52,12 @@
 
     <distributionManagement>
         <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <id>bintray-imapnio-repo</id>
+            <url>http://dl.bintray.com/yahoo/maven</url>
         </snapshotRepository>
         <repository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+            <id>bintray-imapnio-repo</id>
+            <url>https://api.bintray.com/maven/yahoo/maven/imapnio;publish=1</url>
         </repository>
     </distributionManagement>
 
@@ -542,17 +542,6 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.sonatype.plugins</groupId>
-                <artifactId>nexus-staging-maven-plugin</artifactId>
-                <version>1.6.3</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <serverId>ossrh</serverId>
-                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                </configuration>
             </plugin>
 
         </plugins>

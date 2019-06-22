@@ -1,0 +1,9 @@
+<settings>
+    <servers>
+        <server>
+            <id>bintray-imapnio-repo</id>
+            <username>${env.BINTRAY_USER}</username>
+            <password>${env.BINTRAY_API_KEY}</password>
+        </server>
+    </servers>
+</settings>
