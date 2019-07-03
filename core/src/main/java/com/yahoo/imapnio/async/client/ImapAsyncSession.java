@@ -13,6 +13,15 @@ import com.yahoo.imapnio.async.response.ImapAsyncResponse;
  * A class that defines the behavior of Asynchronous IMAP session.
  */
 public interface ImapAsyncSession {
+    /**
+     * Flag to turn on or off debugging for this session.
+     */
+    public enum DebugMode {
+        /** Debugging is off for this session. */
+        DEBUG_OFF,
+        /** Debugging is on for this session. */
+        DEBUG_ON
+    }
 
     /**
      * Starts the compression, assuming caller verified the support of compression capability in server.
@@ -25,6 +34,13 @@ public interface ImapAsyncSession {
      * @throws SearchException when a search expression cannot be handled, conformed to RFC3501 standard
      */
     <T> ImapFuture<ImapAsyncResponse> startCompression() throws ImapAsyncClientException, SearchException, IOException;
+
+    /**
+     * Turns on or off the debugging.
+     * 
+     * @param debugMode the debugging mode
+     */
+    void setDebugMode(DebugMode debugMode);
 
     /**
      * Sends a IMAP command to the server.

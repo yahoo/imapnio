@@ -17,8 +17,6 @@ import org.testng.annotations.Test;
 
 import com.sun.mail.imap.protocol.IMAPResponse;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
-import com.yahoo.imapnio.async.request.AppendCommand;
-import com.yahoo.imapnio.async.request.ImapRequest;
 
 import io.netty.buffer.ByteBuf;
 
@@ -86,6 +84,8 @@ public class AppendCommandTest {
         // do not compare timezone part since it depends on which slave machine it runs
         Assert.assertEquals(actualCmdLine.substring(0, startLen), expectedStart, "Expected result mismatched.");
         Assert.assertEquals(actualCmdLine.substring(actualCmdLine.length() - endLen), expectedEnd, "Expected result mismatched.");
+        Assert.assertFalse(cmd.isCommandLineDataSensitive(), "Expected result mismatched.");
+        Assert.assertNull(cmd.getDebugData(), "Expected result mismatched.");
 
         // verify getNextCommandLineAfterContinuation()
         final IMAPResponse serverResponse = null; // we dont care

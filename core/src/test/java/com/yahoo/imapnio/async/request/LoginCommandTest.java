@@ -14,8 +14,6 @@ import org.testng.annotations.Test;
 
 import com.sun.mail.imap.protocol.IMAPResponse;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
-import com.yahoo.imapnio.async.request.ImapRequest;
-import com.yahoo.imapnio.async.request.LoginCommand;
 
 /**
  * Unit test for {@code LoginCommand}.
@@ -58,7 +56,8 @@ public class LoginCommandTest {
         final String pwd = "selfdriving";
         final ImapRequest cmd = new LoginCommand(username, pwd);
         Assert.assertEquals(cmd.getCommandLine(), "LOGIN " + username + " " + pwd + "\r\n", "Expected result mismatched.");
-        Assert.assertEquals(cmd.getLogLine(), "LOGIN " + username, "Log line mismatched.");
+        Assert.assertTrue(cmd.isCommandLineDataSensitive(), "isCommandLineDataSensitive() result mismatched.");
+        Assert.assertEquals(cmd.getDebugData(), "LOGIN FOR USER:tesla", "Log line mismatched.");
 
         cmd.cleanup();
         // Verify if cleanup happened correctly.

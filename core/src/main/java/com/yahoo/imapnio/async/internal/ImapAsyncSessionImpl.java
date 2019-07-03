@@ -39,17 +39,14 @@ import io.netty.handler.timeout.IdleStateEvent;
  */
 public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChannelEventProcessor, ChannelFutureListener {
 
+    /** Error record for the session, first {} is sessionId, exception will be printed too as stack. */
+    private static final String SESSION_ERR_REC = "[{}]";
+
     /** Debug log record for server, first {} is sessionId, 2nd {} is for server message. */
     private static final String SERVER_LOG_REC = "[{}] S:{}";
 
     /** Debug log record for client, first {} is sessionId, 2nd {} is for client message. */
     private static final String CLIENT_LOG_REC = "[{}] C:{}";
-
-    /** Debug log record for this class, due to channel or client input error, first {} is sessionId, 2nd {} is for message. */
-    private static final String INTERNAL_LOG_REC = "[{}] I:{}";
-
-    /** Debug message for denoting client error. */
-    private static final String CLIENT_ERROR = " Client Error.";
 
     /** Tag prefix. */
     private static final char A = 'a';
@@ -71,6 +68,9 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
 
     /** Logger. */
     private Logger logger;
+
+    /** Debug mode. */
+    private AtomicReference<DebugMode> debugModeRef = new AtomicReference<DebugMode>();
 
     /** Sequence number for tag. */
     private AtomicLong tagSequence;
@@ -136,12 +136,15 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
      *
      * @param channel Channel object established for this session
      * @param logger Logger object
+     * @param debugMode Flag for debugging
      * @param sessionId the session id
      * @param pipeline the ChannelPipeline object
      */
-    public ImapAsyncSessionImpl(@Nonnull final Channel channel, @Nonnull final Logger logger, final int sessionId, final ChannelPipeline pipeline) {
+    public ImapAsyncSessionImpl(@Nonnull final Channel channel, @Nonnull final Logger logger, @Nonnull final DebugMode debugMode, final int sessionId,
+            final ChannelPipeline pipeline) {
         this.channelRef.set(channel);
         this.logger = logger;
+        this.debugModeRef.set(debugMode);
         this.sessionId = sessionId;
         this.requestsQueue = new ConcurrentLinkedQueue<ImapCommandEntry>();
         this.tagSequence = new AtomicLong(0);
@@ -157,6 +160,20 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
         return new StringBuilder().append(A).append(tagSequence.incrementAndGet()).toString();
     }
 
+    /**
+     * @return true if debugging is enabled either for the session or for all sessions
+     */
+    private boolean isDebugEnabled() {
+        // when trace is enabled, log for all sessions
+        // when debug is enabled && session debug is on, we print specific session
+        return logger.isTraceEnabled() || debugModeRef.get() == DebugMode.DEBUG_ON;
+    }
+
+    @Override
+    public void setDebugMode(@Nonnull final DebugMode newOption) {
+        this.debugModeRef.set(newOption);
+    }
+
     @Override
     public ImapFuture<ImapAsyncResponse> execute(@Nonnull final ImapRequest command) throws ImapAsyncClientException, IOException, SearchException {
         if (!requestsQueue.isEmpty()) {
@@ -168,10 +185,10 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
 
         final String tag = getNextTag();
         final StringBuilder sb = new StringBuilder(tag).append(ImapClientConstants.SPACE).append(command.getCommandLine());
-        if (logger.isDebugEnabled()) {
-            logger.debug(CLIENT_LOG_REC, sessionId, new StringBuilder(tag).append(ImapClientConstants.SPACE).append(command.getLogLine()).toString());
+        if (isDebugEnabled() && command.isCommandLineDataSensitive()) { // if we cannot log data sent over wire, ask command to provide log info
+            logger.debug(CLIENT_LOG_REC, sessionId, command.getDebugData());
         }
-        sendRequest(sb.toString());
+        sendRequest(sb.toString(), command.isCommandLineDataSensitive());
 
         return cmdFuture;
     }
@@ -186,9 +203,13 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
      * Sends the given request to server when being called.
      *
      * @param request the message of the request
+     * @param isDataSensitve flag whether data is sensitive
      * @throws ImapAsyncClientException when channel is closed
      */
-    private void sendRequest(@Nonnull final Object request) throws ImapAsyncClientException {
+    private void sendRequest(@Nonnull final Object request, final boolean isDataSensitve) throws ImapAsyncClientException {
+        if (isDebugEnabled() && !isDataSensitve) {
+            logger.debug(CLIENT_LOG_REC, sessionId, request);
+        }
         final Channel channel = channelRef.get();
         if (channel == null || !channel.isActive()) {
             throw new ImapAsyncClientException(FailureType.OPERATION_PROHIBITED_ON_CLOSED_CHANNEL);
@@ -208,10 +229,7 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
         }
 
         final ImapCommandEntry entry = requestsQueue.peek();
-        if (logger.isDebugEnabled()) {
-            logger.debug(CLIENT_LOG_REC, sessionId, command.getLogLine());
-        }
-        sendRequest(entry.getRequest().getTerminateCommandLine());
+        sendRequest(entry.getRequest().getTerminateCommandLine(), command.isCommandLineDataSensitive());
         return entry.getFuture();
     }
 
@@ -233,9 +251,6 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
             return; // cleanup() has been called, leave
         }
 
-        if (logger.isDebugEnabled()) {
-            logger.debug(INTERNAL_LOG_REC, sessionId, "Channel is disconnected.");
-        }
         // set the future done if there is any
         requestDoneWithException(new ImapAsyncClientException(FailureType.CHANNEL_DISCONNECTED));
         cleanup();
@@ -250,6 +265,8 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
         requestsQueue.clear();
         requestsQueue = null;
         logger = null;
+        debugModeRef.set(null);
+        debugModeRef = null;
         tagSequence = null;
     }
 
@@ -286,6 +303,9 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
         if (entry == null) {
             return;
         }
+
+        // log at error level
+        logger.error(SESSION_ERR_REC, sessionId, cause);
         entry.getFuture().done(cause);
     }
 
@@ -317,6 +337,10 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
         final Collection<IMAPResponse> responses = curEntry.getResponses();
         responses.add(serverResponse);
 
+        if (isDebugEnabled()) { // logging all server responses when enabled
+            logger.debug(SERVER_LOG_REC, sessionId, serverResponse.toString());
+        }
+
         // server sends continuation message (+) for next request
         if (serverResponse.isContinuation()) {
             try {
@@ -324,11 +348,8 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
                 if (cmdAfterContinue == null) {
                     return; // no data from client after continuation, we leave, this is for Idle
                 }
-                sendRequest(cmdAfterContinue);
+                sendRequest(cmdAfterContinue, currentCmd.isCommandLineDataSensitive());
             } catch (final ImapAsyncClientException | IndexOutOfBoundsException e) { // when encountering an error on building request from client
-                if (logger.isDebugEnabled()) {
-                    logger.debug(INTERNAL_LOG_REC, sessionId, CLIENT_ERROR, e);
-                }
                 requestDoneWithException(new ImapAsyncClientException(ImapAsyncClientException.FailureType.CHANNEL_EXCEPTION, e));
             }
             return;
@@ -356,9 +377,6 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
         }
 
         // none-tagged server responses if reaching here
-        if (logger.isDebugEnabled()) {
-            logger.debug(SERVER_LOG_REC, sessionId, serverResponse.toString());
-        }
     }
 
     @Override
@@ -387,7 +405,7 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
         private ImapFuture<Boolean> imapSessionCloseFuture;
 
         /**
-         * Initializes a channel close listner with ImapFuture instance.
+         * Initializes a channel close listener with ImapFuture instance.
          *
          * @param imapFuture the future for caller of @{link ImapAsyncSession} close method
          */

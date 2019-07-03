@@ -100,9 +100,13 @@ public class AppendCommand implements ImapRequest<ByteBuf> {
     }
 
     @Override
-    public String getLogLine() {
-        // TODO: decide whether we need to log some content
-        return getCommandLine();
+    public boolean isCommandLineDataSensitive() {
+        return false;
+    }
+
+    @Override
+    public String getDebugData() {
+        return null;
     }
 
     @Override
@@ -120,4 +124,5 @@ public class AppendCommand implements ImapRequest<ByteBuf> {
     public String getTerminateCommandLine() throws ImapAsyncClientException {
         throw new ImapAsyncClientException(FailureType.OPERATION_NOT_SUPPORTED_FOR_COMMAND);
     }
+
 }

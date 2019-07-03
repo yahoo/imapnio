@@ -7,7 +7,8 @@ import javax.annotation.Nonnull;
 import org.slf4j.Logger;
 
 import com.sun.mail.imap.protocol.IMAPResponse;
-import com.yahoo.imapnio.async.client.ImapAsyncSession;
+import com.yahoo.imapnio.async.client.ImapAsyncCreateSessionResponse;
+import com.yahoo.imapnio.async.client.ImapAsyncSession.DebugMode;
 import com.yahoo.imapnio.async.client.ImapFuture;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException.FailureType;
@@ -28,10 +29,13 @@ public class ImapClientConnectHandler extends MessageToMessageDecoder<IMAPRespon
     public static final String HANDLER_NAME = "ImapClientConnectHandler";
 
     /** Future for the created session. */
-    private ImapFuture<ImapAsyncSession> sessionCreatedFuture;
+    private ImapFuture<ImapAsyncCreateSessionResponse> sessionCreatedFuture;
 
     /** Logger instance. */
     private Logger logger;
+
+    /** Logging option for this session. */
+    private DebugMode logOpt;
 
     /** Session Id. */
     private int sessionId;
@@ -39,13 +43,16 @@ public class ImapClientConnectHandler extends MessageToMessageDecoder<IMAPRespon
     /**
      * Initializes @{code ImapClientConnectHandler} to process ok greeting after connection.
      *
-     * @param sessionFuture imap session future, should be set to done once ok is recieved
+     * @param sessionFuture imap session future, should be set to done once ok is received
      * @param logger the @{code Logger} instance for @{ImapAsyncSessionImpl}
+     * @param logOpt logging option for the session to be created
      * @param sessionId the session id
      */
-    public ImapClientConnectHandler(@Nonnull final ImapFuture<ImapAsyncSession> sessionFuture, @Nonnull final Logger logger, final int sessionId) {
+    public ImapClientConnectHandler(@Nonnull final ImapFuture<ImapAsyncCreateSessionResponse> sessionFuture, @Nonnull final Logger logger,
+            @Nonnull final DebugMode logOpt, final int sessionId) {
         this.sessionCreatedFuture = sessionFuture;
         this.logger = logger;
+        this.logOpt = logOpt;
         this.sessionId = sessionId;
     }
 
@@ -56,9 +63,10 @@ public class ImapClientConnectHandler extends MessageToMessageDecoder<IMAPRespon
         pipeline.remove(HANDLER_NAME);
 
         if (serverResponse.isOK()) { // we can call it successful only when response is ok
-            //add the command response handler
-            final ImapAsyncSessionImpl session = new ImapAsyncSessionImpl(ctx.channel(), logger, sessionId, pipeline);
-            sessionCreatedFuture.done(session);
+            // add the command response handler
+            final ImapAsyncSessionImpl session = new ImapAsyncSessionImpl(ctx.channel(), logger, logOpt, sessionId, pipeline);
+            final ImapAsyncCreateSessionResponse response = new ImapAsyncCreateSessionResponse(session, serverResponse);
+            sessionCreatedFuture.done(response);
 
         } else {
             logger.error("[{}] Server response without OK:{}", sessionId, serverResponse.toString());
@@ -69,6 +77,7 @@ public class ImapClientConnectHandler extends MessageToMessageDecoder<IMAPRespon
 
     @Override
     public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) {
+        logger.error("[{}] Connection failed due to encountering exception:{}.", sessionId, cause);
         sessionCreatedFuture.done(new ImapAsyncClientException(FailureType.CONNECTION_FAILED_EXCEPTION, cause));
     }
 
@@ -77,6 +86,7 @@ public class ImapClientConnectHandler extends MessageToMessageDecoder<IMAPRespon
         if (msg instanceof IdleStateEvent) { // Handle the IdleState if needed
             final IdleStateEvent event = (IdleStateEvent) msg;
             if (event.state() == IdleState.READER_IDLE) {
+                logger.error("[{}] Connection failed due to taking longer than configured allowed time.", sessionId);
                 sessionCreatedFuture.done(new ImapAsyncClientException(FailureType.CONNECTION_FAILED_EXCEED_IDLE_MAX));
                 // closing the channel if server is not responding with OK response for max read timeout limit
                 ctx.close();
@@ -99,5 +109,6 @@ public class ImapClientConnectHandler extends MessageToMessageDecoder<IMAPRespon
     private void cleanup() {
         sessionCreatedFuture = null;
         logger = null;
+        logOpt = null;
     }
 }

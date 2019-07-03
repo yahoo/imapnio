@@ -3,12 +3,15 @@ package com.yahoo.imapnio.async.request;
 import javax.annotation.Nonnull;
 
 /**
- * This class defines imap login command request from client.
+ * This class defines IMAP login command request from client.
  */
 public class LoginCommand extends ImapRequestAdapter {
 
     /** Literal for Login and space. */
     private static final String LOGIN_SPACE = "LOGIN ";
+
+    /** Literal for logging data. */
+    private static final String LOG_PREFIX = "LOGIN FOR USER:";
 
     /** User name. */
     private String username;
@@ -40,7 +43,12 @@ public class LoginCommand extends ImapRequestAdapter {
     }
 
     @Override
-    public String getLogLine() {
-        return new StringBuilder(LOGIN_SPACE).append(username).toString();
+    public boolean isCommandLineDataSensitive() {
+        return true;
+    }
+
+    @Override
+    public String getDebugData() {
+        return new StringBuilder(LOG_PREFIX).append(username).toString();
     }
 }

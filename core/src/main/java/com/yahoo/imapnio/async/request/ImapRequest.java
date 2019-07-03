@@ -17,6 +17,10 @@ import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
  * @param <T> the data type for next command after continuation.
  */
 public interface ImapRequest<T> {
+    /**
+     * @return true if the command line data is sensitive; false otherwise
+     */
+    boolean isCommandLineDataSensitive();
 
     /**
      * Builds the command line for this command - the line to be sent over wire.
@@ -30,12 +34,10 @@ public interface ImapRequest<T> {
     String getCommandLine() throws SearchException, IOException, ImapAsyncClientException;
 
     /**
-     * Builds the log line for this command - the line to be logged.
-     *
-     * @return log line
+     * @return log data appropriate for the command
      */
-    @Nonnull
-    String getLogLine();
+    @Nullable
+    String getDebugData();
 
     /**
      * @return the queue for holding the server streaming responses
@@ -45,7 +47,7 @@ public interface ImapRequest<T> {
 
     /**
      * Builds the next command line after server challenge.
-     *
+     * 
      * @param serverResponse the server response
      * @throws ImapAsyncClientException when building command line encounters an error
      * @return command line

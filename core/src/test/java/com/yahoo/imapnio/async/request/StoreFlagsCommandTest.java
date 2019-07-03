@@ -16,8 +16,6 @@ import org.testng.annotations.Test;
 import com.sun.mail.imap.protocol.IMAPResponse;
 import com.sun.mail.imap.protocol.MessageSet;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
-import com.yahoo.imapnio.async.request.ImapRequest;
-import com.yahoo.imapnio.async.request.StoreFlagsCommand;
 
 /**
  * Unit test for {@code StoreFlagsCommand}.
@@ -91,8 +89,7 @@ public class StoreFlagsCommandTest {
         flags.add(Flags.Flag.DELETED);
         final boolean isSet = false;
         final ImapRequest cmd = new StoreFlagsCommand(1, 10000, flags, isSet);
-        Assert.assertEquals(cmd.getCommandLine(), "STORE 1:10000 -FLAGS (\\Deleted \\Seen)\r\n",
-                "Expected result mismatched.");
+        Assert.assertEquals(cmd.getCommandLine(), "STORE 1:10000 -FLAGS (\\Deleted \\Seen)\r\n", "Expected result mismatched.");
 
         cmd.cleanup();
         // Verify if cleanup happened correctly.
