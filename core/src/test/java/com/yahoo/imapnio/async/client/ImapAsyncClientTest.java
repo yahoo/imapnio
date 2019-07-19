@@ -5,8 +5,8 @@ import java.net.SocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.Future;
 
 import javax.net.ssl.SSLException;
@@ -17,11 +17,9 @@ import org.slf4j.Logger;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import com.yahoo.imapnio.async.client.ImapAsyncClient;
-import com.yahoo.imapnio.async.client.ImapAsyncSession;
-import com.yahoo.imapnio.async.client.ImapAsyncSessionConfig;
-import com.yahoo.imapnio.async.client.ImapFuture;
 import com.yahoo.imapnio.async.client.ImapAsyncClient.ImapClientChannelInitializer;
+import com.yahoo.imapnio.async.client.ImapAsyncSession.DebugMode;
+import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 import com.yahoo.imapnio.async.netty.ImapClientConnectHandler;
 import com.yahoo.imapnio.client.ImapClientRespReader;
 import com.yahoo.imapnio.command.ImapClientRespDecoder;
@@ -45,10 +43,10 @@ import io.netty.util.concurrent.GenericFutureListener;
 public class ImapAsyncClientTest {
 
     /** Timeout for connection. */
-    private static final String SERVER_URI_STR = "imaps://one.two.three.yahoo.com:993";
+    private static final String SERVER_URI_STR = "imaps://one.two.three.com:993";
 
     /** Server URI without SSL protocol. */
-    private static final String NO_SSL_SERVER_URI_STR = "imap://one.two.three.yahoo.com:993";
+    private static final String NO_SSL_SERVER_URI_STR = "imap://one.two.three.com:993";
 
     /**
      * Tests createSession method when successful.
@@ -71,7 +69,7 @@ public class ImapAsyncClientTest {
 
         final EventLoopGroup group = Mockito.mock(EventLoopGroup.class);
         final Logger logger = Mockito.mock(Logger.class);
-        Mockito.when(logger.isDebugEnabled()).thenReturn(true);
+        Mockito.when(logger.isTraceEnabled()).thenReturn(true);
 
         final ImapAsyncClient aclient = new ImapAsyncClient(bootstrap, group, logger);
 
@@ -83,7 +81,7 @@ public class ImapAsyncClientTest {
         // test create session
         final InetSocketAddress localAddress = null;
         final URI serverUri = new URI(SERVER_URI_STR);
-        final ImapFuture<ImapAsyncSession> future = aclient.createSession(serverUri, config, localAddress, sniNames);
+        final Future<ImapAsyncCreateSessionResponse> future = aclient.createSession(serverUri, config, localAddress, sniNames, DebugMode.DEBUG_OFF);
 
         // verify session creation
         Assert.assertNotNull(future, "Future for ImapAsyncSession should not be null.");
@@ -101,7 +99,7 @@ public class ImapAsyncClientTest {
         Mockito.verify(nettyConnectFuture, Mockito.times(1)).addListener(listenerCaptor.capture());
         Assert.assertEquals(listenerCaptor.getAllValues().size(), 1, "Unexpected count of ImapClientChannelInitializer.");
 
-        // test connection estabalished and channel initialized new
+        // test connection established and channel initialized new
         final SocketChannel socketChannel = Mockito.mock(SocketChannel.class);
         final ChannelPipeline socketPipeline = Mockito.mock(ChannelPipeline.class);
         Mockito.when(socketChannel.pipeline()).thenReturn(socketPipeline);
@@ -130,8 +128,9 @@ public class ImapAsyncClientTest {
         Mockito.verify(nettyPipeline, Mockito.times(1)).addLast(Mockito.anyString(), handlerCaptorLast.capture());
         Assert.assertEquals(handlerCaptorLast.getAllValues().size(), 1, "Unexpected count of ChannelHandler added.");
         Assert.assertEquals(handlerCaptorLast.getAllValues().get(0).getClass(), ImapClientConnectHandler.class, "expected class mismatched.");
-        Mockito.verify(logger, Mockito.times(1)).debug(Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
-
+        // verify logging messages
+        Mockito.verify(logger, Mockito.times(1)).debug(Mockito.eq("[{}] connect operationComplete. result={}, imapServerUri={}, sniNames={}"),
+                Mockito.eq(2), Mockito.eq("success"), Mockito.eq("imaps://one.two.three.com:993"), Mockito.eq(null));
         // call shutdown
         aclient.shutdown();
         Mockito.verify(group, Mockito.times(1)).shutdownGracefully();
@@ -158,7 +157,7 @@ public class ImapAsyncClientTest {
 
         final EventLoopGroup group = Mockito.mock(EventLoopGroup.class);
         final Logger logger = Mockito.mock(Logger.class);
-        Mockito.when(logger.isDebugEnabled()).thenReturn(true);
+        Mockito.when(logger.isTraceEnabled()).thenReturn(true);
 
         final ImapAsyncClient aclient = new ImapAsyncClient(bootstrap, group, logger);
 
@@ -167,10 +166,10 @@ public class ImapAsyncClientTest {
         config.setReadTimeoutMillis(6000);
         final List<String> sniNames = null;
 
-        // test create sesssion
+        // test create session
         final InetSocketAddress localAddress = null;
         final URI serverUri = new URI(NO_SSL_SERVER_URI_STR);
-        final ImapFuture<ImapAsyncSession> future = aclient.createSession(serverUri, config, localAddress, sniNames);
+        final Future<ImapAsyncCreateSessionResponse> future = aclient.createSession(serverUri, config, localAddress, sniNames, DebugMode.DEBUG_OFF);
 
         // verify session creation
         Assert.assertNotNull(future, "Future for ImapAsyncSession should not be null.");
@@ -216,8 +215,9 @@ public class ImapAsyncClientTest {
         Mockito.verify(nettyPipeline, Mockito.times(1)).addLast(Mockito.anyString(), handlerCaptorLast.capture());
         Assert.assertEquals(handlerCaptorLast.getAllValues().size(), 1, "Unexpected count of ChannelHandler added.");
         Assert.assertEquals(handlerCaptorLast.getAllValues().get(0).getClass(), ImapClientConnectHandler.class, "expected class mismatched.");
-        Mockito.verify(logger, Mockito.times(1)).debug(Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
-
+        // verify logging messages
+        Mockito.verify(logger, Mockito.times(1)).debug(Mockito.eq("[{}] connect operationComplete. result={}, imapServerUri={}, sniNames={}"),
+                Mockito.eq(2), Mockito.eq("success"), Mockito.eq("imap://one.two.three.com:993"), Mockito.eq(null));
         // call shutdown
         aclient.shutdown();
         Mockito.verify(group, Mockito.times(1)).shutdownGracefully();
@@ -244,6 +244,7 @@ public class ImapAsyncClientTest {
 
         final EventLoopGroup group = Mockito.mock(EventLoopGroup.class);
         final Logger logger = Mockito.mock(Logger.class);
+        Mockito.when(logger.isTraceEnabled()).thenReturn(false);
         Mockito.when(logger.isDebugEnabled()).thenReturn(true);
 
         final ImapAsyncClient aclient = new ImapAsyncClient(bootstrap, group, logger);
@@ -253,10 +254,10 @@ public class ImapAsyncClientTest {
         config.setReadTimeoutMillis(6000);
         final List<String> sniNames = new ArrayList<String>();
 
-        // test create sesssion
+        // test create session
         final InetSocketAddress localAddress = null;
         final URI serverUri = new URI(SERVER_URI_STR);
-        final ImapFuture<ImapAsyncSession> future = aclient.createSession(serverUri, config, localAddress, sniNames);
+        final Future<ImapAsyncCreateSessionResponse> future = aclient.createSession(serverUri, config, localAddress, sniNames, DebugMode.DEBUG_ON);
 
         // verify session creation
         Assert.assertNotNull(future, "Future for ImapAsyncSession should not be null.");
@@ -274,7 +275,7 @@ public class ImapAsyncClientTest {
         Mockito.verify(nettyConnectFuture, Mockito.times(1)).addListener(listenerCaptor.capture());
         Assert.assertEquals(listenerCaptor.getAllValues().size(), 1, "Unexpected count of ImapClientChannelInitializer.");
 
-        // test connection estabalished and channel initialized new
+        // test connection established and channel initialized new
         final SocketChannel socketChannel = Mockito.mock(SocketChannel.class);
         final ChannelPipeline socketPipeline = Mockito.mock(ChannelPipeline.class);
         Mockito.when(socketChannel.pipeline()).thenReturn(socketPipeline);
@@ -303,18 +304,21 @@ public class ImapAsyncClientTest {
         Mockito.verify(nettyPipeline, Mockito.times(1)).addLast(Mockito.anyString(), handlerCaptorLast.capture());
         Assert.assertEquals(handlerCaptorLast.getAllValues().size(), 1, "Unexpected count of ChannelHandler added.");
         Assert.assertEquals(handlerCaptorLast.getAllValues().get(0).getClass(), ImapClientConnectHandler.class, "expected class mismatched.");
-        Mockito.verify(logger, Mockito.times(1)).debug(Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
+        // verify if session level is on, whether debug call will be called
+        // verify logging messages
+        Mockito.verify(logger, Mockito.times(1)).debug(Mockito.eq("[{}] connect operationComplete. result={}, imapServerUri={}, sniNames={}"),
+                Mockito.eq(2), Mockito.eq("success"), Mockito.eq("imaps://one.two.three.com:993"), Mockito.eq(new ArrayList<String>()));
     }
 
     /**
-     * Tests createSession method when successful.
+     * Tests createSession method when successful with class level debug on and session level debug off.
      *
      * @throws SSLException will not throw
      * @throws URISyntaxException will not throw
      * @throws Exception when calling operationComplete() at GenericFutureListenr
      */
     @Test
-    public void testCreateSessionWithLocalAddressSniSuccessful() throws SSLException, URISyntaxException, Exception {
+    public void testCreateSessionWithLocalAddressSniSuccessfulSessionDebugOff() throws SSLException, URISyntaxException, Exception {
 
         final Bootstrap bootstrap = Mockito.mock(Bootstrap.class);
         final ChannelFuture nettyConnectFuture = Mockito.mock(ChannelFuture.class);
@@ -335,11 +339,11 @@ public class ImapAsyncClientTest {
         config.setConnectionTimeoutMillis(5000);
         config.setReadTimeoutMillis(6000);
         final List<String> sniNames = new ArrayList<String>();
-        sniNames.add("imap.mail.yahoo.com");
-        // test create sesssion
+        sniNames.add("one.two.three.com");
+        // test create session
         final InetSocketAddress localAddress = new InetSocketAddress("10.10.10.10", 23112);
         final URI serverUri = new URI(SERVER_URI_STR);
-        final ImapFuture<ImapAsyncSession> future = aclient.createSession(serverUri, config, localAddress, sniNames);
+        final Future<ImapAsyncCreateSessionResponse> future = aclient.createSession(serverUri, config, localAddress, sniNames, DebugMode.DEBUG_OFF);
 
         // verify session creation
         Assert.assertNotNull(future, "Future for ImapAsyncSession should not be null.");
@@ -357,7 +361,7 @@ public class ImapAsyncClientTest {
         Mockito.verify(nettyConnectFuture, Mockito.times(1)).addListener(listenerCaptor.capture());
         Assert.assertEquals(listenerCaptor.getAllValues().size(), 1, "Unexpected count of ImapClientChannelInitializer.");
 
-        // test connection estabalished and channel initialized new
+        // test connection established and channel initialized new
         final SocketChannel socketChannel = Mockito.mock(SocketChannel.class);
         final ChannelPipeline socketPipeline = Mockito.mock(ChannelPipeline.class);
         Mockito.when(socketChannel.pipeline()).thenReturn(socketPipeline);
@@ -390,6 +394,91 @@ public class ImapAsyncClientTest {
     }
 
     /**
+     * Tests createSession method when successful with class level debug on and session level debug off.
+     *
+     * @throws SSLException will not throw
+     * @throws URISyntaxException will not throw
+     * @throws Exception when calling operationComplete() at GenericFutureListenr
+     */
+    @Test
+    public void testCreateSessionWithLocalAddressSniSuccessfulSessionDebugOn() throws SSLException, URISyntaxException, Exception {
+
+        final Bootstrap bootstrap = Mockito.mock(Bootstrap.class);
+        final ChannelFuture nettyConnectFuture = Mockito.mock(ChannelFuture.class);
+        Mockito.when(nettyConnectFuture.isSuccess()).thenReturn(true);
+        final Channel nettyChannel = Mockito.mock(Channel.class);
+        final ChannelPipeline nettyPipeline = Mockito.mock(ChannelPipeline.class);
+        Mockito.when(nettyChannel.pipeline()).thenReturn(nettyPipeline);
+        Mockito.when(nettyConnectFuture.channel()).thenReturn(nettyChannel);
+        Mockito.when(bootstrap.connect(Mockito.any(SocketAddress.class), Mockito.any(SocketAddress.class))).thenReturn(nettyConnectFuture);
+
+        final EventLoopGroup group = Mockito.mock(EventLoopGroup.class);
+        final Logger logger = Mockito.mock(Logger.class);
+        Mockito.when(logger.isDebugEnabled()).thenReturn(true);
+
+        final ImapAsyncClient aclient = new ImapAsyncClient(bootstrap, group, logger);
+
+        final ImapAsyncSessionConfig config = new ImapAsyncSessionConfig();
+        config.setConnectionTimeoutMillis(5000);
+        config.setReadTimeoutMillis(6000);
+        final List<String> sniNames = new ArrayList<String>();
+        sniNames.add("one.two.three.com");
+        // test create session
+        final InetSocketAddress localAddress = new InetSocketAddress("10.10.10.10", 23112);
+        final URI serverUri = new URI(SERVER_URI_STR);
+        final Future<ImapAsyncCreateSessionResponse> future = aclient.createSession(serverUri, config, localAddress, sniNames, DebugMode.DEBUG_ON);
+
+        // verify session creation
+        Assert.assertNotNull(future, "Future for ImapAsyncSession should not be null.");
+
+        final ArgumentCaptor<ImapClientChannelInitializer> initializerCaptor = ArgumentCaptor.forClass(ImapClientChannelInitializer.class);
+        Mockito.verify(bootstrap, Mockito.times(1)).handler(initializerCaptor.capture());
+        Assert.assertEquals(initializerCaptor.getAllValues().size(), 1, "Unexpected count of ImapClientChannelInitializer.");
+        final ImapClientChannelInitializer initializer = initializerCaptor.getAllValues().get(0);
+
+        // should not call this connect
+        Mockito.verify(bootstrap, Mockito.times(1)).connect(Mockito.any(SocketAddress.class), Mockito.any(SocketAddress.class));
+        // should call following connect
+        Mockito.verify(bootstrap, Mockito.times(0)).connect(Mockito.anyString(), Mockito.anyInt());
+        final ArgumentCaptor<GenericFutureListener> listenerCaptor = ArgumentCaptor.forClass(GenericFutureListener.class);
+        Mockito.verify(nettyConnectFuture, Mockito.times(1)).addListener(listenerCaptor.capture());
+        Assert.assertEquals(listenerCaptor.getAllValues().size(), 1, "Unexpected count of ImapClientChannelInitializer.");
+
+        // test connection established and channel initialized new
+        final SocketChannel socketChannel = Mockito.mock(SocketChannel.class);
+        final ChannelPipeline socketPipeline = Mockito.mock(ChannelPipeline.class);
+        Mockito.when(socketChannel.pipeline()).thenReturn(socketPipeline);
+        initializer.initChannel(socketChannel);
+
+        // verify initChannel
+        final ArgumentCaptor<ChannelHandler> handlerCaptor = ArgumentCaptor.forClass(ChannelHandler.class);
+        Mockito.verify(socketPipeline, Mockito.times(5)).addLast(Mockito.anyString(), handlerCaptor.capture());
+        Assert.assertEquals(handlerCaptor.getAllValues().size(), 5, "Unexpected count of ChannelHandler added.");
+        // following order should be preserved
+        Assert.assertEquals(handlerCaptor.getAllValues().get(0).getClass(), IdleStateHandler.class, "expected class mismatched.");
+        Assert.assertEquals(handlerCaptor.getAllValues().get(1).getClass(), ImapClientRespReader.class, "expected class mismatched.");
+        Assert.assertEquals(handlerCaptor.getAllValues().get(2).getClass(), StringDecoder.class, "expected class mismatched.");
+        Assert.assertEquals(handlerCaptor.getAllValues().get(3).getClass(), StringEncoder.class, "expected class mismatched.");
+        Assert.assertEquals(handlerCaptor.getAllValues().get(4).getClass(), ImapClientRespDecoder.class, "expected class mismatched.");
+
+        // verify GenericFutureListener.operationComplete()
+        final GenericFutureListener listener = listenerCaptor.getAllValues().get(0);
+        listener.operationComplete(nettyConnectFuture);
+        final ArgumentCaptor<ChannelHandler> handlerCaptorFirst = ArgumentCaptor.forClass(ChannelHandler.class);
+        Mockito.verify(nettyPipeline, Mockito.times(1)).addFirst(Mockito.anyString(), handlerCaptorFirst.capture());
+        Assert.assertEquals(handlerCaptorFirst.getAllValues().size(), 1, "number of handlers mismatched.");
+        Assert.assertEquals(handlerCaptorFirst.getAllValues().get(0).getClass(), SslHandler.class, "expected class mismatched.");
+
+        final ArgumentCaptor<ChannelHandler> handlerCaptorLast = ArgumentCaptor.forClass(ChannelHandler.class);
+        Mockito.verify(nettyPipeline, Mockito.times(1)).addLast(Mockito.anyString(), handlerCaptorLast.capture());
+        Assert.assertEquals(handlerCaptorLast.getAllValues().size(), 1, "Unexpected count of ChannelHandler added.");
+        Assert.assertEquals(handlerCaptorLast.getAllValues().get(0).getClass(), ImapClientConnectHandler.class, "expected class mismatched.");
+        // verify logging messages
+        Mockito.verify(logger, Mockito.times(1)).debug(Mockito.eq("[{}] connect operationComplete. result={}, imapServerUri={}, sniNames={}"),
+                Mockito.eq(2), Mockito.eq("success"), Mockito.eq("imaps://one.two.three.com:993"), Mockito.eq(Arrays.asList("one.two.three.com")));
+    }
+
+    /**
      * Tests createSession method when successful.
      *
      * @throws SSLException will not throw
@@ -416,13 +505,14 @@ public class ImapAsyncClientTest {
 
         final ImapAsyncSessionConfig config = new ImapAsyncSessionConfig();
         config.setConnectionTimeoutMillis(5000);
-        config.setReadTimeoutMillis(6000);;
+        config.setReadTimeoutMillis(6000);
+        ;
         final List<String> sniNames = null;
 
-        // test create sesssion
+        // test create session
         final InetSocketAddress localAddress = null;
         final URI serverUri = new URI(SERVER_URI_STR);
-        final ImapFuture<ImapAsyncSession> future = aclient.createSession(serverUri, config, localAddress, sniNames);
+        final Future<ImapAsyncCreateSessionResponse> future = aclient.createSession(serverUri, config, localAddress, sniNames, DebugMode.DEBUG_OFF);
 
         // verify session creation
         Assert.assertNotNull(future, "Future for ImapAsyncSession should not be null.");
@@ -450,7 +540,11 @@ public class ImapAsyncClientTest {
         final ArgumentCaptor<ChannelHandler> handlerCaptorLast = ArgumentCaptor.forClass(ChannelHandler.class);
         Mockito.verify(nettyPipeline, Mockito.times(0)).addLast(Mockito.anyString(), handlerCaptorLast.capture());
         Assert.assertEquals(handlerCaptorLast.getAllValues().size(), 0, "Unexpected count of ChannelHandler added.");
-        Mockito.verify(logger, Mockito.times(1)).error(Mockito.anyString(), Mockito.anyString(), Mockito.any(Throwable.class));
+        // verify logging messages
+        Mockito.verify(logger, Mockito.times(1)).error(Mockito.eq("[{}] connect operationComplete. result={}, imapServerUri={}, sniNames={}"),
+                Mockito.eq("NA"), Mockito.eq("failure"), Mockito.eq("imaps://one.two.three.com:993"), Mockito.eq(null),
+                Mockito.isA(ImapAsyncClientException.class));
+
     }
 
 }

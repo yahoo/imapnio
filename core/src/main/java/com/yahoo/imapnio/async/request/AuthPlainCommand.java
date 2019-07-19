@@ -17,8 +17,11 @@ import com.yahoo.imapnio.async.exception.ImapAsyncClientException.FailureType;
  */
 public class AuthPlainCommand implements ImapRequest<String> {
 
-    /** Literal for Auth plan and space. */
+    /** Literal for Auth plain and space. */
     private static final String AUTH_PLAIN = "AUTHENTICATE PLAIN";
+
+    /** Literal for logging data. */
+    private static final String LOG_PREFIX = "AUTHENTICATE PLAIN FOR USER:";
 
     /** Literal for 10. */
     private static final int TEN = 10;
@@ -66,8 +69,13 @@ public class AuthPlainCommand implements ImapRequest<String> {
     }
 
     @Override
-    public String getLogLine() {
-        return new StringBuilder(AUTH_PLAIN).append(ImapClientConstants.SPACE).append(username).toString();
+    public boolean isCommandLineDataSensitive() {
+        return true;
+    }
+
+    @Override
+    public String getDebugData() {
+        return new StringBuilder(LOG_PREFIX).append(username).toString();
     }
 
     /**

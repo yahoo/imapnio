@@ -23,6 +23,9 @@ public class AuthXoauth2Command implements ImapRequest<String> {
     /** AUTH_XOAUTH2 length. */
     private static final int AUTH_XOAUTH2_LEN = AUTH_XOAUTH2.length();
 
+    /** Literal for logging data. */
+    private static final String LOG_PREFIX = "AUTHENTICATE XOAUTH2 FOR USER:";
+
     /** Literal for user=. */
     private static final String USER = "user=";
 
@@ -85,8 +88,13 @@ public class AuthXoauth2Command implements ImapRequest<String> {
     }
 
     @Override
-    public String getLogLine() {
-        return new StringBuilder(AUTH_XOAUTH2).append(ImapClientConstants.SPACE).append(username).toString();
+    public boolean isCommandLineDataSensitive() {
+        return true;
+    }
+
+    @Override
+    public String getDebugData() {
+        return new StringBuilder(LOG_PREFIX).append(username).toString();
     }
 
     @Override

@@ -40,8 +40,6 @@ public class UidExpungeCommand extends ImapRequestAdapter {
 
     @Override
     public String getCommandLine() {
-        final StringBuilder sb = new StringBuilder(UID_EXPUNGE).append(ImapClientConstants.SPACE).append(uids).append(ImapClientConstants.CRLF);
-
-        return sb.toString();
+        return new StringBuilder(UID_EXPUNGE).append(ImapClientConstants.SPACE).append(uids).append(ImapClientConstants.CRLF).toString();
     }
 }

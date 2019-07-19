@@ -15,8 +15,6 @@ import org.testng.annotations.Test;
 
 import com.sun.mail.imap.protocol.IMAPResponse;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
-import com.yahoo.imapnio.async.request.IdleCommand;
-import com.yahoo.imapnio.async.request.ImapRequest;
 
 /**
  * Unit test for {@code IdleCommand}.
@@ -58,6 +56,8 @@ public class IdleCommandTest {
         final ConcurrentLinkedQueue<IMAPResponse> serverStreamingResponses = new ConcurrentLinkedQueue<IMAPResponse>();
         final ImapRequest cmd = new IdleCommand(serverStreamingResponses);
         Assert.assertEquals(cmd.getCommandLine(), "IDLE\r\n", "Expected result mismatched.");
+        Assert.assertFalse(cmd.isCommandLineDataSensitive(), "Expected result mismatched.");
+        Assert.assertNull(cmd.getDebugData(), "Expected result mismatched.");
 
         cmd.cleanup();
         // Verify if cleanup happened correctly.

@@ -13,8 +13,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
-import com.yahoo.imapnio.async.request.CheckCommand;
-import com.yahoo.imapnio.async.request.ImapRequest;
 
 /**
  * Unit test for {@code CheckCommand}.
@@ -55,6 +53,8 @@ public class CheckCommandTest {
     public void testGetCommandLine() throws IOException, ImapAsyncClientException, SearchException, IllegalArgumentException, IllegalAccessException {
         final ImapRequest cmd = new CheckCommand();
         Assert.assertEquals(cmd.getCommandLine(), "CHECK\r\n", "Expected result mismatched.");
+        Assert.assertFalse(cmd.isCommandLineDataSensitive(), "isCommandLineDataSensitive() result mismatched.");
+        Assert.assertNull(cmd.getDebugData(), "getLogData() mismatched.");
 
         cmd.cleanup();
         // Verify if cleanup happened correctly.

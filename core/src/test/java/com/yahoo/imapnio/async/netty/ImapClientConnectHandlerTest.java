@@ -19,11 +19,11 @@ import org.testng.annotations.Test;
 
 import com.sun.mail.iap.ProtocolException;
 import com.sun.mail.imap.protocol.IMAPResponse;
-import com.yahoo.imapnio.async.client.ImapAsyncSession;
+import com.yahoo.imapnio.async.client.ImapAsyncCreateSessionResponse;
+import com.yahoo.imapnio.async.client.ImapAsyncSession.DebugMode;
 import com.yahoo.imapnio.async.client.ImapFuture;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException.FailureType;
-import com.yahoo.imapnio.async.netty.ImapClientConnectHandler;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
@@ -72,9 +72,9 @@ public class ImapClientConnectHandlerTest {
     @Test
     public void testDecodeConnectSuccess() throws IllegalArgumentException, IllegalAccessException, IOException, ProtocolException,
             InterruptedException, ExecutionException, TimeoutException {
-        final ImapFuture<ImapAsyncSession> imapFuture = new ImapFuture<ImapAsyncSession>();
+        final ImapFuture<ImapAsyncCreateSessionResponse> imapFuture = new ImapFuture<ImapAsyncCreateSessionResponse>();
         final Logger logger = Mockito.mock(Logger.class);
-        final ImapClientConnectHandler handler = new ImapClientConnectHandler(imapFuture, logger, SESSION_ID);
+        final ImapClientConnectHandler handler = new ImapClientConnectHandler(imapFuture, logger, DebugMode.DEBUG_ON, SESSION_ID);
 
         final ChannelHandlerContext ctx = Mockito.mock(ChannelHandlerContext.class);
         final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
@@ -86,7 +86,7 @@ public class ImapClientConnectHandlerTest {
 
         Mockito.verify(pipeline, Mockito.times(1)).remove(Mockito.anyString());
         Assert.assertTrue(imapFuture.isDone(), "Future should be done");
-        final ImapAsyncSession asyncSession = imapFuture.get(5, TimeUnit.MILLISECONDS);
+        final ImapAsyncCreateSessionResponse asyncSession = imapFuture.get(5, TimeUnit.MILLISECONDS);
         Assert.assertNotNull(asyncSession, "Expect ImapAsyncSession not to be null");
     }
 
@@ -104,9 +104,9 @@ public class ImapClientConnectHandlerTest {
     @Test
     public void testDecodeConnectFailed() throws IllegalArgumentException, IllegalAccessException, IOException, ProtocolException,
             InterruptedException, ExecutionException, TimeoutException {
-        final ImapFuture<ImapAsyncSession> imapFuture = new ImapFuture<ImapAsyncSession>();
+        final ImapFuture<ImapAsyncCreateSessionResponse> imapFuture = new ImapFuture<ImapAsyncCreateSessionResponse>();
         final Logger logger = Mockito.mock(Logger.class);
-        final ImapClientConnectHandler handler = new ImapClientConnectHandler(imapFuture, logger, SESSION_ID);
+        final ImapClientConnectHandler handler = new ImapClientConnectHandler(imapFuture, logger, DebugMode.DEBUG_ON, SESSION_ID);
 
         final ChannelHandlerContext ctx = Mockito.mock(ChannelHandlerContext.class);
         final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
@@ -143,9 +143,9 @@ public class ImapClientConnectHandlerTest {
      */
     @Test
     public void testExceptionCaught() throws IllegalArgumentException, IllegalAccessException, InterruptedException, TimeoutException {
-        final ImapFuture<ImapAsyncSession> imapFuture = new ImapFuture<ImapAsyncSession>();
+        final ImapFuture<ImapAsyncCreateSessionResponse> imapFuture = new ImapFuture<ImapAsyncCreateSessionResponse>();
         final Logger logger = Mockito.mock(Logger.class);
-        final ImapClientConnectHandler handler = new ImapClientConnectHandler(imapFuture, logger, SESSION_ID);
+        final ImapClientConnectHandler handler = new ImapClientConnectHandler(imapFuture, logger, DebugMode.DEBUG_ON, SESSION_ID);
 
         final ChannelHandlerContext ctx = Mockito.mock(ChannelHandlerContext.class);
         final TimeoutException timeoutEx = new TimeoutException("too late, my friend");
@@ -174,9 +174,9 @@ public class ImapClientConnectHandlerTest {
     @Test
     public void testUserEventTriggeredIdleStateEventReadIdle()
             throws IllegalArgumentException, IllegalAccessException, InterruptedException, TimeoutException {
-        final ImapFuture<ImapAsyncSession> imapFuture = new ImapFuture<ImapAsyncSession>();
+        final ImapFuture<ImapAsyncCreateSessionResponse> imapFuture = new ImapFuture<ImapAsyncCreateSessionResponse>();
         final Logger logger = Mockito.mock(Logger.class);
-        final ImapClientConnectHandler handler = new ImapClientConnectHandler(imapFuture, logger, SESSION_ID);
+        final ImapClientConnectHandler handler = new ImapClientConnectHandler(imapFuture, logger, DebugMode.DEBUG_ON, SESSION_ID);
 
         final ChannelHandlerContext ctx = Mockito.mock(ChannelHandlerContext.class);
         final IdleStateEvent idleEvent = Mockito.mock(IdleStateEvent.class);
@@ -211,9 +211,9 @@ public class ImapClientConnectHandlerTest {
      */
     @Test
     public void testUserEventTriggeredIdleStateEventNotReadIdle() throws IllegalArgumentException, IllegalAccessException {
-        final ImapFuture<ImapAsyncSession> imapFuture = new ImapFuture<ImapAsyncSession>();
+        final ImapFuture<ImapAsyncCreateSessionResponse> imapFuture = new ImapFuture<ImapAsyncCreateSessionResponse>();
         final Logger logger = Mockito.mock(Logger.class);
-        final ImapClientConnectHandler handler = new ImapClientConnectHandler(imapFuture, logger, SESSION_ID);
+        final ImapClientConnectHandler handler = new ImapClientConnectHandler(imapFuture, logger, DebugMode.DEBUG_ON, SESSION_ID);
 
         final ChannelHandlerContext ctx = Mockito.mock(ChannelHandlerContext.class);
         final IdleStateEvent idleEvent = Mockito.mock(IdleStateEvent.class);
@@ -230,9 +230,9 @@ public class ImapClientConnectHandlerTest {
      */
     @Test
     public void testUserEventTriggeredNotIdleStateEvent() throws IllegalArgumentException, IllegalAccessException {
-        final ImapFuture<ImapAsyncSession> imapFuture = new ImapFuture<ImapAsyncSession>();
+        final ImapFuture<ImapAsyncCreateSessionResponse> imapFuture = new ImapFuture<ImapAsyncCreateSessionResponse>();
         final Logger logger = Mockito.mock(Logger.class);
-        final ImapClientConnectHandler handler = new ImapClientConnectHandler(imapFuture, logger, SESSION_ID);
+        final ImapClientConnectHandler handler = new ImapClientConnectHandler(imapFuture, logger, DebugMode.DEBUG_ON, SESSION_ID);
 
         final ChannelHandlerContext ctx = Mockito.mock(ChannelHandlerContext.class);
         final String otherEvent = new String("king is coming!!!");
@@ -250,9 +250,9 @@ public class ImapClientConnectHandlerTest {
      */
     @Test
     public void testChannelInactive() throws IllegalArgumentException, IllegalAccessException, InterruptedException, TimeoutException {
-        final ImapFuture<ImapAsyncSession> imapFuture = new ImapFuture<ImapAsyncSession>();
+        final ImapFuture<ImapAsyncCreateSessionResponse> imapFuture = new ImapFuture<ImapAsyncCreateSessionResponse>();
         final Logger logger = Mockito.mock(Logger.class);
-        final ImapClientConnectHandler handler = new ImapClientConnectHandler(imapFuture, logger, SESSION_ID);
+        final ImapClientConnectHandler handler = new ImapClientConnectHandler(imapFuture, logger, DebugMode.DEBUG_ON, SESSION_ID);
 
         final ChannelHandlerContext ctx = Mockito.mock(ChannelHandlerContext.class);
         handler.channelInactive(ctx);

@@ -16,8 +16,6 @@ import org.testng.annotations.Test;
 import com.sun.mail.imap.protocol.IMAPResponse;
 import com.sun.mail.imap.protocol.UIDSet;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
-import com.yahoo.imapnio.async.request.ImapRequest;
-import com.yahoo.imapnio.async.request.UidStoreFlagsCommand;
 
 /**
  * Unit test for {@code UidStoreFlagsCommand}.
@@ -65,7 +63,8 @@ public class UidStoreFlagsCommandTest {
         flags.add(Flags.Flag.DELETED);
         final boolean isSet = true;
         final ImapRequest cmd = new UidStoreFlagsCommand(msgsets, flags, isSet);
-        Assert.assertEquals(cmd.getCommandLine(), "UID STORE 4294967292,4294967294:4294967295 +FLAGS (\\Deleted \\Seen)\r\n", "Expected result mismatched.");
+        Assert.assertEquals(cmd.getCommandLine(), "UID STORE 4294967292,4294967294:4294967295 +FLAGS (\\Deleted \\Seen)\r\n",
+                "Expected result mismatched.");
 
         cmd.cleanup();
         // Verify if cleanup happened correctly.
@@ -84,7 +83,7 @@ public class UidStoreFlagsCommandTest {
      */
     @Test
     public void testGetCommandLineWithUID() throws IOException, IllegalAccessException, SearchException, ImapAsyncClientException {
-  
+
         final long[] uids = { 4294967293L, 4294967294L, 4294967295L };
         final UIDSet[] msgsets = UIDSet.createUIDSets(uids);
         final Flags flags = new Flags();
@@ -118,8 +117,7 @@ public class UidStoreFlagsCommandTest {
         flags.add(Flags.Flag.DELETED);
         final boolean isSet = false;
         final ImapRequest cmd = new UidStoreFlagsCommand("1:10000", flags, isSet);
-        Assert.assertEquals(cmd.getCommandLine(), "UID STORE 1:10000 -FLAGS (\\Deleted \\Seen)\r\n",
-                "Expected result mismatched.");
+        Assert.assertEquals(cmd.getCommandLine(), "UID STORE 1:10000 -FLAGS (\\Deleted \\Seen)\r\n", "Expected result mismatched.");
 
         cmd.cleanup();
         // Verify if cleanup happened correctly.

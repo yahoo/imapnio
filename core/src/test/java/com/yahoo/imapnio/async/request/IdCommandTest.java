@@ -16,8 +16,6 @@ import org.testng.annotations.Test;
 
 import com.sun.mail.imap.protocol.IMAPResponse;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
-import com.yahoo.imapnio.async.request.IdCommand;
-import com.yahoo.imapnio.async.request.ImapRequest;
 
 /**
  * Unit test for {@code IdCommand}.
@@ -83,6 +81,8 @@ public class IdCommandTest {
             throws IOException, ImapAsyncClientException, SearchException, IllegalArgumentException, IllegalAccessException {
         final ImapRequest cmd = new IdCommand(null);
         Assert.assertEquals(cmd.getCommandLine(), "ID NIL\r\n", "Expected result mismatched.");
+        Assert.assertFalse(cmd.isCommandLineDataSensitive(), "isCommandLineDataSensitive() result mismatched.");
+        Assert.assertNull(cmd.getDebugData(), "getLogData() mismatched.");
 
         cmd.cleanup();
         // Verify if cleanup happened correctly.

@@ -43,8 +43,13 @@ public class IdleCommand implements ImapRequest<String> {
     }
 
     @Override
-    public String getLogLine() {
-        return getCommandLine();
+    public boolean isCommandLineDataSensitive() {
+        return false;
+    }
+
+    @Override
+    public String getDebugData() {
+        return null;
     }
 
     @Override
@@ -61,5 +66,4 @@ public class IdleCommand implements ImapRequest<String> {
     public String getTerminateCommandLine() {
         return new StringBuilder(LINE_LEN).append(DONE).append(ImapClientConstants.CRLF).toString();
     }
-
 }

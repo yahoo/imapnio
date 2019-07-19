@@ -1,10 +1,8 @@
 package com.yahoo.imapnio.async.request;
 
-import java.io.IOException;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.annotation.Nonnull;
-import javax.mail.search.SearchException;
 
 import com.sun.mail.imap.protocol.IMAPResponse;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
@@ -16,12 +14,13 @@ import com.yahoo.imapnio.async.exception.ImapAsyncClientException.FailureType;
 public abstract class ImapRequestAdapter implements ImapRequest<String> {
 
     @Override
-    public String getLogLine() {
-        try {
-            return getCommandLine();
-        } catch (final SearchException | IOException | ImapAsyncClientException e) {
-            return new StringBuilder("unable to obtain log line due to exception:").append(e.getMessage()).toString();
-        }
+    public boolean isCommandLineDataSensitive() {
+        return false;
+    }
+
+    @Override
+    public String getDebugData() {
+        return null;
     }
 
     @Override

@@ -14,8 +14,6 @@ import org.testng.annotations.Test;
 
 import com.sun.mail.imap.protocol.IMAPResponse;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
-import com.yahoo.imapnio.async.request.ImapRequest;
-import com.yahoo.imapnio.async.request.StatusCommand;
 
 /**
  * Unit test for {@code StatusCommand}.

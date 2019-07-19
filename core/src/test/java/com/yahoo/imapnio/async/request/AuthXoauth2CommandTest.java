@@ -19,9 +19,6 @@ import org.testng.annotations.Test;
 import com.sun.mail.imap.protocol.IMAPResponse;
 import com.yahoo.imapnio.async.data.Capability;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
-import com.yahoo.imapnio.async.request.AuthXoauth2Command;
-import com.yahoo.imapnio.async.request.ImapClientConstants;
-import com.yahoo.imapnio.async.request.ImapRequest;
 
 /**
  * Unit test for {@code AuthXoauth2Command}.
@@ -69,7 +66,8 @@ public class AuthXoauth2CommandTest {
 
         Assert.assertEquals(cmd.getCommandLine(), "AUTHENTICATE XOAUTH2 dXNlcj10ZXNsYQFhdXRoPUJlYXJlciBzZWxmZHJpdmluZwEB\r\n",
                 "Expected result mismatched.");
-        Assert.assertEquals(cmd.getLogLine(), "AUTHENTICATE XOAUTH2 tesla", "Log line mismatched.");
+        Assert.assertTrue(cmd.isCommandLineDataSensitive(), "isCommandLineDataSensitive() result mismatched.");
+        Assert.assertEquals(cmd.getDebugData(), "AUTHENTICATE XOAUTH2 FOR USER:tesla", "Log line mismatched.");
 
         cmd.cleanup();
         // Verify if cleanup happened correctly.
@@ -104,6 +102,7 @@ public class AuthXoauth2CommandTest {
             Assert.assertNull(field.get(cmd), "Cleanup should set " + field.getName() + " as null");
         }
     }
+
     /**
      * Tests getStreamingResponsesQueue method.
      */

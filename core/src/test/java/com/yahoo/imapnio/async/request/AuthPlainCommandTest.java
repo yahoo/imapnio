@@ -17,9 +17,6 @@ import org.testng.annotations.Test;
 import com.sun.mail.imap.protocol.IMAPResponse;
 import com.yahoo.imapnio.async.data.Capability;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
-import com.yahoo.imapnio.async.request.AuthPlainCommand;
-import com.yahoo.imapnio.async.request.ImapClientConstants;
-import com.yahoo.imapnio.async.request.ImapRequest;
 
 /**
  * Unit test for {@code AuthPlainCommand}.
@@ -65,7 +62,8 @@ public class AuthPlainCommandTest {
 
         // verify getCommandLine()
         Assert.assertEquals(cmd.getCommandLine(), "AUTHENTICATE PLAIN AHRlc2xhAHNlbGZkcml2aW5n\r\n", "Expected result mismatched.");
-        Assert.assertEquals(cmd.getLogLine(), "AUTHENTICATE PLAIN tesla", "Log line mismatched.");
+        Assert.assertTrue(cmd.isCommandLineDataSensitive(), "isCommandLineDataSensitive() result mismatched.");
+        Assert.assertEquals(cmd.getDebugData(), "AUTHENTICATE PLAIN FOR USER:tesla", "Log line mismatched.");
 
         // verify getNextCommandLineAfterContinuation()
         final IMAPResponse serverResponse = null; // should not cause anything if it is null
@@ -125,7 +123,6 @@ public class AuthPlainCommandTest {
         final ImapRequest cmd = new AuthPlainCommand("tesla", "selfdriving", new Capability(capas));
         Assert.assertNull(cmd.getStreamingResponsesQueue(), "Expected result mismatched.");
     }
-
 
     /**
      * Tests getTerminateCommandLine method.
