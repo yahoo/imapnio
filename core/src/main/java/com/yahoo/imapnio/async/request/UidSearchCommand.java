@@ -4,10 +4,12 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.mail.internet.MimeUtility;
 import javax.mail.search.SearchException;
 import javax.mail.search.SearchTerm;
 
+import com.sun.mail.imap.protocol.MessageSet;
 import com.sun.mail.imap.protocol.SearchSequence;
 import com.sun.mail.imap.protocol.UIDSet;
 import com.yahoo.imapnio.command.Argument;
@@ -23,6 +25,9 @@ public class UidSearchCommand extends ImapRequestAdapter {
     /** UID SEARCH and space. */
     private static final String UID_SEARCH_SPACE = "UID SEARCH ";
 
+    /** Message sequences. */
+    private String msgSeqs;
+
     /** A collection of message UID specified based on RFC3501 syntax. */
     private String uids;
 
@@ -31,27 +36,31 @@ public class UidSearchCommand extends ImapRequestAdapter {
 
     /**
      * Initializes a @{code UidSearchCommand} object with required parameters.
-     *
+     * 
+     * @param msgsets the list of messages set
      * @param uidsets the list of UID set
      * @param term the search expression tree
      */
-    public UidSearchCommand(@Nonnull final UIDSet[] uidsets, @Nonnull final SearchTerm term) {
-        this(UIDSet.toString(uidsets), term);
+    public UidSearchCommand(@Nonnull final MessageSet[] msgsets, @Nullable final UIDSet[] uidsets, @Nullable final SearchTerm term) {
+        this(MessageSet.toString(msgsets), UIDSet.toString(uidsets), term);
     }
 
     /**
-     * Initializes a @{code UidSearchCommand} with the msg UID string directly.
+     * Initializes a @{code UidSearchCommand} with the message sequences and UID string directly.
      *
-     * @param uids the messages UID string
+     * @param msgSeqs the messages msgSeqs string
+     * @param uids the UID string
      * @param term the search expression tree
      */
-    private UidSearchCommand(@Nonnull final String uids, @Nonnull final SearchTerm term) {
+    public UidSearchCommand(@Nonnull final String msgSeqs, @Nullable final String uids, @Nullable final SearchTerm term) {
+        this.msgSeqs = msgSeqs;
         this.uids = uids;
         this.term = term;
     }
 
     @Override
     public void cleanup() {
+        this.msgSeqs = null;
         this.uids = null;
         this.term = null;
     }
@@ -64,8 +73,14 @@ public class UidSearchCommand extends ImapRequestAdapter {
         // convert from search expression tree to String
         final SearchSequence searchSeq = new SearchSequence();
         final Argument args = new Argument();
-        args.append(searchSeq.generateSequence(term, charset == null ? null : MimeUtility.javaCharset(charset)));
-        args.writeAtom(uids);
+        args.writeAtom(msgSeqs);
+        if (term != null) {
+            args.append(searchSeq.generateSequence(term, charset == null ? null : MimeUtility.javaCharset(charset)));
+        }
+        if (uids != null) {
+            args.writeAtom("UID");
+            args.writeAtom(uids);
+        }
 
         final String searchStr = args.toString();
 
