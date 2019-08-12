@@ -3,67 +3,53 @@ package com.yahoo.imapnio.async.request;
 import javax.annotation.Nonnull;
 import javax.mail.Flags;
 
-import com.sun.mail.imap.protocol.UIDSet;
+import com.yahoo.imapnio.async.data.MessageNumberSet;
 
 /**
  * This class defines IMAP UID store command request from client.
  */
-public class UidStoreFlagsCommand extends ImapRequestAdapter {
-
-    /** UID STORE and space. */
-    private static final String UID_STORE_SPACE = "UID STORE ";
-
-    /** Literal for FLAGS. */
-    private static final String FLAGS_SP = "FLAGS ";
-
-    /** A collection of messages id specified based on RFC3501 syntax. */
-    private String uids;
-
-    /** Messages flags. */
-    private Flags flags;
-
-    /** Flag to indicate whether to add or remove existing. */
-    private final boolean isSet;
+public class UidStoreFlagsCommand extends AbstractStoreFlagsCommand {
 
     /**
-     * Initializes a @{code UidStoreFlagsCommand} with the UIDSet array.
+     * Initializes a @{code UidStoreFlagsCommand} with the MessageNumberSet array, Flags and action. Requests server to return the new value.
      *
-     * @param uidsets the set of uid set
+     * @param msgsets the set of message set
      * @param flags the flags to be stored
-     * @param set true if the specified flags are to be set, false to clear them
+     * @param action whether to replace, add or remove the flags
      */
-    public UidStoreFlagsCommand(@Nonnull final UIDSet[] uidsets, @Nonnull final Flags flags, final boolean set) {
-        this(UIDSet.toString(uidsets), flags, set);
+    public UidStoreFlagsCommand(@Nonnull final MessageNumberSet[] msgsets, @Nonnull final Flags flags, @Nonnull final FlagsAction action) {
+        super(true, msgsets, flags, action, false);
     }
 
     /**
-     * Initializes a @{code UidStoreFlagsCommand} with the uid string directly.
+     * Initializes a @{code UidStoreFlagsCommand} with the MessageNumberSet array, Flags, action, flag whether to request server to return the new
+     * value.
      *
-     * @param uids the messages set
+     * @param msgsets the set of message set
      * @param flags the flags to be stored
-     * @param set true if the specified flags are to be set, false to clear them
+     * @param action whether to replace, add or remove the flags
+     * @param silent true if asking server to respond silently; false if requesting server to return the new values
      */
-    public UidStoreFlagsCommand(@Nonnull final String uids, @Nonnull final Flags flags, final boolean set) {
-        this.uids = uids;
-        this.flags = flags;
-        this.isSet = set;
+    public UidStoreFlagsCommand(@Nonnull final MessageNumberSet[] msgsets, @Nonnull final Flags flags, @Nonnull final FlagsAction action,
+            final boolean silent) {
+        super(true, msgsets, flags, action, silent);
+    }
+
+    /**
+     * Initializes a @{code UidStoreFlagsCommand} with string form message numbers, Flags, action, flag whether to request server to return the new
+     * value.
+     *
+     * @param uids the string representing UID based on RFC3501
+     * @param flags the flags to be stored
+     * @param action whether to replace, add or remove the flags
+     * @param silent true if asking server to respond silently; false if requesting server to return the new values
+     */
+    public UidStoreFlagsCommand(@Nonnull final String uids, @Nonnull final Flags flags, @Nonnull final FlagsAction action, final boolean silent) {
+        super(true, uids, flags, action, silent);
     }
 
     @Override
-    public void cleanup() {
-        this.uids = null;
-        this.flags = null;
-    }
-
-    @Override
-    public String getCommandLine() {
-        // Ex:STORE 2:4 +FLAGS (\Deleted)
-        final ImapArgumentFormatter argWriter = new ImapArgumentFormatter();
-        final StringBuilder sb = new StringBuilder(UID_STORE_SPACE).append(uids).append(ImapClientConstants.SPACE);
-
-        sb.append(isSet ? ImapClientConstants.PLUS : ImapClientConstants.MINUS).append(FLAGS_SP).append(argWriter.buildFlagString(flags))
-                .append(ImapClientConstants.CRLF);
-
-        return sb.toString();
+    public ImapCommandType getCommandType() {
+        return ImapCommandType.UID_STORE_FLAGS;
     }
 }

@@ -14,4 +14,9 @@ public class LogoutCommand extends AbstractNoArgsCommand {
     public LogoutCommand() {
         super(LOGOUT);
     }
+
+    @Override
+    public ImapCommandType getCommandType() {
+        return ImapCommandType.LOGOUT;
+    }
 }

@@ -12,12 +12,8 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import com.sun.mail.imap.protocol.IMAPResponse;
-import com.sun.mail.imap.protocol.MessageSet;
-import com.sun.mail.imap.protocol.UIDSet;
+import com.yahoo.imapnio.async.data.MessageNumberSet;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
-import com.yahoo.imapnio.async.request.ImapRequest;
-import com.yahoo.imapnio.async.request.UidFetchCommand;
 
 /**
  * Unit test for {@code UidFetchCommand}.
@@ -49,7 +45,7 @@ public class UidFetchCommandTest {
     }
 
     /**
-     * Tests getCommandLine method using Message sequences.
+     * Tests getCommandLine method using MessageNumberSet[] and data items.
      *
      * @throws ImapAsyncClientException will not throw
      * @throws SearchException will not throw
@@ -58,11 +54,11 @@ public class UidFetchCommandTest {
      * @throws IllegalArgumentException will not throw
      */
     @Test
-    public void testGetCommandLineWithMessageSequence()
+    public void testGetCommandLineFromConstructorWithDataItems()
             throws IOException, ImapAsyncClientException, SearchException, IllegalArgumentException, IllegalAccessException {
 
         final long[] msgs = { 1L, 2L, 3L };
-        final UIDSet[] msgsets = UIDSet.createUIDSets(msgs);
+        final MessageNumberSet[] msgsets = MessageNumberSet.createMessageNumberSets(msgs);
         final ImapRequest cmd = new UidFetchCommand(msgsets, DATA_ITEMS);
         Assert.assertEquals(cmd.getCommandLine(), "UID FETCH 1:3 (FLAGS BODY[HEADER.FIELDS (DATE FROM)])\r\n", "Expected result mismatched.");
 
@@ -74,7 +70,7 @@ public class UidFetchCommandTest {
     }
 
     /**
-     * Tests getCommandLine method using UID.
+     * Tests getCommandLine method using MessageNumberSet[] and macro.
      *
      * @throws ImapAsyncClientException will not throw
      * @throws SearchException will not throw
@@ -83,13 +79,13 @@ public class UidFetchCommandTest {
      * @throws IllegalArgumentException will not throw
      */
     @Test
-    public void testGetCommandLineWithUID()
+    public void GetCommandLineFromConstructorWithMacro()
             throws IOException, ImapAsyncClientException, SearchException, IllegalArgumentException, IllegalAccessException {
 
         final long[] msgs = { 4294967293L, 4294967294L, 4294967295L };
-        final UIDSet[] msgsets = UIDSet.createUIDSets(msgs);
-        final ImapRequest cmd = new UidFetchCommand(msgsets, DATA_ITEMS);
-        Assert.assertEquals(cmd.getCommandLine(), "UID FETCH 4294967293:4294967295 (FLAGS BODY[HEADER.FIELDS (DATE FROM)])\r\n", "Expected result mismatched.");
+        final MessageNumberSet[] msgsets = MessageNumberSet.createMessageNumberSets(msgs);
+        final ImapRequest cmd = new UidFetchCommand(msgsets, FetchMacro.FAST);
+        Assert.assertEquals(cmd.getCommandLine(), "UID FETCH 4294967293:4294967295 FAST\r\n", "Expected result mismatched.");
 
         cmd.cleanup();
         // Verify if cleanup happened correctly.
@@ -98,4 +94,89 @@ public class UidFetchCommandTest {
         }
     }
 
+    /**
+     * Tests getCommandLine method using UID string and data items.
+     *
+     * @throws ImapAsyncClientException will not throw
+     * @throws SearchException will not throw
+     * @throws IOException will not throw
+     * @throws IllegalAccessException will not throw
+     * @throws IllegalArgumentException will not throw
+     */
+    @Test
+    public void testGetCommandLineFromConstructorWithUidStringDataItems()
+            throws IOException, ImapAsyncClientException, SearchException, IllegalArgumentException, IllegalAccessException {
+
+        final ImapRequest cmd = new UidFetchCommand("*:4,5:7", DATA_ITEMS);
+        Assert.assertEquals(cmd.getCommandLine(), "UID FETCH *:4,5:7 (FLAGS BODY[HEADER.FIELDS (DATE FROM)])\r\n", "Expected result mismatched.");
+
+        cmd.cleanup();
+        // Verify if cleanup happened correctly.
+        for (final Field field : fieldsToCheck) {
+            Assert.assertNull(field.get(cmd), "Cleanup should set " + field.getName() + " as null");
+        }
+    }
+
+    /**
+     * Tests getCommandLine method using UID string and macro.
+     *
+     * @throws ImapAsyncClientException will not throw
+     * @throws SearchException will not throw
+     * @throws IOException will not throw
+     * @throws IllegalAccessException will not throw
+     * @throws IllegalArgumentException will not throw
+     */
+    @Test
+    public void GetCommandLineFromConstructorWithUidStringAndMacro()
+            throws IOException, ImapAsyncClientException, SearchException, IllegalArgumentException, IllegalAccessException {
+
+        final ImapRequest cmd = new UidFetchCommand("1:*", FetchMacro.FAST);
+        Assert.assertEquals(cmd.getCommandLine(), "UID FETCH 1:* FAST\r\n", "Expected result mismatched.");
+
+        cmd.cleanup();
+        // Verify if cleanup happened correctly.
+        for (final Field field : fieldsToCheck) {
+            Assert.assertNull(field.get(cmd), "Cleanup should set " + field.getName() + " as null");
+        }
+    }
+
+    /**
+     * Tests getCommandType method.
+     */
+    @Test
+    public void testGetCommandType() {
+        final long[] msgs = { 1L, 2L, 3L };
+        final MessageNumberSet[] msgsets = MessageNumberSet.createMessageNumberSets(msgs);
+        final ImapRequest cmd = new UidFetchCommand(msgsets, DATA_ITEMS);
+        Assert.assertSame(cmd.getCommandType(), ImapCommandType.UID_FETCH);
+    }
+
+    /**
+     * Tests FetchMacro enum.
+     */
+    @Test
+    public void testFetchMacroEnum() {
+        final FetchMacro[] enumList = FetchMacro.values();
+        Assert.assertEquals(enumList.length, 3, "The enum count mismatched.");
+        // values below cannot be changed
+        final FetchMacro stateAll = FetchMacro.valueOf("ALL");
+        Assert.assertSame(stateAll, FetchMacro.ALL, "Enum does not match.");
+        // values below cannot be changed
+        final FetchMacro stateFast = FetchMacro.valueOf("FAST");
+        Assert.assertSame(stateFast, FetchMacro.FAST, "Enum does not match.");
+        // values below cannot be changed
+        final FetchMacro stateFull = FetchMacro.valueOf("FULL");
+        Assert.assertSame(stateFull, FetchMacro.FULL, "Enum does not match.");
+    }
+
+    /**
+     * Tests CommandType enum.
+     */
+    @Test
+    public void testCommandTypeEnum() {
+        final ImapCommandType[] enumList = ImapCommandType.values();
+        Assert.assertEquals(enumList.length, 35, "The enum count mismatched.");
+        final ImapCommandType uidFetch = ImapCommandType.valueOf("UID_FETCH");
+        Assert.assertSame(uidFetch, ImapCommandType.UID_FETCH, "Enum does not match.");
+    }
 }

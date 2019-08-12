@@ -1,23 +1,36 @@
 package com.yahoo.imapnio.async.request;
 
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.annotation.Nonnull;
 
 import com.sun.mail.imap.protocol.IMAPResponse;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+
 /**
  * This class defines imap idle command request from client.
  */
-public class IdleCommand implements ImapRequest<String> {
+public class IdleCommand extends ImapRequestAdapter {
+
+    /** Byte array for CR and LF, keeping the array local so it cannot be modified by others. */
+    private static final byte[] CRLF_B = { '\r', '\n' };
 
     /** Command name. */
     private static final String IDLE = "IDLE";
 
+    /** Byte array for IDLE. */
+    private static final byte[] IDLE_B = IDLE.getBytes(StandardCharsets.US_ASCII);
+
     /** Literal for DONE. */
     private static final String DONE = "DONE";
 
-    /** Literal for DONE. */
+    /** Byte array for DONE. */
+    private static final byte[] DONE_B = DONE.getBytes(StandardCharsets.US_ASCII);
+
+    /** Initial buffer length, enough for the word IDLE or DONE with some room to grow. */
     private static final int LINE_LEN = 20;
 
     /** ConcurrentLinkedQueue shared from caller and @{code ImapAsyncSession}. */
@@ -53,17 +66,28 @@ public class IdleCommand implements ImapRequest<String> {
     }
 
     @Override
-    public String getCommandLine() {
-        return new StringBuilder(LINE_LEN).append(IDLE).append(ImapClientConstants.CRLF).toString();
+    public ByteBuf getCommandLineBytes() {
+        final ByteBuf buf = Unpooled.buffer(LINE_LEN);
+        buf.writeBytes(IDLE_B);
+        buf.writeBytes(CRLF_B);
+        return buf;
     }
 
     @Override
-    public String getNextCommandLineAfterContinuation(@Nonnull final IMAPResponse serverResponse) {
+    public ByteBuf getNextCommandLineAfterContinuation(@Nonnull final IMAPResponse serverResponse) {
         return null;
     }
 
     @Override
-    public String getTerminateCommandLine() {
-        return new StringBuilder(LINE_LEN).append(DONE).append(ImapClientConstants.CRLF).toString();
+    public ByteBuf getTerminateCommandLine() {
+        final ByteBuf buf = Unpooled.buffer(LINE_LEN);
+        buf.writeBytes(DONE_B);
+        buf.writeBytes(CRLF_B);
+        return buf;
+    }
+
+    @Override
+    public ImapCommandType getCommandType() {
+        return ImapCommandType.IDLE;
     }
 }

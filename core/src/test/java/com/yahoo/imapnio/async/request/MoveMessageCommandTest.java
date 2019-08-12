@@ -13,9 +13,8 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import com.sun.mail.imap.protocol.MessageSet;
+import com.yahoo.imapnio.async.data.MessageNumberSet;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
-import com.yahoo.imapnio.async.request.ImapRequest;
-import com.yahoo.imapnio.async.request.MoveMessageCommand;
 
 /**
  * Unit test for {@code MoveMessageCommand}.
@@ -69,7 +68,7 @@ public class MoveMessageCommandTest {
     }
 
     /**
-     * Tests getCommandLine method.
+     * Tests constructor with start and end message sequence and getCommandLine method.
      *
      * @throws ImapAsyncClientException will not throw
      * @throws SearchException will not throw
@@ -78,10 +77,34 @@ public class MoveMessageCommandTest {
      * @throws IllegalArgumentException will not throw
      */
     @Test
-    public void testMessageUidGetCommandLine()
+    public void testConstructorStartEndGetCommandLine()
             throws IOException, ImapAsyncClientException, SearchException, IllegalArgumentException, IllegalAccessException {
         final String folderName = "folderABC";
         final ImapRequest cmd = new MoveMessageCommand(37850, 37852, folderName);
+        Assert.assertEquals(cmd.getCommandLine(), "MOVE 37850:37852 folderABC\r\n", "Expected result mismatched.");
+
+        cmd.cleanup();
+        // Verify if cleanup happened correctly.
+        for (final Field field : fieldsToCheck) {
+            Assert.assertNull(field.get(cmd), "Cleanup should set " + field.getName() + " as null");
+        }
+    }
+
+    /**
+     * Tests the constructor with @{MessageNumberSet} and getCommandLine method.
+     *
+     * @throws ImapAsyncClientException will not throw
+     * @throws SearchException will not throw
+     * @throws IOException will not throw
+     * @throws IllegalAccessException will not throw
+     * @throws IllegalArgumentException will not throw
+     */
+    @Test
+    public void testConstructorMessageNumberSetGetCommandLine()
+            throws IOException, ImapAsyncClientException, SearchException, IllegalArgumentException, IllegalAccessException {
+        final String folderName = "folderABC";
+        final MessageNumberSet[] mset = MessageNumberSet.createMessageNumberSets(new long[] { 37850L, 37851L, 37852L });
+        final ImapRequest cmd = new MoveMessageCommand(mset, folderName);
         Assert.assertEquals(cmd.getCommandLine(), "MOVE 37850:37852 folderABC\r\n", "Expected result mismatched.");
 
         cmd.cleanup();
@@ -118,5 +141,14 @@ public class MoveMessageCommandTest {
         final String folderName = "测试";
         final ImapRequest cmd = new MoveMessageCommand(37850, 37852, folderName);
         Assert.assertEquals(cmd.getCommandLine(), "MOVE 37850:37852 &bUuL1Q-\r\n", "Expected result mismatched.");
+    }
+
+    /**
+     * Tests getCommandType method.
+     */
+    @Test
+    public void testGetCommandType() {
+        final ImapRequest cmd = new MoveMessageCommand(37850, 37852, "targetFolder");
+        Assert.assertSame(cmd.getCommandType(), ImapCommandType.MOVE_MESSAGE);
     }
 }

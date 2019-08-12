@@ -18,4 +18,9 @@ public class DeleteFolderCommand extends AbstractFolderActionCommand {
     public DeleteFolderCommand(@Nonnull final String folderName) {
         super(DELETE, folderName);
     }
+
+    @Override
+    public ImapCommandType getCommandType() {
+        return ImapCommandType.DELETE_FOLDER;
+    }
 }

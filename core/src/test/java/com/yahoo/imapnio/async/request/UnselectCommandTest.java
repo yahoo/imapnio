@@ -13,8 +13,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
-import com.yahoo.imapnio.async.request.ImapRequest;
-import com.yahoo.imapnio.async.request.UnselectCommand;
 
 /**
  * Unit test for {@code UnselectCommand}.
@@ -63,4 +61,12 @@ public class UnselectCommandTest {
         }
     }
 
+    /**
+     * Tests getCommandType method.
+     */
+    @Test
+    public void testGetCommandType() {
+        final ImapRequest cmd = new UnselectCommand();
+        Assert.assertSame(cmd.getCommandType(), ImapCommandType.UNSELECT);
+    }
 }

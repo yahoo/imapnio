@@ -1,6 +1,7 @@
 package com.yahoo.imapnio.async.internal;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicLong;
@@ -20,10 +21,11 @@ import com.yahoo.imapnio.async.exception.ImapAsyncClientException.FailureType;
 import com.yahoo.imapnio.async.netty.ImapClientCommandRespHandler;
 import com.yahoo.imapnio.async.netty.ImapCommandChannelEventProcessor;
 import com.yahoo.imapnio.async.request.IdleCommand;
-import com.yahoo.imapnio.async.request.ImapClientConstants;
 import com.yahoo.imapnio.async.request.ImapRequest;
 import com.yahoo.imapnio.async.response.ImapAsyncResponse;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -47,6 +49,9 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
 
     /** Debug log record for client, first {} is sessionId, 2nd {} is for client message. */
     private static final String CLIENT_LOG_REC = "[{}] C:{}";
+
+    /** Space character. */
+    static final char SPACE = ' ';
 
     /** Tag prefix. */
     private static final char A = 'a';
@@ -85,7 +90,7 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
 
         /** An Imap command. */
         @Nonnull
-        private final ImapRequest<T> cmd;
+        private final ImapRequest cmd;
 
         /** List of response lines. */
         @Nonnull
@@ -102,7 +107,7 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
          * @param cmd ImapRequest instance
          * @param future ImapFuture instance
          */
-        ImapCommandEntry(@Nonnull final ImapRequest<T> cmd, @Nonnull final ImapFuture<ImapAsyncResponse> future) {
+        ImapCommandEntry(@Nonnull final ImapRequest cmd, @Nonnull final ImapFuture<ImapAsyncResponse> future) {
             this.cmd = cmd;
             this.responses = (cmd.getStreamingResponsesQueue() != null) ? cmd.getStreamingResponsesQueue()
                     : new ConcurrentLinkedQueue<IMAPResponse>();
@@ -126,7 +131,7 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
         /**
          * @return the imap command
          */
-        public ImapRequest<T> getRequest() {
+        public ImapRequest getRequest() {
             return cmd;
         }
     }
@@ -175,7 +180,7 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
     }
 
     @Override
-    public ImapFuture<ImapAsyncResponse> execute(@Nonnull final ImapRequest command) throws ImapAsyncClientException, IOException, SearchException {
+    public ImapFuture<ImapAsyncResponse> execute(@Nonnull final ImapRequest command) throws ImapAsyncClientException {
         if (!requestsQueue.isEmpty()) {
             throw new ImapAsyncClientException(FailureType.COMMAND_NOT_ALLOWED);
         }
@@ -183,12 +188,16 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
         final ImapFuture<ImapAsyncResponse> cmdFuture = new ImapFuture<ImapAsyncResponse>();
         requestsQueue.add(new ImapCommandEntry(command, cmdFuture));
 
+        final ByteBuf buf = Unpooled.buffer();
         final String tag = getNextTag();
-        final StringBuilder sb = new StringBuilder(tag).append(ImapClientConstants.SPACE).append(command.getCommandLine());
+        buf.writeBytes(tag.getBytes(StandardCharsets.US_ASCII));
+        buf.writeByte(SPACE);
+        buf.writeBytes(command.getCommandLineBytes());
+
         if (isDebugEnabled() && command.isCommandLineDataSensitive()) { // if we cannot log data sent over wire, ask command to provide log info
             logger.debug(CLIENT_LOG_REC, sessionId, command.getDebugData());
         }
-        sendRequest(sb.toString(), command.isCommandLineDataSensitive());
+        sendRequest(buf, command.isCommandLineDataSensitive());
 
         return cmdFuture;
     }
@@ -206,9 +215,9 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
      * @param isDataSensitve flag whether data is sensitive
      * @throws ImapAsyncClientException when channel is closed
      */
-    private void sendRequest(@Nonnull final Object request, final boolean isDataSensitve) throws ImapAsyncClientException {
+    private void sendRequest(@Nonnull final ByteBuf request, final boolean isDataSensitve) throws ImapAsyncClientException {
         if (isDebugEnabled() && !isDataSensitve) {
-            logger.debug(CLIENT_LOG_REC, sessionId, request);
+            logger.debug(CLIENT_LOG_REC, sessionId, request.toString(StandardCharsets.UTF_8));
         }
         final Channel channel = channelRef.get();
         if (channel == null || !channel.isActive()) {
@@ -235,7 +244,7 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
 
     /**
      * Listens to write to server complete future.
-     * 
+     *
      * @param future ChannelFuture instance to check whether the future has completed successfully
      */
     @Override
@@ -344,36 +353,40 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
         // server sends continuation message (+) for next request
         if (serverResponse.isContinuation()) {
             try {
-                final Object cmdAfterContinue = currentCmd.getNextCommandLineAfterContinuation(serverResponse);
+                final ByteBuf cmdAfterContinue = currentCmd.getNextCommandLineAfterContinuation(serverResponse);
                 if (cmdAfterContinue == null) {
                     return; // no data from client after continuation, we leave, this is for Idle
                 }
                 sendRequest(cmdAfterContinue, currentCmd.isCommandLineDataSensitive());
-            } catch (final ImapAsyncClientException | IndexOutOfBoundsException e) { // when encountering an error on building request from client
+            } catch (final ImapAsyncClientException | RuntimeException e) { // when encountering an error on building request from client
                 requestDoneWithException(new ImapAsyncClientException(ImapAsyncClientException.FailureType.CHANNEL_EXCEPTION, e));
             }
             return;
 
         } else if (serverResponse.isTagged()) {
-            if (currentCmd instanceof CompressCommand && serverResponse.isOK()) {
-                final Channel ch = channelRef.get();
-                final ChannelPipeline pipeline = ch.pipeline();
-                final JdkZlibDecoder decoder = new JdkZlibDecoder(ZlibWrapper.NONE);
-                final JdkZlibEncoder encoder = new JdkZlibEncoder(ZlibWrapper.NONE, 5);
-                if (pipeline.get(ImapAsyncClient.SSL_HANDLER) == null) {
-                    // no SSL handler, deflater/enflater has to be first
-                    pipeline.addFirst(ZLIB_DECODER, decoder);
-                    pipeline.addFirst(ZLIB_ENCODER, encoder);
-                } else {
-                    pipeline.addAfter(ImapAsyncClient.SSL_HANDLER, ZLIB_DECODER, decoder);
-                    pipeline.addAfter(ImapAsyncClient.SSL_HANDLER, ZLIB_ENCODER, encoder);
+            try {
+                if (currentCmd instanceof CompressCommand && serverResponse.isOK()) {
+                    final Channel ch = channelRef.get();
+                    final ChannelPipeline pipeline = ch.pipeline();
+                    final JdkZlibDecoder decoder = new JdkZlibDecoder(ZlibWrapper.NONE);
+                    final JdkZlibEncoder encoder = new JdkZlibEncoder(ZlibWrapper.NONE, 5);
+                    if (pipeline.get(ImapAsyncClient.SSL_HANDLER) == null) {
+                        // no SSL handler, deflater/enflater has to be first
+                        pipeline.addFirst(ZLIB_DECODER, decoder);
+                        pipeline.addFirst(ZLIB_ENCODER, encoder);
+                    } else {
+                        pipeline.addAfter(ImapAsyncClient.SSL_HANDLER, ZLIB_DECODER, decoder);
+                        pipeline.addAfter(ImapAsyncClient.SSL_HANDLER, ZLIB_ENCODER, encoder);
+                    }
                 }
+                // see rfc3501, page 63 for details, since we always give a tagged command, response completion should be the first tagged response
+                final ImapAsyncResponse doneResponse = new ImapAsyncResponse(responses);
+                removeFirstEntry();
+                curEntry.getFuture().done(doneResponse);
+                return;
+            } catch (final RuntimeException e) {
+                requestDoneWithException(new ImapAsyncClientException(ImapAsyncClientException.FailureType.CHANNEL_EXCEPTION, e));
             }
-            // see rfc3501, page 63 for details, since we always give a tagged command, response completion should be the first tagged response
-            final ImapAsyncResponse doneResponse = new ImapAsyncResponse(responses);
-            removeFirstEntry();
-            curEntry.getFuture().done(doneResponse);
-            return;
         }
 
         // none-tagged server responses if reaching here

@@ -132,4 +132,13 @@ public class StatusCommandTest {
         Assert.assertEquals(ex.getFaiureType(), ImapAsyncClientException.FailureType.OPERATION_NOT_SUPPORTED_FOR_COMMAND,
                 "Expected result mismatched.");
     }
+
+    /**
+     * Tests getCommandType method.
+     */
+    @Test
+    public void testGetCommandType() {
+        final ImapRequest cmd = new StatusCommand("inbox", ALL_ITEMS);
+        Assert.assertSame(cmd.getCommandType(), ImapCommandType.STATUS);
+    }
 }

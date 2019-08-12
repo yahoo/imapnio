@@ -17,6 +17,7 @@ import org.testng.annotations.Test;
 
 import com.sun.mail.imap.protocol.IMAPResponse;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
+import com.yahoo.imapnio.async.exception.ImapAsyncClientException.FailureType;
 
 import io.netty.buffer.ByteBuf;
 
@@ -112,6 +113,106 @@ public class AppendCommandTest {
      * @throws ImapAsyncClientException will not throw
      */
     @Test
+    public void testLiteralPlus() throws IOException, IllegalArgumentException, IllegalAccessException, ImapAsyncClientException {
+        final Date internalDate = new Date(1552413335000L);
+        final Flags expectedFlags = new Flags();
+        expectedFlags.add(Flags.Flag.FLAGGED);
+        expectedFlags.add(Flags.Flag.SEEN);
+        final byte[] expectedMsg = TEST_MSG_BYTE;
+        final int len = expectedMsg.length;
+
+        // verify getCommandLine
+        final AppendCommand cmd = new AppendCommand("Inbox", expectedFlags, internalDate, expectedMsg, LiteralSupport.ENABLE_LITERAL_PLUS);
+        final String expectedStart = "APPEND Inbox (\\Flagged \\Seen) \"12-Mar-2019 ";
+        final int startLen = expectedStart.length();
+        final String dataLenStr = " {300+}\r\n";
+        // we only have ascii in the binary
+        final String actualCmdLine = cmd.getCommandLineBytes().toString(StandardCharsets.UTF_8);
+        Assert.assertNotNull(actualCmdLine, "Command line mismatched.");
+        // do not compare timezone part since it depends on which slave machine it runs
+        Assert.assertEquals(actualCmdLine.substring(0, startLen), expectedStart, "Expected result mismatched.");
+        Assert.assertTrue(actualCmdLine.contains(dataLenStr), "Expected data len mismatched.");
+        Assert.assertEquals(actualCmdLine.substring(actualCmdLine.length() - len - 2), TEST_MSG_STR + "\r\n", "data mismatched.");
+        Assert.assertFalse(cmd.isCommandLineDataSensitive(), "Expected result mismatched.");
+        Assert.assertNull(cmd.getDebugData(), "Expected result mismatched.");
+
+        // verify getNextCommandLineAfterContinuation()
+        final IMAPResponse serverResponse = null; // we dont care
+        ImapAsyncClientException actual = null;
+        try {
+            cmd.getNextCommandLineAfterContinuation(serverResponse);
+        } catch (final ImapAsyncClientException e) {
+            actual = e;
+        }
+        Assert.assertNotNull(actual, "Should encounter exception");
+        Assert.assertEquals(actual.getFaiureType(), FailureType.OPERATION_NOT_SUPPORTED_FOR_COMMAND, "Should fail with this type");
+
+        cmd.cleanup();
+        // Verify if cleanup happened correctly.
+        for (final Field field : fieldsToCheck) {
+            Assert.assertNull(field.get(cmd), "Cleanup should set " + field.getName() + " as null");
+        }
+    }
+
+    /**
+     * Tests getCommandLine method.
+     *
+     * @throws IOException will not throw
+     * @throws IllegalAccessException will not throw
+     * @throws IllegalArgumentException will not throw
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testLiteralMinus() throws IOException, IllegalArgumentException, IllegalAccessException, ImapAsyncClientException {
+        final Date internalDate = new Date(1552413335000L);
+        final Flags expectedFlags = new Flags();
+        expectedFlags.add(Flags.Flag.FLAGGED);
+        expectedFlags.add(Flags.Flag.SEEN);
+        final byte[] expectedMsg = TEST_MSG_BYTE;
+        final int len = expectedMsg.length;
+
+        // verify getCommandLine
+        final AppendCommand cmd = new AppendCommand("Inbox", expectedFlags, internalDate, expectedMsg, LiteralSupport.ENABLE_LITERAL_MINUS);
+        final String expectedStart = "APPEND Inbox (\\Flagged \\Seen) \"12-Mar-2019 ";
+        final int startLen = expectedStart.length();
+        final String dataLenStr = " {300-}\r\n";
+        // we only have ascii in the binary
+        final String actualCmdLine = cmd.getCommandLineBytes().toString(StandardCharsets.UTF_8);
+        Assert.assertNotNull(actualCmdLine, "Command line mismatched.");
+        // do not compare timezone part since it depends on which slave machine it runs
+        Assert.assertEquals(actualCmdLine.substring(0, startLen), expectedStart, "Expected result mismatched.");
+        Assert.assertTrue(actualCmdLine.contains(dataLenStr), "Expected data len mismatched.");
+        Assert.assertEquals(actualCmdLine.substring(actualCmdLine.length() - len - 2), TEST_MSG_STR + "\r\n", "data mismatched.");
+        Assert.assertFalse(cmd.isCommandLineDataSensitive(), "Expected result mismatched.");
+        Assert.assertNull(cmd.getDebugData(), "Expected result mismatched.");
+
+        // verify getNextCommandLineAfterContinuation()
+        final IMAPResponse serverResponse = null; // we dont care
+        ImapAsyncClientException actual = null;
+        try {
+            cmd.getNextCommandLineAfterContinuation(serverResponse);
+        } catch (final ImapAsyncClientException e) {
+            actual = e;
+        }
+        Assert.assertNotNull(actual, "Should encounter exception");
+        Assert.assertEquals(actual.getFaiureType(), FailureType.OPERATION_NOT_SUPPORTED_FOR_COMMAND, "Should fail with this type");
+
+        cmd.cleanup();
+        // Verify if cleanup happened correctly.
+        for (final Field field : fieldsToCheck) {
+            Assert.assertNull(field.get(cmd), "Cleanup should set " + field.getName() + " as null");
+        }
+    }
+
+    /**
+     * Tests getCommandLine method.
+     *
+     * @throws IOException will not throw
+     * @throws IllegalAccessException will not throw
+     * @throws IllegalArgumentException will not throw
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
     public void testGetCommandLineNullFlagsNullDate() throws IOException, IllegalArgumentException, IllegalAccessException, ImapAsyncClientException {
         final Date internalDate = null;
         final Flags expectedFlags = null;
@@ -160,5 +261,31 @@ public class AppendCommandTest {
         Assert.assertNotNull(ex, "Expect exception to be thrown.");
         Assert.assertEquals(ex.getFaiureType(), ImapAsyncClientException.FailureType.OPERATION_NOT_SUPPORTED_FOR_COMMAND,
                 "Expected result mismatched.");
+    }
+
+    /**
+     * Tests getCommandType method.
+     */
+    @Test
+    public void testGetCommandType() {
+        final Date internalDate = new Date(1552413335000L);
+        final Flags expectedFlags = new Flags();
+        expectedFlags.add(Flags.Flag.FLAGGED);
+        expectedFlags.add(Flags.Flag.SEEN);
+        final byte[] expectedMsg = TEST_MSG_BYTE;
+
+        final ImapRequest cmd = new AppendCommand("Inbox", expectedFlags, internalDate, expectedMsg);
+        Assert.assertSame(cmd.getCommandType(), ImapCommandType.APPEND_MESSAGE);
+    }
+
+    /**
+     * Tests LiteralSupport enum.
+     */
+    @Test
+    public void testLiteralSupportEnum() {
+        final LiteralSupport[] enumList = LiteralSupport.values();
+        Assert.assertEquals(enumList.length, 3, "The enum count mismatched.");
+        final LiteralSupport plus = LiteralSupport.valueOf("ENABLE_LITERAL_PLUS");
+        Assert.assertSame(plus, LiteralSupport.ENABLE_LITERAL_PLUS, "Enum does not match.");
     }
 }

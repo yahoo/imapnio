@@ -1,37 +1,48 @@
 package com.yahoo.imapnio.async.request;
 
-import java.io.IOException;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.annotation.Nonnull;
-import javax.mail.search.SearchException;
 
 import org.apache.avro.reflect.Nullable;
 
 import com.sun.mail.imap.protocol.IMAPResponse;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 
+import io.netty.buffer.ByteBuf;
+
 /**
  * This class defines an Imap command sent from client.
- *
- * @param <T> the data type for next command after continuation.
  */
-public interface ImapRequest<T> {
+public interface ImapRequest {
     /**
      * @return true if the command line data is sensitive; false otherwise
      */
     boolean isCommandLineDataSensitive();
 
     /**
-     * Builds the command line for this command - the line to be sent over wire.
+     * Builds the command line in bytes - the line to be sent over wire.
      *
-     * @return command line
-     * @throws SearchException when Search command expression does not conform to standard
-     * @throws IOException for I/O errors
+     * @return command line in binary form
      * @throws ImapAsyncClientException when encountering an error in building terminate command line
      */
     @Nonnull
-    String getCommandLine() throws SearchException, IOException, ImapAsyncClientException;
+    ByteBuf getCommandLineBytes() throws ImapAsyncClientException;
+
+    /**
+     * Builds the command line for this command - the line to be sent over wire.
+     *
+     * @return command line
+     * @throws ImapAsyncClientException when encountering an error in building terminate command line
+     */
+    @Nonnull
+    String getCommandLine() throws ImapAsyncClientException;
+
+    /**
+     * @return IMAP command type
+     */
+    @Nullable
+    ImapCommandType getCommandType();
 
     /**
      * @return log data appropriate for the command
@@ -47,13 +58,13 @@ public interface ImapRequest<T> {
 
     /**
      * Builds the next command line after server challenge.
-     * 
+     *
      * @param serverResponse the server response
      * @throws ImapAsyncClientException when building command line encounters an error
      * @return command line
      */
     @Nullable
-    T getNextCommandLineAfterContinuation(@Nonnull IMAPResponse serverResponse) throws ImapAsyncClientException;
+    ByteBuf getNextCommandLineAfterContinuation(@Nonnull IMAPResponse serverResponse) throws ImapAsyncClientException;
 
     /**
      * Builds the next command line after server challenge.
@@ -62,7 +73,7 @@ public interface ImapRequest<T> {
      * @return command line
      */
     @Nullable
-    String getTerminateCommandLine() throws ImapAsyncClientException;
+    ByteBuf getTerminateCommandLine() throws ImapAsyncClientException;
 
     /**
      * Avoids loitering.

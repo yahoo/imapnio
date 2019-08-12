@@ -13,8 +13,7 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import com.sun.mail.imap.protocol.IMAPResponse;
-import com.sun.mail.imap.protocol.UIDSet;
+import com.yahoo.imapnio.async.data.MessageNumberSet;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 
 /**
@@ -44,7 +43,7 @@ public class UidStoreFlagsCommandTest {
     }
 
     /**
-     * Tests getCommandLine method using Message sequences.
+     * Tests getCommandLine method using message sequences, flags, adding flags and not silent.
      *
      * @throws IOException will not throw
      * @throws IllegalAccessException will not throw
@@ -53,18 +52,16 @@ public class UidStoreFlagsCommandTest {
      * @throws SearchException will not throw
      */
     @Test
-    public void testGetCommandLineWithMessageSequence()
+    public void testGetCommandLineWithFlagsAddedNotSilent()
             throws IOException, IllegalArgumentException, IllegalAccessException, SearchException, ImapAsyncClientException {
 
-        final long[] uids = { 4294967292L, 4294967294L, 4294967295L };
-        final UIDSet[] msgsets = UIDSet.createUIDSets(uids);
+        final int[] msgs = { 1, 2, 3 };
+        final MessageNumberSet[] msgsets = MessageNumberSet.createMessageNumberSets(msgs);
         final Flags flags = new Flags();
         flags.add(Flags.Flag.SEEN);
         flags.add(Flags.Flag.DELETED);
-        final boolean isSet = true;
-        final ImapRequest cmd = new UidStoreFlagsCommand(msgsets, flags, isSet);
-        Assert.assertEquals(cmd.getCommandLine(), "UID STORE 4294967292,4294967294:4294967295 +FLAGS (\\Deleted \\Seen)\r\n",
-                "Expected result mismatched.");
+        final ImapRequest cmd = new UidStoreFlagsCommand(msgsets, flags, FlagsAction.ADD);
+        Assert.assertEquals(cmd.getCommandLine(), "UID STORE 1:3 +FLAGS (\\Deleted \\Seen)\r\n", "Expected result mismatched.");
 
         cmd.cleanup();
         // Verify if cleanup happened correctly.
@@ -74,24 +71,25 @@ public class UidStoreFlagsCommandTest {
     }
 
     /**
-     * Tests getCommandLine method using UID.
+     * Tests getCommandLine method using message sequences, flags, replacing flags and not silent.
      *
      * @throws IOException will not throw
      * @throws IllegalAccessException will not throw
+     * @throws IllegalArgumentException will not throw
      * @throws ImapAsyncClientException will not throw
      * @throws SearchException will not throw
      */
     @Test
-    public void testGetCommandLineWithUID() throws IOException, IllegalAccessException, SearchException, ImapAsyncClientException {
+    public void testGetCommandLineWithFlagsReplacedNotSilent()
+            throws IOException, IllegalArgumentException, IllegalAccessException, SearchException, ImapAsyncClientException {
 
-        final long[] uids = { 4294967293L, 4294967294L, 4294967295L };
-        final UIDSet[] msgsets = UIDSet.createUIDSets(uids);
+        final int[] msgs = { 1, 2, 3 };
+        final MessageNumberSet[] msgsets = MessageNumberSet.createMessageNumberSets(msgs);
         final Flags flags = new Flags();
         flags.add(Flags.Flag.SEEN);
         flags.add(Flags.Flag.DELETED);
-        final boolean isSet = true;
-        final ImapRequest cmd = new UidStoreFlagsCommand(msgsets, flags, isSet);
-        Assert.assertEquals(cmd.getCommandLine(), "UID STORE 4294967293:4294967295 +FLAGS (\\Deleted \\Seen)\r\n", "Expected result mismatched.");
+        final ImapRequest cmd = new UidStoreFlagsCommand(msgsets, flags, FlagsAction.REPLACE);
+        Assert.assertEquals(cmd.getCommandLine(), "UID STORE 1:3 FLAGS (\\Deleted \\Seen)\r\n", "Expected result mismatched.");
 
         cmd.cleanup();
         // Verify if cleanup happened correctly.
@@ -101,7 +99,65 @@ public class UidStoreFlagsCommandTest {
     }
 
     /**
-     * Tests getCommandLine method.
+     * Tests getCommandLine method using message sequences, flags, adding flags and silent.
+     *
+     * @throws IOException will not throw
+     * @throws IllegalAccessException will not throw
+     * @throws IllegalArgumentException will not throw
+     * @throws ImapAsyncClientException will not throw
+     * @throws SearchException will not throw
+     */
+    @Test
+    public void testGetCommandLineWithFlagsAddedSilent()
+            throws IOException, IllegalArgumentException, IllegalAccessException, SearchException, ImapAsyncClientException {
+
+        final int[] msgs = { 1, 2, 3 };
+        final MessageNumberSet[] msgsets = MessageNumberSet.createMessageNumberSets(msgs);
+        final Flags flags = new Flags();
+        flags.add(Flags.Flag.SEEN);
+        flags.add(Flags.Flag.DELETED);
+        final boolean isSilent = true;
+        final ImapRequest cmd = new UidStoreFlagsCommand(msgsets, flags, FlagsAction.ADD, isSilent);
+        Assert.assertEquals(cmd.getCommandLine(), "UID STORE 1:3 +FLAGS.SILENT (\\Deleted \\Seen)\r\n", "Expected result mismatched.");
+
+        cmd.cleanup();
+        // Verify if cleanup happened correctly.
+        for (final Field field : fieldsToCheck) {
+            Assert.assertNull(field.get(cmd), "Cleanup should set " + field.getName() + " as null");
+        }
+    }
+
+    /**
+     * Tests getCommandLine method using message sequences, flags, replacing flags and silent.
+     *
+     * @throws IOException will not throw
+     * @throws IllegalAccessException will not throw
+     * @throws IllegalArgumentException will not throw
+     * @throws ImapAsyncClientException will not throw
+     * @throws SearchException will not throw
+     */
+    @Test
+    public void testGetCommandLineWithFlagsReplacedSilent()
+            throws IOException, IllegalArgumentException, IllegalAccessException, SearchException, ImapAsyncClientException {
+
+        final int[] msgs = { 1, 2, 3 };
+        final MessageNumberSet[] msgsets = MessageNumberSet.createMessageNumberSets(msgs);
+        final Flags flags = new Flags();
+        flags.add(Flags.Flag.SEEN);
+        flags.add(Flags.Flag.DELETED);
+        final boolean isSilent = true;
+        final ImapRequest cmd = new UidStoreFlagsCommand(msgsets, flags, FlagsAction.REPLACE, isSilent);
+        Assert.assertEquals(cmd.getCommandLine(), "UID STORE 1:3 FLAGS.SILENT (\\Deleted \\Seen)\r\n", "Expected result mismatched.");
+
+        cmd.cleanup();
+        // Verify if cleanup happened correctly.
+        for (final Field field : fieldsToCheck) {
+            Assert.assertNull(field.get(cmd), "Cleanup should set " + field.getName() + " as null");
+        }
+    }
+
+    /**
+     * Tests getCommandLine method with message sequences, flags, removing flags and not silent.
      *
      * @throws IOException will not throw
      * @throws IllegalAccessException will not throw
@@ -109,14 +165,12 @@ public class UidStoreFlagsCommandTest {
      * @throws SearchException will not throw
      */
     @Test
-    public void testGetCommandLineWithStartEndConstructorAndRemoveFlags()
-            throws IOException, IllegalAccessException, SearchException, ImapAsyncClientException {
+    public void testGetCommandLineWithFlagsRemovedNotSilent() throws IOException, IllegalAccessException, SearchException, ImapAsyncClientException {
 
         final Flags flags = new Flags();
         flags.add(Flags.Flag.SEEN);
         flags.add(Flags.Flag.DELETED);
-        final boolean isSet = false;
-        final ImapRequest cmd = new UidStoreFlagsCommand("1:10000", flags, isSet);
+        final ImapRequest cmd = new UidStoreFlagsCommand(new MessageNumberSet[] { new MessageNumberSet(1, 10000) }, flags, FlagsAction.REMOVE);
         Assert.assertEquals(cmd.getCommandLine(), "UID STORE 1:10000 -FLAGS (\\Deleted \\Seen)\r\n", "Expected result mismatched.");
 
         cmd.cleanup();
@@ -127,47 +181,66 @@ public class UidStoreFlagsCommandTest {
     }
 
     /**
-     * Tests getNextCommandLineAfterContinuation method.
+     * Tests getCommandLine method with message sequences, removing flags and silent.
+     *
+     * @throws IOException will not throw
+     * @throws IllegalAccessException will not throw
+     * @throws ImapAsyncClientException will not throw
+     * @throws SearchException will not throw
      */
     @Test
-    public void testGetNextCommandLineAfterContinuation() {
+    public void testGetCommandLineWithFlagsRemovedAndSilent() throws IOException, IllegalAccessException, SearchException, ImapAsyncClientException {
 
         final Flags flags = new Flags();
         flags.add(Flags.Flag.SEEN);
         flags.add(Flags.Flag.DELETED);
-        final boolean isSet = true;
-        final ImapRequest cmd = new UidStoreFlagsCommand("1, 10000", flags, isSet);
-        final IMAPResponse serverResponse = null; // null or not null does not matter
-        ImapAsyncClientException ex = null;
-        try {
-            cmd.getNextCommandLineAfterContinuation(serverResponse);
-        } catch (final ImapAsyncClientException imapAsyncEx) {
-            ex = imapAsyncEx;
+        final boolean isSilent = true;
+        final ImapRequest cmd = new UidStoreFlagsCommand(new MessageNumberSet[] { new MessageNumberSet(1, 10000) }, flags, FlagsAction.REMOVE,
+                isSilent);
+        Assert.assertEquals(cmd.getCommandLine(), "UID STORE 1:10000 -FLAGS.SILENT (\\Deleted \\Seen)\r\n", "Expected result mismatched.");
+
+        cmd.cleanup();
+        // Verify if cleanup happened correctly.
+        for (final Field field : fieldsToCheck) {
+            Assert.assertNull(field.get(cmd), "Cleanup should set " + field.getName() + " as null");
         }
-        Assert.assertNotNull(ex, "Expect exception to be thrown.");
-        Assert.assertEquals(ex.getFaiureType(), ImapAsyncClientException.FailureType.OPERATION_NOT_SUPPORTED_FOR_COMMAND,
-                "Expected result mismatched.");
     }
 
     /**
-     * Tests getTerminateCommandLine method.
+     * Tests getCommandLine method with message sequences, adding flags and silent.
+     *
+     * @throws IOException will not throw
+     * @throws IllegalAccessException will not throw
+     * @throws ImapAsyncClientException will not throw
+     * @throws SearchException will not throw
      */
     @Test
-    public void testGetTerminateCommandLine() {
+    public void testGetCommandLineWithMessageSeqStringFlagsAddedAndSilent()
+            throws IOException, IllegalAccessException, SearchException, ImapAsyncClientException {
 
         final Flags flags = new Flags();
         flags.add(Flags.Flag.SEEN);
         flags.add(Flags.Flag.DELETED);
-        final boolean isSet = true;
-        final ImapRequest cmd = new UidStoreFlagsCommand("1, 10000", flags, isSet);
-        ImapAsyncClientException ex = null;
-        try {
-            cmd.getTerminateCommandLine();
-        } catch (final ImapAsyncClientException imapAsyncEx) {
-            ex = imapAsyncEx;
+        final boolean isSilent = true;
+        final ImapRequest cmd = new UidStoreFlagsCommand("1:*", flags, FlagsAction.ADD, isSilent);
+        Assert.assertEquals(cmd.getCommandLine(), "UID STORE 1:* +FLAGS.SILENT (\\Deleted \\Seen)\r\n", "Expected result mismatched.");
+
+        cmd.cleanup();
+        // Verify if cleanup happened correctly.
+        for (final Field field : fieldsToCheck) {
+            Assert.assertNull(field.get(cmd), "Cleanup should set " + field.getName() + " as null");
         }
-        Assert.assertNotNull(ex, "Expect exception to be thrown.");
-        Assert.assertEquals(ex.getFaiureType(), ImapAsyncClientException.FailureType.OPERATION_NOT_SUPPORTED_FOR_COMMAND,
-                "Expected result mismatched.");
+    }
+
+    /**
+     * Tests getCommandType method.
+     */
+    @Test
+    public void testGetCommandType() {
+        final Flags flags = new Flags();
+        flags.add(Flags.Flag.SEEN);
+        flags.add(Flags.Flag.DELETED);
+        final ImapRequest cmd = new UidStoreFlagsCommand(new MessageNumberSet[] { new MessageNumberSet(1, 10000) }, flags, FlagsAction.ADD);
+        Assert.assertSame(cmd.getCommandType(), ImapCommandType.UID_STORE_FLAGS);
     }
 }

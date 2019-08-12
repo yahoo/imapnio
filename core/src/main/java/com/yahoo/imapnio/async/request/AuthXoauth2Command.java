@@ -12,13 +12,22 @@ import com.yahoo.imapnio.async.data.Capability;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException.FailureType;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+
 /**
  * This class defines imap authenticate xoauth2 command request from client.
  */
-public class AuthXoauth2Command implements ImapRequest<String> {
+public class AuthXoauth2Command extends ImapRequestAdapter {
+
+    /** Byte array for CR and LF, keeping the array local so it cannot be modified by others. */
+    private static final byte[] CRLF_B = { '\r', '\n' };
 
     /** Command operator. */
     private static final String AUTH_XOAUTH2 = "AUTHENTICATE XOAUTH2";
+
+    /** Byte array for AUTH XOAUTH2. */
+    private static final byte[] AUTH_XOAUTH2_B = AUTH_XOAUTH2.getBytes(StandardCharsets.US_ASCII);
 
     /** AUTH_XOAUTH2 length. */
     private static final int AUTH_XOAUTH2_LEN = AUTH_XOAUTH2.length();
@@ -77,14 +86,21 @@ public class AuthXoauth2Command implements ImapRequest<String> {
     }
 
     @Override
-    public String getCommandLine() {
+    public ByteBuf getCommandLineBytes() {
         if (isSaslIREnabled) { // server allows client response in one line
             final String clientResp = buildClientResponse();
-            return new StringBuilder(clientResp.length() + ImapClientConstants.PAD_LEN).append(AUTH_XOAUTH2).append(ImapClientConstants.SPACE)
-                    .append(clientResp).append(ImapClientConstants.CRLF).toString();
+            final ByteBuf sb = Unpooled.buffer(clientResp.length() + ImapClientConstants.PAD_LEN);
+            sb.writeBytes(AUTH_XOAUTH2_B);
+            sb.writeByte(ImapClientConstants.SPACE);
+            sb.writeBytes(clientResp.getBytes(StandardCharsets.US_ASCII));
+            sb.writeBytes(CRLF_B);
+            return sb;
         }
         final int len = AUTH_XOAUTH2_LEN + ImapClientConstants.CRLFLEN;
-        return new StringBuilder(len).append(AUTH_XOAUTH2).append(ImapClientConstants.CRLF).toString();
+        final ByteBuf buf = Unpooled.buffer(len);
+        buf.writeBytes(AUTH_XOAUTH2_B);
+        buf.writeBytes(CRLF_B);
+        return buf;
     }
 
     @Override
@@ -103,17 +119,24 @@ public class AuthXoauth2Command implements ImapRequest<String> {
     }
 
     @Override
-    public String getNextCommandLineAfterContinuation(final IMAPResponse serverResponse) throws ImapAsyncClientException {
+    public ByteBuf getNextCommandLineAfterContinuation(final IMAPResponse serverResponse) throws ImapAsyncClientException {
         if (isSaslIREnabled) { // should not reach here, since if SASL-IR enabled, server should not ask for next line
             throw new ImapAsyncClientException(FailureType.OPERATION_NOT_SUPPORTED_FOR_COMMAND);
         }
         final String clientResp = buildClientResponse();
-        final int len = clientResp.length() + ImapClientConstants.CRLFLEN;
-        return new StringBuilder(len).append(clientResp).append(ImapClientConstants.CRLF).toString();
+        final ByteBuf buf = Unpooled.buffer(clientResp.length() + ImapClientConstants.CRLFLEN);
+        buf.writeBytes(clientResp.getBytes(StandardCharsets.US_ASCII));
+        buf.writeBytes(CRLF_B);
+        return buf;
     }
 
     @Override
-    public String getTerminateCommandLine() throws ImapAsyncClientException {
+    public ByteBuf getTerminateCommandLine() throws ImapAsyncClientException {
         throw new ImapAsyncClientException(FailureType.OPERATION_NOT_SUPPORTED_FOR_COMMAND);
+    }
+
+    @Override
+    public ImapCommandType getCommandType() {
+        return ImapCommandType.AUTH_XOAUTH2;
     }
 }

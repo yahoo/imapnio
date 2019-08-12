@@ -18,4 +18,9 @@ public class CreateFolderCommand extends AbstractFolderActionCommand {
     public CreateFolderCommand(@Nonnull final String folderName) {
         super(CREATE, folderName);
     }
+
+    @Override
+    public ImapCommandType getCommandType() {
+        return ImapCommandType.CREATE_FOLDER;
+    }
 }

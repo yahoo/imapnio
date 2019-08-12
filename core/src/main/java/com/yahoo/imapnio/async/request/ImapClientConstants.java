@@ -1,49 +1,49 @@
 package com.yahoo.imapnio.async.request;
 
-
 /**
- * Class for constant string in the IMAP Async client.
+ * Class for constant string in the IMAP asynchronous client.
  */
-public final class ImapClientConstants {
+final class ImapClientConstants {
 
     /** Space character. */
-    public static final char SPACE = ' ';
+    static final char SPACE = ' ';
 
     /** String for CR and LF. */
-    public static final String CRLF = "\r\n";
+    static final String CRLF = "\r\n";
 
     /** Literal for CR and LF. */
-    public static final int CRLFLEN = "\r\n".length();
+    static final int CRLFLEN = "\r\n".length();
 
     /** NULL character. */
-    public static final char NULL = '\0';
+    static final char NULL = '\0';
 
     /** Start of header character. */
-    public static final char SOH = 0x01;
+    static final char SOH = 0x01;
 
-    /** Left paraenthsisand space. */
-    public static final char L_PAREN = '(';
+    /** Left parenthesis and space. */
+    static final char L_PAREN = '(';
 
-    /** Left paraenthsisand space. */
-    public static final char R_PAREN = ')';
+    /** Left parenthesis and space. */
+    static final char R_PAREN = ')';
 
     /** Literal for colon. */
-    public static final String COLON = ":";
+    static final String COLON = ":";
 
     /** Literal for plus. */
-    public static final char PLUS = '+';
+    static final char PLUS = '+';
 
     /** Literal for minus. */
-    public static final char MINUS = '-';
-
-    /** NIL literal. */
-    public static final String NIL = "NIL";
+    static final char MINUS = '-';
 
     /** SASL-IR capability. */
-    public static final String SASL_IR = "SASL-IR";
+    static final String SASL_IR = "SASL-IR";
+
+    /** LITERAL+ capability. */
+    static final String LITERAL_PLUS = "LITERAL+";
 
     /** Extra buffer length for command line builder to add. */
-    public static final int PAD_LEN = 100;;
+    static final int PAD_LEN = 100;;
+
     /**
      * Private constructor to avoid constructing instance of this class.
      */

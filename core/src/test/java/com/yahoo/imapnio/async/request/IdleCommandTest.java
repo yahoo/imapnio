@@ -3,6 +3,7 @@ package com.yahoo.imapnio.async.request;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -15,6 +16,8 @@ import org.testng.annotations.Test;
 
 import com.sun.mail.imap.protocol.IMAPResponse;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
+
+import io.netty.buffer.ByteBuf;
 
 /**
  * Unit test for {@code IdleCommand}.
@@ -84,7 +87,7 @@ public class IdleCommandTest {
         final ConcurrentLinkedQueue<IMAPResponse> serverStreamingResponses = new ConcurrentLinkedQueue<IMAPResponse>();
         final IdleCommand cmd = new IdleCommand(serverStreamingResponses);
         final IMAPResponse serverResponse = null; // null or not null does not matter
-        final String s = cmd.getNextCommandLineAfterContinuation(serverResponse);
+        final ByteBuf s = cmd.getNextCommandLineAfterContinuation(serverResponse);
         Assert.assertNull(s, "Expect exception to be thrown.");
     }
 
@@ -99,12 +102,22 @@ public class IdleCommandTest {
     public void testGetTerminateCommandLine() throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
         final ConcurrentLinkedQueue<IMAPResponse> serverStreamingResponses = new ConcurrentLinkedQueue<IMAPResponse>();
         final ImapRequest cmd = new IdleCommand(serverStreamingResponses);
-        Assert.assertEquals(cmd.getTerminateCommandLine(), "DONE\r\n", "Expected result mismatched.");
+        Assert.assertEquals(cmd.getTerminateCommandLine().toString(StandardCharsets.US_ASCII), "DONE\r\n", "Expected result mismatched.");
 
         cmd.cleanup();
         // Verify if cleanup happened correctly.
         for (final Field field : fieldsToCheck) {
             Assert.assertNull(field.get(cmd), "Cleanup should set " + field.getName() + " as null");
         }
+    }
+
+    /**
+     * Tests getCommandType method.
+     */
+    @Test
+    public void testGetCommandType() {
+        final ConcurrentLinkedQueue<IMAPResponse> serverStreamingResponses = new ConcurrentLinkedQueue<IMAPResponse>();
+        final ImapRequest cmd = new IdleCommand(serverStreamingResponses);
+        Assert.assertSame(cmd.getCommandType(), ImapCommandType.IDLE);
     }
 }

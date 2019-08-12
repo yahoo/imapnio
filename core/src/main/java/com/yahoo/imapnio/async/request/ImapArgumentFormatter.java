@@ -1,10 +1,17 @@
 package com.yahoo.imapnio.async.request;
 
+import java.nio.charset.StandardCharsets;
+
 import javax.annotation.Nonnull;
 import javax.mail.Flags;
 
+import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
+import com.yahoo.imapnio.async.exception.ImapAsyncClientException.FailureType;
+
+import io.netty.buffer.ByteBuf;
+
 /**
- * This class encodes/formats imap command arguments properly based on the data value.
+ * This class encodes/formats imap command arguments properly based on the data value. The input data should be within ASCII chars.
  */
 public class ImapArgumentFormatter {
 
@@ -38,11 +45,12 @@ public class ImapArgumentFormatter {
     /**
      * Writes out given imap (UTF-7) String. An imap String is defined in RFC 3501, page 16.
      *
-     * @param src the source string, assuming it is UTF-7 already
-     * @param out the StringBuilder to append to
+     * @param src the source string, assuming it is from ascii code 0000 - 0177 already!
+     * @param out the ButeBuf to write to
      * @param doQuote whether to quote or not
+     * @throws ImapAsyncClientException when src String that is > 0177
      */
-    void formatArgument(@Nonnull final String src, @Nonnull final StringBuilder out, final boolean doQuote) {
+    void formatArgument(@Nonnull final String src, @Nonnull final ByteBuf out, final boolean doQuote) throws ImapAsyncClientException {
         int len = src.length();
 
         // if 0 length, send as quoted-string
@@ -52,10 +60,80 @@ public class ImapArgumentFormatter {
         char b;
         for (int i = 0; i < len; i++) {
             b = src.charAt(i);
-            if (b == '\0' || b == '\r' || b == '\n' || ((b & MASK) > ASCII_CODE_127)) {
+            if (b == '\0' || b == '\r' || b == '\n') {
+                // NUL, CR or LF means the bytes need to be sent as literals
+                out.writeBytes(src.getBytes(StandardCharsets.US_ASCII));
+                return;
+            }
+            if ((b & MASK) > ASCII_CODE_127) {
+                throw new ImapAsyncClientException(FailureType.INVALID_INPUT);
+            }
+            if (b == '*' || b == '%' || b == '(' || b == ')' || b == '{' || b == '"' || b == '\\' || ((b & MASK) <= ' ')) {
+                quote = true;
+                if (b == '"' || b == '\\') {
+                    escape = true;
+                }
+            }
+        }
+
+        /*
+         * Make sure the (case-independent) string "NIL" is always quoted, so as not to be confused with a real NIL (handled above in nstring). This
+         * is more than is necessary, but it's rare to begin with and this makes it safer than doing the test in nstring above in case some code calls
+         * writeString when it should call writeNString.
+         */
+        if (!quote && len == THREE && (src.charAt(0) == 'N' || src.charAt(0) == 'n') && (src.charAt(1) == 'I' || src.charAt(1) == 'i')
+                && (src.charAt(2) == 'L' || src.charAt(2) == 'l')) {
+            quote = true;
+        }
+
+        if (quote) {
+            out.writeByte('"');
+        }
+
+        if (escape) {
+            // already quoted
+            for (int i = 0; i < len; i++) {
+                b = src.charAt(i);
+                if (b == '"' || b == '\\') {
+                    out.writeByte('\\');
+                }
+                out.writeByte(b);
+            }
+        } else {
+            out.writeBytes(src.getBytes(StandardCharsets.US_ASCII));
+        }
+
+        if (quote) {
+            out.writeByte('"');
+        }
+    }
+
+    /**
+     * Writes out given imap (UTF-7) String. An imap String is defined in RFC 3501, page 16.
+     *
+     * @param src the source string, assuming it is UTF-7 already
+     * @param out the StringBuilder to append to
+     * @param doQuote whether to quote or not
+     * @throws ImapAsyncClientException when src String that is > 0177
+     */
+    void formatArgument(@Nonnull final String src, @Nonnull final StringBuilder out, final boolean doQuote) throws ImapAsyncClientException {
+        int len = src.length();
+
+        // if 0 length, send as quoted-string
+        boolean quote = len == 0 ? true : doQuote;
+        boolean escape = false;
+
+        char b;
+        for (int i = 0; i < len; i++) {
+            b = src.charAt(i);
+            if (b == '\0' || b == '\r' || b == '\n') {
                 // NUL, CR or LF means the bytes need to be sent as literals
                 out.append(src);
                 return;
+            }
+
+            if ((b & MASK) > ASCII_CODE_127) {
+                throw new ImapAsyncClientException(FailureType.INVALID_INPUT);
             }
             if (b == '*' || b == '%' || b == '(' || b == ')' || b == '{' || b == '"' || b == '\\' || ((b & MASK) <= ' ')) {
                 quote = true;
@@ -96,7 +174,6 @@ public class ImapArgumentFormatter {
             out.append('"');
         }
     }
-
 
     /**
      * Creates an IMAP flag_list from the given Flags object.

@@ -13,9 +13,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
-import com.yahoo.imapnio.async.request.ImapRequest;
-import com.yahoo.imapnio.async.request.UnsubscribeFolderCommand;
-
 
 /**
  * Unit test for {@code UnsubscribeFolderCommand}.
@@ -93,5 +90,14 @@ public class UnsubscribeFolderCommandTest {
         final String folderName = "测试";
         final ImapRequest cmd = new UnsubscribeFolderCommand(folderName);
         Assert.assertEquals(cmd.getCommandLine(), UNSUBSCRIBE + "&bUuL1Q-\r\n", "Expected result mismatched.");
+    }
+
+    /**
+     * Tests getCommandType method.
+     */
+    @Test
+    public void testGetCommandType() {
+        final ImapRequest cmd = new UnsubscribeFolderCommand("testFolder");
+        Assert.assertSame(cmd.getCommandType(), ImapCommandType.UNSUBSCRIBE);
     }
 }

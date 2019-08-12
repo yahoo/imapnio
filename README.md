@@ -40,9 +40,9 @@ Then, update your project's pom.xml file dependencies, as follows:
 
 ```
   <dependency>
-      <groupId>com.github.krdev.imapnio</groupId>
+      <groupId>com.yahoo.imapnio</groupId>
       <artifactId>imapnio.core</artifactId>
-      <version>2.0.0</version>
+      <version>3.0.0</version>
   </dependency>
 ```
 Finally, import the relevant classes and use this library according to the usage section below.
@@ -73,10 +73,8 @@ The following code examples demonstrate basic functionality relate to connecting
   config.setReadTimeoutMillis(6000);
   final List<String> sniNames = null;
 
-  final LogManager logManager = new LogManager(Level.DEBUG, LogPage.DEFAULT_SIZE);
-  logManager.setLegacy(true);
   final InetSocketAddress localAddress = null;
-  final Future<ImapAsyncSession> future = aclient.createSession(serverUri, config, localAddress, sniNames);
+  final Future<ImapAsyncCreateSessionResponse> future = imapClient.createSession(serverUri, config, localAddress, sniNames, DebugMode.DEBUG_OFF);
   
   //this version is a future-based nio client.  Check whether future is done by following code.
   if (future.isDone()) {

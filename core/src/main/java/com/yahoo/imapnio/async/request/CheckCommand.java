@@ -14,4 +14,9 @@ public class CheckCommand extends AbstractNoArgsCommand {
     public CheckCommand() {
         super(CHECK);
     }
+
+    @Override
+    public ImapCommandType getCommandType() {
+        return ImapCommandType.CHECK;
+    }
 }

@@ -13,7 +13,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import com.sun.mail.imap.protocol.IMAPResponse;
-import com.sun.mail.imap.protocol.MessageSet;
+import com.yahoo.imapnio.async.data.MessageNumberSet;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 
 /**
@@ -46,7 +46,7 @@ public class FetchCommandTest {
     }
 
     /**
-     * Tests getCommandLine method using Message sequences.
+     * Tests getCommandLine method using MessageNumberSet[] and macro.
      *
      * @throws ImapAsyncClientException will not throw
      * @throws SearchException will not throw
@@ -55,11 +55,36 @@ public class FetchCommandTest {
      * @throws IllegalArgumentException will not throw
      */
     @Test
-    public void testGetCommandLineWithMessageSequence()
+    public void GetCommandLineFromConstructorWithMacro()
+            throws IOException, ImapAsyncClientException, SearchException, IllegalArgumentException, IllegalAccessException {
+
+        final long[] msgs = { 4294967293L, 4294967294L, 4294967295L };
+        final MessageNumberSet[] msgsets = MessageNumberSet.createMessageNumberSets(msgs);
+        final ImapRequest cmd = new FetchCommand(msgsets, FetchMacro.FAST);
+        Assert.assertEquals(cmd.getCommandLine(), "FETCH 4294967293:4294967295 FAST\r\n", "Expected result mismatched.");
+
+        cmd.cleanup();
+        // Verify if cleanup happened correctly.
+        for (final Field field : fieldsToCheck) {
+            Assert.assertNull(field.get(cmd), "Cleanup should set " + field.getName() + " as null");
+        }
+    }
+
+    /**
+     * Tests getCommandLine method using MessageNumberSet[] and data items.
+     *
+     * @throws ImapAsyncClientException will not throw
+     * @throws SearchException will not throw
+     * @throws IOException will not throw
+     * @throws IllegalAccessException will not throw
+     * @throws IllegalArgumentException will not throw
+     */
+    @Test
+    public void testGetCommandLineFromConstructorWithDataItems()
             throws IOException, ImapAsyncClientException, SearchException, IllegalArgumentException, IllegalAccessException {
 
         final int[] msgs = { 1, 2, 3 };
-        final MessageSet[] msgsets = MessageSet.createMessageSets(msgs);
+        final MessageNumberSet[] msgsets = MessageNumberSet.createMessageNumberSets(msgs);
         final ImapRequest cmd = new FetchCommand(msgsets, DATA_ITEMS);
         Assert.assertEquals(cmd.getCommandLine(), "FETCH 1:3 (FLAGS BODY[HEADER.FIELDS (DATE FROM)])\r\n", "Expected result mismatched.");
 
@@ -83,7 +108,7 @@ public class FetchCommandTest {
     public void testGetCommandLineWithStartEndConstructor()
             throws IOException, ImapAsyncClientException, SearchException, IllegalArgumentException, IllegalAccessException {
 
-        final ImapRequest cmd = new FetchCommand(1, 10000, DATA_ITEMS);
+        final ImapRequest cmd = new FetchCommand(new MessageNumberSet[] { new MessageNumberSet(1, 10000) }, DATA_ITEMS);
         Assert.assertEquals(cmd.getCommandLine(), "FETCH 1:10000 (FLAGS BODY[HEADER.FIELDS (DATE FROM)])\r\n", "Expected result mismatched.");
 
         cmd.cleanup();
@@ -99,7 +124,7 @@ public class FetchCommandTest {
     @Test
     public void testGetStreamingResponsesQueue() {
 
-        final ImapRequest cmd = new FetchCommand(1, 10000, DATA_ITEMS);
+        final ImapRequest cmd = new FetchCommand(new MessageNumberSet[] { new MessageNumberSet(1, 10000) }, DATA_ITEMS);
         Assert.assertNull(cmd.getStreamingResponsesQueue(), "Expected result mismatched.");
     }
 
@@ -109,7 +134,7 @@ public class FetchCommandTest {
     @Test
     public void testGetNextCommandLineAfterContinuation() {
 
-        final ImapRequest cmd = new FetchCommand(1, 10000, DATA_ITEMS);
+        final ImapRequest cmd = new FetchCommand(new MessageNumberSet[] { new MessageNumberSet(1, 10000) }, DATA_ITEMS);
         final IMAPResponse serverResponse = null; // null or not null does not matter
         ImapAsyncClientException ex = null;
         try {
@@ -128,7 +153,7 @@ public class FetchCommandTest {
     @Test
     public void testGetTerminateCommandLine() {
 
-        final ImapRequest cmd = new FetchCommand(1, 10000, DATA_ITEMS);
+        final ImapRequest cmd = new FetchCommand(new MessageNumberSet[] { new MessageNumberSet(1, 10000) }, DATA_ITEMS);
         ImapAsyncClientException ex = null;
         try {
             cmd.getTerminateCommandLine();
@@ -138,5 +163,14 @@ public class FetchCommandTest {
         Assert.assertNotNull(ex, "Expect exception to be thrown.");
         Assert.assertEquals(ex.getFaiureType(), ImapAsyncClientException.FailureType.OPERATION_NOT_SUPPORTED_FOR_COMMAND,
                 "Expected result mismatched.");
+    }
+
+    /**
+     * Tests getCommandType method.
+     */
+    @Test
+    public void testGetCommandType() {
+        final ImapRequest cmd = new FetchCommand(new MessageNumberSet[] { new MessageNumberSet(1, 10000) }, DATA_ITEMS);
+        Assert.assertSame(cmd.getCommandType(), ImapCommandType.FETCH);
     }
 }

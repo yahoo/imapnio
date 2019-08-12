@@ -13,9 +13,8 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import com.sun.mail.imap.protocol.UIDSet;
+import com.yahoo.imapnio.async.data.MessageNumberSet;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
-import com.yahoo.imapnio.async.request.ImapRequest;
-import com.yahoo.imapnio.async.request.UidExpungeCommand;
 
 /**
  * Unit test for {@code UidExpungeCommand}.
@@ -81,6 +80,43 @@ public class UidExpungeCommandTest {
     }
 
     /**
+     * Tests getCommandLine method with MessageNumberSet constructor.
+     *
+     * @throws ImapAsyncClientException will not throw
+     * @throws SearchException will not throw
+     * @throws IOException will not throw
+     * @throws IllegalAccessException will not throw
+     * @throws IllegalArgumentException will not throw
+     */
+    @Test
+    public void testGetCommandLineWithMessageNumberSet()
+            throws IOException, ImapAsyncClientException, SearchException, IllegalArgumentException, IllegalAccessException {
+        {
+            final MessageNumberSet[] sets = { new MessageNumberSet(43, 4294967295L) };
+            final ImapRequest cmd = new UidExpungeCommand(sets);
+            Assert.assertEquals(cmd.getCommandLine(), "UID EXPUNGE 43:4294967295\r\n", "Expected result mismatched.");
+
+            cmd.cleanup();
+            // Verify if cleanup happened correctly.
+            for (final Field field : fieldsToCheck) {
+                Assert.assertNull(field.get(cmd), "Cleanup should set " + field.getName() + " as null");
+            }
+        }
+        {
+            long[] uids = { 4294967292L, 4294967293L, 4294967294L };
+            final MessageNumberSet[] sets = MessageNumberSet.createMessageNumberSets(uids);
+            final ImapRequest cmd = new UidExpungeCommand(sets);
+            Assert.assertEquals(cmd.getCommandLine(), "UID EXPUNGE 4294967292:4294967294\r\n", "Expected result mismatched.");
+
+            cmd.cleanup();
+            // Verify if cleanup happened correctly.
+            for (final Field field : fieldsToCheck) {
+                Assert.assertNull(field.get(cmd), "Cleanup should set " + field.getName() + " as null");
+            }
+        }
+    }
+
+    /**
      * Tests getCommandLine method.
      *
      * @throws ImapAsyncClientException will not throw
@@ -101,4 +137,12 @@ public class UidExpungeCommandTest {
         }
     }
 
+    /**
+     * Tests getCommandType method.
+     */
+    @Test
+    public void testGetCommandType() {
+        final ImapRequest cmd = new UidExpungeCommand("43:44,99");
+        Assert.assertSame(cmd.getCommandType(), ImapCommandType.UID_EXPUNGE);
+    }
 }
