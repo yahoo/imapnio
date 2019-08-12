@@ -12,11 +12,8 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import com.sun.mail.imap.protocol.MessageSet;
 import com.sun.mail.imap.protocol.UIDSet;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
-import com.yahoo.imapnio.async.request.ImapRequest;
-import com.yahoo.imapnio.async.request.UidCopyMessageCommand;
 
 /**
  * Unit test for {@code UidCopyMessageCommand}.
@@ -94,4 +91,12 @@ public class UidCopyMessageCommandTest {
         }
     }
 
+    /**
+     * Tests getCommandType method.
+     */
+    @Test
+    public void testGetCommandType() {
+        final ImapRequest cmd = new UidCopyMessageCommand("37850:37852", "savedFolder");
+        Assert.assertSame(cmd.getCommandType(), ImapCommandType.UID_COPY_MESSAGE);
+    }
 }

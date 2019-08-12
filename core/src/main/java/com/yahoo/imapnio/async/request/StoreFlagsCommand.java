@@ -78,4 +78,9 @@ public class StoreFlagsCommand extends ImapRequestAdapter {
 
         return sb.toString();
     }
+
+    @Override
+    public ImapCommandType getCommandType() {
+        return ImapCommandType.STORE_FLAGS;
+    }
 }

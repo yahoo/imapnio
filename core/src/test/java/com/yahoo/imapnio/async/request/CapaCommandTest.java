@@ -107,4 +107,13 @@ public class CapaCommandTest {
         Assert.assertEquals(ex.getFaiureType(), ImapAsyncClientException.FailureType.OPERATION_NOT_SUPPORTED_FOR_COMMAND,
                 "Expected result mismatched.");
     }
+
+    /**
+     * Tests getCommandType method.
+     */
+    @Test
+    public void testGetCommandType() {
+        final ImapRequest cmd = new CapaCommand();
+        Assert.assertSame(cmd.getCommandType(), ImapCommandType.CAPABILITY);
+    }
 }

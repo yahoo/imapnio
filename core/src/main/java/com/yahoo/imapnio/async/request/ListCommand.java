@@ -19,4 +19,9 @@ public class ListCommand extends AbstractQueryFoldersCommand {
     public ListCommand(@Nonnull final String ref, @Nonnull final String pattern) {
         super(LIST, ref, pattern);
     }
+
+    @Override
+    public ImapCommandType getCommandType() {
+        return ImapCommandType.LIST;
+    }
 }

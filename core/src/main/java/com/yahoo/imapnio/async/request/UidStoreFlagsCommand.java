@@ -66,4 +66,9 @@ public class UidStoreFlagsCommand extends ImapRequestAdapter {
 
         return sb.toString();
     }
+
+    @Override
+    public ImapCommandType getCommandType() {
+        return ImapCommandType.UID_STORE_FLAGS;
+    }
 }

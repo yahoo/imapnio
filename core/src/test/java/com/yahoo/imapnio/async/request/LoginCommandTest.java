@@ -109,4 +109,13 @@ public class LoginCommandTest {
         Assert.assertEquals(ex.getFaiureType(), ImapAsyncClientException.FailureType.OPERATION_NOT_SUPPORTED_FOR_COMMAND,
                 "Expected result mismatched.");
     }
+
+    /**
+     * Tests getCommandType method.
+     */
+    @Test
+    public void testGetCommandType() {
+        final ImapRequest cmd = new LoginCommand("neighbor", "hood");
+        Assert.assertSame(cmd.getCommandType(), ImapCommandType.LOGIN);
+    }
 }

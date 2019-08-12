@@ -31,4 +31,9 @@ public class UidCopyMessageCommand extends AbstractMessageActionCommand {
     public UidCopyMessageCommand(@Nonnull final String uids, @Nonnull final String targetFolder) {
         super(COPY, true, uids, targetFolder);
     }
+
+    @Override
+    public ImapCommandType getCommandType() {
+        return ImapCommandType.UID_COPY_MESSAGE;
+    }
 }

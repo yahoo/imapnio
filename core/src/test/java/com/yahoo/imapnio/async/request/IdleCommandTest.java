@@ -107,4 +107,14 @@ public class IdleCommandTest {
             Assert.assertNull(field.get(cmd), "Cleanup should set " + field.getName() + " as null");
         }
     }
+
+    /**
+     * Tests getCommandType method.
+     */
+    @Test
+    public void testGetCommandType() {
+        final ConcurrentLinkedQueue<IMAPResponse> serverStreamingResponses = new ConcurrentLinkedQueue<IMAPResponse>();
+        final ImapRequest cmd = new IdleCommand(serverStreamingResponses);
+        Assert.assertSame(cmd.getCommandType(), ImapCommandType.IDLE);
+    }
 }

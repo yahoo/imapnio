@@ -139,4 +139,13 @@ public class FetchCommandTest {
         Assert.assertEquals(ex.getFaiureType(), ImapAsyncClientException.FailureType.OPERATION_NOT_SUPPORTED_FOR_COMMAND,
                 "Expected result mismatched.");
     }
+
+    /**
+     * Tests getCommandType method.
+     */
+    @Test
+    public void testGetCommandType() {
+        final ImapRequest cmd = new FetchCommand(1, 10000, DATA_ITEMS);
+        Assert.assertSame(cmd.getCommandType(), ImapCommandType.FETCH);
+    }
 }

@@ -13,8 +13,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
-import com.yahoo.imapnio.async.request.ImapRequest;
-import com.yahoo.imapnio.async.request.SelectFolderCommand;
 
 /**
  * Unit test for {@code SelectFolderCommand}.
@@ -92,5 +90,14 @@ public class SelectFolderCommandTest {
         final String folderName = "测试";
         final ImapRequest cmd = new SelectFolderCommand(folderName);
         Assert.assertEquals(cmd.getCommandLine(), SELECT + "&bUuL1Q-\r\n", "Expected result mismatched.");
+    }
+
+    /**
+     * Tests getCommandType method.
+     */
+    @Test
+    public void testGetCommandType() {
+        final ImapRequest cmd = new SelectFolderCommand("inbox");
+        Assert.assertSame(cmd.getCommandType(), ImapCommandType.SELECT_FOLDER);
     }
 }

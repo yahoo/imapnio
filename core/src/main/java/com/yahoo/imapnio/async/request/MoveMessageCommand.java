@@ -32,4 +32,9 @@ public class MoveMessageCommand extends AbstractMessageActionCommand {
     public MoveMessageCommand(final int start, final int end, @Nonnull final String targetFolder) {
         super(MOVE, false, start, end, targetFolder);
     }
+
+    @Override
+    public ImapCommandType getCommandType() {
+        return ImapCommandType.MOVE_MESSAGE;
+    }
 }

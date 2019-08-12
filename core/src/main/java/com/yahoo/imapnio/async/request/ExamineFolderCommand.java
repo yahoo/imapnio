@@ -20,4 +20,9 @@ public class ExamineFolderCommand extends AbstractFolderActionCommand {
     public ExamineFolderCommand(@Nonnull final String folderName) {
         super(EXAMINE, folderName);
     }
+
+    @Override
+    public ImapCommandType getCommandType() {
+        return ImapCommandType.EXAMINE_FOLDER;
+    }
 }

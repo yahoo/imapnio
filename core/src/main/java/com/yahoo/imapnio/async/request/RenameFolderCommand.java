@@ -51,4 +51,9 @@ public class RenameFolderCommand extends ImapRequestAdapter {
 
         return sb.toString();
     }
+
+    @Override
+    public ImapCommandType getCommandType() {
+        return ImapCommandType.RENAME_FOLDER;
+    }
 }

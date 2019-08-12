@@ -14,8 +14,6 @@ import org.testng.annotations.Test;
 
 import com.sun.mail.imap.protocol.MessageSet;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
-import com.yahoo.imapnio.async.request.CopyMessageCommand;
-import com.yahoo.imapnio.async.request.ImapRequest;
 
 /**
  * Unit test for {@code CopyMessageCommand}.
@@ -83,7 +81,7 @@ public class CopyMessageCommandTest {
     public void testMessageUidGetCommandLine()
             throws IOException, ImapAsyncClientException, SearchException, IllegalArgumentException, IllegalAccessException {
         final String folderName = "folderABC";
-        final ImapRequest cmd = new CopyMessageCommand( 37850, 37852, folderName);
+        final ImapRequest cmd = new CopyMessageCommand(37850, 37852, folderName);
         Assert.assertEquals(cmd.getCommandLine(), "COPY 37850:37852 folderABC\r\n", "Expected result mismatched.");
 
         cmd.cleanup();
@@ -103,7 +101,7 @@ public class CopyMessageCommandTest {
     @Test
     public void testGetCommandLineWithEscapeChar() throws IOException, ImapAsyncClientException, SearchException {
         final String folderName = "folder ABC";
-        final ImapRequest cmd = new CopyMessageCommand( 37850, 37852, folderName);
+        final ImapRequest cmd = new CopyMessageCommand(37850, 37852, folderName);
         Assert.assertEquals(cmd.getCommandLine(), "COPY 37850:37852 \"folder ABC\"\r\n", "Expected result mismatched.");
 
     }
@@ -120,5 +118,14 @@ public class CopyMessageCommandTest {
         final String folderName = "测试";
         final ImapRequest cmd = new CopyMessageCommand(37850, 37852, folderName);
         Assert.assertEquals(cmd.getCommandLine(), "COPY 37850:37852 &bUuL1Q-\r\n", "Expected result mismatched.");
+    }
+
+    /**
+     * Tests getCommandType method.
+     */
+    @Test
+    public void testGetCommandType() {
+        final ImapRequest cmd = new CopyMessageCommand(37850, 37852, "targetFolder");
+        Assert.assertSame(cmd.getCommandType(), ImapCommandType.COPY_MESSAGE);
     }
 }

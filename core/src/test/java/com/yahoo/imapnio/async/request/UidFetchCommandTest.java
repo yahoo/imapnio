@@ -12,12 +12,8 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import com.sun.mail.imap.protocol.IMAPResponse;
-import com.sun.mail.imap.protocol.MessageSet;
 import com.sun.mail.imap.protocol.UIDSet;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
-import com.yahoo.imapnio.async.request.ImapRequest;
-import com.yahoo.imapnio.async.request.UidFetchCommand;
 
 /**
  * Unit test for {@code UidFetchCommand}.
@@ -89,7 +85,8 @@ public class UidFetchCommandTest {
         final long[] msgs = { 4294967293L, 4294967294L, 4294967295L };
         final UIDSet[] msgsets = UIDSet.createUIDSets(msgs);
         final ImapRequest cmd = new UidFetchCommand(msgsets, DATA_ITEMS);
-        Assert.assertEquals(cmd.getCommandLine(), "UID FETCH 4294967293:4294967295 (FLAGS BODY[HEADER.FIELDS (DATE FROM)])\r\n", "Expected result mismatched.");
+        Assert.assertEquals(cmd.getCommandLine(), "UID FETCH 4294967293:4294967295 (FLAGS BODY[HEADER.FIELDS (DATE FROM)])\r\n",
+                "Expected result mismatched.");
 
         cmd.cleanup();
         // Verify if cleanup happened correctly.
@@ -98,4 +95,14 @@ public class UidFetchCommandTest {
         }
     }
 
+    /**
+     * Tests getCommandType method.
+     */
+    @Test
+    public void testGetCommandType() {
+        final long[] msgs = { 1L, 2L, 3L };
+        final UIDSet[] msgsets = UIDSet.createUIDSets(msgs);
+        final ImapRequest cmd = new UidFetchCommand(msgsets, DATA_ITEMS);
+        Assert.assertSame(cmd.getCommandType(), ImapCommandType.UID_FETCH);
+    }
 }
