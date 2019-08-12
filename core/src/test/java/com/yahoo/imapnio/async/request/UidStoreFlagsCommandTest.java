@@ -170,4 +170,17 @@ public class UidStoreFlagsCommandTest {
         Assert.assertEquals(ex.getFaiureType(), ImapAsyncClientException.FailureType.OPERATION_NOT_SUPPORTED_FOR_COMMAND,
                 "Expected result mismatched.");
     }
+
+    /**
+     * Tests getCommandType method.
+     */
+    @Test
+    public void testGetCommandType() {
+        final Flags flags = new Flags();
+        flags.add(Flags.Flag.SEEN);
+        flags.add(Flags.Flag.DELETED);
+        final boolean isSet = true;
+        final ImapRequest cmd = new UidStoreFlagsCommand("1, 10000", flags, isSet);
+        Assert.assertSame(cmd.getCommandType(), ImapCommandType.UID_STORE_FLAGS);
+    }
 }

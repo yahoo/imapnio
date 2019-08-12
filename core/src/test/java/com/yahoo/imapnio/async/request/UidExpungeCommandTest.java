@@ -14,8 +14,6 @@ import org.testng.annotations.Test;
 
 import com.sun.mail.imap.protocol.UIDSet;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
-import com.yahoo.imapnio.async.request.ImapRequest;
-import com.yahoo.imapnio.async.request.UidExpungeCommand;
 
 /**
  * Unit test for {@code UidExpungeCommand}.
@@ -101,4 +99,12 @@ public class UidExpungeCommandTest {
         }
     }
 
+    /**
+     * Tests getCommandType method.
+     */
+    @Test
+    public void testGetCommandType() {
+        final ImapRequest cmd = new UidExpungeCommand("43:44,99");
+        Assert.assertSame(cmd.getCommandType(), ImapCommandType.UID_EXPUNGE);
+    }
 }

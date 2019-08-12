@@ -34,6 +34,12 @@ public interface ImapRequest<T> {
     String getCommandLine() throws SearchException, IOException, ImapAsyncClientException;
 
     /**
+     * @return IMAP command type
+     */
+    @Nullable
+    ImapCommandType getCommandType();
+
+    /**
      * @return log data appropriate for the command
      */
     @Nullable

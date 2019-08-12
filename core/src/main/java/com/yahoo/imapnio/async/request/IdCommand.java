@@ -58,4 +58,9 @@ public class IdCommand extends ImapRequestAdapter {
         sb.append(ImapClientConstants.CRLF);
         return sb.toString();
     }
+
+    @Override
+    public ImapCommandType getCommandType() {
+        return ImapCommandType.ID;
+    }
 }

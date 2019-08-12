@@ -141,4 +141,14 @@ public class AuthPlainCommandTest {
         Assert.assertEquals(ex.getFaiureType(), ImapAsyncClientException.FailureType.OPERATION_NOT_SUPPORTED_FOR_COMMAND,
                 "Expected result mismatched.");
     }
+
+    /**
+     * Tests getCommandType method.
+     */
+    @Test
+    public void testGetCommandType() {
+        final Map<String, List<String>> capas = new HashMap<String, List<String>>();
+        final ImapRequest cmd = new AuthPlainCommand("tesla", "selfdriving", new Capability(capas));
+        Assert.assertSame(cmd.getCommandType(), ImapCommandType.AUTH_PLAIN);
+    }
 }

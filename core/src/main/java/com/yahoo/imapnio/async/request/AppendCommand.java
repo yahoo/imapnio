@@ -125,4 +125,8 @@ public class AppendCommand implements ImapRequest<ByteBuf> {
         throw new ImapAsyncClientException(FailureType.OPERATION_NOT_SUPPORTED_FOR_COMMAND);
     }
 
+    @Override
+    public ImapCommandType getCommandType() {
+        return ImapCommandType.APPEND_MESSAGE;
+    }
 }

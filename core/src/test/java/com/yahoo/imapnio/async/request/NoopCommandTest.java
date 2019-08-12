@@ -13,8 +13,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
-import com.yahoo.imapnio.async.request.ImapRequest;
-import com.yahoo.imapnio.async.request.NoopCommand;
 
 /**
  * Unit test for {@code NoopCommand}.
@@ -63,4 +61,12 @@ public class NoopCommandTest {
         }
     }
 
+    /**
+     * Tests getCommandType method.
+     */
+    @Test
+    public void testGetCommandType() {
+        final ImapRequest cmd = new NoopCommand();
+        Assert.assertSame(cmd.getCommandType(), ImapCommandType.NOOP);
+    }
 }

@@ -14,8 +14,6 @@ import org.testng.annotations.Test;
 
 import com.sun.mail.imap.protocol.MessageSet;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
-import com.yahoo.imapnio.async.request.ImapRequest;
-import com.yahoo.imapnio.async.request.MoveMessageCommand;
 
 /**
  * Unit test for {@code MoveMessageCommand}.
@@ -118,5 +116,14 @@ public class MoveMessageCommandTest {
         final String folderName = "测试";
         final ImapRequest cmd = new MoveMessageCommand(37850, 37852, folderName);
         Assert.assertEquals(cmd.getCommandLine(), "MOVE 37850:37852 &bUuL1Q-\r\n", "Expected result mismatched.");
+    }
+
+    /**
+     * Tests getCommandType method.
+     */
+    @Test
+    public void testGetCommandType() {
+        final ImapRequest cmd = new MoveMessageCommand(37850, 37852, "targetFolder");
+        Assert.assertSame(cmd.getCommandType(), ImapCommandType.MOVE_MESSAGE);
     }
 }

@@ -18,4 +18,9 @@ public class UnsubscribeFolderCommand extends AbstractFolderActionCommand {
     public UnsubscribeFolderCommand(@Nonnull final String folderName) {
         super(UNSUBSCRIBE, folderName);
     }
+
+    @Override
+    public ImapCommandType getCommandType() {
+        return ImapCommandType.UNSUBSCRIBE;
+    }
 }

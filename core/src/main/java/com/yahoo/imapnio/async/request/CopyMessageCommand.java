@@ -32,4 +32,9 @@ public class CopyMessageCommand extends AbstractMessageActionCommand {
     public CopyMessageCommand(final int start, final int end, @Nonnull final String targetFolder) {
         super(COPY, false, start, end, targetFolder);
     }
+
+    @Override
+    public ImapCommandType getCommandType() {
+        return ImapCommandType.COPY_MESSAGE;
+    }
 }

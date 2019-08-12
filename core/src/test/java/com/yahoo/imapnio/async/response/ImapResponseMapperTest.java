@@ -23,7 +23,6 @@ import com.yahoo.imapnio.async.data.IdResult;
 import com.yahoo.imapnio.async.data.ListInfoList;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException.FailureType;
-import com.yahoo.imapnio.async.response.ImapResponseMapper;
 
 /**
  * Unit test for {@code ImapResponseMapper}.
@@ -209,7 +208,10 @@ public class ImapResponseMapperTest {
     @Test
     public void testParseAppendUidSuccess() throws IOException, ProtocolException, ImapAsyncClientException {
         final ImapResponseMapper mapper = new ImapResponseMapper();
-        final IMAPResponse[] content = { new IMAPResponse("a5 OK [APPENDUID 1459808247 150399] APPEND completed") };
+        final IMAPResponse[] content = new IMAPResponse[3];
+        content[0] = new IMAPResponse("+ Ready for literal data");
+        content[1] = new IMAPResponse("* 3 EXISTS");
+        content[2] = new IMAPResponse("a5 OK [APPENDUID 1459808247 150399] APPEND completed");
         final AppendUID appendUid = mapper.readValue(content, AppendUID.class);
 
         // verify the result
@@ -590,6 +592,7 @@ public class ImapResponseMapperTest {
         Assert.assertNotNull(cause, "cause mismatched.");
         Assert.assertEquals(cause.getFaiureType(), FailureType.UNKNOWN_PARSE_RESULT_TYPE, "Failure type mismatched.");
     }
+
     /**
      * Tests parseStatus method with not OK response.
      *

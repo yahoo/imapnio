@@ -116,4 +116,9 @@ public class AuthXoauth2Command implements ImapRequest<String> {
     public String getTerminateCommandLine() throws ImapAsyncClientException {
         throw new ImapAsyncClientException(FailureType.OPERATION_NOT_SUPPORTED_FOR_COMMAND);
     }
+
+    @Override
+    public ImapCommandType getCommandType() {
+        return ImapCommandType.AUTH_XOAUTH2;
+    }
 }

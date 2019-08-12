@@ -64,4 +64,9 @@ public class FetchCommand extends ImapRequestAdapter {
 
         return sb.toString();
     }
+
+    @Override
+    public ImapCommandType getCommandType() {
+        return ImapCommandType.FETCH;
+    }
 }

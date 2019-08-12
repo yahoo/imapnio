@@ -31,4 +31,9 @@ public class UidMoveMessageCommand extends AbstractMessageActionCommand {
     public UidMoveMessageCommand(@Nonnull final String uids, @Nonnull final String targetFolder) {
         super(MOVE, true, uids, targetFolder);
     }
+
+    @Override
+    public ImapCommandType getCommandType() {
+        return ImapCommandType.UID_MOVE_MESSAGE;
+    }
 }

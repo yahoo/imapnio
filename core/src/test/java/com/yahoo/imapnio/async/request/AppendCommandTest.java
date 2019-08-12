@@ -161,4 +161,19 @@ public class AppendCommandTest {
         Assert.assertEquals(ex.getFaiureType(), ImapAsyncClientException.FailureType.OPERATION_NOT_SUPPORTED_FOR_COMMAND,
                 "Expected result mismatched.");
     }
+
+    /**
+     * Tests getCommandType method.
+     */
+    @Test
+    public void testGetCommandType() {
+        final Date internalDate = new Date(1552413335000L);
+        final Flags expectedFlags = new Flags();
+        expectedFlags.add(Flags.Flag.FLAGGED);
+        expectedFlags.add(Flags.Flag.SEEN);
+        final byte[] expectedMsg = TEST_MSG_BYTE;
+
+        final ImapRequest cmd = new AppendCommand("Inbox", expectedFlags, internalDate, expectedMsg);
+        Assert.assertSame(cmd.getCommandType(), ImapCommandType.APPEND_MESSAGE);
+    }
 }

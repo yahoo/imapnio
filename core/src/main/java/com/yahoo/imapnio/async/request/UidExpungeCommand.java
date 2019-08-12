@@ -42,4 +42,9 @@ public class UidExpungeCommand extends ImapRequestAdapter {
     public String getCommandLine() {
         return new StringBuilder(UID_EXPUNGE).append(ImapClientConstants.SPACE).append(uids).append(ImapClientConstants.CRLF).toString();
     }
+
+    @Override
+    public ImapCommandType getCommandType() {
+        return ImapCommandType.UID_EXPUNGE;
+    }
 }

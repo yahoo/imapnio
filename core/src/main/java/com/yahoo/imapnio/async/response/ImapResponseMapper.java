@@ -155,7 +155,7 @@ public class ImapResponseMapper {
             if (rs.length < 1) {
                 throw new ImapAsyncClientException(FailureType.INVALID_INPUT);
             }
-            final IMAPResponse r = rs[0];
+            final IMAPResponse r = rs[rs.length - 1];
             if (!r.isOK()) {
                 throw new ImapAsyncClientException(FailureType.INVALID_INPUT);
             }
@@ -325,7 +325,7 @@ public class ImapResponseMapper {
 
                     final String[] v = r.readStringList();
                     if (v == null) {
-                        //this means it does not start with (, ID result is expected to have () enclosed
+                        // this means it does not start with (, ID result is expected to have () enclosed
                         throw new ImapAsyncClientException(FailureType.INVALID_INPUT);
                     }
 
