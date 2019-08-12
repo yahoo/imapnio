@@ -175,7 +175,7 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
     }
 
     @Override
-    public ImapFuture<ImapAsyncResponse> execute(@Nonnull final ImapRequest command) throws ImapAsyncClientException, IOException, SearchException {
+    public ImapFuture<ImapAsyncResponse> execute(@Nonnull final ImapRequest command) throws ImapAsyncClientException {
         if (!requestsQueue.isEmpty()) {
             throw new ImapAsyncClientException(FailureType.COMMAND_NOT_ALLOWED);
         }

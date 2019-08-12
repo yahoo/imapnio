@@ -3,6 +3,7 @@ package com.yahoo.imapnio.async.request;
 import javax.annotation.Nonnull;
 
 import com.sun.mail.imap.protocol.UIDSet;
+import com.yahoo.imapnio.async.data.MessageNumberSet;
 
 /**
  * This class defines IMAP UID EXPUNGE command from client.
@@ -25,6 +26,15 @@ public class UidExpungeCommand extends ImapRequestAdapter {
     }
 
     /**
+     * Initializes a @{code UidExpungeCommand} with the message sequence syntax. MessageNumberSet allows last message.
+     *
+     * @param uidsets the set of MessageNumberSet representing UID based on RFC3501
+     */
+    public UidExpungeCommand(@Nonnull final MessageNumberSet[] uidsets) {
+        this(MessageNumberSet.toString(uidsets));
+    }
+
+    /**
      * Initializes a @{code UidExpungeCommand} with the message sequence syntax.
      *
      * @param uids the string representing UID string based on RFC3501
@@ -41,5 +51,10 @@ public class UidExpungeCommand extends ImapRequestAdapter {
     @Override
     public String getCommandLine() {
         return new StringBuilder(UID_EXPUNGE).append(ImapClientConstants.SPACE).append(uids).append(ImapClientConstants.CRLF).toString();
+    }
+
+    @Override
+    public ImapCommandType getCommandType() {
+        return ImapCommandType.UID_EXPUNGE;
     }
 }

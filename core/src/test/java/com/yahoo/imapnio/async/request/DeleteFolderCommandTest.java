@@ -13,8 +13,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
-import com.yahoo.imapnio.async.request.DeleteFolderCommand;
-import com.yahoo.imapnio.async.request.ImapRequest;
 
 /**
  * Unit test for {@code DeleteFolderCommand}.
@@ -92,5 +90,14 @@ public class DeleteFolderCommandTest {
         final String folderName = "测试";
         final ImapRequest cmd = new DeleteFolderCommand(folderName);
         Assert.assertEquals(cmd.getCommandLine(), DELETE + "&bUuL1Q-\r\n", "Expected result mismatched.");
+    }
+
+    /**
+     * Tests getCommandType method.
+     */
+    @Test
+    public void testGetCommandType() {
+        final ImapRequest cmd = new DeleteFolderCommand("folderToBeDeleted");
+        Assert.assertSame(cmd.getCommandType(), ImapCommandType.DELETE_FOLDER);
     }
 }

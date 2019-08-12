@@ -1,10 +1,8 @@
 package com.yahoo.imapnio.async.request;
 
-import java.io.IOException;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.annotation.Nonnull;
-import javax.mail.search.SearchException;
 
 import org.apache.avro.reflect.Nullable;
 
@@ -26,12 +24,16 @@ public interface ImapRequest<T> {
      * Builds the command line for this command - the line to be sent over wire.
      *
      * @return command line
-     * @throws SearchException when Search command expression does not conform to standard
-     * @throws IOException for I/O errors
      * @throws ImapAsyncClientException when encountering an error in building terminate command line
      */
     @Nonnull
-    String getCommandLine() throws SearchException, IOException, ImapAsyncClientException;
+    String getCommandLine() throws ImapAsyncClientException;
+
+    /**
+     * @return IMAP command type
+     */
+    @Nullable
+    ImapCommandType getCommandType();
 
     /**
      * @return log data appropriate for the command

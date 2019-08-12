@@ -1,4 +1,4 @@
-package com.yahoo.imapnio.command;
+package com.yahoo.imapnio.async.request;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -12,15 +12,14 @@ import com.sun.mail.util.MailLogger;
 /**
  * Class used to serialize IMAP commands. kraman
  */
-public class ProxyProtocol extends Protocol {
+class ProxyProtocol extends Protocol {
     /** The OutputStream used by ProxyProtocol. */
     private OutputStream outputStream;
 
     /**
      * Creates a ProxyProtocol object.
      *
-     * @throws IOException
-     *             on failure
+     * @throws IOException on failure
      */
     protected ProxyProtocol() throws IOException {
         super(null, null, new Properties(), false);
@@ -31,33 +30,24 @@ public class ProxyProtocol extends Protocol {
     /**
      * Never used but must be implemented.
      *
-     * @param host
-     *            IMAP server host
-     * @param port
-     *            IMAP server port
-     * @param props
-     *            properties
-     * @param prefix
-     *            prefix to prepend property keys
-     * @param isSSL
-     *            is this an SSL connection
-     * @param logger
-     *            logger
-     * @throws IOException
-     *             on network failure
-     * @throws ProtocolException
-     *             on IMAP protocol errors
+     * @param host IMAP server host
+     * @param port IMAP server port
+     * @param props properties
+     * @param prefix prefix to prepend property keys
+     * @param isSSL is this an SSL connection
+     * @param logger logger
+     * @throws IOException on network failure
+     * @throws ProtocolException on IMAP protocol errors
      */
     private ProxyProtocol(final String host, final int port, final Properties props, final String prefix, final boolean isSSL,
-                    final MailLogger logger) throws IOException, ProtocolException {
+            final MailLogger logger) throws IOException, ProtocolException {
         super(host, port, props, prefix, isSSL, logger);
     }
 
     /**
      * Close.
      *
-     * @throws IOException
-     *             on I/O failure
+     * @throws IOException on I/O failure
      */
     public void close() throws IOException {
         outputStream.close();

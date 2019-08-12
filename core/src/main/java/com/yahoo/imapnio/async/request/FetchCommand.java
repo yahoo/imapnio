@@ -3,6 +3,7 @@ package com.yahoo.imapnio.async.request;
 import javax.annotation.Nonnull;
 
 import com.sun.mail.imap.protocol.MessageSet;
+import com.yahoo.imapnio.async.data.MessageNumberSet;
 
 /**
  * This class defines imap fetch command request from client.
@@ -26,6 +27,16 @@ public class FetchCommand extends ImapRequestAdapter {
      */
     public FetchCommand(@Nonnull final MessageSet[] msgsets, @Nonnull final String what) {
         this(MessageSet.toString(msgsets), what);
+    }
+
+    /**
+     * Initializes a @{code FetchCommand} with the @{code MessageNumberSet} array.
+     *
+     * @param msgsets the set of message set
+     * @param what the data items or macro
+     */
+    public FetchCommand(@Nonnull final MessageNumberSet[] msgsets, @Nonnull final String what) {
+        this(MessageNumberSet.toString(msgsets), what);
     }
 
     /**
@@ -63,5 +74,10 @@ public class FetchCommand extends ImapRequestAdapter {
                 .append(ImapClientConstants.CRLF);
 
         return sb.toString();
+    }
+
+    @Override
+    public ImapCommandType getCommandType() {
+        return ImapCommandType.FETCH;
     }
 }

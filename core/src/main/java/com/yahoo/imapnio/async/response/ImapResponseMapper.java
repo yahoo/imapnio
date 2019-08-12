@@ -23,6 +23,8 @@ import com.sun.mail.imap.protocol.UIDSet;
 import com.yahoo.imapnio.async.data.Capability;
 import com.yahoo.imapnio.async.data.IdResult;
 import com.yahoo.imapnio.async.data.ListInfoList;
+import com.yahoo.imapnio.async.data.SearchResult;
+import com.yahoo.imapnio.async.data.UidSearchResult;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException.FailureType;
 
@@ -86,6 +88,12 @@ public class ImapResponseMapper {
         }
         if (valueType == IdResult.class) {
             return (T) parser.parseToIdResult(content);
+        }
+        if (valueType == SearchResult.class) {
+            return (T) parser.parseToSearchResult(content);
+        }
+        if (valueType == UidSearchResult.class) {
+            return (T) parser.parseToUidSearchResult(content);
         }
         throw new ImapAsyncClientException(FailureType.UNKNOWN_PARSE_RESULT_TYPE);
     }
@@ -155,7 +163,7 @@ public class ImapResponseMapper {
             if (rs.length < 1) {
                 throw new ImapAsyncClientException(FailureType.INVALID_INPUT);
             }
-            final IMAPResponse r = rs[0];
+            final IMAPResponse r = rs[rs.length - 1];
             if (!r.isOK()) {
                 throw new ImapAsyncClientException(FailureType.INVALID_INPUT);
             }
@@ -299,7 +307,7 @@ public class ImapResponseMapper {
          * Parses the ID responses to a @{code IdResult} object.
          *
          * @param r the list of responses from ID command, the input responses array should contain the tagged/final one
-         * @return Status object constructed based on the r array
+         * @return IdResult object constructed based on the given IMAPResponse array
          * @throws ParsingException when encountering parsing exception
          * @throws ImapAsyncClientException when input value is not valid
          */
@@ -325,7 +333,7 @@ public class ImapResponseMapper {
 
                     final String[] v = r.readStringList();
                     if (v == null) {
-                        //this means it does not start with (, ID result is expected to have () enclosed
+                        // this means it does not start with (, ID result is expected to have () enclosed
                         throw new ImapAsyncClientException(FailureType.INVALID_INPUT);
                     }
 
@@ -341,6 +349,68 @@ public class ImapResponseMapper {
             }
 
             return new IdResult(Collections.unmodifiableMap(serverParams));
+        }
+
+        /**
+         * Parses the responses from search command to a @{code SearchResult} object.
+         *
+         * @param ir the list of responses from search command, the input responses array should contain the tagged/final one
+         * @return SearchResult object constructed based on the given IMAPResponse array
+         */
+        @Nullable
+        public SearchResult parseToSearchResult(@Nonnull final IMAPResponse[] ir) {
+            final IMAPResponse response = ir[ir.length - 1];
+            List<Integer> matches = null;
+
+            // Grab all SEARCH responses
+            if (response.isOK()) { // command successful
+                final List<Integer> v = new ArrayList<Integer>();
+                int num;
+                for (final IMAPResponse sr : ir) {
+                    // There *will* be one SEARCH response.
+                    if (sr.keyEquals("SEARCH")) {
+                        while ((num = sr.readNumber()) != -1) {
+                            v.add(Integer.valueOf(num));
+                        }
+                    }
+                }
+
+                // set the final 'matches'
+                matches = v;
+            }
+
+            return new SearchResult(matches);
+        }
+
+        /**
+         * Parses the responses from UID search command to a @{code UidSearchResult} object.
+         *
+         * @param ir the list of responses from UID search command, the input responses array should contain the tagged/final one
+         * @return UidSearchResult object constructed based on the given IMAPResponse array
+         */
+        @Nullable
+        public UidSearchResult parseToUidSearchResult(@Nonnull final IMAPResponse[] ir) {
+            final IMAPResponse response = ir[ir.length - 1];
+            List<Long> matches = null;
+
+            // Grab all SEARCH responses
+            if (response.isOK()) { // command successful
+                final List<Long> v = new ArrayList<Long>();
+                long num;
+                for (final IMAPResponse sr : ir) {
+                    // There *will* be one SEARCH response.
+                    if (sr.keyEquals("SEARCH")) {
+                        while ((num = sr.readLong()) != -1) {
+                            v.add(Long.valueOf(num));
+                        }
+                    }
+                }
+
+                // set the final 'matches'
+                matches = v;
+            }
+
+            return new UidSearchResult(matches);
         }
     }
 }

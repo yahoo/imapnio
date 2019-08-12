@@ -13,8 +13,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
-import com.yahoo.imapnio.async.request.ExamineFolderCommand;
-import com.yahoo.imapnio.async.request.ImapRequest;
 
 /**
  * Unit test for {@code ExamineFolderCommand}.
@@ -92,5 +90,14 @@ public class ExamineFolderCommandTest {
         final String folderName = "测试";
         final ImapRequest cmd = new ExamineFolderCommand(folderName);
         Assert.assertEquals(cmd.getCommandLine(), EXAMINE + "&bUuL1Q-\r\n", "Expected result mismatched.");
+    }
+
+    /**
+     * Tests getCommandType method.
+     */
+    @Test
+    public void testGetCommandType() {
+        final ImapRequest cmd = new ExamineFolderCommand("testFolder");
+        Assert.assertSame(cmd.getCommandType(), ImapCommandType.EXAMINE_FOLDER);
     }
 }

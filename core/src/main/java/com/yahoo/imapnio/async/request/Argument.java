@@ -1,4 +1,4 @@
-package com.yahoo.imapnio.command;
+package com.yahoo.imapnio.async.request;
 
 import java.io.IOException;
 
@@ -12,7 +12,7 @@ import com.sun.mail.iap.ProtocolException;
  *
  * @author kraman
  */
-public class Argument extends com.sun.mail.iap.Argument {
+class Argument extends com.sun.mail.iap.Argument {
     /**
      * Creates a IMAP Argument object.
      */
@@ -22,8 +22,7 @@ public class Argument extends com.sun.mail.iap.Argument {
     /**
      * Add string.
      *
-     * @param s
-     *            argument string
+     * @param s argument string
      * @return this Argument object
      */
     public Argument addString(final String s) {
@@ -34,8 +33,7 @@ public class Argument extends com.sun.mail.iap.Argument {
     /**
      * Add string literal.
      *
-     * @param s
-     *            argument literal
+     * @param s argument literal
      * @return this Argument object
      */
     public Argument addLiteral(final String s) {

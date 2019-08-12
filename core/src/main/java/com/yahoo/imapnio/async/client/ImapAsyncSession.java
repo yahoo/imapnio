@@ -50,10 +50,8 @@ public interface ImapAsyncSession {
      * @param command the command request.
      * @return the future object for this command
      * @throws ImapAsyncClientException on failure
-     * @throws IOException when encountering IO exception
-     * @throws SearchException when a search expression cannot be handled, conformed to RFC3501 standard
      */
-    <T> ImapFuture<ImapAsyncResponse> execute(ImapRequest<T> command) throws ImapAsyncClientException, IOException, SearchException;
+    <T> ImapFuture<ImapAsyncResponse> execute(ImapRequest<T> command) throws ImapAsyncClientException;
 
     /**
      * Terminates the current running command.

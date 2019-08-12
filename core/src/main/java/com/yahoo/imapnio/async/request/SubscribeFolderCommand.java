@@ -18,4 +18,9 @@ public class SubscribeFolderCommand extends AbstractFolderActionCommand {
     public SubscribeFolderCommand(@Nonnull final String folderName) {
         super(SUBSCRIBE, folderName);
     }
+
+    @Override
+    public ImapCommandType getCommandType() {
+        return ImapCommandType.SUBSCRIBE;
+    }
 }

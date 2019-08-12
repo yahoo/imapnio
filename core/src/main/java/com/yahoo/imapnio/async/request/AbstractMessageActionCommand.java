@@ -4,6 +4,7 @@ import javax.annotation.Nonnull;
 
 import com.sun.mail.imap.protocol.BASE64MailboxEncoder;
 import com.sun.mail.imap.protocol.MessageSet;
+import com.yahoo.imapnio.async.data.MessageNumberSet;
 
 /**
  * This class defines imap message change operation command from client. For example, copy message, move message.
@@ -36,6 +37,19 @@ abstract class AbstractMessageActionCommand extends ImapRequestAdapter {
     protected AbstractMessageActionCommand(@Nonnull final String op, final boolean isUid, @Nonnull final MessageSet[] msgsets,
             @Nonnull final String targetFolder) {
         this(op, isUid, MessageSet.toString(msgsets), targetFolder);
+    }
+
+    /**
+     * Initializes a @{code MessageActionCommand} with the message sequence syntax.
+     *
+     * @param op the command
+     * @param isUid true if it is a uid sequence
+     * @param msgsets the set of @{code MessageNumberSet}
+     * @param targetFolder the targetFolder to be stored
+     */
+    protected AbstractMessageActionCommand(@Nonnull final String op, final boolean isUid, @Nonnull final MessageNumberSet[] msgsets,
+            @Nonnull final String targetFolder) {
+        this(op, isUid, MessageNumberSet.toString(msgsets), targetFolder);
     }
 
     /**

@@ -3,6 +3,7 @@ package com.yahoo.imapnio.async.request;
 import javax.annotation.Nonnull;
 
 import com.sun.mail.imap.protocol.UIDSet;
+import com.yahoo.imapnio.async.data.MessageNumberSet;
 
 /**
  * This class defines IMAP UID fetch command request from client.
@@ -29,6 +30,16 @@ public class UidFetchCommand extends ImapRequestAdapter {
     }
 
     /**
+     * Initializes a @{code FetchCommand} with the @{code MessageNumberSet} array.
+     *
+     * @param msgsets the set of message set
+     * @param what the data items or macro
+     */
+    public UidFetchCommand(@Nonnull final MessageNumberSet[] msgsets, @Nonnull final String what) {
+        this(MessageNumberSet.toString(msgsets), what);
+    }
+
+    /**
      * Initializes a @{code UidFetchCommand} with the message sequence syntax.
      *
      * @param uids the UID string following the RFC3501 syntax. For ex:3857529045,3857529047:3857529065
@@ -52,5 +63,10 @@ public class UidFetchCommand extends ImapRequestAdapter {
                 .append(ImapClientConstants.CRLF);
 
         return sb.toString();
+    }
+
+    @Override
+    public ImapCommandType getCommandType() {
+        return ImapCommandType.UID_FETCH;
     }
 }

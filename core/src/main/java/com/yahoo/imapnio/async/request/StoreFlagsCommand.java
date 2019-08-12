@@ -4,6 +4,7 @@ import javax.annotation.Nonnull;
 import javax.mail.Flags;
 
 import com.sun.mail.imap.protocol.MessageSet;
+import com.yahoo.imapnio.async.data.MessageNumberSet;
 
 /**
  * This class defines imap store command request from client.
@@ -34,6 +35,17 @@ public class StoreFlagsCommand extends ImapRequestAdapter {
      */
     public StoreFlagsCommand(@Nonnull final MessageSet[] msgsets, @Nonnull final Flags flags, final boolean set) {
         this(MessageSet.toString(msgsets), flags, set);
+    }
+
+    /**
+     * Initializes a @{code StoreFlagsCommand} with the MessageNumberSet array.
+     *
+     * @param msgsets the set of message set
+     * @param flags the flags to be stored
+     * @param set true if the specified flags are to be set, false to clear them
+     */
+    public StoreFlagsCommand(@Nonnull final MessageNumberSet[] msgsets, @Nonnull final Flags flags, final boolean set) {
+        this(MessageNumberSet.toString(msgsets), flags, set);
     }
 
     /**
@@ -77,5 +89,10 @@ public class StoreFlagsCommand extends ImapRequestAdapter {
                 .append(ImapClientConstants.CRLF);
 
         return sb.toString();
+    }
+
+    @Override
+    public ImapCommandType getCommandType() {
+        return ImapCommandType.STORE_FLAGS;
     }
 }

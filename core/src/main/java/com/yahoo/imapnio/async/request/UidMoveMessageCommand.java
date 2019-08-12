@@ -3,6 +3,7 @@ package com.yahoo.imapnio.async.request;
 import javax.annotation.Nonnull;
 
 import com.sun.mail.imap.protocol.UIDSet;
+import com.yahoo.imapnio.async.data.MessageNumberSet;
 
 /**
  * This class defines imap move command request from client.
@@ -23,12 +24,17 @@ public class UidMoveMessageCommand extends AbstractMessageActionCommand {
     }
 
     /**
-     * Initializes a @{code UidMoveMessageCommand} with the message sequence syntax.
+     * Initializes a @{code UidMoveMessageCommand} with the @{code MessageNumberSet} array.
      *
-     * @param uids the string representing UID based on RFC3501
+     * @param msgsets the set of @{code MessageNumberSet}
      * @param targetFolder the targetFolder to be stored
      */
-    public UidMoveMessageCommand(@Nonnull final String uids, @Nonnull final String targetFolder) {
-        super(MOVE, true, uids, targetFolder);
+    public UidMoveMessageCommand(@Nonnull final MessageNumberSet[] msgsets, @Nonnull final String targetFolder) {
+        super(MOVE, true, msgsets, targetFolder);
+    }
+
+    @Override
+    public ImapCommandType getCommandType() {
+        return ImapCommandType.UID_MOVE_MESSAGE;
     }
 }

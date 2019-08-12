@@ -4,6 +4,7 @@ import javax.annotation.Nonnull;
 import javax.mail.Flags;
 
 import com.sun.mail.imap.protocol.UIDSet;
+import com.yahoo.imapnio.async.data.MessageNumberSet;
 
 /**
  * This class defines IMAP UID store command request from client.
@@ -37,6 +38,17 @@ public class UidStoreFlagsCommand extends ImapRequestAdapter {
     }
 
     /**
+     * Initializes a @{code UidStoreFlagsCommand} with the MessageNumberSet array.
+     *
+     * @param uidsets the set of uid set
+     * @param flags the flags to be stored
+     * @param set true if the specified flags are to be set, false to clear them
+     */
+    public UidStoreFlagsCommand(@Nonnull final MessageNumberSet[] uidsets, @Nonnull final Flags flags, final boolean set) {
+        this(MessageNumberSet.toString(uidsets), flags, set);
+    }
+
+    /**
      * Initializes a @{code UidStoreFlagsCommand} with the uid string directly.
      *
      * @param uids the messages set
@@ -65,5 +77,10 @@ public class UidStoreFlagsCommand extends ImapRequestAdapter {
                 .append(ImapClientConstants.CRLF);
 
         return sb.toString();
+    }
+
+    @Override
+    public ImapCommandType getCommandType() {
+        return ImapCommandType.UID_STORE_FLAGS;
     }
 }

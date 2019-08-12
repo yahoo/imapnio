@@ -21,9 +21,10 @@ import com.sun.mail.imap.protocol.Status;
 import com.yahoo.imapnio.async.data.Capability;
 import com.yahoo.imapnio.async.data.IdResult;
 import com.yahoo.imapnio.async.data.ListInfoList;
+import com.yahoo.imapnio.async.data.SearchResult;
+import com.yahoo.imapnio.async.data.UidSearchResult;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException.FailureType;
-import com.yahoo.imapnio.async.response.ImapResponseMapper;
 
 /**
  * Unit test for {@code ImapResponseMapper}.
@@ -209,7 +210,10 @@ public class ImapResponseMapperTest {
     @Test
     public void testParseAppendUidSuccess() throws IOException, ProtocolException, ImapAsyncClientException {
         final ImapResponseMapper mapper = new ImapResponseMapper();
-        final IMAPResponse[] content = { new IMAPResponse("a5 OK [APPENDUID 1459808247 150399] APPEND completed") };
+        final IMAPResponse[] content = new IMAPResponse[3];
+        content[0] = new IMAPResponse("+ Ready for literal data");
+        content[1] = new IMAPResponse("* 3 EXISTS");
+        content[2] = new IMAPResponse("a5 OK [APPENDUID 1459808247 150399] APPEND completed");
         final AppendUID appendUid = mapper.readValue(content, AppendUID.class);
 
         // verify the result
@@ -590,6 +594,7 @@ public class ImapResponseMapperTest {
         Assert.assertNotNull(cause, "cause mismatched.");
         Assert.assertEquals(cause.getFaiureType(), FailureType.UNKNOWN_PARSE_RESULT_TYPE, "Failure type mismatched.");
     }
+
     /**
      * Tests parseStatus method with not OK response.
      *
@@ -855,5 +860,104 @@ public class ImapResponseMapperTest {
         Assert.assertNotNull(id, "id mismatched.");
         Assert.assertTrue(id.hasKey("name"), "name should be present.");
         Assert.assertEquals(id.getValue("name"), "Cyrus", "name value mismatched.");
+    }
+
+    /**
+     * Tests parseToSearchResult method successfully.
+     *
+     * @throws IOException will not throw
+     * @throws ProtocolException will not throw
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testParseToSearchResultOK() throws IOException, ProtocolException, ImapAsyncClientException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final IMAPResponse[] content = new IMAPResponse[2];
+        content[0] = new IMAPResponse("* SEARCH 82 84 86 88 89 91 92 93\r\n");
+        content[1] = new IMAPResponse("a3 OK SEARCH completed (Success)\r\n");
+
+        final SearchResult result = mapper.readValue(content, SearchResult.class);
+
+        // verify the result
+        Assert.assertNotNull(result, "result mismatched.");
+        final List<Integer> list = result.getMessageSequence();
+        Assert.assertNotNull(list, "getMessageSequence() mismatched.");
+        Assert.assertEquals(list.size(), 8, "getMessageSequence() mismatched.");
+        Assert.assertEquals(list.get(0), Integer.valueOf(82), "getMessageSequence() mismatched.");
+        Assert.assertEquals(list.get(1), Integer.valueOf(84), "getMessageSequence() mismatched.");
+        Assert.assertEquals(list.get(2), Integer.valueOf(86), "getMessageSequence() mismatched.");
+        Assert.assertEquals(list.get(3), Integer.valueOf(88), "getMessageSequence() mismatched.");
+        Assert.assertEquals(list.get(4), Integer.valueOf(89), "getMessageSequence() mismatched.");
+        Assert.assertEquals(list.get(5), Integer.valueOf(91), "getMessageSequence() mismatched.");
+        Assert.assertEquals(list.get(6), Integer.valueOf(92), "getMessageSequence() mismatched.");
+        Assert.assertEquals(list.get(7), Integer.valueOf(93), "getMessageSequence() mismatched.");
+    }
+
+    /**
+     * Tests parseToSearchResult method successfully.
+     *
+     * @throws IOException will not throw
+     * @throws ProtocolException will not throw
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testParseToSearchResultNotOK() throws IOException, ProtocolException, ImapAsyncClientException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final IMAPResponse[] content = new IMAPResponse[1];
+        content[0] = new IMAPResponse("a3 BAD SEARCH completed (Failure)\r\n");
+
+        final SearchResult result = mapper.readValue(content, SearchResult.class);
+
+        // verify the result
+        Assert.assertNotNull(result, "result mismatched.");
+        final List<Integer> list = result.getMessageSequence();
+        Assert.assertNull(list, "getMessageSequence() mismatched.");
+    }
+
+    /**
+     * Tests parseToUidSearchResult method successfully.
+     *
+     * @throws IOException will not throw
+     * @throws ProtocolException will not throw
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testParseToUidSearchResultOK() throws IOException, ProtocolException, ImapAsyncClientException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final IMAPResponse[] content = new IMAPResponse[2];
+        content[0] = new IMAPResponse("* SEARCH 150404 150406 150407\r\n");
+        content[1] = new IMAPResponse("a3 OK UID SEARCH completed\r\n");
+
+        final UidSearchResult result = mapper.readValue(content, UidSearchResult.class);
+
+        // verify the result
+        Assert.assertNotNull(result, "result mismatched.");
+        final List<Long> list = result.getUids();
+        Assert.assertNotNull(list, "getMessageSequence() mismatched.");
+        Assert.assertEquals(list.size(), 3, "getMessageSequence() mismatched.");
+        Assert.assertEquals(list.get(0), Long.valueOf(150404), "getMessageSequence() mismatched.");
+        Assert.assertEquals(list.get(1), Long.valueOf(150406), "getMessageSequence() mismatched.");
+        Assert.assertEquals(list.get(2), Long.valueOf(150407), "getMessageSequence() mismatched.");
+    }
+
+    /**
+     * Tests parseToUidSearchResult method successfully.
+     *
+     * @throws IOException will not throw
+     * @throws ProtocolException will not throw
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testParseToUidSearchResultNotOK() throws IOException, ProtocolException, ImapAsyncClientException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final IMAPResponse[] content = new IMAPResponse[1];
+        content[0] = new IMAPResponse("a3 BAD SEARCH completed (Failure)\r\n");
+
+        final UidSearchResult result = mapper.readValue(content, UidSearchResult.class);
+
+        // verify the result
+        Assert.assertNotNull(result, "result mismatched.");
+        final List<Long> list = result.getUids();
+        Assert.assertNull(list, "getMessageSequence() mismatched.");
     }
 }

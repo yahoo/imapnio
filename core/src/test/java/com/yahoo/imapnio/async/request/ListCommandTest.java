@@ -15,7 +15,6 @@ import org.testng.annotations.Test;
 import com.sun.mail.imap.protocol.IMAPResponse;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 
-
 /**
  * Unit test for {@code ListCommand}.
  */
@@ -127,5 +126,14 @@ public class ListCommandTest {
         Assert.assertNotNull(ex, "Expect exception to be thrown.");
         Assert.assertEquals(ex.getFaiureType(), ImapAsyncClientException.FailureType.OPERATION_NOT_SUPPORTED_FOR_COMMAND,
                 "Expected result mismatched.");
+    }
+
+    /**
+     * Tests getCommandType method.
+     */
+    @Test
+    public void testGetCommandType() {
+        final ImapRequest cmd = new ListCommand("", "*test*");
+        Assert.assertSame(cmd.getCommandType(), ImapCommandType.LIST);
     }
 }

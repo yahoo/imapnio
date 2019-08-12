@@ -66,4 +66,9 @@ public class IdleCommand implements ImapRequest<String> {
     public String getTerminateCommandLine() {
         return new StringBuilder(LINE_LEN).append(DONE).append(ImapClientConstants.CRLF).toString();
     }
+
+    @Override
+    public ImapCommandType getCommandType() {
+        return ImapCommandType.IDLE;
+    }
 }

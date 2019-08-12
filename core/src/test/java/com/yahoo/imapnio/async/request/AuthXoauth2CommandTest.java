@@ -158,4 +158,17 @@ public class AuthXoauth2CommandTest {
         Assert.assertEquals(ex.getFaiureType(), ImapAsyncClientException.FailureType.OPERATION_NOT_SUPPORTED_FOR_COMMAND,
                 "Expected result mismatched.");
     }
+
+    /**
+     * Tests getCommandType method.
+     */
+    @Test
+    public void testGetCommandType() {
+        final String username = "tesla";
+        final String token = "selfdriving";
+        final Map<String, List<String>> capas = new HashMap<String, List<String>>();
+        capas.put(ImapClientConstants.SASL_IR, Arrays.asList(ImapClientConstants.SASL_IR));
+        final ImapRequest cmd = new AuthXoauth2Command(username, token, new Capability(capas));
+        Assert.assertSame(cmd.getCommandType(), ImapCommandType.AUTH_XOAUTH2);
+    }
 }
