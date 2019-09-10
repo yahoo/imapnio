@@ -12,11 +12,9 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import com.sun.mail.imap.protocol.MessageSet;
 import com.sun.mail.imap.protocol.UIDSet;
+import com.yahoo.imapnio.async.data.MessageNumberSet;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
-import com.yahoo.imapnio.async.request.ImapRequest;
-import com.yahoo.imapnio.async.request.UidMoveMessageCommand;
 
 /**
  * Unit test for {@code UidMoveMessageCommand}.
@@ -94,4 +92,36 @@ public class UidMoveMessageCommandTest {
         }
     }
 
+    /**
+     * Tests the constructor with @{MessageNumberSet} and getCommandLine method.
+     *
+     * @throws ImapAsyncClientException will not throw
+     * @throws SearchException will not throw
+     * @throws IOException will not throw
+     * @throws IllegalAccessException will not throw
+     * @throws IllegalArgumentException will not throw
+     */
+    @Test
+    public void testConstructorMessageNumberSetGetCommandLine()
+            throws IOException, ImapAsyncClientException, SearchException, IllegalArgumentException, IllegalAccessException {
+        final String folderName = "folderABC";
+        final MessageNumberSet[] mset = MessageNumberSet.createMessageNumberSets(new long[] { 37850L, 37851L, 37852L });
+        final ImapRequest cmd = new UidMoveMessageCommand(mset, folderName);
+        Assert.assertEquals(cmd.getCommandLine(), "UID MOVE 37850:37852 folderABC\r\n", "Expected result mismatched.");
+
+        cmd.cleanup();
+        // Verify if cleanup happened correctly.
+        for (final Field field : fieldsToCheck) {
+            Assert.assertNull(field.get(cmd), "Cleanup should set " + field.getName() + " as null");
+        }
+    }
+
+    /**
+     * Tests getCommandType method.
+     */
+    @Test
+    public void testGetCommandType() {
+        final ImapRequest cmd = new UidMoveMessageCommand("37850:37852", "targetFolder");
+        Assert.assertSame(cmd.getCommandType(), ImapCommandType.UID_MOVE_MESSAGE);
+    }
 }

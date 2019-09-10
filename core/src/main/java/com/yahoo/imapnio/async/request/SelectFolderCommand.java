@@ -18,4 +18,9 @@ public class SelectFolderCommand extends AbstractFolderActionCommand {
     public SelectFolderCommand(@Nonnull final String folderName) {
         super(SELECT, folderName);
     }
+
+    @Override
+    public ImapCommandType getCommandType() {
+        return ImapCommandType.SELECT_FOLDER;
+    }
 }

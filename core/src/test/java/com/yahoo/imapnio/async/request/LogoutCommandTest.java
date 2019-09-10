@@ -13,8 +13,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
-import com.yahoo.imapnio.async.request.ImapRequest;
-import com.yahoo.imapnio.async.request.LogoutCommand;
 
 /**
  * Unit test for {@code LogoutCommand}.
@@ -63,4 +61,12 @@ public class LogoutCommandTest {
         }
     }
 
+    /**
+     * Tests getCommandType method.
+     */
+    @Test
+    public void testGetCommandType() {
+        final ImapRequest cmd = new LogoutCommand();
+        Assert.assertSame(cmd.getCommandType(), ImapCommandType.LOGOUT);
+    }
 }

@@ -8,7 +8,7 @@ import javax.mail.Flags;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import com.yahoo.imapnio.async.request.ImapArgumentFormatter;
+import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 
 /**
  * Unit test for {@code ImapArgumentFormatter}.
@@ -19,9 +19,10 @@ public class ImapArgumentFormatterTest {
      * Tests when source string has space.
      *
      * @throws IOException will not throw
+     * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testSourceNoQuoteNeeded() throws IOException {
+    public void testSourceNoQuoteNeeded() throws IOException, ImapAsyncClientException {
         final ImapArgumentFormatter writer = new ImapArgumentFormatter();
         final String src = "Bulk";
         final StringBuilder out = new StringBuilder();
@@ -34,9 +35,10 @@ public class ImapArgumentFormatterTest {
      * Tests when source string has CR or LF or \0 or special chars(>127).
      *
      * @throws IOException will not throw
+     * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testSourceAsItIs() throws IOException {
+    public void testSourceAsItIs() throws IOException, ImapAsyncClientException {
         // \r
         {
             final ImapArgumentFormatter writer = new ImapArgumentFormatter();
@@ -74,8 +76,14 @@ public class ImapArgumentFormatterTest {
             final String src = Character.toString(c);
             final StringBuilder out = new StringBuilder();
             final boolean doQuote = false;
-            writer.formatArgument(src, out, doQuote);
-            Assert.assertEquals(out.toString(), "Ω", "Encoded result mismatched.");
+            ImapAsyncClientException actual = null;
+            try {
+                writer.formatArgument(src, out, doQuote);
+            } catch (final ImapAsyncClientException e) {
+                actual = e;
+            }
+            Assert.assertNotNull(actual, "Should throw exception");
+            Assert.assertEquals(actual.getFaiureType(), ImapAsyncClientException.FailureType.INVALID_INPUT, "Should throw exception");
         }
     }
 
@@ -83,9 +91,10 @@ public class ImapArgumentFormatterTest {
      * Tests when source string has character that needs to be double quoted.
      *
      * @throws IOException will not throw
+     * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testSourceNeedsQuote() throws IOException {
+    public void testSourceNeedsQuote() throws IOException, ImapAsyncClientException {
         // if (b == '*' || b == '%' || b == '(' || b == ')' || b == '{' || b == '"' || b == '\\' || ((b & 0xff) <= ' ')) {
         final ImapArgumentFormatter writer = new ImapArgumentFormatter();
         final boolean doQuote = false;
@@ -143,9 +152,10 @@ public class ImapArgumentFormatterTest {
      * Tests when source has NIL literal.
      *
      * @throws IOException will not throw
+     * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testHasLiteralNIL() throws IOException {
+    public void testHasLiteralNIL() throws IOException, ImapAsyncClientException {
         final ImapArgumentFormatter writer = new ImapArgumentFormatter();
         final boolean doQuote = false;
         {

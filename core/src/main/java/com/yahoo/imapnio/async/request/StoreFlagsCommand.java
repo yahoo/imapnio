@@ -3,79 +3,52 @@ package com.yahoo.imapnio.async.request;
 import javax.annotation.Nonnull;
 import javax.mail.Flags;
 
-import com.sun.mail.imap.protocol.MessageSet;
+import com.yahoo.imapnio.async.data.MessageNumberSet;
 
 /**
  * This class defines imap store command request from client.
  */
-public class StoreFlagsCommand extends ImapRequestAdapter {
-
-    /** Literal for STORE. */
-    private static final String STORE_SP = "STORE ";
-
-    /** Literal for FLAGS. */
-    private static final String FLAGS_SP = "FLAGS ";
-
-    /** A collection of messages id specified based on RFC3501 syntax. */
-    private String msgIds;
-
-    /** Messages flags. */
-    private Flags flags;
-
-    /** Flag to indicate whether to add or remove existing. */
-    private final boolean isSet;
+public class StoreFlagsCommand extends AbstractStoreFlagsCommand {
 
     /**
-     * Initializes a @{code StoreFlagsCommand} with the MessageSet array.
+     * Initializes a @{code StoreFlagsCommand} with the MessageNumberSet array, Flags and action.Requests server to return the new value.
      *
      * @param msgsets the set of message set
      * @param flags the flags to be stored
-     * @param set true if the specified flags are to be set, false to clear them
+     * @param action whether to replace, add or remove the flags
      */
-    public StoreFlagsCommand(@Nonnull final MessageSet[] msgsets, @Nonnull final Flags flags, final boolean set) {
-        this(MessageSet.toString(msgsets), flags, set);
+    public StoreFlagsCommand(@Nonnull final MessageNumberSet[] msgsets, @Nonnull final Flags flags, @Nonnull final FlagsAction action) {
+        super(false, msgsets, flags, action, false);
     }
 
     /**
-     * Initializes a @{code StoreFlagsCommand} with the start and end message sequence.
+     * Initializes a @{code StoreFlagsCommand} with the MessageNumberSet array and flags.
      *
-     * @param start the starting message sequence
-     * @param end the ending message sequence
+     * @param msgsets the set of message set
      * @param flags the flags to be stored
-     * @param set true if the specified flags are to be set, false to clear them
+     * @param action whether to replace, add or remove the flags
+     * @param silent true if asking server to respond silently
      */
-    public StoreFlagsCommand(final int start, final int end, @Nonnull final Flags flags, final boolean set) {
-        this(new StringBuilder(String.valueOf(start)).append(ImapClientConstants.COLON).append(String.valueOf(end)).toString(), flags, set);
+    public StoreFlagsCommand(@Nonnull final MessageNumberSet[] msgsets, @Nonnull final Flags flags, @Nonnull final FlagsAction action,
+            final boolean silent) {
+        super(false, msgsets, flags, action, silent);
     }
 
     /**
-     * Initializes a @{code StoreFlagsCommand} with the msg string directly.
+     * Initializes a @{code StoreFlagsCommand} with string form message numbers, Flags, action, flag whether to request server to return the new
+     * value.
      *
-     * @param msgset the messages set
+     * @param msgNumbers the message numbers in string format
      * @param flags the flags to be stored
-     * @param set true if the specified flags are to be set, false to clear them
+     * @param action whether to replace, add or remove the flags
+     * @param silent true if asking server to respond silently; false if requesting server to return the new values
      */
-    private StoreFlagsCommand(@Nonnull final String msgset, @Nonnull final Flags flags, final boolean set) {
-        this.msgIds = msgset;
-        this.flags = flags;
-        this.isSet = set;
+    public StoreFlagsCommand(@Nonnull final String msgNumbers, @Nonnull final Flags flags, @Nonnull final FlagsAction action, final boolean silent) {
+        super(false, msgNumbers, flags, action, silent);
     }
 
     @Override
-    public void cleanup() {
-        this.msgIds = null;
-        this.flags = null;
-    }
-
-    @Override
-    public String getCommandLine() {
-        // Ex:STORE 2:4 +FLAGS (\Deleted)
-        final ImapArgumentFormatter argWriter = new ImapArgumentFormatter();
-        final StringBuilder sb = new StringBuilder(STORE_SP).append(msgIds).append(ImapClientConstants.SPACE);
-
-        sb.append(isSet ? ImapClientConstants.PLUS : ImapClientConstants.MINUS).append(FLAGS_SP).append(argWriter.buildFlagString(flags))
-                .append(ImapClientConstants.CRLF);
-
-        return sb.toString();
+    public ImapCommandType getCommandType() {
+        return ImapCommandType.STORE_FLAGS;
     }
 }

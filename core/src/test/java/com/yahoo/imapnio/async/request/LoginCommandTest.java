@@ -67,6 +67,32 @@ public class LoginCommandTest {
     }
 
     /**
+     * Tests getCommandLine method with emptry strings in both user and token.
+     *
+     * @throws ImapAsyncClientException will not throw
+     * @throws SearchException will not throw
+     * @throws IOException will not throw
+     * @throws IllegalAccessException will not throw
+     * @throws IllegalArgumentException will not throw
+     */
+    @Test
+    public void testGetCommandLineEmptyString()
+            throws IOException, ImapAsyncClientException, SearchException, IllegalArgumentException, IllegalAccessException {
+        final String username = "";
+        final String pwd = "";
+        final ImapRequest cmd = new LoginCommand(username, pwd);
+        Assert.assertEquals(cmd.getCommandLine(), "LOGIN \"\" \"\"\r\n", "Expected result mismatched.");
+        Assert.assertTrue(cmd.isCommandLineDataSensitive(), "isCommandLineDataSensitive() result mismatched.");
+        Assert.assertEquals(cmd.getDebugData(), "LOGIN FOR USER:", "Log line mismatched.");
+
+        cmd.cleanup();
+        // Verify if cleanup happened correctly.
+        for (final Field field : fieldsToCheck) {
+            Assert.assertNull(field.get(cmd), "Cleanup should set " + field.getName() + " as null");
+        }
+    }
+
+    /**
      * Tests getStreamingResponsesQueue method.
      */
     @Test
@@ -108,5 +134,14 @@ public class LoginCommandTest {
         Assert.assertNotNull(ex, "Expect exception to be thrown.");
         Assert.assertEquals(ex.getFaiureType(), ImapAsyncClientException.FailureType.OPERATION_NOT_SUPPORTED_FOR_COMMAND,
                 "Expected result mismatched.");
+    }
+
+    /**
+     * Tests getCommandType method.
+     */
+    @Test
+    public void testGetCommandType() {
+        final ImapRequest cmd = new LoginCommand("neighbor", "hood");
+        Assert.assertSame(cmd.getCommandType(), ImapCommandType.LOGIN);
     }
 }

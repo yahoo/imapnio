@@ -1,13 +1,22 @@
 package com.yahoo.imapnio.async.request;
 
+import java.nio.charset.StandardCharsets;
+
 import javax.annotation.Nonnull;
 
 import com.sun.mail.imap.protocol.BASE64MailboxEncoder;
+import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 
 /**
  * This class defines imap selecct command request from client.
  */
 abstract class AbstractQueryFoldersCommand extends ImapRequestAdapter {
+
+    /** Byte array for CR and LF, keeping the array local so it cannot be modified by others. */
+    private static final byte[] CRLF_B = { '\r', '\n' };
 
     /** The Command. */
     private String op;
@@ -39,7 +48,7 @@ abstract class AbstractQueryFoldersCommand extends ImapRequestAdapter {
     }
 
     @Override
-    public String getCommandLine() {
+    public ByteBuf getCommandLineBytes() throws ImapAsyncClientException {
         // Ex:LIST /usr/staff/jones ""
 
         // encode the arguments as per RFC2060
@@ -47,16 +56,17 @@ abstract class AbstractQueryFoldersCommand extends ImapRequestAdapter {
         final String pat64 = BASE64MailboxEncoder.encode(pattern);
 
         final int len = 2 * ref64.length() + 2 * pat64.length() + ImapClientConstants.PAD_LEN;
-        final StringBuilder sb = new StringBuilder(len).append(op);
-        sb.append(ImapClientConstants.SPACE);
+        final ByteBuf sb = Unpooled.buffer(len);
+        sb.writeBytes(op.getBytes(StandardCharsets.US_ASCII));
+        sb.writeByte(ImapClientConstants.SPACE);
 
         final ImapArgumentFormatter formatter = new ImapArgumentFormatter();
-        formatter.formatArgument(ref64, sb, false);
-        sb.append(ImapClientConstants.SPACE);
+        formatter.formatArgument(ref64, sb, false); // already base64 encoded so can be formatted and write to sb
+        sb.writeByte(ImapClientConstants.SPACE);
 
         formatter.formatArgument(pat64, sb, false);
-        sb.append(ImapClientConstants.CRLF);
+        sb.writeBytes(CRLF_B); // already base64 encoded so can be formatted and write to sb
 
-        return sb.toString();
+        return sb;
     }
 }

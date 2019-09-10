@@ -14,4 +14,9 @@ public class NoopCommand extends AbstractNoArgsCommand {
     public NoopCommand() {
         super(NOOP);
     }
+
+    @Override
+    public ImapCommandType getCommandType() {
+        return ImapCommandType.NOOP;
+    }
 }

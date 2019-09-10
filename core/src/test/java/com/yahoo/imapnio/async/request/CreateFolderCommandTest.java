@@ -13,8 +13,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
-import com.yahoo.imapnio.async.request.CreateFolderCommand;
-import com.yahoo.imapnio.async.request.ImapRequest;
 
 /**
  * Unit test for {@code CreateFolderCommand}.
@@ -92,5 +90,14 @@ public class CreateFolderCommandTest {
         final String folderName = "测试";
         final ImapRequest cmd = new CreateFolderCommand(folderName);
         Assert.assertEquals(cmd.getCommandLine(), CREATE + "&bUuL1Q-\r\n", "Expected result mismatched.");
+    }
+
+    /**
+     * Tests getCommandType method.
+     */
+    @Test
+    public void testGetCommandType() {
+        final ImapRequest cmd = new CreateFolderCommand("folderToBeCreated");
+        Assert.assertSame(cmd.getCommandType(), ImapCommandType.CREATE_FOLDER);
     }
 }

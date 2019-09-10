@@ -14,4 +14,9 @@ public class CapaCommand extends AbstractNoArgsCommand {
     public CapaCommand() {
         super(CAPABILITY);
     }
+
+    @Override
+    public ImapCommandType getCommandType() {
+        return ImapCommandType.CAPABILITY;
+    }
 }

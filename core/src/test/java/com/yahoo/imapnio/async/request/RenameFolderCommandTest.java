@@ -13,9 +13,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
-import com.yahoo.imapnio.async.request.ImapRequest;
-import com.yahoo.imapnio.async.request.RenameFolderCommand;
-
 
 /**
  * Unit test for {@code RenameFolderCommand}.
@@ -96,5 +93,14 @@ public class RenameFolderCommandTest {
         final String newName = "folderDEF";
         final ImapRequest cmd = new RenameFolderCommand(oldName, newName);
         Assert.assertEquals(cmd.getCommandLine(), RENAME + "&bUuL1Q- folderDEF\r\n", "Expected result mismatched.");
+    }
+
+    /**
+     * Tests getCommandType method.
+     */
+    @Test
+    public void testGetCommandType() {
+        final ImapRequest cmd = new RenameFolderCommand("oldName", "newName");
+        Assert.assertSame(cmd.getCommandType(), ImapCommandType.RENAME_FOLDER);
     }
 }

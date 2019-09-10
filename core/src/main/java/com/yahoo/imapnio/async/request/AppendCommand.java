@@ -18,9 +18,15 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 
 /**
- * This class defines imap append command request from client.
+ * This class defines IMAP append command request from client.
  */
-public class AppendCommand implements ImapRequest<ByteBuf> {
+public class AppendCommand implements ImapRequest {
+
+    /** Byte array for CR and LF, keeping the array local so it cannot be modified by others. */
+    private static final byte[] CRLF_B = { '\r', '\n' };
+
+    /** Maximum length of data that can be sent in alternate literal form when LITERAL- is supported. */
+    private static final int MAX_LITERAL_MINUS_DATA_LEN = 4096;
 
     /** Literal for append. */
     private static final String APPEND_SP = "APPEND ";
@@ -37,6 +43,9 @@ public class AppendCommand implements ImapRequest<ByteBuf> {
     /** The message data. */
     private byte[] data;
 
+    /** Whether to enable Literal support option. */
+    private LiteralSupport literalOpt;
+
     /**
      * Initializes an append command for client.
      *
@@ -47,10 +56,25 @@ public class AppendCommand implements ImapRequest<ByteBuf> {
      */
     public AppendCommand(@Nonnull final String folderName, @Nullable final Flags imapFlags, @Nullable final Date internalDate,
             @Nonnull final byte[] data) {
+        this(folderName, imapFlags, internalDate, data, LiteralSupport.DISABLE);
+    }
+
+    /**
+     * Initializes an append command for client.
+     *
+     * @param folderName the folder to which the message must be appended
+     * @param imapFlags the flags for the message
+     * @param internalDate the internal date associated with the message
+     * @param data the message data
+     * @param literalOpt literal support option
+     */
+    public AppendCommand(@Nonnull final String folderName, @Nullable final Flags imapFlags, @Nullable final Date internalDate,
+            @Nonnull final byte[] data, @Nonnull final LiteralSupport literalOpt) {
         this.folderName = folderName;
         this.flags = imapFlags;
         this.date = internalDate;
         this.data = data;
+        this.literalOpt = literalOpt;
     }
 
     @Override
@@ -59,6 +83,7 @@ public class AppendCommand implements ImapRequest<ByteBuf> {
         this.flags = null;
         this.date = null;
         this.data = null;
+        this.literalOpt = null;
     }
 
     @Override
@@ -67,36 +92,57 @@ public class AppendCommand implements ImapRequest<ByteBuf> {
     }
 
     @Override
-    public String getCommandLine() {
+    public ByteBuf getCommandLineBytes() throws ImapAsyncClientException {
         // Ex: APPEND saved-messages (\Seen) {310}
         // encode the folder name as per RFC2060
-        final String folder = BASE64MailboxEncoder.encode(folderName);
-        final int len = 2 * folder.length() + ImapClientConstants.PAD_LEN;
+        final String base64Folder = BASE64MailboxEncoder.encode(folderName);
+        final int len = 2 * base64Folder.length() + ImapClientConstants.PAD_LEN;
 
-        final StringBuilder sb = new StringBuilder(len).append(APPEND_SP);
+        final ByteBuf buf = Unpooled.buffer(len);
+        buf.writeBytes(APPEND_SP.getBytes(StandardCharsets.US_ASCII));
 
         // folder
         final ImapArgumentFormatter argWriter = new ImapArgumentFormatter();
-        argWriter.formatArgument(folder, sb, false);
-        sb.append(ImapClientConstants.SPACE);
+        argWriter.formatArgument(base64Folder, buf, false); // already base64 encoded so can be formatted and write to buf
+        buf.writeByte(ImapClientConstants.SPACE);
 
         // flags
         if (flags != null) { // set Flags in appended message
-            sb.append(argWriter.buildFlagString(flags));
-            sb.append(ImapClientConstants.SPACE);
+            buf.writeBytes(argWriter.buildFlagString(flags).getBytes(StandardCharsets.US_ASCII));
+            buf.writeByte(ImapClientConstants.SPACE);
         }
 
         // date
         if (date != null) {
-            argWriter.formatArgument(INTERNALDATE.format(date), sb, false);
-            sb.append(ImapClientConstants.SPACE);
+            argWriter.formatArgument(INTERNALDATE.format(date), buf, false);
+            buf.writeByte(ImapClientConstants.SPACE);
         }
 
         // length of the literal
-        sb.append('{').append(Integer.toString(data.length)).append('}');
-        sb.append(ImapClientConstants.CRLF);
-        return sb.toString();
+        final boolean isLiteralPlus = (literalOpt == LiteralSupport.ENABLE_LITERAL_PLUS);
+        final boolean isLiteralMinus = (literalOpt == LiteralSupport.ENABLE_LITERAL_MINUS && data.length < MAX_LITERAL_MINUS_DATA_LEN);
 
+        buf.writeByte('{');
+        buf.writeBytes(Integer.toString(data.length).getBytes(StandardCharsets.US_ASCII));
+        if (isLiteralPlus) {
+            buf.writeByte('+');
+        } else if (isLiteralMinus) {
+            buf.writeByte('-');
+        }
+        buf.writeByte('}');
+        buf.writeBytes(CRLF_B);
+
+        // decide to send literal
+        if (isLiteralPlus || isLiteralMinus) {
+            buf.writeBytes(buildDataByteBuf());
+        }
+        return buf;
+
+    }
+
+    @Override
+    public String getCommandLine() throws ImapAsyncClientException {
+        return getCommandLineBytes().toString(StandardCharsets.UTF_8);
     }
 
     @Override
@@ -109,20 +155,36 @@ public class AppendCommand implements ImapRequest<ByteBuf> {
         return null;
     }
 
-    @Override
-    public ByteBuf getNextCommandLineAfterContinuation(@Nonnull final IMAPResponse serverResponse) {
+    /**
+     * @return the byte buffer for the literal data
+     */
+    private ByteBuf buildDataByteBuf() {
         // Note: we obtain only binary from client, therefore need to write binary directly to retain the correct charset encoding, CANNOT convert it
         // to String since we do not know the charset.
         final int length = data.length + ImapClientConstants.CRLFLEN;
         final ByteBuf buffer = Unpooled.buffer(length);
         buffer.writeBytes(data);
-        buffer.writeBytes(ImapClientConstants.CRLF.getBytes(StandardCharsets.US_ASCII)); // CRLF is 10 and 13, < 128, so either ASCII or UTF-8 is fine
+        buffer.writeBytes(CRLF_B); // CRLF is 10 and 13, < 128, so either ASCII or UTF-8 is fine
         return buffer;
     }
 
     @Override
-    public String getTerminateCommandLine() throws ImapAsyncClientException {
+    public ByteBuf getNextCommandLineAfterContinuation(@Nonnull final IMAPResponse serverResponse) throws ImapAsyncClientException {
+        if (literalOpt == LiteralSupport.ENABLE_LITERAL_PLUS
+                || (literalOpt == LiteralSupport.ENABLE_LITERAL_MINUS && data.length < MAX_LITERAL_MINUS_DATA_LEN)) {
+            // should not reach here, since if LITERAL+ or LITERAL- is requested, server should not ask for next line
+            throw new ImapAsyncClientException(FailureType.OPERATION_NOT_SUPPORTED_FOR_COMMAND);
+        }
+        return buildDataByteBuf();
+    }
+
+    @Override
+    public ByteBuf getTerminateCommandLine() throws ImapAsyncClientException {
         throw new ImapAsyncClientException(FailureType.OPERATION_NOT_SUPPORTED_FOR_COMMAND);
     }
 
+    @Override
+    public ImapCommandType getCommandType() {
+        return ImapCommandType.APPEND_MESSAGE;
+    }
 }

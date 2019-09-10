@@ -115,7 +115,7 @@ public class ImapAsyncSessionImplTest {
         // execute Authenticate plain command
         {
             final Map<String, List<String>> capas = new HashMap<String, List<String>>();
-            final ImapRequest<String> cmd = new AuthPlainCommand("orange", "juicy", new Capability(capas));
+            final ImapRequest cmd = new AuthPlainCommand("orange", "juicy", new Capability(capas));
             final ImapFuture<ImapAsyncResponse> future = aSession.execute(cmd);
             Mockito.verify(authWritePromise, Mockito.times(1)).addListener(Mockito.any(ImapAsyncSessionImpl.class));
             Mockito.verify(channel, Mockito.times(1)).writeAndFlush(Mockito.anyString(), Mockito.isA(ChannelPromise.class));
@@ -156,7 +156,7 @@ public class ImapAsyncSessionImplTest {
             Mockito.when(logger.isDebugEnabled()).thenReturn(true);
             aSession.setDebugMode(DebugMode.DEBUG_ON);
             // execute capa
-            final ImapRequest<String> cmd = new CapaCommand();
+            final ImapRequest cmd = new CapaCommand();
             final ImapFuture<ImapAsyncResponse> future = aSession.execute(cmd);
 
             Mockito.verify(capaWritePromise, Mockito.times(1)).addListener(Mockito.any(ImapAsyncSessionImpl.class));
@@ -263,7 +263,7 @@ public class ImapAsyncSessionImplTest {
         // execute Authenticate plain command
         {
             final Map<String, List<String>> capas = new HashMap<String, List<String>>();
-            final ImapRequest<String> cmd = new AuthPlainCommand("orange", "juicy", new Capability(capas));
+            final ImapRequest cmd = new AuthPlainCommand("orange", "juicy", new Capability(capas));
             final ImapFuture<ImapAsyncResponse> future = aSession.execute(cmd);
             Mockito.verify(authWritePromise, Mockito.times(1)).addListener(Mockito.any(ImapAsyncSessionImpl.class));
             Mockito.verify(channel, Mockito.times(1)).writeAndFlush(Mockito.anyString(), Mockito.isA(ChannelPromise.class));
@@ -385,7 +385,7 @@ public class ImapAsyncSessionImplTest {
         // execute Authenticate plain command
         {
             final Map<String, List<String>> capas = new HashMap<String, List<String>>();
-            final ImapRequest<String> cmd = new AuthPlainCommand("orange", "juicy", new Capability(capas));
+            final ImapRequest cmd = new AuthPlainCommand("orange", "juicy", new Capability(capas));
             final ImapFuture<ImapAsyncResponse> future = aSession.execute(cmd);
             Mockito.verify(authWritePromise, Mockito.times(1)).addListener(Mockito.any(ImapAsyncSessionImpl.class));
             Mockito.verify(channel, Mockito.times(1)).writeAndFlush(Mockito.anyString(), Mockito.isA(ChannelPromise.class));
@@ -507,7 +507,7 @@ public class ImapAsyncSessionImplTest {
         // execute Authenticate plain command
         {
             final Map<String, List<String>> capas = new HashMap<String, List<String>>();
-            final ImapRequest<String> cmd = new AuthPlainCommand("orange", "juicy", new Capability(capas));
+            final ImapRequest cmd = new AuthPlainCommand("orange", "juicy", new Capability(capas));
             final ImapFuture<ImapAsyncResponse> future = aSession.execute(cmd);
             Mockito.verify(authWritePromise, Mockito.times(1)).addListener(Mockito.any(ImapAsyncSessionImpl.class));
             Mockito.verify(channel, Mockito.times(1)).writeAndFlush(Mockito.anyString(), Mockito.isA(ChannelPromise.class));
@@ -622,7 +622,7 @@ public class ImapAsyncSessionImplTest {
         final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline);
 
         // execute
-        final ImapRequest<String> cmd = new CapaCommand();
+        final ImapRequest cmd = new CapaCommand();
         final ImapFuture<ImapAsyncResponse> future = aSession.execute(cmd);
 
         final IdleStateEvent idleEvent = null;
@@ -708,7 +708,7 @@ public class ImapAsyncSessionImplTest {
         final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline);
 
         // execute
-        final ImapRequest<String> cmd = new CapaCommand();
+        final ImapRequest cmd = new CapaCommand();
         final ImapFuture<ImapAsyncResponse> future = aSession.execute(cmd);
 
         Mockito.verify(writePromise, Mockito.times(1)).addListener(Mockito.any(ImapAsyncSessionImpl.class));
@@ -806,7 +806,7 @@ public class ImapAsyncSessionImplTest {
         final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline);
 
         // execute
-        final ImapRequest<String> cmd = new CapaCommand();
+        final ImapRequest cmd = new CapaCommand();
         final ImapFuture<ImapAsyncResponse> future = aSession.execute(cmd);
 
         Mockito.verify(writePromise, Mockito.times(1)).addListener(Mockito.any(ImapAsyncSessionImpl.class));
@@ -879,7 +879,7 @@ public class ImapAsyncSessionImplTest {
 
         // execute
         final ConcurrentLinkedQueue<IMAPResponse> serverResponesQ = new ConcurrentLinkedQueue<IMAPResponse>();
-        final ImapRequest<String> cmd = new IdleCommand(serverResponesQ);
+        final ImapRequest cmd = new IdleCommand(serverResponesQ);
         ImapFuture<ImapAsyncResponse> future = aSession.execute(cmd);
 
         Mockito.verify(writePromise, Mockito.times(1)).addListener(Mockito.any(ImapAsyncSessionImpl.class));
@@ -969,7 +969,7 @@ public class ImapAsyncSessionImplTest {
         final Logger logger = Mockito.mock(Logger.class);
         Mockito.when(logger.isDebugEnabled()).thenReturn(true);
         final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline);
-        final ImapRequest<String> cmd = new CapaCommand();
+        final ImapRequest cmd = new CapaCommand();
         aSession.execute(cmd);
 
         Mockito.verify(writePromise, Mockito.times(1)).addListener(Mockito.any(ImapAsyncSessionImpl.class));
@@ -1014,7 +1014,7 @@ public class ImapAsyncSessionImplTest {
 
         // constructor, class level debug is off, but session level is on
         final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline);
-        final ImapRequest<String> cmd = new CapaCommand();
+        final ImapRequest cmd = new CapaCommand();
         ImapAsyncClientException ex = null;
         try {
             // execute again, queue is not empty
@@ -1058,7 +1058,7 @@ public class ImapAsyncSessionImplTest {
         final Logger logger = Mockito.mock(Logger.class);
         Mockito.when(logger.isDebugEnabled()).thenReturn(false);
         final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(null, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline);
-        final ImapRequest<String> cmd = new CapaCommand();
+        final ImapRequest cmd = new CapaCommand();
         ImapAsyncClientException ex = null;
         try {
             // execute again, queue is not empty

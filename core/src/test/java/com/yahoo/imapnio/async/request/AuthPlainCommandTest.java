@@ -3,6 +3,7 @@ package com.yahoo.imapnio.async.request;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -17,6 +18,8 @@ import org.testng.annotations.Test;
 import com.sun.mail.imap.protocol.IMAPResponse;
 import com.yahoo.imapnio.async.data.Capability;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
+
+import io.netty.buffer.ByteBuf;
 
 /**
  * Unit test for {@code AuthPlainCommand}.
@@ -85,7 +88,48 @@ public class AuthPlainCommandTest {
     }
 
     /**
-     * Tests getCommandLine method when SASL-IR is not enabled, we send next command after server chanllenage.
+     * Tests getCommandLine method when SASL-IR is enabled and auth id is passed.
+     *
+     * @throws IOException will not throw
+     * @throws IllegalAccessException will not throw
+     * @throws IllegalArgumentException will not throw
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testGetCommandLineAuthIdPresent() throws IOException, IllegalArgumentException, IllegalAccessException, ImapAsyncClientException {
+        final String authId = "testla";
+        final String username = "modelx";
+        final String token = "selfdriving";
+        final Map<String, List<String>> capas = new HashMap<String, List<String>>();
+        capas.put(ImapClientConstants.SASL_IR, Arrays.asList(ImapClientConstants.SASL_IR));
+        final AuthPlainCommand cmd = new AuthPlainCommand(authId, username, token, new Capability(capas));
+
+        // verify getCommandLine()
+        Assert.assertEquals(cmd.getCommandLine(), "AUTHENTICATE PLAIN dGVzdGxhAG1vZGVseABzZWxmZHJpdmluZw==\r\n", "Expected result mismatched.");
+        Assert.assertTrue(cmd.isCommandLineDataSensitive(), "isCommandLineDataSensitive() result mismatched.");
+        Assert.assertEquals(cmd.getDebugData(), "AUTHENTICATE PLAIN FOR USER:modelx", "Log line mismatched.");
+
+        // verify getNextCommandLineAfterContinuation()
+        final IMAPResponse serverResponse = null; // should not cause anything if it is null
+        ImapAsyncClientException ex = null;
+        try {
+            cmd.getNextCommandLineAfterContinuation(serverResponse);
+        } catch (final ImapAsyncClientException imapAsyncEx) {
+            ex = imapAsyncEx;
+        }
+        Assert.assertNotNull(ex, "Expect exception to be thrown.");
+        Assert.assertEquals(ex.getFaiureType(), ImapAsyncClientException.FailureType.OPERATION_NOT_SUPPORTED_FOR_COMMAND,
+                "Expected result mismatched.");
+
+        cmd.cleanup();
+        // Verify if cleanup happened correctly.
+        for (final Field field : fieldsToCheck) {
+            Assert.assertNull(field.get(cmd), "Cleanup should set " + field.getName() + " as null");
+        }
+    }
+
+    /**
+     * Tests getCommandLine method when SASL-IR is not enabled, we send next command after server challenge.
      *
      * @throws IOException will not throw
      * @throws IllegalAccessException will not throw
@@ -103,9 +147,9 @@ public class AuthPlainCommandTest {
 
         // verify getNextCommandLineAfterContinuation()
         final IMAPResponse serverResponse = null; // should not cause anything if it is null
-        final String base64 = cmd.getNextCommandLineAfterContinuation(serverResponse);
+        final ByteBuf base64 = cmd.getNextCommandLineAfterContinuation(serverResponse);
         Assert.assertNotNull(base64, "Expected result mismatched.");
-        Assert.assertEquals(base64, "AHRlc2xhAHNlbGZkcml2aW5n\r\n", "Expected result mismatched.");
+        Assert.assertEquals(base64.toString(StandardCharsets.US_ASCII), "AHRlc2xhAHNlbGZkcml2aW5n\r\n", "Expected result mismatched.");
 
         cmd.cleanup();
         // Verify if cleanup happened correctly.
@@ -140,5 +184,15 @@ public class AuthPlainCommandTest {
         Assert.assertNotNull(ex, "Expect exception to be thrown.");
         Assert.assertEquals(ex.getFaiureType(), ImapAsyncClientException.FailureType.OPERATION_NOT_SUPPORTED_FOR_COMMAND,
                 "Expected result mismatched.");
+    }
+
+    /**
+     * Tests getCommandType method.
+     */
+    @Test
+    public void testGetCommandType() {
+        final Map<String, List<String>> capas = new HashMap<String, List<String>>();
+        final ImapRequest cmd = new AuthPlainCommand("tesla", "selfdriving", new Capability(capas));
+        Assert.assertSame(cmd.getCommandType(), ImapCommandType.AUTH_PLAIN);
     }
 }

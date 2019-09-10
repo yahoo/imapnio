@@ -3,6 +3,7 @@ package com.yahoo.imapnio.async.request;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -19,6 +20,8 @@ import org.testng.annotations.Test;
 import com.sun.mail.imap.protocol.IMAPResponse;
 import com.yahoo.imapnio.async.data.Capability;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
+
+import io.netty.buffer.ByteBuf;
 
 /**
  * Unit test for {@code AuthXoauth2Command}.
@@ -93,8 +96,9 @@ public class AuthXoauth2CommandTest {
         Assert.assertEquals(cmd.getCommandLine(), "AUTHENTICATE XOAUTH2\r\n", "Expected result mismatched.");
 
         final IMAPResponse serverResponse = null; // null or not null does not matter
-        final String resp2 = cmd.getNextCommandLineAfterContinuation(serverResponse);
-        Assert.assertEquals(resp2, "dXNlcj10ZXNsYQFhdXRoPUJlYXJlciBzZWxmZHJpdmluZwEB\r\n", "Expected result mismatched.");
+        final ByteBuf resp2 = cmd.getNextCommandLineAfterContinuation(serverResponse);
+        Assert.assertEquals(resp2.toString(StandardCharsets.US_ASCII), "dXNlcj10ZXNsYQFhdXRoPUJlYXJlciBzZWxmZHJpdmluZwEB\r\n",
+                "Expected result mismatched.");
 
         cmd.cleanup();
         // Verify if cleanup happened correctly.
@@ -157,5 +161,18 @@ public class AuthXoauth2CommandTest {
         Assert.assertNotNull(ex, "Expect exception to be thrown.");
         Assert.assertEquals(ex.getFaiureType(), ImapAsyncClientException.FailureType.OPERATION_NOT_SUPPORTED_FOR_COMMAND,
                 "Expected result mismatched.");
+    }
+
+    /**
+     * Tests getCommandType method.
+     */
+    @Test
+    public void testGetCommandType() {
+        final String username = "tesla";
+        final String token = "selfdriving";
+        final Map<String, List<String>> capas = new HashMap<String, List<String>>();
+        capas.put(ImapClientConstants.SASL_IR, Arrays.asList(ImapClientConstants.SASL_IR));
+        final ImapRequest cmd = new AuthXoauth2Command(username, token, new Capability(capas));
+        Assert.assertSame(cmd.getCommandType(), ImapCommandType.AUTH_XOAUTH2);
     }
 }
