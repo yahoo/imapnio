@@ -354,30 +354,31 @@ public class ImapResponseMapper {
          *
          * @param ir the list of responses from UID search command, the input responses array should contain the tagged/final one
          * @return SearchResult object constructed based on the given IMAPResponse array
+         * @throws ImapAsyncClientException when tagged response is not OK or given response length is 0
          */
         @Nonnull
-        SearchResult parseToSearchResult(@Nonnull final IMAPResponse[] ir) {
-            final IMAPResponse response = ir[ir.length - 1];
-            List<Long> matches = null;
+        SearchResult parseToSearchResult(@Nonnull final IMAPResponse[] ir) throws ImapAsyncClientException {
+            if (ir.length < 1) {
+                throw new ImapAsyncClientException(FailureType.INVALID_INPUT);
+            }
+            final Response taggedResponse = ir[ir.length - 1];
+            if (!taggedResponse.isOK()) {
+                throw new ImapAsyncClientException(FailureType.INVALID_INPUT);
+            }
+            final List<Long> v = new ArrayList<Long>(); // will always return a non-null array
 
             // Grab all SEARCH responses
-            if (response.isOK()) { // command successful
-                final List<Long> v = new ArrayList<Long>();
-                long num;
-                for (final IMAPResponse sr : ir) {
-                    // There *will* be one SEARCH response.
-                    if (sr.keyEquals("SEARCH")) {
-                        while ((num = sr.readLong()) != -1) {
-                            v.add(Long.valueOf(num));
-                        }
+            long num;
+            for (final IMAPResponse sr : ir) {
+                // There *will* be one SEARCH response.
+                if (sr.keyEquals("SEARCH")) {
+                    while ((num = sr.readLong()) != -1) {
+                        v.add(Long.valueOf(num));
                     }
                 }
-
-                // set the final 'matches'
-                matches = v;
             }
 
-            return new SearchResult(matches);
+            return new SearchResult(v);
         }
     }
 }

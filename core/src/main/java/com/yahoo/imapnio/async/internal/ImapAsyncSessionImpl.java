@@ -181,7 +181,10 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
 
     @Override
     public ImapFuture<ImapAsyncResponse> execute(@Nonnull final ImapRequest command) throws ImapAsyncClientException {
-        if (!requestsQueue.isEmpty()) {
+        if (isChannelClosed()) { // fail fast instead of entering to sendRequest() to fail
+            throw new ImapAsyncClientException(FailureType.OPERATION_PROHIBITED_ON_CLOSED_CHANNEL);
+        }
+        if (!requestsQueue.isEmpty()) { // when prior command is in process, do not allow the new one
             throw new ImapAsyncClientException(FailureType.COMMAND_NOT_ALLOWED);
         }
 
@@ -209,6 +212,13 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
     }
 
     /**
+     * @return true if channel is closed; false otherwise
+     */
+    boolean isChannelClosed() {
+        return (channelRef == null || channelRef.get() == null || !channelRef.get().isActive());
+    }
+
+    /**
      * Sends the given request to server when being called.
      *
      * @param request the message of the request
@@ -219,13 +229,13 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
         if (isDebugEnabled() && !isDataSensitve) {
             logger.debug(CLIENT_LOG_REC, sessionId, request.toString(StandardCharsets.UTF_8));
         }
-        final Channel channel = channelRef.get();
-        if (channel == null || !channel.isActive()) {
+        if (isChannelClosed()) {
             throw new ImapAsyncClientException(FailureType.OPERATION_PROHIBITED_ON_CLOSED_CHANNEL);
         }
 
         // ChannelPromise is the suggested ChannelFuture that allows caller to setup listener before the action is made
         // this is useful for light-speed operation.
+        final Channel channel = channelRef.get();
         final ChannelPromise writeFuture = channel.newPromise();
         writeFuture.addListener(this); // "this" listens to write future done in operationComplete() to handle exception in writing.
         channel.writeAndFlush(request, writeFuture);
@@ -285,7 +295,7 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
      * @return the removed entry, returns null if queue is empty
      */
     private ImapCommandEntry removeFirstEntry() {
-        if (requestsQueue.isEmpty()) {
+        if (requestsQueue == null || requestsQueue.isEmpty()) {
             return null;
         }
 
@@ -299,7 +309,7 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
      * @return the current in-progress request without removing it
      */
     private ImapCommandEntry getFirstEntry() {
-        return requestsQueue.isEmpty() ? null : requestsQueue.peek();
+        return (requestsQueue == null || requestsQueue.isEmpty()) ? null : requestsQueue.peek();
     }
 
     /**
@@ -316,6 +326,9 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
         // log at error level
         logger.error(SESSION_ERR_REC, sessionId, cause);
         entry.getFuture().done(cause);
+
+        // close session when encountering channel exception since the health of session is frail/unknown.
+        close();
     }
 
     @Override
@@ -395,10 +408,10 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
     @Override
     public ImapFuture<Boolean> close() {
         final ImapFuture<Boolean> closeFuture = new ImapFuture<Boolean>();
-        final Channel channel = channelRef.get();
-        if (channel == null || !channel.isActive()) {
+        if (isChannelClosed()) {
             closeFuture.done(Boolean.TRUE);
         } else {
+            final Channel channel = channelRef.get();
             final ChannelPromise channelPromise = channel.newPromise();
             final ImapChannelClosedListener channelClosedListener = new ImapChannelClosedListener(closeFuture);
             channelPromise.addListener(channelClosedListener);

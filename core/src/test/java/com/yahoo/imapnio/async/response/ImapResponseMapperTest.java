@@ -888,7 +888,53 @@ public class ImapResponseMapperTest {
     }
 
     /**
-     * Tests parseToSearchResult method successfully.
+     * Tests parseSearchResult method successfully.
+     *
+     * @throws IOException will not throw
+     * @throws ProtocolException will not throw
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testParseToSearchResultOKNoSearchResult() throws IOException, ProtocolException, ImapAsyncClientException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final IMAPResponse[] content = new IMAPResponse[2];
+        content[0] = new IMAPResponse("* SEARCH\r\n");
+        content[1] = new IMAPResponse("a3 OK UID SEARCH completed\r\n");
+
+        final SearchResult result = mapper.readValue(content, SearchResult.class);
+
+        // verify the result
+        Assert.assertNotNull(result, "result mismatched.");
+        final List<Long> list = result.getMessageNumbers();
+        Assert.assertNotNull(list, "getMessageSequence() mismatched.");
+        Assert.assertEquals(list.size(), 0, "getMessageSequence() mismatched.");
+    }
+
+    /**
+     * Tests parseToSearchResult method when tagged response is not OK.
+     *
+     * @throws IOException will not throw
+     * @throws ProtocolException will not throw
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testParseToSearchResultZeroLengthResponse() throws IOException, ProtocolException, ImapAsyncClientException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final IMAPResponse[] content = new IMAPResponse[0];
+
+        ImapAsyncClientException actual = null;
+        try {
+            final SearchResult result = mapper.readValue(content, SearchResult.class);
+        } catch (final ImapAsyncClientException e) {
+            actual = e;
+        }
+        // verify the result
+        Assert.assertNotNull(actual, "ImapAsyncClientException should occurr.");
+        Assert.assertEquals(actual.getFaiureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
+    }
+
+    /**
+     * Tests parseToSearchResult method when tagged response is not OK.
      *
      * @throws IOException will not throw
      * @throws ProtocolException will not throw
@@ -900,11 +946,14 @@ public class ImapResponseMapperTest {
         final IMAPResponse[] content = new IMAPResponse[1];
         content[0] = new IMAPResponse("a3 BAD SEARCH completed (Failure)\r\n");
 
-        final SearchResult result = mapper.readValue(content, SearchResult.class);
-
+        ImapAsyncClientException actual = null;
+        try {
+            final SearchResult result = mapper.readValue(content, SearchResult.class);
+        } catch (final ImapAsyncClientException e) {
+            actual = e;
+        }
         // verify the result
-        Assert.assertNotNull(result, "result mismatched.");
-        final List<Long> list = result.getMessageNumbers();
-        Assert.assertNull(list, "getMessageSequence() mismatched.");
+        Assert.assertNotNull(actual, "ImapAsyncClientException should occurr.");
+        Assert.assertEquals(actual.getFaiureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
     }
 }
