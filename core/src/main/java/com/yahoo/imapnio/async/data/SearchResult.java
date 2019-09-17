@@ -1,8 +1,8 @@
 package com.yahoo.imapnio.async.data;
 
-import java.util.Collections;
 import java.util.List;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
@@ -10,7 +10,7 @@ import javax.annotation.Nullable;
  */
 public class SearchResult {
     /** Search command response sequence number, could be message sequence or UID. */
-    @Nullable
+    @Nonnull
     private final List<Long> msgNumbers;
 
     /**
@@ -18,9 +18,8 @@ public class SearchResult {
      *
      * @param msgNumbers collection of message number from search command result
      */
-    public SearchResult(@Nullable final List<Long> msgNumbers) {
-        // make it immutable here so we avoid keeping creating UnmodifiableList whenever getter is called
-        this.msgNumbers = (msgNumbers != null) ? Collections.unmodifiableList(msgNumbers) : null;
+    public SearchResult(@Nonnull final List<Long> msgNumbers) {
+        this.msgNumbers = msgNumbers;
     }
 
     /**
