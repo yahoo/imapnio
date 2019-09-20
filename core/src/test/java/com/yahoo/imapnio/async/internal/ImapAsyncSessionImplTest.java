@@ -639,7 +639,7 @@ public class ImapAsyncSessionImplTest {
         }
         Assert.assertNotNull(ex, "Expect exception to be thrown.");
         final Throwable cause = ex.getCause();
-        Assert.assertNotNull(cause, "Expect cause.");
+        Assert.assertNotNull(cause, "Expect ExecutionException.getCause() to be present.");
         Assert.assertEquals(cause.getClass(), ImapAsyncClientException.class, "Expected result mismatched.");
         final ImapAsyncClientException asynEx = (ImapAsyncClientException) cause;
         Assert.assertEquals(asynEx.getFaiureType(), FailureType.CHANNEL_TIMEOUT, "Failure type mismatched.");
@@ -719,6 +719,9 @@ public class ImapAsyncSessionImplTest {
         // simulate write to server completed with isSuccess() false
         Mockito.when(writeToServerPromise.isSuccess()).thenReturn(false);
         aSession.operationComplete(writeToServerPromise);
+        // Above operationComplete() will call requestDoneWithException(), which will call close() to close the channel. Simulating it by making
+        // channel inactive
+        Mockito.when(channel.isActive()).thenReturn(false);
 
         // verify that future should be done now since exception happens
         Assert.assertTrue(cmdFuture.isDone(), "isDone() should be true now");
@@ -767,15 +770,23 @@ public class ImapAsyncSessionImplTest {
 
         // verify logging messages
         final ArgumentCaptor<Object> logCapture = ArgumentCaptor.forClass(Object.class);
-        Mockito.verify(logger, Mockito.times(1)).debug(Mockito.anyString(), Mockito.anyString(), logCapture.capture());
+        Mockito.verify(logger, Mockito.times(2)).debug(Mockito.anyString(), Mockito.anyString(), logCapture.capture());
         final List<Object> logMsgs = logCapture.getAllValues();
         Assert.assertNotNull(logMsgs, "log messages mismatched.");
-        Assert.assertEquals(logMsgs.size(), 1, "log messages mismatched.");
+        Assert.assertEquals(logMsgs.size(), 2, "log messages mismatched.");
         Assert.assertEquals(logMsgs.get(0), "a1 CAPABILITY\r\n", "log messages from client mismatched.");
+        Assert.assertEquals(logMsgs.get(1), "Closing the session via close().", "log messages from client mismatched.");
+
         final ArgumentCaptor<ImapAsyncClientException> errCapture = ArgumentCaptor.forClass(ImapAsyncClientException.class);
-        Mockito.verify(logger, Mockito.times(1)).error(Mockito.anyString(), Mockito.anyString(), errCapture.capture());
+        Mockito.verify(logger, Mockito.times(2)).error(Mockito.anyString(), Mockito.anyString(), errCapture.capture());
         final List<ImapAsyncClientException> errMsgs = errCapture.getAllValues();
-        Assert.assertEquals(errMsgs.get(0).getFaiureType(), FailureType.CHANNEL_EXCEPTION, "Class mismatched.");
+        final ImapAsyncClientException e = errMsgs.get(0);
+        Assert.assertNotNull(e, "Log error for exception is missing");
+        Assert.assertEquals(e.getFaiureType(), FailureType.CHANNEL_EXCEPTION, "Class mismatched.");
+        Assert.assertEquals(errMsgs.get(1), "Session is confirmed closed.", "Error message mismatched.");
+
+        // calling setDebugMode() on a closed session, should not throw NPE
+        aSession.setDebugMode(DebugMode.DEBUG_ON);
     }
 
     /**
@@ -835,21 +846,20 @@ public class ImapAsyncSessionImplTest {
         Assert.assertEquals(asynEx.getFaiureType(), FailureType.CHANNEL_DISCONNECTED, "Failure type mismatched.");
         // verify logging messages
         final ArgumentCaptor<Object> logCapture = ArgumentCaptor.forClass(Object.class);
-        Mockito.verify(logger, Mockito.times(1)).debug(Mockito.anyString(), Mockito.anyString(), logCapture.capture());
+        Mockito.verify(logger, Mockito.times(2)).debug(Mockito.anyString(), Mockito.anyString(), logCapture.capture());
         final List<Object> logMsgs = logCapture.getAllValues();
         Assert.assertNotNull(logMsgs, "log messages mismatched.");
-        Assert.assertEquals(logMsgs.size(), 1, "log messages mismatched.");
+        Assert.assertEquals(logMsgs.size(), 2, "log messages mismatched.");
         Assert.assertEquals(logMsgs.get(0), "a1 CAPABILITY\r\n", "log messages from client mismatched.");
+        Assert.assertEquals(logMsgs.get(1), "Closing the session via close().", "2nd log messages mismatched.");
 
         final ArgumentCaptor<ImapAsyncClientException> errCapture = ArgumentCaptor.forClass(ImapAsyncClientException.class);
-        Mockito.verify(logger, Mockito.times(1)).error(Mockito.anyString(), Mockito.anyString(), errCapture.capture());
+        Mockito.verify(logger, Mockito.times(2)).error(Mockito.anyString(), Mockito.anyString(), errCapture.capture());
         final List<ImapAsyncClientException> errMsgs = errCapture.getAllValues();
-        Assert.assertEquals(errMsgs.get(0).getFaiureType(), FailureType.CHANNEL_DISCONNECTED, "Class mismatched.");
-
-        // Verify if cleanup happened correctly.
-        for (final Field field : fieldsToCheck) {
-            Assert.assertNull(field.get(aSession), "Cleanup should set " + field.getName() + " as null");
-        }
+        Assert.assertEquals(errMsgs.get(0), "Session is confirmed closed.", "Class mismatched.");
+        final ImapAsyncClientException e = errMsgs.get(1);
+        Assert.assertNotNull(e, "Log error for exception is missing");
+        Assert.assertEquals(e.getFaiureType(), FailureType.CHANNEL_DISCONNECTED, "Class mismatched.");
     }
 
     /**
@@ -1044,36 +1054,272 @@ public class ImapAsyncSessionImplTest {
     }
 
     /**
-     * Tests execute method when channel is inactive.
+     * Tests close() method and its close listener. Specifically testing operationComplete with a future that returns false for isSuccess().
      *
      * @throws IOException will not throw
      * @throws ImapAsyncClientException will not throw
+     * @throws ProtocolException will not throw
+     * @throws TimeoutException will not throw
+     * @throws ExecutionException will not throw
+     * @throws InterruptedException will not throw
      * @throws SearchException will not throw
      */
     @Test
-    public void testExecuteFailedChannelNullDebugOff() throws ImapAsyncClientException, IOException, SearchException {
+    public void testCloseSessionOperationCompleteFutureIsUnsuccessful() throws ImapAsyncClientException, IOException, ProtocolException,
+            InterruptedException, ExecutionException, TimeoutException, SearchException {
+
         final Channel channel = Mockito.mock(Channel.class);
         final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
         Mockito.when(channel.pipeline()).thenReturn(pipeline);
-        Mockito.when(channel.isActive()).thenReturn(false);
-        final ChannelPromise writePromise = Mockito.mock(ChannelPromise.class);
-        Mockito.when(channel.newPromise()).thenReturn(writePromise);
+        Mockito.when(channel.isActive()).thenReturn(true);
+        final ChannelPromise closePromise = Mockito.mock(ChannelPromise.class);
+        Mockito.when(channel.newPromise()).thenReturn(closePromise);
 
         final Logger logger = Mockito.mock(Logger.class);
         Mockito.when(logger.isDebugEnabled()).thenReturn(false);
-        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(null, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline);
-        final ImapRequest cmd = new CapaCommand();
-        ImapAsyncClientException ex = null;
+
+        // construct, both class level and session level debugging are off
+        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_OFF, SESSION_ID, pipeline);
+
+        // perform close session, isSuccess() returns false
+        Mockito.when(closePromise.isSuccess()).thenReturn(false);
+        final ImapFuture<Boolean> closeFuture = aSession.close();
+        final ArgumentCaptor<ImapChannelClosedListener> listenerCaptor = ArgumentCaptor.forClass(ImapChannelClosedListener.class);
+        Mockito.verify(closePromise, Mockito.times(1)).addListener(listenerCaptor.capture());
+        Assert.assertEquals(listenerCaptor.getAllValues().size(), 1, "Unexpected count of ImapChannelClosedListener.");
+        final ImapChannelClosedListener closeListener = listenerCaptor.getAllValues().get(0);
+        closeListener.operationComplete(closePromise);
+        // close future should be done successfully
+        Assert.assertTrue(closeFuture.isDone(), "close future should be done");
+
+        Throwable actual = null;
         try {
             // execute again, queue is not empty
-            aSession.execute(cmd);
-        } catch (final ImapAsyncClientException asyncEx) {
-            ex = asyncEx;
+            closeFuture.get(FUTURE_GET_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
+        } catch (final ExecutionException e) {
+            actual = e.getCause();
         }
-        Assert.assertNotNull(ex, "Exception should occur.");
-        Assert.assertEquals(ex.getFaiureType(), FailureType.OPERATION_PROHIBITED_ON_CLOSED_CHANNEL, "Failure type mismatched.");
-
-        Mockito.verify(writePromise, Mockito.times(0)).addListener(Mockito.any(ImapAsyncSessionImpl.class));
-        Mockito.verify(channel, Mockito.times(0)).writeAndFlush(Mockito.anyString(), Mockito.isA(ChannelPromise.class));
+        Assert.assertNotNull(actual, "Exception should occur.");
+        Assert.assertEquals(actual.getClass(), ImapAsyncClientException.class, "Class type mismatched.");
+        final ImapAsyncClientException asyncClientEx = (ImapAsyncClientException) actual;
+        Assert.assertEquals(asyncClientEx.getFaiureType(), FailureType.CLOSING_CONNECTION_FAILED, "Failure type mismatched.");
     }
+
+    /**
+     * Tests the whole life cycle flow: construct the session, execute, handle server response success, close session.
+     *
+     * @throws IOException will not throw
+     * @throws ImapAsyncClientException will not throw
+     * @throws ProtocolException will not throw
+     * @throws TimeoutException will not throw
+     * @throws ExecutionException will not throw
+     * @throws InterruptedException will not throw
+     * @throws SearchException will not throw
+     */
+    @Test
+    public void testExecuteAuthHandleResponseChannelInactive() throws ImapAsyncClientException, IOException, ProtocolException, InterruptedException,
+            ExecutionException, TimeoutException, SearchException {
+
+        final Channel channel = Mockito.mock(Channel.class);
+        final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
+        Mockito.when(channel.pipeline()).thenReturn(pipeline);
+        Mockito.when(channel.isActive()).thenReturn(true);
+        final ChannelPromise authWritePromise = Mockito.mock(ChannelPromise.class); // first
+        final ChannelPromise authWritePromise2 = Mockito.mock(ChannelPromise.class); // after +
+        final ChannelPromise capaWritePromise = Mockito.mock(ChannelPromise.class);
+        final ChannelPromise closePromise = Mockito.mock(ChannelPromise.class);
+        Mockito.when(channel.newPromise()).thenReturn(authWritePromise).thenReturn(authWritePromise2).thenReturn(capaWritePromise)
+                .thenReturn(closePromise);
+
+        final Logger logger = Mockito.mock(Logger.class);
+        Mockito.when(logger.isDebugEnabled()).thenReturn(true);
+
+        // construct, both class level and session level debugging are off
+        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_OFF, SESSION_ID, pipeline);
+
+        // execute Authenticate plain command
+        {
+            final Map<String, List<String>> capas = new HashMap<String, List<String>>();
+            final ImapRequest cmd = new AuthPlainCommand("orange", "juicy", new Capability(capas));
+            final ImapFuture<ImapAsyncResponse> future = aSession.execute(cmd);
+            Mockito.verify(authWritePromise, Mockito.times(1)).addListener(Mockito.any(ImapAsyncSessionImpl.class));
+            Mockito.verify(channel, Mockito.times(1)).writeAndFlush(Mockito.anyString(), Mockito.isA(ChannelPromise.class));
+            Mockito.verify(logger, Mockito.times(0)).debug(Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
+
+            // simulate write to server completed successfully
+            Mockito.when(authWritePromise.isSuccess()).thenReturn(true);
+            aSession.operationComplete(authWritePromise);
+
+            // handle server response
+            final IMAPResponse serverResp1 = new IMAPResponse("+");
+
+            // simulate that channel is closed
+            Mockito.when(channel.isActive()).thenReturn(false);
+            aSession.setDebugMode(DebugMode.DEBUG_ON);
+
+            // following will call getNextCommandLineAfterContinuation
+            aSession.handleChannelResponse(serverResp1);
+
+            // verify that future should be done now
+            Assert.assertTrue(future.isDone(), "isDone() should be true now");
+            ExecutionException ex = null;
+            try {
+                future.get(FUTURE_GET_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
+            } catch (final ExecutionException ee) {
+                ex = ee;
+            }
+            Assert.assertNotNull(ex, "Expect exception to be thrown.");
+            final Throwable cause = ex.getCause();
+            Assert.assertNotNull(cause, "Expect ExecutionException.getCause() to be present.");
+            Assert.assertEquals(cause.getClass(), ImapAsyncClientException.class, "Expected result mismatched.");
+            final ImapAsyncClientException asynEx = (ImapAsyncClientException) cause;
+            Assert.assertEquals(asynEx.getFaiureType(), FailureType.CHANNEL_EXCEPTION, "Failure type mismatched.");
+
+            // verify logging messages
+            final ArgumentCaptor<String> logCapture = ArgumentCaptor.forClass(String.class);
+            Mockito.verify(logger, Mockito.times(1)).debug(Mockito.anyString(), Mockito.anyString(), logCapture.capture());
+            final List<String> logMsgs = logCapture.getAllValues();
+            Assert.assertNotNull(logMsgs, "log messages mismatched.");
+            Assert.assertEquals(logMsgs.size(), 1, "log messages mismatched.");
+            Assert.assertEquals(logMsgs.get(0), "+", "log messages from client mismatched.");
+
+            final ArgumentCaptor<ImapAsyncClientException> errCapture = ArgumentCaptor.forClass(ImapAsyncClientException.class);
+            Mockito.verify(logger, Mockito.times(1)).error(Mockito.anyString(), Mockito.anyString(), errCapture.capture());
+            final List<ImapAsyncClientException> errMsgs = errCapture.getAllValues();
+            final ImapAsyncClientException e = errMsgs.get(0);
+            Assert.assertNotNull(e, "Log error for exception is missing");
+            Assert.assertEquals(e.getFaiureType(), FailureType.CHANNEL_EXCEPTION, "Class mismatched.");
+
+            // no more responses in the queue, calling handleResponse should return right away without any indexOutOfBound
+            aSession.handleChannelResponse(serverResp1);
+        }
+
+    }
+
+    /**
+     * Tests when server responses CompressCommand success and there is no ssl handler.
+     *
+     * @throws IOException will not throw
+     * @throws ImapAsyncClientException will not throw
+     * @throws ProtocolException will not throw
+     * @throws TimeoutException will not throw
+     * @throws ExecutionException will not throw
+     * @throws InterruptedException will not throw
+     * @throws SearchException will not throw
+     */
+    @Test
+    public void testExecuteAuthCompressHandleResponseChannelIsClosed() throws ImapAsyncClientException, IOException, ProtocolException,
+            InterruptedException, ExecutionException, TimeoutException, SearchException {
+
+        final Channel channel = Mockito.mock(Channel.class);
+        final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
+        Mockito.when(channel.pipeline()).thenReturn(pipeline);
+        Mockito.when(channel.isActive()).thenReturn(true);
+        final ChannelPromise authWritePromise = Mockito.mock(ChannelPromise.class); // first
+        final ChannelPromise authWritePromise2 = Mockito.mock(ChannelPromise.class); // after +
+        final ChannelPromise compressWritePromise = Mockito.mock(ChannelPromise.class);
+        final ChannelPromise closePromise = Mockito.mock(ChannelPromise.class);
+        Mockito.when(channel.newPromise()).thenReturn(authWritePromise).thenReturn(authWritePromise2).thenReturn(compressWritePromise)
+                .thenReturn(closePromise);
+
+        final Logger logger = Mockito.mock(Logger.class);
+        Mockito.when(logger.isTraceEnabled()).thenReturn(true);
+
+        // construct, class level debug is enabled, session level debug is disabled
+        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_OFF, SESSION_ID, pipeline);
+
+        // execute Authenticate plain command
+        {
+            final Map<String, List<String>> capas = new HashMap<String, List<String>>();
+            final ImapRequest cmd = new AuthPlainCommand("orange", "juicy", new Capability(capas));
+            final ImapFuture<ImapAsyncResponse> future = aSession.execute(cmd);
+            Mockito.verify(authWritePromise, Mockito.times(1)).addListener(Mockito.any(ImapAsyncSessionImpl.class));
+            Mockito.verify(channel, Mockito.times(1)).writeAndFlush(Mockito.anyString(), Mockito.isA(ChannelPromise.class));
+
+            // simulate write to server completed successfully
+            Mockito.when(authWritePromise.isSuccess()).thenReturn(true);
+            aSession.operationComplete(authWritePromise);
+
+            // handle server response
+            final IMAPResponse serverResp1 = new IMAPResponse("+");
+            // following will call getNextCommandLineAfterContinuation
+            aSession.handleChannelResponse(serverResp1);
+            Mockito.verify(channel, Mockito.times(2)).writeAndFlush(Mockito.anyString(), Mockito.isA(ChannelPromise.class));
+
+            final IMAPResponse serverResp2 = new IMAPResponse("a1 OK AUTHENTICATE completed");
+            aSession.handleChannelResponse(serverResp2);
+
+            // verify that future should be done now
+            Assert.assertTrue(future.isDone(), "isDone() should be true now");
+            final ImapAsyncResponse asyncResp = future.get(FUTURE_GET_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
+            final Collection<IMAPResponse> lines = asyncResp.getResponseLines();
+            Assert.assertEquals(lines.size(), 2, "responses count mismatched.");
+            final Iterator<IMAPResponse> it = lines.iterator();
+            final IMAPResponse continuationResp = it.next();
+            Assert.assertNotNull(continuationResp, "Result mismatched.");
+            Assert.assertTrue(continuationResp.isContinuation(), "Response.isContinuation() mismatched.");
+            final IMAPResponse endingResp = it.next();
+            Assert.assertNotNull(endingResp, "Result mismatched.");
+            Assert.assertTrue(endingResp.isOK(), "Response.isOK() mismatched.");
+            Assert.assertEquals(endingResp.getTag(), "a1", "tag mismatched.");
+            // verify logging messages
+            final ArgumentCaptor<String> logCapture = ArgumentCaptor.forClass(String.class);
+            Mockito.verify(logger, Mockito.times(3)).debug(Mockito.anyString(), Mockito.anyString(), logCapture.capture());
+            final List<String> logMsgs = logCapture.getAllValues();
+            Assert.assertNotNull(logMsgs, "log messages mismatched.");
+            Assert.assertEquals(logMsgs.size(), 3, "log messages mismatched.");
+            Assert.assertEquals(logMsgs.get(0), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
+            Assert.assertEquals(logMsgs.get(1), "+", "log messages from server mismatched.");
+            Assert.assertEquals(logMsgs.get(2), "a1 OK AUTHENTICATE completed", "log messages from server mismatched.");
+        }
+
+        {
+            // start Compression
+            final ImapFuture<ImapAsyncResponse> future = aSession.startCompression();
+
+            Mockito.verify(compressWritePromise, Mockito.times(1)).addListener(Mockito.any(ImapAsyncSessionImpl.class));
+            Mockito.verify(channel, Mockito.times(3)).writeAndFlush(Mockito.anyString(), Mockito.isA(ChannelPromise.class));
+
+            // simulate write to server completed successfully
+            Mockito.when(compressWritePromise.isSuccess()).thenReturn(true);
+            aSession.operationComplete(compressWritePromise);
+
+            // handle server response
+            // simulate that channel is closed
+            Mockito.when(channel.isActive()).thenReturn(false);
+            final IMAPResponse serverResp1 = new IMAPResponse("a2 OK Success");
+            aSession.handleChannelResponse(serverResp1);
+
+            // verify deflater and inflater handlers are not added
+            Mockito.verify(pipeline, Mockito.times(0)).addFirst(Matchers.eq("DEFLATER"), Matchers.isA(JdkZlibDecoder.class));
+            Mockito.verify(pipeline, Mockito.times(0)).addFirst(Matchers.eq("INFLATER"), Matchers.isA(JdkZlibEncoder.class));
+            // verify that future should be done now
+            Assert.assertTrue(future.isDone(), "isDone() should be true now");
+            ExecutionException ex = null;
+            try {
+                future.get(FUTURE_GET_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
+            } catch (final ExecutionException ee) {
+                ex = ee;
+            }
+            Assert.assertNotNull(ex, "Expect exception to be thrown.");
+            final Throwable cause = ex.getCause();
+            Assert.assertNotNull(cause, "Expect ExecutionException.getCause() to be present.");
+            Assert.assertEquals(cause.getClass(), ImapAsyncClientException.class, "Expected result mismatched.");
+            final ImapAsyncClientException asynEx = (ImapAsyncClientException) cause;
+            Assert.assertEquals(asynEx.getFaiureType(), FailureType.OPERATION_PROHIBITED_ON_CLOSED_CHANNEL, "Failure type mismatched.");
+
+            // verify logging messages
+            final ArgumentCaptor<String> logCapture = ArgumentCaptor.forClass(String.class);
+            Mockito.verify(logger, Mockito.times(5)).debug(Mockito.anyString(), Mockito.anyString(), logCapture.capture());
+            final List<String> logMsgs = logCapture.getAllValues();
+            Assert.assertNotNull(logMsgs, "log messages mismatched.");
+            Assert.assertEquals(logMsgs.size(), 5, "log messages mismatched.");
+            Assert.assertEquals(logMsgs.get(0), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
+            Assert.assertEquals(logMsgs.get(1), "+", "log messages from server mismatched.");
+            Assert.assertEquals(logMsgs.get(2), "a1 OK AUTHENTICATE completed", "log messages from server mismatched.");
+            Assert.assertEquals(logMsgs.get(3), "a2 COMPRESS DEFLATE\r\n", "log messages from client mismatched.");
+            Assert.assertEquals(logMsgs.get(4), "a2 OK Success", "log messages from server mismatched.");
+        }
+    }
+
 }
