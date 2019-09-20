@@ -215,7 +215,7 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
      * @return true if channel is closed; false otherwise
      */
     boolean isChannelClosed() {
-        return (channelRef == null || channelRef.get() == null || !channelRef.get().isActive());
+        return !channelRef.get().isActive();
     }
 
     /**
@@ -266,27 +266,9 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
 
     @Override
     public void handleChannelClosed() {
-        if (channelRef == null) {
-            return; // cleanup() has been called, leave
-        }
-
+        logger.error(SESSION_ERR_REC, sessionId, "Session is confirmed closed.");
         // set the future done if there is any
         requestDoneWithException(new ImapAsyncClientException(FailureType.CHANNEL_DISCONNECTED));
-        cleanup();
-    }
-
-    /**
-     * Cleans up all member variables.
-     */
-    private void cleanup() {
-        channelRef.set(null);
-        channelRef = null;
-        requestsQueue.clear();
-        requestsQueue = null;
-        logger = null;
-        debugModeRef.set(null);
-        debugModeRef = null;
-        tagSequence = null;
     }
 
     /**
@@ -295,7 +277,7 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
      * @return the removed entry, returns null if queue is empty
      */
     private ImapCommandEntry removeFirstEntry() {
-        if (requestsQueue == null || requestsQueue.isEmpty()) {
+        if (requestsQueue.isEmpty()) {
             return null;
         }
 
@@ -309,7 +291,7 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
      * @return the current in-progress request without removing it
      */
     private ImapCommandEntry getFirstEntry() {
-        return (requestsQueue == null || requestsQueue.isEmpty()) ? null : requestsQueue.peek();
+        return (requestsQueue.isEmpty()) ? null : requestsQueue.peek();
     }
 
     /**
@@ -379,6 +361,12 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
         } else if (serverResponse.isTagged()) {
             try {
                 if (currentCmd instanceof CompressCommand && serverResponse.isOK()) {
+                    // check whether channel is closed before dereferencing.
+                    if (isChannelClosed()) {
+                        requestDoneWithException(new ImapAsyncClientException(FailureType.OPERATION_PROHIBITED_ON_CLOSED_CHANNEL));
+                        return;
+                    }
+
                     final Channel ch = channelRef.get();
                     final ChannelPipeline pipeline = ch.pipeline();
                     final JdkZlibDecoder decoder = new JdkZlibDecoder(ZlibWrapper.NONE);
@@ -411,6 +399,9 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
         if (isChannelClosed()) {
             closeFuture.done(Boolean.TRUE);
         } else {
+            if (isDebugEnabled()) {
+                logger.debug(SESSION_ERR_REC, sessionId, "Closing the session via close().");
+            }
             final Channel channel = channelRef.get();
             final ChannelPromise channelPromise = channel.newPromise();
             final ImapChannelClosedListener channelClosedListener = new ImapChannelClosedListener(closeFuture);
