@@ -154,6 +154,6 @@ public class AuthPlainCommand extends ImapRequestAdapter {
 
     @Override
     public ImapCommandType getCommandType() {
-        return ImapCommandType.AUTH_PLAIN;
+        return ImapCommandType.AUTHENTICATE;
     }
 }

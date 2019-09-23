@@ -7,9 +7,7 @@ public enum ImapCommandType {
     /** Append message command. */
     APPEND_MESSAGE,
     /** Authenticate plain command. */
-    AUTH_PLAIN,
-    /** Authenticate XOAUTH2 command. */
-    AUTH_XOAUTH2,
+    AUTHENTICATE,
     /** Capability command. */
     CAPABILITY,
     /** Check command. */

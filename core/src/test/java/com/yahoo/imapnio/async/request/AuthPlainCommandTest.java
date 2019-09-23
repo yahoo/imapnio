@@ -193,6 +193,6 @@ public class AuthPlainCommandTest {
     public void testGetCommandType() {
         final Map<String, List<String>> capas = new HashMap<String, List<String>>();
         final ImapRequest cmd = new AuthPlainCommand("tesla", "selfdriving", new Capability(capas));
-        Assert.assertSame(cmd.getCommandType(), ImapCommandType.AUTH_PLAIN);
+        Assert.assertSame(cmd.getCommandType(), ImapCommandType.AUTHENTICATE);
     }
 }

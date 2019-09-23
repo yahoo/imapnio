@@ -24,9 +24,9 @@ import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 import io.netty.buffer.ByteBuf;
 
 /**
- * Unit test for {@code AuthXoauth2Command}.
+ * Unit test for {@code AuthOauthBearerCommand}.
  */
-public class AuthXoauth2CommandTest {
+public class AuthOauthBearerCommandTest {
 
     /** Fields to check for cleanup. */
     private Set<Field> fieldsToCheck;
@@ -37,7 +37,7 @@ public class AuthXoauth2CommandTest {
     @BeforeClass
     public void setUp() {
         // Use reflection to get all declared non-primitive non-static fields (We do not care about inherited fields)
-        final Class<?> classUnderTest = AuthXoauth2Command.class;
+        final Class<?> classUnderTest = AuthOauthBearerCommand.class;
         fieldsToCheck = new HashSet<>();
         for (Class<?> c = classUnderTest; c != null; c = c.getSuperclass()) {
             for (final Field declaredField : c.getDeclaredFields()) {
@@ -61,16 +61,19 @@ public class AuthXoauth2CommandTest {
     @Test
     public void testGetCommandLineSaslIREnabled()
             throws IOException, ImapAsyncClientException, SearchException, IllegalArgumentException, IllegalAccessException {
-        final String username = "tesla";
+        final String emailId = "user@example.com";
+        final String hostname = "server.example.com";
+        final int port = 993;
         final String token = "selfdriving";
         final Map<String, List<String>> capas = new HashMap<String, List<String>>();
         capas.put(ImapClientConstants.SASL_IR, Arrays.asList(ImapClientConstants.SASL_IR));
-        final ImapRequest cmd = new AuthXoauth2Command(username, token, new Capability(capas));
+        final ImapRequest cmd = new AuthOauthBearerCommand(emailId, hostname, port, token, new Capability(capas));
 
-        Assert.assertEquals(cmd.getCommandLine(), "AUTHENTICATE XOAUTH2 dXNlcj10ZXNsYQFhdXRoPUJlYXJlciBzZWxmZHJpdmluZwEB\r\n",
+        Assert.assertEquals(cmd.getCommandLine(),
+                "AUTHENTICATE OAUTHBEARER bixhPXVzZXJAZXhhbXBsZS5jb20sAWhvc3Q9c2VydmVyLmV4YW1wbGUuY29tAXBvcnQ9OTkzAWF1dGg9QmVhcmVyIHNlbGZkcml2aW5nAQE=\r\n",
                 "Expected result mismatched.");
         Assert.assertTrue(cmd.isCommandLineDataSensitive(), "isCommandLineDataSensitive() result mismatched.");
-        Assert.assertEquals(cmd.getDebugData(), "AUTHENTICATE XOAUTH2 FOR USER:tesla", "Log line mismatched.");
+        Assert.assertEquals(cmd.getDebugData(), "AUTHENTICATE OAUTHBEARER FOR USER:user@example.com", "Log line mismatched.");
 
         cmd.cleanup();
         // Verify if cleanup happened correctly.
@@ -89,15 +92,18 @@ public class AuthXoauth2CommandTest {
      */
     @Test
     public void testGetCommandLineSaslIRDisabled() throws IOException, IllegalArgumentException, IllegalAccessException, ImapAsyncClientException {
-        final String username = "tesla";
+        final String emailId = "user@example.com";
+        final String hostname = "server.example.com";
+        final int port = 993;
         final String token = "selfdriving";
         final Map<String, List<String>> capas = new HashMap<String, List<String>>();
-        final AuthXoauth2Command cmd = new AuthXoauth2Command(username, token, new Capability(capas));
-        Assert.assertEquals(cmd.getCommandLine(), "AUTHENTICATE XOAUTH2\r\n", "Expected result mismatched.");
+        final AuthOauthBearerCommand cmd = new AuthOauthBearerCommand(emailId, hostname, port, token, new Capability(capas));
+        Assert.assertEquals(cmd.getCommandLine(), "AUTHENTICATE OAUTHBEARER\r\n", "Expected result mismatched.");
 
         final IMAPResponse serverResponse = null; // null or not null does not matter
         final ByteBuf resp2 = cmd.getNextCommandLineAfterContinuation(serverResponse);
-        Assert.assertEquals(resp2.toString(StandardCharsets.US_ASCII), "dXNlcj10ZXNsYQFhdXRoPUJlYXJlciBzZWxmZHJpdmluZwEB\r\n",
+        Assert.assertEquals(resp2.toString(StandardCharsets.US_ASCII),
+                "bixhPXVzZXJAZXhhbXBsZS5jb20sAWhvc3Q9c2VydmVyLmV4YW1wbGUuY29tAXBvcnQ9OTkzAWF1dGg9QmVhcmVyIHNlbGZkcml2aW5nAQE=\r\n",
                 "Expected result mismatched.");
 
         cmd.cleanup();
@@ -112,11 +118,13 @@ public class AuthXoauth2CommandTest {
      */
     @Test
     public void testGetStreamingResponsesQueue() {
-        final String username = "tesla";
+        final String emailId = "user@example.com";
+        final String hostname = "server.example.com";
+        final int port = 993;
         final String token = "selfdriving";
         final Map<String, List<String>> capas = new HashMap<String, List<String>>();
         capas.put(ImapClientConstants.SASL_IR, Arrays.asList(ImapClientConstants.SASL_IR));
-        final ImapRequest cmd = new AuthXoauth2Command(username, token, new Capability(capas));
+        final ImapRequest cmd = new AuthOauthBearerCommand(emailId, hostname, port, token, new Capability(capas));
         Assert.assertNull(cmd.getStreamingResponsesQueue(), "Expected result mismatched.");
     }
 
@@ -125,11 +133,13 @@ public class AuthXoauth2CommandTest {
      */
     @Test
     public void testGetNextCommandLineAfterContinuation() {
-        final String username = "tesla";
+        final String emailId = "user@example.com";
+        final String hostname = "server.example.com";
+        final int port = 993;
         final String token = "selfdriving";
         final Map<String, List<String>> capas = new HashMap<String, List<String>>();
         capas.put(ImapClientConstants.SASL_IR, Arrays.asList(ImapClientConstants.SASL_IR));
-        final ImapRequest cmd = new AuthXoauth2Command(username, token, new Capability(capas));
+        final ImapRequest cmd = new AuthOauthBearerCommand(emailId, hostname, port, token, new Capability(capas));
         final IMAPResponse serverResponse = null; // null or not null does not matter
         ImapAsyncClientException ex = null;
         try {
@@ -147,11 +157,13 @@ public class AuthXoauth2CommandTest {
      */
     @Test
     public void testGetTerminateCommandLine() {
-        final String username = "tesla";
+        final String emailId = "user@example.com";
+        final String hostname = "server.example.com";
+        final int port = 993;
         final String token = "selfdriving";
         final Map<String, List<String>> capas = new HashMap<String, List<String>>();
         capas.put(ImapClientConstants.SASL_IR, Arrays.asList(ImapClientConstants.SASL_IR));
-        final ImapRequest cmd = new AuthXoauth2Command(username, token, new Capability(capas));
+        final ImapRequest cmd = new AuthOauthBearerCommand(emailId, hostname, port, token, new Capability(capas));
         ImapAsyncClientException ex = null;
         try {
             cmd.getTerminateCommandLine();
@@ -168,11 +180,13 @@ public class AuthXoauth2CommandTest {
      */
     @Test
     public void testGetCommandType() {
-        final String username = "tesla";
+        final String emailId = "user@example.com";
+        final String hostname = "server.example.com";
+        final int port = 993;
         final String token = "selfdriving";
         final Map<String, List<String>> capas = new HashMap<String, List<String>>();
         capas.put(ImapClientConstants.SASL_IR, Arrays.asList(ImapClientConstants.SASL_IR));
-        final ImapRequest cmd = new AuthXoauth2Command(username, token, new Capability(capas));
+        final ImapRequest cmd = new AuthOauthBearerCommand(emailId, hostname, port, token, new Capability(capas));
         Assert.assertSame(cmd.getCommandType(), ImapCommandType.AUTHENTICATE);
     }
 }
