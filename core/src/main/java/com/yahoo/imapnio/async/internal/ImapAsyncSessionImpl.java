@@ -42,7 +42,7 @@ import io.netty.handler.timeout.IdleStateEvent;
 public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChannelEventProcessor, ChannelFutureListener {
 
     /** Error record for the session, first {} is sessionId, exception will be printed too as stack. */
-    private static final String SESSION_ERR_REC = "[{}]";
+    private static final String SESSION_LOG_REC = "[{}] {}";
 
     /** Debug log record for server, first {} is sessionId, 2nd {} is for server message. */
     private static final String SERVER_LOG_REC = "[{}] S:{}";
@@ -171,7 +171,7 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
     private boolean isDebugEnabled() {
         // when trace is enabled, log for all sessions
         // when debug is enabled && session debug is on, we print specific session
-        return logger.isTraceEnabled() || debugModeRef.get() == DebugMode.DEBUG_ON;
+        return logger.isTraceEnabled() || (logger.isDebugEnabled() && debugModeRef.get() == DebugMode.DEBUG_ON);
     }
 
     @Override
@@ -266,7 +266,9 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
 
     @Override
     public void handleChannelClosed() {
-        logger.error(SESSION_ERR_REC, sessionId, "Session is confirmed closed.");
+        if (isDebugEnabled()) {
+            logger.debug(SESSION_LOG_REC, sessionId, "Session is confirmed closed.");
+        }
         // set the future done if there is any
         requestDoneWithException(new ImapAsyncClientException(FailureType.CHANNEL_DISCONNECTED));
     }
@@ -306,7 +308,7 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
         }
 
         // log at error level
-        logger.error(SESSION_ERR_REC, sessionId, cause);
+        logger.error(SESSION_LOG_REC, sessionId, cause);
         entry.getFuture().done(cause);
 
         // close session when encountering channel exception since the health of session is frail/unknown.
@@ -400,7 +402,7 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
             closeFuture.done(Boolean.TRUE);
         } else {
             if (isDebugEnabled()) {
-                logger.debug(SESSION_ERR_REC, sessionId, "Closing the session via close().");
+                logger.debug(SESSION_LOG_REC, sessionId, "Closing the session via close().");
             }
             final Channel channel = channelRef.get();
             final ChannelPromise channelPromise = channel.newPromise();

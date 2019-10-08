@@ -168,15 +168,4 @@ public class UidFetchCommandTest {
         final FetchMacro stateFull = FetchMacro.valueOf("FULL");
         Assert.assertSame(stateFull, FetchMacro.FULL, "Enum does not match.");
     }
-
-    /**
-     * Tests CommandType enum.
-     */
-    @Test
-    public void testCommandTypeEnum() {
-        final ImapCommandType[] enumList = ImapCommandType.values();
-        Assert.assertEquals(enumList.length, 34, "The enum count mismatched.");
-        final ImapCommandType uidFetch = ImapCommandType.valueOf("UID_FETCH");
-        Assert.assertSame(uidFetch, ImapCommandType.UID_FETCH, "Enum does not match.");
-    }
 }

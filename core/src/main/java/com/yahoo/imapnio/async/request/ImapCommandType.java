@@ -42,6 +42,8 @@ public enum ImapCommandType {
     LSUB,
     /** Move message command. */
     MOVE_MESSAGE,
+    /** Namespace command. */
+    NAMESPACE,
     /** Noop command. */
     NOOP,
     /** Rename folder command. */
