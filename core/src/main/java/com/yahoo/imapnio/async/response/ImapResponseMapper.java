@@ -21,6 +21,7 @@ import com.sun.mail.imap.protocol.MailboxInfo;
 import com.sun.mail.imap.protocol.Status;
 import com.sun.mail.imap.protocol.UIDSet;
 import com.yahoo.imapnio.async.data.Capability;
+import com.yahoo.imapnio.async.data.ExtensionMailboxInfo;
 import com.yahoo.imapnio.async.data.IdResult;
 import com.yahoo.imapnio.async.data.ListInfoList;
 import com.yahoo.imapnio.async.data.SearchResult;
@@ -229,10 +230,10 @@ public class ImapResponseMapper {
             if (rr.length < 1) {
                 throw new ImapAsyncClientException(FailureType.INVALID_INPUT);
             }
-            final MailboxInfo minfo = new MailboxInfo(rr);
+            final MailboxInfo minfo = new ExtensionMailboxInfo(rr);
             final Response lastResp = rr[rr.length - 1]; // final response
 
-            if (lastResp.isTagged() && lastResp.isOK()) { // command succesful
+            if (lastResp.isTagged() && lastResp.isOK()) { // command successful
                 if (lastResp.toString().indexOf("READ-ONLY") != -1) {
                     minfo.mode = Folder.READ_ONLY;
                 } else {
