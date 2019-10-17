@@ -21,6 +21,7 @@ import com.sun.mail.imap.protocol.MailboxInfo;
 import com.sun.mail.imap.protocol.Status;
 import com.sun.mail.imap.protocol.UIDSet;
 import com.yahoo.imapnio.async.data.Capability;
+import com.yahoo.imapnio.async.data.ExtensionMailboxInfo;
 import com.yahoo.imapnio.async.data.IdResult;
 import com.yahoo.imapnio.async.data.ListInfoList;
 import com.yahoo.imapnio.async.data.SearchResult;
@@ -77,6 +78,9 @@ public class ImapResponseMapper {
         if (valueType == CopyUID.class) {
             return (T) parser.parseToCopyUid(content);
         }
+        if (valueType == ExtensionMailboxInfo.class) {
+            return (T) parser.parseToExtensionMailboxInfo(content);
+        }
         if (valueType == MailboxInfo.class) {
             return (T) parser.parseToMailboxInfo(content);
         }
@@ -107,7 +111,7 @@ public class ImapResponseMapper {
          * @throws ImapAsyncClientException when input IMAPResponse array is not valid
          */
         @Nonnull
-        Capability parseToCapabilities(@Nonnull final IMAPResponse[] rs) throws ImapAsyncClientException {
+        private Capability parseToCapabilities(@Nonnull final IMAPResponse[] rs) throws ImapAsyncClientException {
             String s;
             final Map<String, List<String>> capas = new HashMap<String, List<String>>();
             if (rs.length < 1) {
@@ -156,7 +160,7 @@ public class ImapResponseMapper {
          * @throws ImapAsyncClientException when input value is not valid
          */
         @Nullable
-        AppendUID parseToAppendUid(@Nonnull final IMAPResponse[] rs) throws ImapAsyncClientException {
+        private AppendUID parseToAppendUid(@Nonnull final IMAPResponse[] rs) throws ImapAsyncClientException {
             if (rs.length < 1) {
                 throw new ImapAsyncClientException(FailureType.INVALID_INPUT);
             }
@@ -189,7 +193,7 @@ public class ImapResponseMapper {
          * @throws ImapAsyncClientException when input value is not valid
          */
         @Nonnull
-        CopyUID parseToCopyUid(@Nonnull final IMAPResponse[] rr) throws ImapAsyncClientException {
+        private CopyUID parseToCopyUid(@Nonnull final IMAPResponse[] rr) throws ImapAsyncClientException {
             // For copy response, it is at the last response, for move command response, it is the first response
             for (int i = rr.length - 1; i >= 0; i--) {
                 final Response r = rr[i];
@@ -225,20 +229,47 @@ public class ImapResponseMapper {
          * @throws ImapAsyncClientException when input is invalid
          */
         @Nonnull
-        MailboxInfo parseToMailboxInfo(@Nonnull final IMAPResponse[] rr) throws ParsingException, ImapAsyncClientException {
+        private MailboxInfo parseToMailboxInfo(@Nonnull final IMAPResponse[] rr) throws ParsingException, ImapAsyncClientException {
             if (rr.length < 1) {
                 throw new ImapAsyncClientException(FailureType.INVALID_INPUT);
             }
             final MailboxInfo minfo = new MailboxInfo(rr);
-            final Response lastResp = rr[rr.length - 1]; // final response
+            setupMailboxInfoAccessMode(rr[rr.length - 1], minfo);
 
-            if (lastResp.isTagged() && lastResp.isOK()) { // command succesful
+            return minfo;
+        }
+
+        /**
+         * Sets up the mode for the @{code MailboxInfo}.
+         *
+         * @param lastResp the tagged response
+         * @param minfo the @{code MailboxInfo} instance
+         */
+        private void setupMailboxInfoAccessMode(@Nonnull final Response lastResp, @Nonnull final MailboxInfo minfo) {
+            if (lastResp.isTagged() && lastResp.isOK()) { // command successful
                 if (lastResp.toString().indexOf("READ-ONLY") != -1) {
                     minfo.mode = Folder.READ_ONLY;
                 } else {
                     minfo.mode = Folder.READ_WRITE;
                 }
             }
+        }
+
+        /**
+         * Parses the SELECT or EXAMINE responses to a @{code ExtensionMailboxInfo} instance.
+         *
+         * @param rr the list of responses from SELECT or EXAMINE, this input r array should contain the tagged/final one
+         * @return MailboxInfo instance
+         * @throws ParsingException when encountering parsing exception
+         * @throws ImapAsyncClientException when input is invalid
+         */
+        @Nonnull
+        private ExtensionMailboxInfo parseToExtensionMailboxInfo(@Nonnull final IMAPResponse[] rr) throws ParsingException, ImapAsyncClientException {
+            if (rr.length < 1) {
+                throw new ImapAsyncClientException(FailureType.INVALID_INPUT);
+            }
+            final ExtensionMailboxInfo minfo = new ExtensionMailboxInfo(rr);
+            setupMailboxInfoAccessMode(rr[rr.length - 1], minfo);
             return minfo;
         }
 
@@ -256,7 +287,7 @@ public class ImapResponseMapper {
          * @throws ImapAsyncClientException when input value is not valid
          */
         @Nonnull
-        ListInfoList parseToListInfoList(@Nonnull final IMAPResponse[] r) throws ParsingException, ImapAsyncClientException {
+        private ListInfoList parseToListInfoList(@Nonnull final IMAPResponse[] r) throws ParsingException, ImapAsyncClientException {
             final Response response = r[r.length - 1];
             if (!response.isOK()) {
                 throw new ImapAsyncClientException(FailureType.INVALID_INPUT);
@@ -284,7 +315,7 @@ public class ImapResponseMapper {
          * @throws ImapAsyncClientException when input value is not valid
          */
         @Nonnull
-        Status parseToStatus(@Nonnull final IMAPResponse[] r) throws ParsingException, ImapAsyncClientException {
+        private Status parseToStatus(@Nonnull final IMAPResponse[] r) throws ParsingException, ImapAsyncClientException {
             if (r.length < 1) {
                 throw new ImapAsyncClientException(FailureType.INVALID_INPUT);
             }
@@ -310,7 +341,7 @@ public class ImapResponseMapper {
          * @throws ImapAsyncClientException when input value is not valid
          */
         @Nonnull
-        IdResult parseToIdResult(@Nonnull final IMAPResponse[] ir) throws ParsingException, ImapAsyncClientException {
+        private IdResult parseToIdResult(@Nonnull final IMAPResponse[] ir) throws ParsingException, ImapAsyncClientException {
             if (ir.length < 1) {
                 throw new ImapAsyncClientException(FailureType.INVALID_INPUT);
             }
@@ -357,7 +388,7 @@ public class ImapResponseMapper {
          * @throws ImapAsyncClientException when tagged response is not OK or given response length is 0
          */
         @Nonnull
-        SearchResult parseToSearchResult(@Nonnull final IMAPResponse[] ir) throws ImapAsyncClientException {
+        private SearchResult parseToSearchResult(@Nonnull final IMAPResponse[] ir) throws ImapAsyncClientException {
             if (ir.length < 1) {
                 throw new ImapAsyncClientException(FailureType.INVALID_INPUT);
             }
