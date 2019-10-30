@@ -646,6 +646,53 @@ public class ImapAsyncSessionImplTest {
     }
 
     /**
+     * Tests channel is closed after verifying channel is healthy, sincd command.cleanup() will be called, we will get a NPE upon
+     * getCommandLineBytes().
+     *
+     * @throws IOException will not throw
+     * @throws ImapAsyncClientException will not throw
+     * @throws ProtocolException will not throw
+     * @throws TimeoutException will not throw
+     * @throws ExecutionException will not throw
+     * @throws InterruptedException will not throw
+     * @throws SearchException will not throw
+     */
+    @Test
+    public void testChannelClosedDuringExecute() throws ImapAsyncClientException, IOException, ProtocolException, InterruptedException,
+            ExecutionException, TimeoutException, SearchException {
+
+        final Channel channel = Mockito.mock(Channel.class);
+        final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
+        Mockito.when(channel.pipeline()).thenReturn(pipeline);
+        Mockito.when(channel.isActive()).thenReturn(true);
+        final ChannelPromise writePromise = Mockito.mock(ChannelPromise.class);
+        Mockito.when(channel.newPromise()).thenReturn(writePromise);
+
+        final Logger logger = Mockito.mock(Logger.class);
+        Mockito.when(logger.isDebugEnabled()).thenReturn(true);
+
+        // construct, turn on session level debugging by having logger.isDebugEnabled() true and session level debug on
+        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline);
+
+        // execute
+        final ImapRequest cmd = new CapaCommand();
+        // simulate cleanup() is called
+        cmd.cleanup();
+
+        ImapAsyncClientException ex = null;
+        try {
+            aSession.execute(cmd);
+        } catch (final ImapAsyncClientException ee) {
+            ex = ee;
+        }
+        Assert.assertNotNull(ex, "Expect exception to be thrown.");
+        Assert.assertEquals(ex.getFaiureType(), FailureType.CHANNEL_EXCEPTION, "Failure type mismatched.");
+        final Throwable cause = ex.getCause();
+        Assert.assertNotNull(cause, "Expect ExecutionException.getCause() to be present.");
+        Assert.assertEquals(cause.getClass(), NullPointerException.class, "Expected result mismatched.");
+    }
+
+    /**
      * Tests server idles event happens while command queue is empty.
      *
      * @throws IOException will not throw
