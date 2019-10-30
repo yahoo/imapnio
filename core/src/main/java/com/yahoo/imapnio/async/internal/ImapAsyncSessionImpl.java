@@ -188,21 +188,26 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
             throw new ImapAsyncClientException(FailureType.COMMAND_NOT_ALLOWED);
         }
 
-        final ImapFuture<ImapAsyncResponse> cmdFuture = new ImapFuture<ImapAsyncResponse>();
-        requestsQueue.add(new ImapCommandEntry(command, cmdFuture));
+        try {
+            final ImapFuture<ImapAsyncResponse> cmdFuture = new ImapFuture<ImapAsyncResponse>();
+            requestsQueue.add(new ImapCommandEntry(command, cmdFuture));
 
-        final ByteBuf buf = Unpooled.buffer();
-        final String tag = getNextTag();
-        buf.writeBytes(tag.getBytes(StandardCharsets.US_ASCII));
-        buf.writeByte(SPACE);
-        buf.writeBytes(command.getCommandLineBytes());
+            final ByteBuf buf = Unpooled.buffer();
+            final String tag = getNextTag();
+            buf.writeBytes(tag.getBytes(StandardCharsets.US_ASCII));
+            buf.writeByte(SPACE);
+            buf.writeBytes(command.getCommandLineBytes());
 
-        if (isDebugEnabled() && command.isCommandLineDataSensitive()) { // if we cannot log data sent over wire, ask command to provide log info
-            logger.debug(CLIENT_LOG_REC, sessionId, command.getDebugData());
+            if (isDebugEnabled() && command.isCommandLineDataSensitive()) { // if we cannot log data sent over wire, ask command to provide log info
+                logger.debug(CLIENT_LOG_REC, sessionId, command.getDebugData());
+            }
+            sendRequest(buf, command.isCommandLineDataSensitive());
+
+            return cmdFuture;
+        } catch (final RuntimeException e) {
+            // this happens due to channel was closed just after we verified it is not closed in line 184, therefore command was cleaned-up
+            throw new ImapAsyncClientException(FailureType.CHANNEL_EXCEPTION, e);
         }
-        sendRequest(buf, command.isCommandLineDataSensitive());
-
-        return cmdFuture;
     }
 
     @Override
