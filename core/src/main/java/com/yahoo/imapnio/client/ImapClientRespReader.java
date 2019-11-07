@@ -8,6 +8,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.DelimiterBasedFrameDecoder;
+import io.netty.util.ReferenceCountUtil;
 
 /**
  * Basic response reader, read response from channel and decode based on line delimiter, also could handle IMAP literal response.
@@ -64,6 +65,7 @@ public class ImapClientRespReader extends DelimiterBasedFrameDecoder {
             if (literalCount <= 0) { // LINE mode - read until CRLF
 
                 final ByteBuf lineBuf = (ByteBuf) super.decode(ctx, inputBuf); // Read a CRLF terminated line from inputBuf
+
                 if (lineBuf == null) { // no CRLF seen in this case, don't return existing buffer since it is not done
                     return null;
                 }
@@ -86,7 +88,7 @@ public class ImapClientRespReader extends DelimiterBasedFrameDecoder {
                 if (literalBuf == null) {
                     literalBuf = Unpooled.buffer(lineLen + literalCount + EXTRA_PADDING_LEN);
                 }
-                literalBuf.writeBytes(lineBuf); // add current line (ex: "* 1 FETCH (FLAGS (\Seen $NotJunk) BODY[] {4495}\r\n")
+                writeLiteralBufFromLineBuf(lineBuf); // add current line (ex: "* 1 FETCH (FLAGS (\Seen $NotJunk) BODY[] {4495}\r\n")
                 // back to top of loop to enter literal mode block
 
             } else { // LITERAL mode - read till reaching the count or end of inputBuf
@@ -101,8 +103,19 @@ public class ImapClientRespReader extends DelimiterBasedFrameDecoder {
     }
 
     /**
+     * Writes the given lineBuf to literalBuf. When writing is finished, we need to release the given lineBuf since this lineBuf will not be given to
+     * StringDecoder to release.
+     *
+     * @param lineBuf the line buffer obtained from the super.decode
+     */
+    private void writeLiteralBufFromLineBuf(@Nonnull final ByteBuf lineBuf) {
+        literalBuf.writeBytes(lineBuf);
+        ReferenceCountUtil.release(lineBuf); // Decreases the reference count by {@code 1}
+    }
+
+    /**
      * Prepares final response and clear the holding buffer.
-     * 
+     *
      * @param lineBuf the current line obtained from input buffer
      * @return final response in ByteBuf
      */
@@ -110,7 +123,7 @@ public class ImapClientRespReader extends DelimiterBasedFrameDecoder {
         if (literalBuf == null) { // literalBuf is empty
             return lineBuf;
         }
-        literalBuf.writeBytes(lineBuf);
+        writeLiteralBufFromLineBuf(lineBuf);
         final ByteBuf result = literalBuf;
         // reset existing
         literalBuf = null;
