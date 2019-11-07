@@ -103,6 +103,10 @@ public class ImapResponseMapper {
      * Inner class to perform the parsing of IMAPResponse to various objects.
      */
     private class ImapResponseParser {
+
+        /** Capability string. */
+        private static final String CAPABILITY = "CAPABILITY";
+
         /**
          * Parses the capabilities from a CAPABILITY response or from a CAPABILITY response code attached to (e.g.) an OK response.
          *
@@ -118,30 +122,34 @@ public class ImapResponseMapper {
                 throw new ImapAsyncClientException(FailureType.INVALID_INPUT);
             }
 
-            final IMAPResponse r = rs[0];
-            while ((s = r.readAtom()) != null) {
-                if (s.length() == 0) {
-                    if (r.peekByte() == (byte) R_BRACKET) {
-                        break;
-                    }
-                    // Probably found something here that's not an atom. Rather than loop forever or fail completely, we'll try to skip this bogus
-                    // capability. This is known to happen with: Netscape Messaging Server 4.03 (built Apr 27 1999) that returns:
-                    // * CAPABILITY * CAPABILITY IMAP4 IMAP4rev1 ...
-                    // The "*" in the middle of the capability list causes us to loop forever here.
-                    r.skipToken();
-                } else {
-                    final String[] tokens = s.split(EQUAL);
-                    final String key = tokens[0];
-                    final String value = (tokens.length > 1) ? tokens[1] : null;
-                    final String upperCase = key.toUpperCase(Locale.ENGLISH);
-                    List<String> values = capas.get(upperCase);
-                    if (values == null) {
-                        values = new ArrayList<>();
-                        capas.put(upperCase, values);
-                    }
-                    // AUTH key allows more than one pair(ex:AUTH=XOAUTH2 AUTH=PLAIN), parsing value out to List, otherwise add key to list
-                    if (value != null) {
-                        values.add(value);
+            for (final IMAPResponse r : rs) {
+                if (!hasCapability(r)) {
+                    continue;
+                }
+                while ((s = r.readAtom()) != null) {
+                    if (s.length() == 0) {
+                        if (r.peekByte() == (byte) R_BRACKET) {
+                            break;
+                        }
+                        // Probably found something here that's not an atom. Rather than loop forever or fail completely, we'll try to skip this bogus
+                        // capability. This is known to happen with: Netscape Messaging Server 4.03 (built Apr 27 1999) that returns:
+                        // * CAPABILITY * CAPABILITY IMAP4 IMAP4rev1 ...
+                        // The "*" in the middle of the capability list causes us to loop forever here.
+                        r.skipToken();
+                    } else {
+                        final String[] tokens = s.split(EQUAL);
+                        final String key = tokens[0];
+                        final String value = (tokens.length > 1) ? tokens[1] : null;
+                        final String upperCase = key.toUpperCase(Locale.ENGLISH);
+                        List<String> values = capas.get(upperCase);
+                        if (values == null) {
+                            values = new ArrayList<>();
+                            capas.put(upperCase, values);
+                        }
+                        // AUTH key allows more than one pair(ex:AUTH=XOAUTH2 AUTH=PLAIN), parsing value out to List, otherwise add key to list
+                        if (value != null) {
+                            values.add(value);
+                        }
                     }
                 }
             }
@@ -150,6 +158,30 @@ public class ImapResponseMapper {
                 entry.setValue(Collections.unmodifiableList(entry.getValue()));
             }
             return new Capability(capas);
+        }
+
+        /**
+         * Returns true if the response has capability keyword; false otherwise.
+         *
+         * @param r the response to check
+         * @return true if the response has capability keyword; false otherwise
+         */
+        private boolean hasCapability(final IMAPResponse r) {
+            // case 1, from capability or authenticate command. EX: * CAPABILITY IMAP4rev1 SASL-IR
+            if (r.keyEquals(CAPABILITY)) {
+                return true;
+            }
+
+            // case 2. from server greeting. EX: OK [CAPABILITY IMAP4rev1 SASL-IR AUTH=PLAIN] IMAP4rev1 Hello
+            byte b;
+            while ((b = r.readByte()) > 0 && b != (byte) '[') {
+                // eat chars till [
+            }
+            if (b == 0) { // left bracket not found
+                return false;
+            }
+            final String s = r.readAtom();
+            return s.equalsIgnoreCase(CAPABILITY);
         }
 
         /**
@@ -288,6 +320,9 @@ public class ImapResponseMapper {
          */
         @Nonnull
         private ListInfoList parseToListInfoList(@Nonnull final IMAPResponse[] r) throws ParsingException, ImapAsyncClientException {
+            if (r.length < 1) {
+                throw new ImapAsyncClientException(FailureType.INVALID_INPUT);
+            }
             final Response response = r[r.length - 1];
             if (!response.isOK()) {
                 throw new ImapAsyncClientException(FailureType.INVALID_INPUT);
@@ -297,7 +332,9 @@ public class ImapResponseMapper {
             final List<ListInfo> v = new ArrayList<ListInfo>();
             for (int i = 0, len = r.length - 1; i < len; i++) {
                 final IMAPResponse ir = r[i];
-                v.add(new ListInfo(ir));
+                if (ir.keyEquals("LIST") || ir.keyEquals("LSUB")) {
+                    v.add(new ListInfo(ir));
+                }
             }
 
             // could be an empty list if the search criteria ends up no result. Ex:
@@ -323,13 +360,21 @@ public class ImapResponseMapper {
             if (!taggedResponse.isOK()) {
                 throw new ImapAsyncClientException(FailureType.INVALID_INPUT);
             }
+            Status status = null;
             for (int i = 0, len = r.length; i < len; i++) {
                 final IMAPResponse ir = r[i];
                 if (ir.keyEquals("STATUS")) {
-                    return new Status(ir);
+                    if (status == null) {
+                        status = new Status(ir);
+                    } else { // collect them all if each attributes comes in its own line
+                        Status.add(status, new Status(ir));
+                    }
                 }
             }
-            throw new ImapAsyncClientException(FailureType.INVALID_INPUT); // when r length is 0 or no Status response
+            if (status == null) {
+                throw new ImapAsyncClientException(FailureType.INVALID_INPUT); // when r length is 0 or no Status response
+            }
+            return status;
         }
 
         /**
