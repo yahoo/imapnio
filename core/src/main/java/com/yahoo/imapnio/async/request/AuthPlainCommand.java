@@ -33,6 +33,9 @@ public class AuthPlainCommand extends ImapRequestAdapter {
     /** Literal for logging data. */
     private static final String LOG_PREFIX = "AUTHENTICATE PLAIN FOR USER:";
 
+    /** Byte buffer length for cancel statement. */
+    private static final int CANCEL_LEN = 3;
+
     /** Literal for 10. */
     private static final int TEN = 10;
 
@@ -47,6 +50,12 @@ public class AuthPlainCommand extends ImapRequestAdapter {
 
     /** flag whether server allows one liner (Refer to RFC4959) instead of server challenge. */
     private boolean isSaslIREnabled;
+
+    /** Flag whether the client response is sent already. */
+    private boolean isClientResponseSent;
+
+    /** Flag whether the data sent out is sensitive. */
+    private boolean isDataSensitive;
 
     /**
      * Initializes an authenticate plain command.
@@ -73,6 +82,8 @@ public class AuthPlainCommand extends ImapRequestAdapter {
         this.username = username;
         this.dwp = dwp;
         this.isSaslIREnabled = capa.hasCapability(ImapClientConstants.SASL_IR);
+        this.isClientResponseSent = false;
+        this.isDataSensitive = true;
     }
 
     @Override
@@ -92,14 +103,20 @@ public class AuthPlainCommand extends ImapRequestAdapter {
         // refer rfc2595, BNF is message = [authorize-id] NUL authenticate-id NUL password
         // [authorize-id] is optional if same as authenticate-id
         if (isSaslIREnabled) { // server allows client response in one line
+
+            this.isDataSensitive = true;
             final String clientResp = buildClientResponse();
             final ByteBuf buf = Unpooled.buffer(clientResp.length() + ImapClientConstants.PAD_LEN);
             buf.writeBytes(AUTH_PLAIN_B);
             buf.writeByte(ImapClientConstants.SPACE);
             buf.writeBytes(clientResp.getBytes(StandardCharsets.US_ASCII));
             buf.writeBytes(CRLF_B);
+            isClientResponseSent = true;
             return buf;
         }
+
+        // SASL-IR is not supported if reaching here, just sending the command without client response
+        this.isDataSensitive = false;
         final ByteBuf sb = Unpooled.buffer(ImapClientConstants.PAD_LEN);
         sb.writeBytes(AUTH_PLAIN_B);
         sb.writeBytes(CRLF_B);
@@ -108,7 +125,7 @@ public class AuthPlainCommand extends ImapRequestAdapter {
 
     @Override
     public boolean isCommandLineDataSensitive() {
-        return true;
+        return isDataSensitive;
     }
 
     @Override
@@ -137,13 +154,21 @@ public class AuthPlainCommand extends ImapRequestAdapter {
 
     @Override
     public ByteBuf getNextCommandLineAfterContinuation(@Nonnull final IMAPResponse serverResponse) throws ImapAsyncClientException {
-        if (isSaslIREnabled) { // should not reach here, since if SASL-IR enabled, server should not ask for next line
-            throw new ImapAsyncClientException(FailureType.OPERATION_NOT_SUPPORTED_FOR_COMMAND);
+        if (isClientResponseSent) { // when server sends "+ [base64 encoded error response]" after client response is sent, we send cancel
+            this.isDataSensitive = false;
+            final ByteBuf buf = Unpooled.buffer(CANCEL_LEN);
+            buf.writeByte(ImapClientConstants.CANCEL_B);
+            buf.writeBytes(CRLF_B);
+            return buf;
         }
+
+        // client response is not sent yet, sending it now
+        this.isDataSensitive = true;
         final String clientResp = buildClientResponse();
         final ByteBuf buf = Unpooled.buffer(clientResp.length() + ImapClientConstants.CRLFLEN);
         buf.writeBytes(clientResp.getBytes(StandardCharsets.US_ASCII));
         buf.writeBytes(CRLF_B);
+        isClientResponseSent = true;
         return buf;
     }
 

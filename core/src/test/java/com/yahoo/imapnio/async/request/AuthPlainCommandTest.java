@@ -15,6 +15,7 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import com.sun.mail.iap.ProtocolException;
 import com.sun.mail.imap.protocol.IMAPResponse;
 import com.yahoo.imapnio.async.data.Capability;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
@@ -54,9 +55,11 @@ public class AuthPlainCommandTest {
      * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
      * @throws ImapAsyncClientException will not throw
+     * @throws ProtocolException will not throw
      */
     @Test
-    public void testGetCommandLineSASLIREnabled() throws IOException, IllegalArgumentException, IllegalAccessException, ImapAsyncClientException {
+    public void testGetCommandLineSASLIREnabled()
+            throws IOException, IllegalArgumentException, IllegalAccessException, ImapAsyncClientException, ProtocolException {
         final String username = "tesla";
         final String pwd = "selfdriving";
         final Map<String, List<String>> capas = new HashMap<String, List<String>>();
@@ -68,17 +71,11 @@ public class AuthPlainCommandTest {
         Assert.assertTrue(cmd.isCommandLineDataSensitive(), "isCommandLineDataSensitive() result mismatched.");
         Assert.assertEquals(cmd.getDebugData(), "AUTHENTICATE PLAIN FOR USER:tesla", "Log line mismatched.");
 
-        // verify getNextCommandLineAfterContinuation()
-        final IMAPResponse serverResponse = null; // should not cause anything if it is null
-        ImapAsyncClientException ex = null;
-        try {
-            cmd.getNextCommandLineAfterContinuation(serverResponse);
-        } catch (final ImapAsyncClientException imapAsyncEx) {
-            ex = imapAsyncEx;
-        }
-        Assert.assertNotNull(ex, "Expect exception to be thrown.");
-        Assert.assertEquals(ex.getFaiureType(), ImapAsyncClientException.FailureType.OPERATION_NOT_SUPPORTED_FOR_COMMAND,
-                "Expected result mismatched.");
+        final IMAPResponse serverResponse = new IMAPResponse(
+                "+ eyJzdGF0dXMiOiI0MDAiLCJzY2hlbWVzIjoiQmVhcmVyIiwic2NvcGUiOiJodHRwczovL21haWwuZ29vZ2xlLmNvbS8ifQ==");
+        final ByteBuf nextClientReq = cmd.getNextCommandLineAfterContinuation(serverResponse);
+        Assert.assertNotNull(nextClientReq, "expected command from client mismatched.");
+        Assert.assertEquals(nextClientReq.toString(StandardCharsets.US_ASCII), "*\r\n", "expected command from client mismatched.");
 
         cmd.cleanup();
         // Verify if cleanup happened correctly.
@@ -94,9 +91,11 @@ public class AuthPlainCommandTest {
      * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
      * @throws ImapAsyncClientException will not throw
+     * @throws ProtocolException will not throw
      */
     @Test
-    public void testGetCommandLineAuthIdPresent() throws IOException, IllegalArgumentException, IllegalAccessException, ImapAsyncClientException {
+    public void testGetCommandLineAuthIdPresent()
+            throws IOException, IllegalArgumentException, IllegalAccessException, ImapAsyncClientException, ProtocolException {
         final String authId = "testla";
         final String username = "modelx";
         final String token = "selfdriving";
@@ -109,17 +108,12 @@ public class AuthPlainCommandTest {
         Assert.assertTrue(cmd.isCommandLineDataSensitive(), "isCommandLineDataSensitive() result mismatched.");
         Assert.assertEquals(cmd.getDebugData(), "AUTHENTICATE PLAIN FOR USER:modelx", "Log line mismatched.");
 
-        // verify getNextCommandLineAfterContinuation()
-        final IMAPResponse serverResponse = null; // should not cause anything if it is null
-        ImapAsyncClientException ex = null;
-        try {
-            cmd.getNextCommandLineAfterContinuation(serverResponse);
-        } catch (final ImapAsyncClientException imapAsyncEx) {
-            ex = imapAsyncEx;
-        }
-        Assert.assertNotNull(ex, "Expect exception to be thrown.");
-        Assert.assertEquals(ex.getFaiureType(), ImapAsyncClientException.FailureType.OPERATION_NOT_SUPPORTED_FOR_COMMAND,
-                "Expected result mismatched.");
+        // asks the next command after continuation
+        final IMAPResponse serverResponse = new IMAPResponse(
+                "+ eyJzdGF0dXMiOiI0MDAiLCJzY2hlbWVzIjoiQmVhcmVyIiwic2NvcGUiOiJodHRwczovL21haWwuZ29vZ2xlLmNvbS8ifQ==");
+        final ByteBuf nextClientReq = cmd.getNextCommandLineAfterContinuation(serverResponse);
+        Assert.assertNotNull(nextClientReq, "expected command from client mismatched.");
+        Assert.assertEquals(nextClientReq.toString(StandardCharsets.US_ASCII), "*\r\n", "expected command from client mismatched.");
 
         cmd.cleanup();
         // Verify if cleanup happened correctly.

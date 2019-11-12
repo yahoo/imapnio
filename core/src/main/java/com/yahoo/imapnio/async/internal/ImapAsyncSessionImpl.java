@@ -101,8 +101,8 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
          * State of the command in its life cycle.
          */
         public enum CommandState {
-            /** Request (command line) is created, but not yet sent to server. */
-            REQUEST_NOT_SENT,
+            /** Request (command line) is in preparation to be generated and sent, but not yet sent to server. */
+            REQUEST_IN_PREPARATION,
             /** Request (command line) is confirmed sent to the the server. */
             REQUEST_SENT,
             /** Server done with responses for the given client request. Server is not obligated to send more responses per given request. */
@@ -133,7 +133,7 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
          */
         ImapCommandEntry(@Nonnull final ImapRequest cmd, @Nonnull final ImapFuture<ImapAsyncResponse> future) {
             this.cmd = cmd;
-            this.state = CommandState.REQUEST_NOT_SENT;
+            this.state = CommandState.REQUEST_IN_PREPARATION;
             this.responses = (cmd.getStreamingResponsesQueue() != null) ? cmd.getStreamingResponsesQueue()
                     : new ConcurrentLinkedQueue<IMAPResponse>();
             this.future = future;
@@ -247,10 +247,7 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
         buf.writeByte(SPACE);
         buf.writeBytes(command.getCommandLineBytes());
 
-        if (isDebugEnabled() && command.isCommandLineDataSensitive()) { // if we cannot log data sent over wire, ask command to provide log info
-            logger.debug(CLIENT_LOG_REC, sessionId, getUserInfo(), command.getDebugData());
-        }
-        sendRequest(buf, command.isCommandLineDataSensitive());
+        sendRequest(buf, command);
 
         return cmdFuture;
     }
@@ -275,9 +272,10 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
      * @param isDataSensitve flag whether data is sensitive
      * @throws ImapAsyncClientException when channel is closed
      */
-    private void sendRequest(@Nonnull final ByteBuf request, final boolean isDataSensitve) throws ImapAsyncClientException {
-        if (isDebugEnabled() && !isDataSensitve) {
-            logger.debug(CLIENT_LOG_REC, sessionId, getUserInfo(), request.toString(StandardCharsets.UTF_8));
+    private void sendRequest(@Nonnull final ByteBuf request, @Nonnull final ImapRequest command) throws ImapAsyncClientException {
+        if (isDebugEnabled()) {
+            logger.debug(CLIENT_LOG_REC, sessionId, getUserInfo(),
+                    (!command.isCommandLineDataSensitive()) ? request.toString(StandardCharsets.UTF_8) : command.getDebugData());
         }
         if (isChannelClosed()) {
             throw new ImapAsyncClientException(FailureType.OPERATION_PROHIBITED_ON_CLOSED_CHANNEL, sessionId, sessionCtx);
@@ -298,7 +296,7 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
         }
 
         final ImapCommandEntry entry = requestsQueue.peek();
-        sendRequest(entry.getRequest().getTerminateCommandLine(), command.isCommandLineDataSensitive());
+        sendRequest(entry.getRequest().getTerminateCommandLine(), command);
         return entry.getFuture();
     }
 
@@ -412,9 +410,8 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
                 if (cmdAfterContinue == null) {
                     return; // no data from client after continuation, we leave, this is for Idle
                 }
-                curEntry.setState(ImapCommandEntry.CommandState.REQUEST_NOT_SENT); // preparing to send the request so setting to correct state to
-                                                                                   // reflect
-                sendRequest(cmdAfterContinue, currentCmd.isCommandLineDataSensitive());
+                curEntry.setState(ImapCommandEntry.CommandState.REQUEST_IN_PREPARATION); // preparing to send request so setting to correct state
+                sendRequest(cmdAfterContinue, currentCmd);
 
             } catch (final ImapAsyncClientException | RuntimeException e) { // when encountering an error on building request from client
                 requestDoneWithException(

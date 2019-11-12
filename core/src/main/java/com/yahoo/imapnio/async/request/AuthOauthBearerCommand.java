@@ -44,6 +44,9 @@ public class AuthOauthBearerCommand extends ImapRequestAdapter {
     /** Extra length for port and a bunch of SOH. */
     private static final int EXTRA_LEN = 50;
 
+    /** Byte buffer length for cancel statement. */
+    private static final int CANCEL_LEN = 3;
+
     /** Comma literal. */
     private static final char COMMA = ',';
 
@@ -62,6 +65,12 @@ public class AuthOauthBearerCommand extends ImapRequestAdapter {
     /** flag whether server allows one liner (Refer to RFC4959) instead of server challenge. */
     private boolean isSaslIREnabled;
 
+    /** Flag whether the client response is sent already. */
+    private boolean isClientResponseSent;
+
+    /** Flag whether the data sent out is sensitive. */
+    private boolean isDataSensitive;
+
     /**
      * Initializes an authenticate xoauth2 command.
      *
@@ -78,6 +87,8 @@ public class AuthOauthBearerCommand extends ImapRequestAdapter {
         this.port = port;
         this.token = token;
         this.isSaslIREnabled = capa.hasCapability(ImapClientConstants.SASL_IR);
+        this.isClientResponseSent = false;
+        this.isDataSensitive = true;
     }
 
     @Override
@@ -104,14 +115,20 @@ public class AuthOauthBearerCommand extends ImapRequestAdapter {
     @Override
     public ByteBuf getCommandLineBytes() {
         if (isSaslIREnabled) { // server allows client response in one line
+
+            this.isDataSensitive = true;
             final String clientResp = buildClientResponse();
             final ByteBuf sb = Unpooled.buffer(clientResp.length() + ImapClientConstants.PAD_LEN);
             sb.writeBytes(AUTH_OAUTHBEARER_B);
             sb.writeByte(ImapClientConstants.SPACE);
             sb.writeBytes(clientResp.getBytes(StandardCharsets.US_ASCII));
             sb.writeBytes(CRLF_B);
+            isClientResponseSent = true;
             return sb;
         }
+
+        // SASL-IR is not supported if reaching here, just sending the command without client response
+        this.isDataSensitive = false;
         final int len = AUTH_OAUTHBEARER_LEN + ImapClientConstants.CRLFLEN;
         final ByteBuf buf = Unpooled.buffer(len);
         buf.writeBytes(AUTH_OAUTHBEARER_B);
@@ -121,7 +138,7 @@ public class AuthOauthBearerCommand extends ImapRequestAdapter {
 
     @Override
     public boolean isCommandLineDataSensitive() {
-        return true;
+        return isDataSensitive;
     }
 
     @Override
@@ -135,14 +152,22 @@ public class AuthOauthBearerCommand extends ImapRequestAdapter {
     }
 
     @Override
-    public ByteBuf getNextCommandLineAfterContinuation(final IMAPResponse serverResponse) throws ImapAsyncClientException {
-        if (isSaslIREnabled) { // should not reach here, since if SASL-IR enabled, server should not ask for next line
-            throw new ImapAsyncClientException(FailureType.OPERATION_NOT_SUPPORTED_FOR_COMMAND);
+    public ByteBuf getNextCommandLineAfterContinuation(@Nonnull final IMAPResponse serverResponse) throws ImapAsyncClientException {
+        if (isClientResponseSent) { // when server sends "+ [base64 encoded error response]" after client response is sent, we send cancel
+            this.isDataSensitive = false;
+            final ByteBuf buf = Unpooled.buffer(CANCEL_LEN);
+            buf.writeByte(ImapClientConstants.CANCEL_B);
+            buf.writeBytes(CRLF_B);
+            return buf;
         }
+
+        // client response is not sent yet, sending it now
+        this.isDataSensitive = true;
         final String clientResp = buildClientResponse();
         final ByteBuf buf = Unpooled.buffer(clientResp.length() + ImapClientConstants.CRLFLEN);
         buf.writeBytes(clientResp.getBytes(StandardCharsets.US_ASCII));
         buf.writeBytes(CRLF_B);
+        isClientResponseSent = true;
         return buf;
     }
 

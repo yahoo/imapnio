@@ -3,6 +3,7 @@ package com.yahoo.imapnio.async.internal;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -35,6 +36,7 @@ import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException.FailureType;
 import com.yahoo.imapnio.async.internal.ImapAsyncSessionImpl.ImapChannelClosedListener;
 import com.yahoo.imapnio.async.request.AuthPlainCommand;
+import com.yahoo.imapnio.async.request.AuthXoauth2Command;
 import com.yahoo.imapnio.async.request.CapaCommand;
 import com.yahoo.imapnio.async.request.IdleCommand;
 import com.yahoo.imapnio.async.request.ImapRequest;
@@ -245,6 +247,219 @@ public class ImapAsyncSessionImplTest {
     }
 
     /**
+     * Tests Xoauth2 command with SASL-IR disabled. Verifies the logging message.
+     *
+     * @throws IOException will not throw
+     * @throws ImapAsyncClientException will not throw
+     * @throws ProtocolException will not throw
+     * @throws TimeoutException will not throw
+     * @throws ExecutionException will not throw
+     * @throws InterruptedException will not throw
+     * @throws SearchException will not throw
+     */
+    @Test
+    public void testExecuteAuthXoauth2InvalidTokenNoSASLIR() throws ImapAsyncClientException, IOException, ProtocolException, InterruptedException,
+            ExecutionException, TimeoutException, SearchException {
+
+        final Channel channel = Mockito.mock(Channel.class);
+        final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
+        Mockito.when(channel.pipeline()).thenReturn(pipeline);
+        Mockito.when(channel.isActive()).thenReturn(true);
+        final ChannelPromise authWritePromise = Mockito.mock(ChannelPromise.class); // first
+        final ChannelPromise authWritePromise2 = Mockito.mock(ChannelPromise.class); // after +
+        Mockito.when(channel.newPromise()).thenReturn(authWritePromise).thenReturn(authWritePromise2);
+
+        final Logger logger = Mockito.mock(Logger.class);
+        Mockito.when(logger.isTraceEnabled()).thenReturn(true);
+
+        // construct, both class level and session level debugging are off
+        final String sessionCtx = USER_ID;
+        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_OFF, SESSION_ID, pipeline, sessionCtx);
+
+        // execute Authenticate XOAUTH2 command
+        {
+            final Map<String, List<String>> capas = new HashMap<String, List<String>>();
+            final ImapRequest cmd = new AuthXoauth2Command("orange", "someToken", new Capability(capas));
+            final ImapFuture<ImapAsyncResponse> future = aSession.execute(cmd);
+            Mockito.verify(authWritePromise, Mockito.times(1)).addListener(Mockito.any(ImapAsyncSessionImpl.class));
+            Mockito.verify(channel, Mockito.times(1)).writeAndFlush(Mockito.anyString(), Mockito.isA(ChannelPromise.class));
+            Mockito.verify(logger, Mockito.times(1)).debug(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
+
+            // simulate write to server completed successfully
+            Mockito.when(authWritePromise.isSuccess()).thenReturn(true);
+            aSession.operationComplete(authWritePromise);
+
+            // handle server response
+            final IMAPResponse serverResp1 = new IMAPResponse("+");
+            // following will call getNextCommandLineAfterContinuation
+            aSession.handleChannelResponse(serverResp1);
+            Mockito.verify(channel, Mockito.times(2)).writeAndFlush(Mockito.anyString(), Mockito.isA(ChannelPromise.class));
+
+            // invalid token message from server
+            final IMAPResponse serverResp2 = new IMAPResponse(
+                    "+ eyJzdGF0dXMiOiI0MDAiLCJzY2hlbWVzIjoiQmVhcmVyIiwic2NvcGUiOiJodHRwczovL21haWwuZ29vZ2xlLmNvbS8ifQ==");
+            aSession.handleChannelResponse(serverResp2);
+
+            final IMAPResponse serverResp3 = new IMAPResponse("a1 BAD Invalid SASL argument.");
+            aSession.handleChannelResponse(serverResp3);
+
+            // verify that future should be done now
+            Assert.assertTrue(future.isDone(), "isDone() should be true now");
+            final ImapAsyncResponse asyncResp = future.get(FUTURE_GET_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
+            final Collection<IMAPResponse> lines = asyncResp.getResponseLines();
+            Assert.assertEquals(lines.size(), 3, "responses count mismatched.");
+
+            final Iterator<IMAPResponse> it = lines.iterator();
+            // first response is +
+            final IMAPResponse continuationResp1 = it.next();
+            Assert.assertNotNull(continuationResp1, "Result mismatched.");
+            Assert.assertTrue(continuationResp1.isContinuation(), "Response.isContinuation() mismatched.");
+
+            // second response is "+ eyJzdGF0dXMiOiI0MDAiLCJzY2hlbWVzIjoiQmVhcmVyIiwic2NvcGUiOiJodHRwczovL21haWwuZ29vZ2xlLmNvbS8ifQ=="
+            final IMAPResponse continuationResp2 = it.next();
+            Assert.assertNotNull(continuationResp2, "Result mismatched.");
+            Assert.assertTrue(continuationResp2.isContinuation(), "Response.isContinuation() mismatched.");
+            Assert.assertEquals(continuationResp2.getRest(),
+                    "eyJzdGF0dXMiOiI0MDAiLCJzY2hlbWVzIjoiQmVhcmVyIiwic2NvcGUiOiJodHRwczovL21haWwuZ29vZ2xlLmNvbS8ifQ==",
+                    "server response mismatched.");
+
+            // 3rd response is
+            final IMAPResponse endingResp = it.next();
+            Assert.assertNotNull(endingResp, "Result mismatched.");
+            Assert.assertTrue(endingResp.isBAD(), "Response.isOK() mismatched.");
+            Assert.assertEquals(endingResp.getTag(), "a1", "tag mismatched.");
+
+            // verify logging messages
+            final ArgumentCaptor<Object> allArgsCapture = ArgumentCaptor.forClass(Object.class);
+            Mockito.verify(logger, Mockito.times(6)).debug(Mockito.anyString(), allArgsCapture.capture(), allArgsCapture.capture(),
+                    allArgsCapture.capture());
+
+            // since it is vargs, 6 calls to debug() with 3 parameters all accumulate to one list, 6 * 3 =18
+            final List<Object> logArgs = allArgsCapture.getAllValues();
+            Assert.assertNotNull(logArgs, "log messages mismatched.");
+            Assert.assertEquals(logArgs.size(), 18, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(2), "a1 AUTHENTICATE XOAUTH2\r\n", "log messages from client mismatched.");
+            Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(5), "+", "log messages from server mismatched.");
+            Assert.assertEquals(logArgs.get(6), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(7), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(8), "AUTHENTICATE XOAUTH2 FOR USER:orange", "Error message mismatched.");
+            Assert.assertEquals(logArgs.get(9), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(10), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(11), "+ eyJzdGF0dXMiOiI0MDAiLCJzY2hlbWVzIjoiQmVhcmVyIiwic2NvcGUiOiJodHRwczovL21haWwuZ29vZ2xlLmNvbS8ifQ==",
+                    "Error message mismatched.");
+            Assert.assertEquals(logArgs.get(12), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(13), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(14), "*\r\n", "log messages from server mismatched.");
+            Assert.assertEquals(logArgs.get(15), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(16), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(17), "a1 BAD Invalid SASL argument.", "Error message mismatched.");
+        }
+    }
+
+    /**
+     * Tests Xoauth2 command with SASL-IR enabled. Verifies the logging message.
+     *
+     * @throws IOException will not throw
+     * @throws ImapAsyncClientException will not throw
+     * @throws ProtocolException will not throw
+     * @throws TimeoutException will not throw
+     * @throws ExecutionException will not throw
+     * @throws InterruptedException will not throw
+     * @throws SearchException will not throw
+     */
+    @Test
+    public void testExecuteAuthXoauth2InvalidTokenSASLIREnabled() throws ImapAsyncClientException, IOException, ProtocolException,
+            InterruptedException, ExecutionException, TimeoutException, SearchException {
+
+        final Channel channel = Mockito.mock(Channel.class);
+        final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
+        Mockito.when(channel.pipeline()).thenReturn(pipeline);
+        Mockito.when(channel.isActive()).thenReturn(true);
+        final ChannelPromise authWritePromise = Mockito.mock(ChannelPromise.class); // first
+        final ChannelPromise authWritePromise2 = Mockito.mock(ChannelPromise.class); // after +
+        Mockito.when(channel.newPromise()).thenReturn(authWritePromise).thenReturn(authWritePromise2);
+
+        final Logger logger = Mockito.mock(Logger.class);
+        Mockito.when(logger.isTraceEnabled()).thenReturn(true);
+
+        // construct, both class level and session level debugging are off
+        final String sessionCtx = USER_ID;
+        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_OFF, SESSION_ID, pipeline, sessionCtx);
+
+        // execute Authenticate XOAUTH2 command
+        {
+            final Map<String, List<String>> capas = new HashMap<String, List<String>>();
+            capas.put("SASL-IR", Arrays.asList("SASL-IR"));
+            final ImapRequest cmd = new AuthXoauth2Command("orange", "someToken", new Capability(capas));
+            final ImapFuture<ImapAsyncResponse> future = aSession.execute(cmd);
+            Mockito.verify(authWritePromise, Mockito.times(1)).addListener(Mockito.any(ImapAsyncSessionImpl.class));
+            Mockito.verify(channel, Mockito.times(1)).writeAndFlush(Mockito.anyString(), Mockito.isA(ChannelPromise.class));
+            Mockito.verify(logger, Mockito.times(1)).debug(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
+
+            // simulate write to server completed successfully
+            Mockito.when(authWritePromise.isSuccess()).thenReturn(true);
+            aSession.operationComplete(authWritePromise);
+
+            // invalid token message from server
+            final IMAPResponse serverResp2 = new IMAPResponse(
+                    "+ eyJzdGF0dXMiOiI0MDAiLCJzY2hlbWVzIjoiQmVhcmVyIiwic2NvcGUiOiJodHRwczovL21haWwuZ29vZ2xlLmNvbS8ifQ==");
+            aSession.handleChannelResponse(serverResp2);
+
+            final IMAPResponse serverResp3 = new IMAPResponse("a1 BAD Invalid SASL argument.");
+            aSession.handleChannelResponse(serverResp3);
+
+            // verify that future should be done now
+            Assert.assertTrue(future.isDone(), "isDone() should be true now");
+            final ImapAsyncResponse asyncResp = future.get(FUTURE_GET_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
+            final Collection<IMAPResponse> lines = asyncResp.getResponseLines();
+            Assert.assertEquals(lines.size(), 2, "responses count mismatched.");
+
+            final Iterator<IMAPResponse> it = lines.iterator();
+
+            // second response is "+ eyJzdGF0dXMiOiI0MDAiLCJzY2hlbWVzIjoiQmVhcmVyIiwic2NvcGUiOiJodHRwczovL21haWwuZ29vZ2xlLmNvbS8ifQ=="
+            final IMAPResponse continuationResp2 = it.next();
+            Assert.assertNotNull(continuationResp2, "Result mismatched.");
+            Assert.assertTrue(continuationResp2.isContinuation(), "Response.isContinuation() mismatched.");
+            Assert.assertEquals(continuationResp2.getRest(),
+                    "eyJzdGF0dXMiOiI0MDAiLCJzY2hlbWVzIjoiQmVhcmVyIiwic2NvcGUiOiJodHRwczovL21haWwuZ29vZ2xlLmNvbS8ifQ==",
+                    "server response mismatched.");
+
+            // 3rd response is
+            final IMAPResponse endingResp = it.next();
+            Assert.assertNotNull(endingResp, "Result mismatched.");
+            Assert.assertTrue(endingResp.isBAD(), "Response.isOK() mismatched.");
+            Assert.assertEquals(endingResp.getTag(), "a1", "tag mismatched.");
+
+            // verify logging messages
+            final ArgumentCaptor<Object> allArgsCapture = ArgumentCaptor.forClass(Object.class);
+            Mockito.verify(logger, Mockito.times(4)).debug(Mockito.anyString(), allArgsCapture.capture(), allArgsCapture.capture(),
+                    allArgsCapture.capture());
+
+            // since it is vargs, 4 calls to debug() with 3 parameters all accumulate to one list, 4 * 3 =12
+            final List<Object> logArgs = allArgsCapture.getAllValues();
+            Assert.assertNotNull(logArgs, "log messages mismatched.");
+            Assert.assertEquals(logArgs.size(), 12, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(2), "AUTHENTICATE XOAUTH2 FOR USER:orange", "Error message mismatched.");
+            Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(5), "+ eyJzdGF0dXMiOiI0MDAiLCJzY2hlbWVzIjoiQmVhcmVyIiwic2NvcGUiOiJodHRwczovL21haWwuZ29vZ2xlLmNvbS8ifQ==",
+                    "Error message mismatched.");
+            Assert.assertEquals(logArgs.get(6), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(7), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(8), "*\r\n", "log messages from server mismatched.");
+            Assert.assertEquals(logArgs.get(9), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(10), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(11), "a1 BAD Invalid SASL argument.", "Error message mismatched.");
+        }
+    }
+
+    /**
      * Tests when server responses CompressCommand success and there is no ssl handler.
      *
      * @throws IOException will not throw
@@ -315,22 +530,25 @@ public class ImapAsyncSessionImplTest {
 
             // verify logging messages
             final ArgumentCaptor<Object> allArgsCapture = ArgumentCaptor.forClass(Object.class);
-            Mockito.verify(logger, Mockito.times(3)).debug(Mockito.anyString(), allArgsCapture.capture(), allArgsCapture.capture(),
+            Mockito.verify(logger, Mockito.times(4)).debug(Mockito.anyString(), allArgsCapture.capture(), allArgsCapture.capture(),
                     allArgsCapture.capture());
 
-            // since it is vargs, 3 calls with 3 parameters all accumulate to one list, 3 * 3 =12
+            // since it is vargs, 4 calls with 3 parameters all accumulate to one list, 4 * 3 =12
             final List<Object> logArgs = allArgsCapture.getAllValues();
             Assert.assertNotNull(logArgs, "log messages mismatched.");
-            Assert.assertEquals(logArgs.size(), 9, "log messages mismatched.");
+            Assert.assertEquals(logArgs.size(), 12, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
             Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
-            Assert.assertEquals(logArgs.get(2), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
+            Assert.assertEquals(logArgs.get(2), "a1 AUTHENTICATE PLAIN\r\n", "log messages from client mismatched.");
             Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
             Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(5), "+", "log messages from server mismatched.");
             Assert.assertEquals(logArgs.get(6), Long.valueOf(SESSION_ID), "log messages mismatched.");
             Assert.assertEquals(logArgs.get(7), USER_ID, "log messages mismatched.");
-            Assert.assertEquals(logArgs.get(8), "a1 OK AUTHENTICATE completed", "Error message mismatched.");
+            Assert.assertEquals(logArgs.get(8), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
+            Assert.assertEquals(logArgs.get(9), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(10), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(11), "a1 OK AUTHENTICATE completed", "Error message mismatched.");
         }
 
         {
@@ -365,28 +583,31 @@ public class ImapAsyncSessionImplTest {
 
             // verify logging messages
             final ArgumentCaptor<Object> allArgsCapture = ArgumentCaptor.forClass(Object.class);
-            Mockito.verify(logger, Mockito.times(5)).debug(Mockito.anyString(), allArgsCapture.capture(), allArgsCapture.capture(),
+            Mockito.verify(logger, Mockito.times(6)).debug(Mockito.anyString(), allArgsCapture.capture(), allArgsCapture.capture(),
                     allArgsCapture.capture());
 
-            // since it is vargs, 5 calls with 3 parameters all accumulate to one list, 5 * 3 =18
+            // since it is vargs, 6 calls with 3 parameters all accumulate to one list, 6 * 3 =18
             final List<Object> logArgs = allArgsCapture.getAllValues();
             Assert.assertNotNull(logArgs, "log messages mismatched.");
-            Assert.assertEquals(logArgs.size(), 15, "log messages mismatched.");
+            Assert.assertEquals(logArgs.size(), 18, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
             Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
-            Assert.assertEquals(logArgs.get(2), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
+            Assert.assertEquals(logArgs.get(2), "a1 AUTHENTICATE PLAIN\r\n", "log messages from client mismatched.");
             Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
             Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(5), "+", "log messages from server mismatched.");
             Assert.assertEquals(logArgs.get(6), Long.valueOf(SESSION_ID), "log messages mismatched.");
             Assert.assertEquals(logArgs.get(7), USER_ID, "log messages mismatched.");
-            Assert.assertEquals(logArgs.get(8), "a1 OK AUTHENTICATE completed", "Error message mismatched.");
+            Assert.assertEquals(logArgs.get(8), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
             Assert.assertEquals(logArgs.get(9), Long.valueOf(SESSION_ID), "log messages mismatched.");
             Assert.assertEquals(logArgs.get(10), USER_ID, "log messages mismatched.");
-            Assert.assertEquals(logArgs.get(11), "a2 COMPRESS DEFLATE\r\n", "log messages from client mismatched.");
+            Assert.assertEquals(logArgs.get(11), "a1 OK AUTHENTICATE completed", "Error message mismatched.");
             Assert.assertEquals(logArgs.get(12), Long.valueOf(SESSION_ID), "log messages mismatched.");
             Assert.assertEquals(logArgs.get(13), USER_ID, "log messages mismatched.");
-            Assert.assertEquals(logArgs.get(14), "a2 OK Success", "log messages from server mismatched.");
+            Assert.assertEquals(logArgs.get(14), "a2 COMPRESS DEFLATE\r\n", "log messages from client mismatched.");
+            Assert.assertEquals(logArgs.get(15), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(16), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(17), "a2 OK Success", "log messages from server mismatched.");
         }
     }
 
@@ -463,22 +684,25 @@ public class ImapAsyncSessionImplTest {
 
             // verify logging messages
             final ArgumentCaptor<Object> allArgsCapture = ArgumentCaptor.forClass(Object.class);
-            Mockito.verify(logger, Mockito.times(3)).debug(Mockito.anyString(), allArgsCapture.capture(), allArgsCapture.capture(),
+            Mockito.verify(logger, Mockito.times(4)).debug(Mockito.anyString(), allArgsCapture.capture(), allArgsCapture.capture(),
                     allArgsCapture.capture());
 
-            // since it is vargs, 3 calls with 3 parameters all accumulate to one list, 3 * 3 =9
+            // since it is vargs, 4 calls with 3 parameters all accumulate to one list, 4 * 3 =12
             final List<Object> logArgs = allArgsCapture.getAllValues();
             Assert.assertNotNull(logArgs, "log messages mismatched.");
-            Assert.assertEquals(logArgs.size(), 9, "log messages mismatched.");
+            Assert.assertEquals(logArgs.size(), 12, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
             Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
-            Assert.assertEquals(logArgs.get(2), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
+            Assert.assertEquals(logArgs.get(2), "a1 AUTHENTICATE PLAIN\r\n", "log messages from client mismatched.");
             Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
             Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(5), "+", "log messages from server mismatched.");
             Assert.assertEquals(logArgs.get(6), Long.valueOf(SESSION_ID), "log messages mismatched.");
             Assert.assertEquals(logArgs.get(7), USER_ID, "log messages mismatched.");
-            Assert.assertEquals(logArgs.get(8), "a1 OK AUTHENTICATE completed", "Error message mismatched.");
+            Assert.assertEquals(logArgs.get(8), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
+            Assert.assertEquals(logArgs.get(9), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(10), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(11), "a1 OK AUTHENTICATE completed", "Error message mismatched.");
         }
 
         {
@@ -515,28 +739,31 @@ public class ImapAsyncSessionImplTest {
 
             // verify logging messages
             final ArgumentCaptor<Object> allArgsCapture = ArgumentCaptor.forClass(Object.class);
-            Mockito.verify(logger, Mockito.times(5)).debug(Mockito.anyString(), allArgsCapture.capture(), allArgsCapture.capture(),
+            Mockito.verify(logger, Mockito.times(6)).debug(Mockito.anyString(), allArgsCapture.capture(), allArgsCapture.capture(),
                     allArgsCapture.capture());
 
-            // since it is vargs, 5 calls with 3 parameters all accumulate to one list, 5 * 3 =15
+            // since it is vargs, 6 calls with 3 parameters all accumulate to one list, 6 * 3 =18
             final List<Object> logArgs = allArgsCapture.getAllValues();
             Assert.assertNotNull(logArgs, "log messages mismatched.");
-            Assert.assertEquals(logArgs.size(), 15, "log messages mismatched.");
+            Assert.assertEquals(logArgs.size(), 18, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
             Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
-            Assert.assertEquals(logArgs.get(2), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
+            Assert.assertEquals(logArgs.get(2), "a1 AUTHENTICATE PLAIN\r\n", "log messages from client mismatched.");
             Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
             Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(5), "+", "log messages from server mismatched.");
             Assert.assertEquals(logArgs.get(6), Long.valueOf(SESSION_ID), "log messages mismatched.");
             Assert.assertEquals(logArgs.get(7), USER_ID, "log messages mismatched.");
-            Assert.assertEquals(logArgs.get(8), "a1 OK AUTHENTICATE completed", "Error message mismatched.");
+            Assert.assertEquals(logArgs.get(8), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
             Assert.assertEquals(logArgs.get(9), Long.valueOf(SESSION_ID), "log messages mismatched.");
             Assert.assertEquals(logArgs.get(10), USER_ID, "log messages mismatched.");
-            Assert.assertEquals(logArgs.get(11), "a2 COMPRESS DEFLATE\r\n", "log messages from client mismatched.");
+            Assert.assertEquals(logArgs.get(11), "a1 OK AUTHENTICATE completed", "Error message mismatched.");
             Assert.assertEquals(logArgs.get(12), Long.valueOf(SESSION_ID), "log messages mismatched.");
             Assert.assertEquals(logArgs.get(13), USER_ID, "log messages mismatched.");
-            Assert.assertEquals(logArgs.get(14), "a2 OK Success", "log messages from server mismatched.");
+            Assert.assertEquals(logArgs.get(14), "a2 COMPRESS DEFLATE\r\n", "log messages from client mismatched.");
+            Assert.assertEquals(logArgs.get(15), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(16), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(17), "a2 OK Success", "log messages from server mismatched.");
         }
     }
 
@@ -612,22 +839,25 @@ public class ImapAsyncSessionImplTest {
 
             // verify logging messages
             final ArgumentCaptor<Object> allArgsCapture = ArgumentCaptor.forClass(Object.class);
-            Mockito.verify(logger, Mockito.times(3)).debug(Mockito.anyString(), allArgsCapture.capture(), allArgsCapture.capture(),
+            Mockito.verify(logger, Mockito.times(4)).debug(Mockito.anyString(), allArgsCapture.capture(), allArgsCapture.capture(),
                     allArgsCapture.capture());
 
-            // since it is vargs, 3 calls with 3 parameters all accumulate to one list, 3 * 3 =12
+            // since it is vargs, 4 calls with 3 parameters all accumulate to one list, 4 * 3 =12
             final List<Object> logArgs = allArgsCapture.getAllValues();
             Assert.assertNotNull(logArgs, "log messages mismatched.");
-            Assert.assertEquals(logArgs.size(), 9, "log messages mismatched.");
+            Assert.assertEquals(logArgs.size(), 12, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
             Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
-            Assert.assertEquals(logArgs.get(2), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
+            Assert.assertEquals(logArgs.get(2), "a1 AUTHENTICATE PLAIN\r\n", "log messages from client mismatched.");
             Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
             Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(5), "+", "log messages from server mismatched.");
             Assert.assertEquals(logArgs.get(6), Long.valueOf(SESSION_ID), "log messages mismatched.");
             Assert.assertEquals(logArgs.get(7), USER_ID, "log messages mismatched.");
-            Assert.assertEquals(logArgs.get(8), "a1 OK AUTHENTICATE completed", "Error message mismatched.");
+            Assert.assertEquals(logArgs.get(8), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
+            Assert.assertEquals(logArgs.get(9), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(10), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(11), "a1 OK AUTHENTICATE completed", "Error message mismatched.");
         }
 
         {
@@ -662,28 +892,31 @@ public class ImapAsyncSessionImplTest {
 
             // verify logging messages
             final ArgumentCaptor<Object> allArgsCapture = ArgumentCaptor.forClass(Object.class);
-            Mockito.verify(logger, Mockito.times(5)).debug(Mockito.anyString(), allArgsCapture.capture(), allArgsCapture.capture(),
+            Mockito.verify(logger, Mockito.times(6)).debug(Mockito.anyString(), allArgsCapture.capture(), allArgsCapture.capture(),
                     allArgsCapture.capture());
 
-            // since it is vargs, 5 calls with 3 parameters all accumulate to one list, 5 * 3 =15
+            // since it is vargs, 6 calls with 3 parameters all accumulate to one list, 6 * 3 =18
             final List<Object> logArgs = allArgsCapture.getAllValues();
             Assert.assertNotNull(logArgs, "log messages mismatched.");
-            Assert.assertEquals(logArgs.size(), 15, "log messages mismatched.");
+            Assert.assertEquals(logArgs.size(), 18, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
             Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
-            Assert.assertEquals(logArgs.get(2), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
+            Assert.assertEquals(logArgs.get(2), "a1 AUTHENTICATE PLAIN\r\n", "log messages from client mismatched.");
             Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
             Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(5), "+", "log messages from server mismatched.");
             Assert.assertEquals(logArgs.get(6), Long.valueOf(SESSION_ID), "log messages mismatched.");
             Assert.assertEquals(logArgs.get(7), USER_ID, "log messages mismatched.");
-            Assert.assertEquals(logArgs.get(8), "a1 OK AUTHENTICATE completed", "Error message mismatched.");
+            Assert.assertEquals(logArgs.get(8), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
             Assert.assertEquals(logArgs.get(9), Long.valueOf(SESSION_ID), "log messages mismatched.");
             Assert.assertEquals(logArgs.get(10), USER_ID, "log messages mismatched.");
-            Assert.assertEquals(logArgs.get(11), "a2 COMPRESS DEFLATE\r\n", "log messages from client mismatched.");
+            Assert.assertEquals(logArgs.get(11), "a1 OK AUTHENTICATE completed", "Error message mismatched.");
             Assert.assertEquals(logArgs.get(12), Long.valueOf(SESSION_ID), "log messages mismatched.");
             Assert.assertEquals(logArgs.get(13), USER_ID, "log messages mismatched.");
-            Assert.assertEquals(logArgs.get(14), "a2 NO Success", "log messages from server mismatched.");
+            Assert.assertEquals(logArgs.get(14), "a2 COMPRESS DEFLATE\r\n", "log messages from client mismatched.");
+            Assert.assertEquals(logArgs.get(15), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(16), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(17), "a2 NO Success", "log messages from server mismatched.");
         }
     }
 
@@ -1453,16 +1686,19 @@ public class ImapAsyncSessionImplTest {
 
             // verify logging messages
             final ArgumentCaptor<Object> allArgsCapture = ArgumentCaptor.forClass(Object.class);
-            Mockito.verify(logger, Mockito.times(1)).debug(Mockito.anyString(), allArgsCapture.capture(), allArgsCapture.capture(),
+            Mockito.verify(logger, Mockito.times(2)).debug(Mockito.anyString(), allArgsCapture.capture(), allArgsCapture.capture(),
                     allArgsCapture.capture());
 
-            // since it is vargs, 1 calls with 3 parameters all accumulate to one list, 1 * 3 =3
+            // since it is vargs, 2 calls with 3 parameters all accumulate to one list, 2 * 3 =6
             final List<Object> logArgs = allArgsCapture.getAllValues();
             Assert.assertNotNull(logArgs, "log messages mismatched.");
-            Assert.assertEquals(logArgs.size(), 3, "log messages mismatched.");
+            Assert.assertEquals(logArgs.size(), 6, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
             Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(2), "+", "log messages from server mismatched.");
+            Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(5), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
 
             final ArgumentCaptor<Object> errCapture = ArgumentCaptor.forClass(Object.class);
             Mockito.verify(logger, Mockito.times(1)).error(Mockito.anyString(), errCapture.capture(), errCapture.capture(), errCapture.capture());
@@ -1550,22 +1786,25 @@ public class ImapAsyncSessionImplTest {
 
             // verify logging messages
             final ArgumentCaptor<Object> allArgsCapture = ArgumentCaptor.forClass(Object.class);
-            Mockito.verify(logger, Mockito.times(3)).debug(Mockito.anyString(), allArgsCapture.capture(), allArgsCapture.capture(),
+            Mockito.verify(logger, Mockito.times(4)).debug(Mockito.anyString(), allArgsCapture.capture(), allArgsCapture.capture(),
                     allArgsCapture.capture());
 
-            // since it is vargs, 3 calls with 3 parameters all accumulate to one list, 3 * 3 =12
+            // since it is vargs, 4 calls with 3 parameters all accumulate to one list, 4 * 3 =12
             final List<Object> logArgs = allArgsCapture.getAllValues();
             Assert.assertNotNull(logArgs, "log messages mismatched.");
-            Assert.assertEquals(logArgs.size(), 9, "log messages mismatched.");
+            Assert.assertEquals(logArgs.size(), 12, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
             Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
-            Assert.assertEquals(logArgs.get(2), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
+            Assert.assertEquals(logArgs.get(2), "a1 AUTHENTICATE PLAIN\r\n", "log messages from client mismatched.");
             Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
             Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(5), "+", "log messages from server mismatched.");
             Assert.assertEquals(logArgs.get(6), Long.valueOf(SESSION_ID), "log messages mismatched.");
             Assert.assertEquals(logArgs.get(7), USER_ID, "log messages mismatched.");
-            Assert.assertEquals(logArgs.get(8), "a1 OK AUTHENTICATE completed", "Error message mismatched.");
+            Assert.assertEquals(logArgs.get(8), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
+            Assert.assertEquals(logArgs.get(9), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(10), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(11), "a1 OK AUTHENTICATE completed", "Error message mismatched.");
         }
 
         {
@@ -1605,28 +1844,31 @@ public class ImapAsyncSessionImplTest {
 
             // verify logging messages
             final ArgumentCaptor<Object> allArgsCapture = ArgumentCaptor.forClass(Object.class);
-            Mockito.verify(logger, Mockito.times(5)).debug(Mockito.anyString(), allArgsCapture.capture(), allArgsCapture.capture(),
+            Mockito.verify(logger, Mockito.times(6)).debug(Mockito.anyString(), allArgsCapture.capture(), allArgsCapture.capture(),
                     allArgsCapture.capture());
 
-            // since it is vargs, 5 calls with 3 parameters all accumulate to one list, 6 * 3 =15
+            // since it is vargs, 6 calls with 3 parameters all accumulate to one list, 6 * 3 =18
             final List<Object> logArgs = allArgsCapture.getAllValues();
             Assert.assertNotNull(logArgs, "log messages mismatched.");
-            Assert.assertEquals(logArgs.size(), 15, "log messages mismatched.");
+            Assert.assertEquals(logArgs.size(), 18, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
             Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
-            Assert.assertEquals(logArgs.get(2), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
+            Assert.assertEquals(logArgs.get(2), "a1 AUTHENTICATE PLAIN\r\n", "log messages from client mismatched.");
             Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
             Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(5), "+", "log messages from server mismatched.");
             Assert.assertEquals(logArgs.get(6), Long.valueOf(SESSION_ID), "log messages mismatched.");
             Assert.assertEquals(logArgs.get(7), USER_ID, "log messages mismatched.");
-            Assert.assertEquals(logArgs.get(8), "a1 OK AUTHENTICATE completed", "Error message mismatched.");
+            Assert.assertEquals(logArgs.get(8), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
             Assert.assertEquals(logArgs.get(9), Long.valueOf(SESSION_ID), "log messages mismatched.");
             Assert.assertEquals(logArgs.get(10), USER_ID, "log messages mismatched.");
-            Assert.assertEquals(logArgs.get(11), "a2 COMPRESS DEFLATE\r\n", "log messages from client mismatched.");
+            Assert.assertEquals(logArgs.get(11), "a1 OK AUTHENTICATE completed", "Error message mismatched.");
             Assert.assertEquals(logArgs.get(12), Long.valueOf(SESSION_ID), "log messages mismatched.");
             Assert.assertEquals(logArgs.get(13), USER_ID, "log messages mismatched.");
-            Assert.assertEquals(logArgs.get(14), "a2 OK Success", "log messages from server mismatched.");
+            Assert.assertEquals(logArgs.get(14), "a2 COMPRESS DEFLATE\r\n", "log messages from client mismatched.");
+            Assert.assertEquals(logArgs.get(15), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(16), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(17), "a2 OK Success", "log messages from server mismatched.");
         }
     }
 
