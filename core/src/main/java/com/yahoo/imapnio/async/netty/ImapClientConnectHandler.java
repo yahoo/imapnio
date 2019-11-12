@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import com.sun.mail.imap.protocol.IMAPResponse;
 import com.yahoo.imapnio.async.client.ImapAsyncCreateSessionResponse;
 import com.yahoo.imapnio.async.client.ImapAsyncSession.DebugMode;
+import com.yahoo.imapnio.async.client.ImapAsyncSessionClientContext;
 import com.yahoo.imapnio.async.client.ImapFuture;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException.FailureType;
@@ -38,7 +39,11 @@ public class ImapClientConnectHandler extends MessageToMessageDecoder<IMAPRespon
     private DebugMode logOpt;
 
     /** Session Id. */
-    private int sessionId;
+    private long sessionId;
+
+    /** ImapAsyncSessionClientContext instance. */
+    @Nonnull
+    private ImapAsyncSessionClientContext clientCtx;
 
     /**
      * Initializes @{code ImapClientConnectHandler} to process ok greeting after connection.
@@ -47,13 +52,15 @@ public class ImapClientConnectHandler extends MessageToMessageDecoder<IMAPRespon
      * @param logger the @{code Logger} instance for @{ImapAsyncSessionImpl}
      * @param logOpt logging option for the session to be created
      * @param sessionId the session id
+     * @param clientCtx context for client to store information
      */
     public ImapClientConnectHandler(@Nonnull final ImapFuture<ImapAsyncCreateSessionResponse> sessionFuture, @Nonnull final Logger logger,
-            @Nonnull final DebugMode logOpt, final int sessionId) {
+            @Nonnull final DebugMode logOpt, final long sessionId, @Nonnull final ImapAsyncSessionClientContext clientCtx) {
         this.sessionCreatedFuture = sessionFuture;
         this.logger = logger;
         this.logOpt = logOpt;
         this.sessionId = sessionId;
+        this.clientCtx = clientCtx;
     }
 
     @Override
@@ -64,7 +71,7 @@ public class ImapClientConnectHandler extends MessageToMessageDecoder<IMAPRespon
 
         if (serverResponse.isOK()) { // we can call it successful only when response is ok
             // add the command response handler
-            final ImapAsyncSessionImpl session = new ImapAsyncSessionImpl(ctx.channel(), logger, logOpt, sessionId, pipeline);
+            final ImapAsyncSessionImpl session = new ImapAsyncSessionImpl(ctx.channel(), logger, logOpt, sessionId, pipeline, clientCtx);
             final ImapAsyncCreateSessionResponse response = new ImapAsyncCreateSessionResponse(session, serverResponse);
             sessionCreatedFuture.done(response);
 
@@ -110,5 +117,6 @@ public class ImapClientConnectHandler extends MessageToMessageDecoder<IMAPRespon
         sessionCreatedFuture = null;
         logger = null;
         logOpt = null;
+        clientCtx = null;
     }
 }

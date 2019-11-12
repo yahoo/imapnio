@@ -6,6 +6,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import javax.annotation.Nonnull;
 
 import com.sun.mail.imap.protocol.IMAPResponse;
+import com.yahoo.imapnio.async.client.ImapSessionLogger;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException.FailureType;
 
@@ -39,6 +40,12 @@ public abstract class ImapRequestAdapter implements ImapRequest {
     @Override
     public ByteBuf getNextCommandLineAfterContinuation(@Nonnull final IMAPResponse serverResponse) throws ImapAsyncClientException {
         throw new ImapAsyncClientException(FailureType.OPERATION_NOT_SUPPORTED_FOR_COMMAND);
+    }
+
+    @Override
+    public ByteBuf getNextCommandLineAfterContinuation(@Nonnull final IMAPResponse serverResponse, @Nonnull final ImapSessionLogger sessionLogger)
+            throws ImapAsyncClientException {
+        return getNextCommandLineAfterContinuation(serverResponse);
     }
 
     @Override

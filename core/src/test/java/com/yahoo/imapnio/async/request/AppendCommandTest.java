@@ -11,11 +11,13 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.mail.Flags;
 
+import org.mockito.Mockito;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import com.sun.mail.imap.protocol.IMAPResponse;
+import com.yahoo.imapnio.async.client.ImapSessionLogger;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException.FailureType;
 
@@ -90,12 +92,24 @@ public class AppendCommandTest {
 
         // verify getNextCommandLineAfterContinuation()
         final IMAPResponse serverResponse = null; // we dont care
-        final ByteBuf bytebuf = cmd.getNextCommandLineAfterContinuation(serverResponse);
+        final ImapSessionLogger sessionLogger = Mockito.mock(ImapSessionLogger.class);
+        Mockito.when(sessionLogger.isDebugEnabled()).thenReturn(true);
+        final ByteBuf bytebuf = cmd.getNextCommandLineAfterContinuation(serverResponse, sessionLogger);
         Assert.assertNotNull(bytebuf, "Expected result mismatched.");
 
         final byte[] actual = new byte[len];
         bytebuf.getBytes(0, actual, 0, len);
         Assert.assertEquals(actual, expectedMsg, "Expected result mismatched.");
+
+        // calls the deprecated one
+        ImapAsyncClientException actualEx = null;
+        try {
+            cmd.getNextCommandLineAfterContinuation(serverResponse);
+        } catch (final ImapAsyncClientException e) {
+            actualEx = e;
+        }
+        Assert.assertNotNull(actualEx, "Should encounter exception");
+        Assert.assertEquals(actualEx.getFaiureType(), FailureType.OPERATION_NOT_SUPPORTED_FOR_COMMAND, "Should fail with this type");
 
         cmd.cleanup();
         // Verify if cleanup happened correctly.
@@ -139,8 +153,10 @@ public class AppendCommandTest {
         // verify getNextCommandLineAfterContinuation()
         final IMAPResponse serverResponse = null; // we dont care
         ImapAsyncClientException actual = null;
+        final ImapSessionLogger sessionLogger = Mockito.mock(ImapSessionLogger.class);
+        Mockito.when(sessionLogger.isDebugEnabled()).thenReturn(true);
         try {
-            cmd.getNextCommandLineAfterContinuation(serverResponse);
+            cmd.getNextCommandLineAfterContinuation(serverResponse, sessionLogger);
         } catch (final ImapAsyncClientException e) {
             actual = e;
         }
@@ -189,8 +205,10 @@ public class AppendCommandTest {
         // verify getNextCommandLineAfterContinuation()
         final IMAPResponse serverResponse = null; // we dont care
         ImapAsyncClientException actual = null;
+        final ImapSessionLogger sessionLogger = Mockito.mock(ImapSessionLogger.class);
+        Mockito.when(sessionLogger.isDebugEnabled()).thenReturn(true);
         try {
-            cmd.getNextCommandLineAfterContinuation(serverResponse);
+            cmd.getNextCommandLineAfterContinuation(serverResponse, sessionLogger);
         } catch (final ImapAsyncClientException e) {
             actual = e;
         }

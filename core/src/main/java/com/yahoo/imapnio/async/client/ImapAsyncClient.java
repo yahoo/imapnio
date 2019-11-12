@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -79,7 +79,7 @@ public class ImapAsyncClient {
     private final Logger logger;
 
     /** Counter for session. */
-    private final AtomicInteger sessionCount = new AtomicInteger(1);
+    private final AtomicLong sessionCount = new AtomicLong(1);
 
     /** The Netty bootstrap. */
     private final Bootstrap bootstrap;
@@ -162,6 +162,23 @@ public class ImapAsyncClient {
      */
     public Future<ImapAsyncCreateSessionResponse> createSession(@Nonnull final URI serverUri, @Nonnull final ImapAsyncSessionConfig config,
             @Nullable final InetSocketAddress localAddress, @Nullable final List<String> sniNames, @Nonnull final DebugMode logOpt) {
+        return createSession(serverUri, config, localAddress, sniNames, logOpt, new ImapAsyncSessionClientContext());
+    }
+
+    /**
+     * Connects to the remote server asynchronously and returns a future for the ImapSession if connection is established.
+     **
+     * @param serverUri IMAP server URI
+     * @param config configuration to be used for this session/connection
+     * @param localAddress the local network interface to us
+     * @param sniNames Server Name Indication names list
+     * @param logOpt session logging option for the session to be created
+     * @param clientCtx context for client to store information
+     * @return the ChannelFuture object
+     */
+    public Future<ImapAsyncCreateSessionResponse> createSession(@Nonnull final URI serverUri, @Nonnull final ImapAsyncSessionConfig config,
+            @Nullable final InetSocketAddress localAddress, @Nullable final List<String> sniNames, @Nonnull final DebugMode logOpt,
+            @Nonnull final ImapAsyncSessionClientContext clientCtx) {
 
         final boolean isSessionDebugOn = (logOpt == DebugMode.DEBUG_ON);
         // ------------------------------------------------------------
@@ -215,9 +232,10 @@ public class ImapAsyncClient {
                             pipeline.addFirst(SSL_HANDLER, sslContext.newHandler(ch.alloc(), serverUri.getHost(), serverUri.getPort()));
                         }
                     }
-                    final int sessionId = sessionCount.incrementAndGet();
-                    pipeline.addLast(ImapClientConnectHandler.HANDLER_NAME,
-                            new ImapClientConnectHandler(sessionFuture, LoggerFactory.getLogger(ImapAsyncSessionImpl.class), logOpt, sessionId));
+                    final long sessionId = sessionCount.incrementAndGet();
+                    sessionCount.compareAndSet(Long.MAX_VALUE - 1, 1); // roll back to 1 if reaching the max
+                    pipeline.addLast(ImapClientConnectHandler.HANDLER_NAME, new ImapClientConnectHandler(sessionFuture,
+                            LoggerFactory.getLogger(ImapAsyncSessionImpl.class), logOpt, sessionId, clientCtx));
 
                     if (logger.isTraceEnabled() || isSessionDebugOn) {
                         logger.debug(CONNECT_RESULT_REC, sessionId, "success", serverUri.toASCIIString(), sniNames);

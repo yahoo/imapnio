@@ -8,6 +8,7 @@ import javax.annotation.Nonnull;
 import org.apache.commons.codec.binary.Base64;
 
 import com.sun.mail.imap.protocol.IMAPResponse;
+import com.yahoo.imapnio.async.client.ImapSessionLogger;
 import com.yahoo.imapnio.async.data.Capability;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException.FailureType;
@@ -23,6 +24,9 @@ public class AuthXoauth2Command extends ImapRequestAdapter {
     /** Byte array for CR and LF, keeping the array local so it cannot be modified by others. */
     private static final byte[] CRLF_B = { '\r', '\n' };
 
+    /** Literal to cancel the command when server responds error. */
+    private static final char CANCEL_B = '*';
+
     /** Command operator. */
     private static final String AUTH_XOAUTH2 = "AUTHENTICATE XOAUTH2";
 
@@ -33,7 +37,7 @@ public class AuthXoauth2Command extends ImapRequestAdapter {
     private static final int AUTH_XOAUTH2_LEN = AUTH_XOAUTH2.length();
 
     /** Literal for logging data. */
-    private static final String LOG_PREFIX = "AUTHENTICATE XOAUTH2 FOR USER:";
+    private static final String LOG_PREFIX = "AUTHENTICATE XOAUTH2 DATA FOR USER:";
 
     /** Literal for user=. */
     private static final String USER = "user=";
@@ -44,6 +48,12 @@ public class AuthXoauth2Command extends ImapRequestAdapter {
     /** Extra length for string. */
     private static final int EXTRA_LEN = 10;
 
+    /** Byte buffer length for cancel statement. */
+    private static final int CANCEL_LEN = 10;
+
+    /** Literal for logging decoded server challenge response. */
+    private static final String DEBUG_MESSAGE = "AuthXoauth2Command:server challenge:";
+
     /** User name. */
     private String username;
 
@@ -52,6 +62,12 @@ public class AuthXoauth2Command extends ImapRequestAdapter {
 
     /** flag whether server allows one liner (Refer to RFC4959) instead of server challenge. */
     private boolean isSaslIREnabled;
+
+    /** Flag whether the client response is sent already. */
+    private boolean isClientResponseSent;
+
+    /** Flag whether the data sent out is sensitive. */
+    private boolean isDataSensitive;
 
     /**
      * Initializes an authenticate xoauth2 command.
@@ -64,6 +80,8 @@ public class AuthXoauth2Command extends ImapRequestAdapter {
         this.username = username;
         this.token = token;
         this.isSaslIREnabled = capa.hasCapability(ImapClientConstants.SASL_IR);
+        this.isClientResponseSent = false;
+        this.isDataSensitive = true;
     }
 
     @Override
@@ -88,14 +106,20 @@ public class AuthXoauth2Command extends ImapRequestAdapter {
     @Override
     public ByteBuf getCommandLineBytes() {
         if (isSaslIREnabled) { // server allows client response in one line
+
+            this.isDataSensitive = true;
             final String clientResp = buildClientResponse();
             final ByteBuf sb = Unpooled.buffer(clientResp.length() + ImapClientConstants.PAD_LEN);
             sb.writeBytes(AUTH_XOAUTH2_B);
             sb.writeByte(ImapClientConstants.SPACE);
             sb.writeBytes(clientResp.getBytes(StandardCharsets.US_ASCII));
             sb.writeBytes(CRLF_B);
+            this.isClientResponseSent = true;
             return sb;
         }
+
+        // SASL-IR is not supported if reaching here, just sending the command without client response
+        this.isDataSensitive = false;
         final int len = AUTH_XOAUTH2_LEN + ImapClientConstants.CRLFLEN;
         final ByteBuf buf = Unpooled.buffer(len);
         buf.writeBytes(AUTH_XOAUTH2_B);
@@ -105,7 +129,7 @@ public class AuthXoauth2Command extends ImapRequestAdapter {
 
     @Override
     public boolean isCommandLineDataSensitive() {
-        return true;
+        return isDataSensitive;
     }
 
     @Override
@@ -119,14 +143,29 @@ public class AuthXoauth2Command extends ImapRequestAdapter {
     }
 
     @Override
-    public ByteBuf getNextCommandLineAfterContinuation(final IMAPResponse serverResponse) throws ImapAsyncClientException {
-        if (isSaslIREnabled) { // should not reach here, since if SASL-IR enabled, server should not ask for next line
-            throw new ImapAsyncClientException(FailureType.OPERATION_NOT_SUPPORTED_FOR_COMMAND);
+    public ByteBuf getNextCommandLineAfterContinuation(final IMAPResponse serverResponse, @Nonnull final ImapSessionLogger sessionLogger)
+            throws ImapAsyncClientException {
+        if (isClientResponseSent) { // when server sends the response to the client response instead of tagged response
+            if (sessionLogger.isDebugEnabled()) {
+                final StringBuilder sb = new StringBuilder(DEBUG_MESSAGE)
+                        .append(new String(Base64.decodeBase64(serverResponse.getRest()), StandardCharsets.US_ASCII));
+                sessionLogger.logDebugMessage(sb.toString());
+            }
+            this.isDataSensitive = false;
+            final ByteBuf buf = Unpooled.buffer(CANCEL_LEN);
+            buf.writeByte(CANCEL_B);
+            buf.writeBytes(CRLF_B);
+            return buf;
         }
+
+        // client response is not sent yet, sending it now
+        this.isDataSensitive = true;
         final String clientResp = buildClientResponse();
         final ByteBuf buf = Unpooled.buffer(clientResp.length() + ImapClientConstants.CRLFLEN);
         buf.writeBytes(clientResp.getBytes(StandardCharsets.US_ASCII));
         buf.writeBytes(CRLF_B);
+        // setting the flag to true to indicate client response is sent
+        isClientResponseSent = true;
         return buf;
     }
 

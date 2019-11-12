@@ -7,6 +7,7 @@ import javax.annotation.Nonnull;
 import org.apache.avro.reflect.Nullable;
 
 import com.sun.mail.imap.protocol.IMAPResponse;
+import com.yahoo.imapnio.async.client.ImapSessionLogger;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 
 import io.netty.buffer.ByteBuf;
@@ -58,13 +59,28 @@ public interface ImapRequest {
 
     /**
      * Builds the next command line after server challenge.
+     * 
+     * @deprecated this method is deprecated, the actual call to be implemented is the one with @{code ImapSessionLogger} passed in.
      *
      * @param serverResponse the server response
      * @throws ImapAsyncClientException when building command line encounters an error
      * @return command line
      */
     @Nullable
+    @Deprecated
     ByteBuf getNextCommandLineAfterContinuation(@Nonnull IMAPResponse serverResponse) throws ImapAsyncClientException;
+
+    /**
+     * Builds the next command line after server challenge.
+     *
+     * @param serverResponse the server response
+     * @param sessionLogger the logger that allows command to log to the related session
+     * @throws ImapAsyncClientException when building command line encounters an error
+     * @return command line
+     */
+    @Nullable
+    ByteBuf getNextCommandLineAfterContinuation(@Nonnull IMAPResponse serverResponse, @Nonnull ImapSessionLogger sessionLogger)
+            throws ImapAsyncClientException;
 
     /**
      * Builds the next command line after server challenge.

@@ -11,6 +11,7 @@ import javax.mail.Flags;
 import com.sun.mail.imap.protocol.BASE64MailboxEncoder;
 import com.sun.mail.imap.protocol.IMAPResponse;
 import com.sun.mail.imap.protocol.INTERNALDATE;
+import com.yahoo.imapnio.async.client.ImapSessionLogger;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException.FailureType;
 
@@ -169,13 +170,21 @@ public class AppendCommand implements ImapRequest {
     }
 
     @Override
-    public ByteBuf getNextCommandLineAfterContinuation(@Nonnull final IMAPResponse serverResponse) throws ImapAsyncClientException {
+    public ByteBuf getNextCommandLineAfterContinuation(@Nonnull final IMAPResponse serverResponse, @Nonnull final ImapSessionLogger sessionLogger)
+            throws ImapAsyncClientException {
         if (literalOpt == LiteralSupport.ENABLE_LITERAL_PLUS
                 || (literalOpt == LiteralSupport.ENABLE_LITERAL_MINUS && data.length < MAX_LITERAL_MINUS_DATA_LEN)) {
             // should not reach here, since if LITERAL+ or LITERAL- is requested, server should not ask for next line
             throw new ImapAsyncClientException(FailureType.OPERATION_NOT_SUPPORTED_FOR_COMMAND);
         }
         return buildDataByteBuf();
+    }
+
+    @Override
+    @Deprecated
+    public ByteBuf getNextCommandLineAfterContinuation(@Nonnull final IMAPResponse serverResponse) throws ImapAsyncClientException {
+        // should not reach here, should call the signature with ImapSessionLogger
+        throw new ImapAsyncClientException(FailureType.OPERATION_NOT_SUPPORTED_FOR_COMMAND);
     }
 
     @Override

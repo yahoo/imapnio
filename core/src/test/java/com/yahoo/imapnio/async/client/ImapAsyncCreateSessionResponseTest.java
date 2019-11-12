@@ -27,9 +27,12 @@ public class ImapAsyncCreateSessionResponseTest {
     /** Dummy session id. */
     private static final int SESSION_ID = 123456;
 
+    /** Dummy user id. */
+    private static final String USER_ID = "Sauroposeidon@tallerthan.tree";
+
     /**
      * Tests ImapAsyncResponse constructor and getters.
-     * 
+     *
      * @throws IOException will not throw
      * @throws ProtocolException will not throw
      * @throws ImapAsyncClientException will not throw
@@ -42,7 +45,11 @@ public class ImapAsyncCreateSessionResponseTest {
         final Channel channel = Mockito.mock(Channel.class);
 
         final Logger logger = Mockito.mock(Logger.class);
-        final ImapAsyncSession session = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline);
+
+        final ImapAsyncSessionClientContext clientCtx = new ImapAsyncSessionClientContext();
+        clientCtx.setUserId(USER_ID);
+
+        final ImapAsyncSession session = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline, clientCtx);
         final ImapAsyncCreateSessionResponse respOut = new ImapAsyncCreateSessionResponse(session, imapResponse);
 
         Assert.assertEquals(respOut.getSession(), session, "getSession() result mismatched.");
@@ -71,7 +78,7 @@ public class ImapAsyncCreateSessionResponseTest {
 
     /**
      * Tests ImapAsyncResponse constructor when greeting does not have capability.
-     * 
+     *
      * @throws IOException will not throw
      * @throws ProtocolException will not throw
      * @throws ImapAsyncClientException will not throw
@@ -84,7 +91,10 @@ public class ImapAsyncCreateSessionResponseTest {
         final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
         final Channel channel = Mockito.mock(Channel.class);
 
-        final ImapAsyncSession session = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline);
+        final ImapAsyncSessionClientContext clientCtx = new ImapAsyncSessionClientContext();
+        clientCtx.setUserId(USER_ID);
+
+        final ImapAsyncSession session = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline, clientCtx);
         final ImapAsyncCreateSessionResponse respOut = new ImapAsyncCreateSessionResponse(session, imapResponse);
         Assert.assertEquals(respOut.getSession(), session, "getSession() result mismatched.");
         final IMAPResponse greeting = respOut.getServerGreeting();

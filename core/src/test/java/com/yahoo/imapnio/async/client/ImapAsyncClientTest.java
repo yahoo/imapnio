@@ -130,7 +130,7 @@ public class ImapAsyncClientTest {
         Assert.assertEquals(handlerCaptorLast.getAllValues().get(0).getClass(), ImapClientConnectHandler.class, "expected class mismatched.");
         // verify logging messages
         Mockito.verify(logger, Mockito.times(1)).debug(Mockito.eq("[{}] connect operationComplete. result={}, imapServerUri={}, sniNames={}"),
-                Mockito.eq(2), Mockito.eq("success"), Mockito.eq("imaps://one.two.three.com:993"), Mockito.eq(null));
+                Mockito.eq(Long.valueOf(2)), Mockito.eq("success"), Mockito.eq("imaps://one.two.three.com:993"), Mockito.eq(null));
         // call shutdown
         aclient.shutdown();
         Mockito.verify(group, Mockito.times(1)).shutdownGracefully();
@@ -217,7 +217,7 @@ public class ImapAsyncClientTest {
         Assert.assertEquals(handlerCaptorLast.getAllValues().get(0).getClass(), ImapClientConnectHandler.class, "expected class mismatched.");
         // verify logging messages
         Mockito.verify(logger, Mockito.times(1)).debug(Mockito.eq("[{}] connect operationComplete. result={}, imapServerUri={}, sniNames={}"),
-                Mockito.eq(2), Mockito.eq("success"), Mockito.eq("imap://one.two.three.com:993"), Mockito.eq(null));
+                Mockito.eq(Long.valueOf(2)), Mockito.eq("success"), Mockito.eq("imap://one.two.three.com:993"), Mockito.eq(null));
         // call shutdown
         aclient.shutdown();
         Mockito.verify(group, Mockito.times(1)).shutdownGracefully();
@@ -307,7 +307,7 @@ public class ImapAsyncClientTest {
         // verify if session level is on, whether debug call will be called
         // verify logging messages
         Mockito.verify(logger, Mockito.times(1)).debug(Mockito.eq("[{}] connect operationComplete. result={}, imapServerUri={}, sniNames={}"),
-                Mockito.eq(2), Mockito.eq("success"), Mockito.eq("imaps://one.two.three.com:993"), Mockito.eq(new ArrayList<String>()));
+                Mockito.eq(Long.valueOf(2)), Mockito.eq("success"), Mockito.eq("imaps://one.two.three.com:993"), Mockito.eq(new ArrayList<String>()));
     }
 
     /**
@@ -475,7 +475,8 @@ public class ImapAsyncClientTest {
         Assert.assertEquals(handlerCaptorLast.getAllValues().get(0).getClass(), ImapClientConnectHandler.class, "expected class mismatched.");
         // verify logging messages
         Mockito.verify(logger, Mockito.times(1)).debug(Mockito.eq("[{}] connect operationComplete. result={}, imapServerUri={}, sniNames={}"),
-                Mockito.eq(2), Mockito.eq("success"), Mockito.eq("imaps://one.two.three.com:993"), Mockito.eq(Arrays.asList("one.two.three.com")));
+                Mockito.eq(Long.valueOf(2)), Mockito.eq("success"), Mockito.eq("imaps://one.two.three.com:993"),
+                Mockito.eq(Arrays.asList("one.two.three.com")));
     }
 
     /**

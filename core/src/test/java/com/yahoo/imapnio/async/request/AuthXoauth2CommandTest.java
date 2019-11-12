@@ -13,11 +13,15 @@ import java.util.Set;
 
 import javax.mail.search.SearchException;
 
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import com.sun.mail.iap.ProtocolException;
 import com.sun.mail.imap.protocol.IMAPResponse;
+import com.yahoo.imapnio.async.client.ImapSessionLogger;
 import com.yahoo.imapnio.async.data.Capability;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 
@@ -70,7 +74,7 @@ public class AuthXoauth2CommandTest {
         Assert.assertEquals(cmd.getCommandLine(), "AUTHENTICATE XOAUTH2 dXNlcj10ZXNsYQFhdXRoPUJlYXJlciBzZWxmZHJpdmluZwEB\r\n",
                 "Expected result mismatched.");
         Assert.assertTrue(cmd.isCommandLineDataSensitive(), "isCommandLineDataSensitive() result mismatched.");
-        Assert.assertEquals(cmd.getDebugData(), "AUTHENTICATE XOAUTH2 FOR USER:tesla", "Log line mismatched.");
+        Assert.assertEquals(cmd.getDebugData(), "AUTHENTICATE XOAUTH2 DATA FOR USER:tesla", "Log line mismatched.");
 
         cmd.cleanup();
         // Verify if cleanup happened correctly.
@@ -95,8 +99,12 @@ public class AuthXoauth2CommandTest {
         final AuthXoauth2Command cmd = new AuthXoauth2Command(username, token, new Capability(capas));
         Assert.assertEquals(cmd.getCommandLine(), "AUTHENTICATE XOAUTH2\r\n", "Expected result mismatched.");
 
+        final ImapSessionLogger sessionLogger = Mockito.mock(ImapSessionLogger.class);
+        Mockito.when(sessionLogger.isDebugEnabled()).thenReturn(true);
+
+        // asks the next command after continuation
         final IMAPResponse serverResponse = null; // null or not null does not matter
-        final ByteBuf resp2 = cmd.getNextCommandLineAfterContinuation(serverResponse);
+        final ByteBuf resp2 = cmd.getNextCommandLineAfterContinuation(serverResponse, sessionLogger);
         Assert.assertEquals(resp2.toString(StandardCharsets.US_ASCII), "dXNlcj10ZXNsYQFhdXRoPUJlYXJlciBzZWxmZHJpdmluZwEB\r\n",
                 "Expected result mismatched.");
 
@@ -122,24 +130,39 @@ public class AuthXoauth2CommandTest {
 
     /**
      * Tests getNextCommandLineAfterContinuation method.
+     *
+     * @throws ImapAsyncClientException will not throw
+     * @throws ProtocolException will not throw
+     * @throws IOException will not throw
      */
     @Test
-    public void testGetNextCommandLineAfterContinuation() {
+    public void testGetNextCommandLineAfterContinuation() throws ImapAsyncClientException, IOException, ProtocolException {
         final String username = "tesla";
         final String token = "selfdriving";
         final Map<String, List<String>> capas = new HashMap<String, List<String>>();
         capas.put(ImapClientConstants.SASL_IR, Arrays.asList(ImapClientConstants.SASL_IR));
         final ImapRequest cmd = new AuthXoauth2Command(username, token, new Capability(capas));
-        final IMAPResponse serverResponse = null; // null or not null does not matter
-        ImapAsyncClientException ex = null;
-        try {
-            cmd.getNextCommandLineAfterContinuation(serverResponse);
-        } catch (final ImapAsyncClientException imapAsyncEx) {
-            ex = imapAsyncEx;
-        }
-        Assert.assertNotNull(ex, "Expect exception to be thrown.");
-        Assert.assertEquals(ex.getFaiureType(), ImapAsyncClientException.FailureType.OPERATION_NOT_SUPPORTED_FOR_COMMAND,
+
+        // asks for the first command, should contain client response since it is SASL_IR enabled
+        Assert.assertEquals(cmd.getCommandLine(), "AUTHENTICATE XOAUTH2 dXNlcj10ZXNsYQFhdXRoPUJlYXJlciBzZWxmZHJpdmluZwEB\r\n",
                 "Expected result mismatched.");
+
+        final ImapSessionLogger sessionLogger = Mockito.mock(ImapSessionLogger.class);
+        Mockito.when(sessionLogger.isDebugEnabled()).thenReturn(true);
+
+        // asks the next command after continuation with server error response encoded in base64
+        final IMAPResponse serverResponse = new IMAPResponse(
+                "+ eyJzdGF0dXMiOiI0MDAiLCJzY2hlbWVzIjoiQmVhcmVyIiwic2NvcGUiOiJodHRwczovL21haWwuZ29vZ2xlLmNvbS8ifQ==");
+        final ByteBuf nextClientReq = cmd.getNextCommandLineAfterContinuation(serverResponse, sessionLogger);
+        Assert.assertNotNull(nextClientReq, "expected command from client mismatched.");
+        Assert.assertEquals(nextClientReq.toString(StandardCharsets.US_ASCII), "*\r\n", "expected command from client mismatched.");
+        final ArgumentCaptor<String> debugCapture = ArgumentCaptor.forClass(String.class);
+        Mockito.verify(sessionLogger, Mockito.times(1)).logDebugMessage(debugCapture.capture()); // capture does not filter the exact class
+        final String msg = debugCapture.getValue();
+        Assert.assertNotNull(msg, "debug message should be logged");
+        Assert.assertEquals(msg,
+                "AuthXoauth2Command:server challenge:{\"status\":\"400\",\"schemes\":\"Bearer\",\"scope\":\"https://mail.google.com/\"}",
+                "debug message mismatched.");
     }
 
     /**
