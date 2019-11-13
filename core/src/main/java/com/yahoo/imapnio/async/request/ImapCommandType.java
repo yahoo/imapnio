@@ -22,6 +22,8 @@ public enum ImapCommandType {
     CREATE_FOLDER,
     /** Delete folder command. */
     DELETE_FOLDER,
+    /** Enable capability command. */
+    ENABLE,
     /** Examine folder command. */
     EXAMINE_FOLDER,
     /** Expunge command. */
