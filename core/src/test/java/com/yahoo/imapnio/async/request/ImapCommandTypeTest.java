@@ -14,7 +14,7 @@ public class ImapCommandTypeTest {
     @Test
     public void testCommandTypeEnum() {
         final ImapCommandType[] enumList = ImapCommandType.values();
-        Assert.assertEquals(enumList.length, 35, "The enum count mismatched.");
+        Assert.assertEquals(enumList.length, 36, "The enum count mismatched.");
         final ImapCommandType uidFetch = ImapCommandType.valueOf("UID_FETCH");
         Assert.assertSame(uidFetch, ImapCommandType.UID_FETCH, "Enum does not match.");
     }
