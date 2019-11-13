@@ -42,6 +42,7 @@ import com.yahoo.imapnio.async.response.ImapAsyncResponse;
 import com.yahoo.imapnio.async.response.ImapResponseMapper;
 
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.compression.JdkZlibDecoder;
@@ -594,7 +595,7 @@ public class ImapAsyncSessionImplTest {
     }
 
     /**
-     * Tests server idles event happens while command queue is NOT empty.
+     * Tests server idle event happens while command queue is NOT empty and command in queue is in REQUEST_SENT state.
      *
      * @throws IOException will not throw
      * @throws ImapAsyncClientException will not throw
@@ -605,8 +606,8 @@ public class ImapAsyncSessionImplTest {
      * @throws SearchException will not throw
      */
     @Test
-    public void testHandleIdleEventQueueNotEmpty() throws ImapAsyncClientException, IOException, ProtocolException, InterruptedException,
-            ExecutionException, TimeoutException, SearchException {
+    public void testHandleIdleEventQueueNotEmptyAndCommandSentToServer() throws ImapAsyncClientException, IOException, ProtocolException,
+            InterruptedException, ExecutionException, TimeoutException, SearchException {
 
         final Channel channel = Mockito.mock(Channel.class);
         final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
@@ -625,10 +626,16 @@ public class ImapAsyncSessionImplTest {
         final ImapRequest cmd = new CapaCommand();
         final ImapFuture<ImapAsyncResponse> future = aSession.execute(cmd);
 
+        // simulate command sent to server
+        final ChannelFuture writeCompleteFuture = Mockito.mock(ChannelFuture.class);
+        Mockito.when(writeCompleteFuture.isSuccess()).thenReturn(true);
+        aSession.operationComplete(writeCompleteFuture);
+
+        // idle event happened
         final IdleStateEvent idleEvent = null;
         aSession.handleIdleEvent(idleEvent);
 
-        // verify that future should be done now since exception happens
+        // verify that future should be done now since channel timeout exception happens
         Assert.assertTrue(future.isDone(), "isDone() should be true now");
 
         ExecutionException ex = null;
@@ -643,6 +650,46 @@ public class ImapAsyncSessionImplTest {
         Assert.assertEquals(cause.getClass(), ImapAsyncClientException.class, "Expected result mismatched.");
         final ImapAsyncClientException asynEx = (ImapAsyncClientException) cause;
         Assert.assertEquals(asynEx.getFaiureType(), FailureType.CHANNEL_TIMEOUT, "Failure type mismatched.");
+    }
+
+    /**
+     * Tests server idle event happens while command queue is NOT empty, and command is in NOT_SENT state.
+     *
+     * @throws IOException will not throw
+     * @throws ImapAsyncClientException will not throw
+     * @throws ProtocolException will not throw
+     * @throws TimeoutException will not throw
+     * @throws ExecutionException will not throw
+     * @throws InterruptedException will not throw
+     * @throws SearchException will not throw
+     */
+    @Test
+    public void testHandleIdleEventQueueNotEmptyCommandNotSentToServer() throws ImapAsyncClientException, IOException, ProtocolException,
+            InterruptedException, ExecutionException, TimeoutException, SearchException {
+
+        final Channel channel = Mockito.mock(Channel.class);
+        final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
+        Mockito.when(channel.pipeline()).thenReturn(pipeline);
+        Mockito.when(channel.isActive()).thenReturn(true);
+        final ChannelPromise writePromise = Mockito.mock(ChannelPromise.class);
+        Mockito.when(channel.newPromise()).thenReturn(writePromise);
+
+        final Logger logger = Mockito.mock(Logger.class);
+        Mockito.when(logger.isDebugEnabled()).thenReturn(true);
+
+        // construct, turn on session level debugging by having logger.isDebugEnabled() true and session level debug on
+        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline);
+
+        // execute
+        final ImapRequest cmd = new CapaCommand();
+        final ImapFuture<ImapAsyncResponse> future = aSession.execute(cmd);
+
+        // idle event is triggered but command in queue is in NOT_SENT state
+        final IdleStateEvent idleEvent = null;
+        aSession.handleIdleEvent(idleEvent);
+
+        // verify that future should NOT be done since channel timeout exception did not happen
+        Assert.assertFalse(future.isDone(), "isDone() should be true now");
     }
 
     /**
@@ -1395,4 +1442,15 @@ public class ImapAsyncSessionImplTest {
         }
     }
 
+    /**
+     * Tests DebugMode enum.
+     */
+    @Test
+    public void testDebugModeEnum() {
+
+        final DebugMode[] enumList = DebugMode.values();
+        Assert.assertEquals(enumList.length, 2, "The enum count mismatched.");
+        final DebugMode value = DebugMode.valueOf("DEBUG_OFF");
+        Assert.assertSame(value, DebugMode.DEBUG_OFF, "Enum does not match.");
+    }
 }

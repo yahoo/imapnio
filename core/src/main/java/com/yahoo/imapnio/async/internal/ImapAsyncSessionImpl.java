@@ -86,11 +86,25 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
      *
      * @param <T> the data type for next command after continuation.
      */
-    private class ImapCommandEntry<T> {
+    private static class ImapCommandEntry<T> {
+        /**
+         * State of the command in its life cycle.
+         */
+        public enum CommandState {
+            /** Request (command line) is created, but not yet sent to server. */
+            REQUEST_NOT_SENT,
+            /** Request (command line) is confirmed sent to the the server. */
+            REQUEST_SENT,
+            /** Server done with responses for the given client request. Server is not obligated to send more responses per given request. */
+            RESPONSES_DONE
+        };
 
         /** An Imap command. */
         @Nonnull
         private final ImapRequest cmd;
+
+        @Nonnull
+        private CommandState state;
 
         /** List of response lines. */
         @Nonnull
@@ -109,9 +123,26 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
          */
         ImapCommandEntry(@Nonnull final ImapRequest cmd, @Nonnull final ImapFuture<ImapAsyncResponse> future) {
             this.cmd = cmd;
+            this.state = CommandState.REQUEST_NOT_SENT;
             this.responses = (cmd.getStreamingResponsesQueue() != null) ? cmd.getStreamingResponsesQueue()
                     : new ConcurrentLinkedQueue<IMAPResponse>();
             this.future = future;
+        }
+
+        /**
+         * Sets the state of the command.
+         *
+         * @param state the target state to set
+         */
+        public void setState(@Nonnull final CommandState state) {
+            this.state = state;
+        }
+
+        /**
+         * @return the state of the command
+         */
+        public CommandState getState() {
+            return state;
         }
 
         /**
@@ -259,6 +290,12 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
      */
     @Override
     public void operationComplete(final ChannelFuture future) {
+        final ImapCommandEntry entry = requestsQueue.peek();
+        if (entry != null) {
+            // set the state to REQUEST_SENT regardless success or not
+            entry.setState(ImapCommandEntry.CommandState.REQUEST_SENT);
+        }
+
         if (!future.isSuccess()) { // failed to write to server
             handleChannelException(new ImapAsyncClientException(FailureType.WRITE_TO_SERVER_FAILED, future.cause()));
         }
@@ -323,8 +360,8 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
     @Override
     public void handleIdleEvent(@Nonnull final IdleStateEvent idleEvent) {
         final ImapCommandEntry curEntry = getFirstEntry();
-        // no command or idleCommand sent, server is allowed to be silent, note we only allow READ_IDLE
-        if (curEntry == null || curEntry.getRequest() instanceof IdleCommand) {
+        // only throws channel timeout when a request is sent and we are waiting for the responses to come
+        if (curEntry == null || curEntry.getState() != ImapCommandEntry.CommandState.REQUEST_SENT || curEntry.getRequest() instanceof IdleCommand) {
             return;
         }
 
@@ -350,11 +387,15 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
         // server sends continuation message (+) for next request
         if (serverResponse.isContinuation()) {
             try {
+                curEntry.setState(ImapCommandEntry.CommandState.RESPONSES_DONE);
                 final ByteBuf cmdAfterContinue = currentCmd.getNextCommandLineAfterContinuation(serverResponse);
                 if (cmdAfterContinue == null) {
                     return; // no data from client after continuation, we leave, this is for Idle
                 }
+                curEntry.setState(ImapCommandEntry.CommandState.REQUEST_NOT_SENT); // preparing to send the request so setting to correct state to
+                                                                                   // reflect
                 sendRequest(cmdAfterContinue, currentCmd.isCommandLineDataSensitive());
+
             } catch (final ImapAsyncClientException | RuntimeException e) { // when encountering an error on building request from client
                 requestDoneWithException(new ImapAsyncClientException(ImapAsyncClientException.FailureType.CHANNEL_EXCEPTION, e));
             }
@@ -362,6 +403,7 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
 
         } else if (serverResponse.isTagged()) {
             try {
+                curEntry.setState(ImapCommandEntry.CommandState.RESPONSES_DONE);
                 if (currentCmd instanceof CompressCommand && serverResponse.isOK()) {
                     // check whether channel is closed before dereferencing.
                     if (isChannelClosed()) {

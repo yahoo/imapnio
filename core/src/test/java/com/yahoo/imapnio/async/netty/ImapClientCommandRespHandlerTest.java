@@ -16,8 +16,6 @@ import org.testng.annotations.Test;
 
 import com.sun.mail.iap.ProtocolException;
 import com.sun.mail.imap.protocol.IMAPResponse;
-import com.yahoo.imapnio.async.netty.ImapClientCommandRespHandler;
-import com.yahoo.imapnio.async.netty.ImapCommandChannelEventProcessor;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.timeout.IdleState;
@@ -98,7 +96,7 @@ public class ImapClientCommandRespHandlerTest {
 
         final ChannelHandlerContext ctx = Mockito.mock(ChannelHandlerContext.class);
         final IdleStateEvent idleEvent = Mockito.mock(IdleStateEvent.class);
-        Mockito.when(idleEvent.state()).thenReturn(IdleState.READER_IDLE);
+        Mockito.when(idleEvent.state()).thenReturn(IdleState.ALL_IDLE);
         handler.userEventTriggered(ctx, idleEvent);
         Mockito.verify(processor, Mockito.times(1)).handleIdleEvent(idleEvent);
     }
