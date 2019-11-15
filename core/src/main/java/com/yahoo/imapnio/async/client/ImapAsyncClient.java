@@ -103,7 +103,7 @@ public class ImapAsyncClient {
         /**
          * Initializes @{code ImapClientChannelInitializer} with the read time out value.
          *
-         * @param imapReadTimeoutValue timeout value for server not responding
+         * @param imapReadTimeoutValue timeout value for server not responding after write command is sent
          */
         private ImapClientChannelInitializer(final int imapReadTimeoutValue, final TimeUnit unit) {
             this.imapReadTimeoutValue = imapReadTimeoutValue;
@@ -114,8 +114,8 @@ public class ImapAsyncClient {
         protected void initChannel(final SocketChannel ch) {
             final ChannelPipeline pipeline = ch.pipeline();
 
-            // only enable read timeout
-            pipeline.addLast(IDLE_STATE_HANDLER_NAME, new IdleStateHandler(imapReadTimeoutValue, 0, 0, timeUnit)); // duplex
+            // setting all idle timeout to ensure event will only be triggered when both read and write not happened for the given time
+            pipeline.addLast(IDLE_STATE_HANDLER_NAME, new IdleStateHandler(0, 0, imapReadTimeoutValue, timeUnit)); // duplex
             pipeline.addLast(IMAP_LINE_DECODER_HANDLER_NAME, new ImapClientRespReader(Integer.MAX_VALUE)); // inbound
             pipeline.addLast(STRING_DECODER_HANDLER_NAME, new StringDecoder()); // inbound
             pipeline.addLast(STRING_ENCODER_HANDLER_NAME, new StringEncoder()); // outbound

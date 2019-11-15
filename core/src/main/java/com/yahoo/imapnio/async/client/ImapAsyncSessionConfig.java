@@ -18,7 +18,7 @@ public final class ImapAsyncSessionConfig {
     private int connectionTimeoutMillis = DEFAULT_CONNECTION_TIMEOUT_MILLIS;
 
     /**
-     * Maximum time in milliseconds for read timeout, this maps to the readIdleTime in @{code IdleStateHandler}.
+     * Maximum time in milliseconds for read timeout. The maximum time allowing no responses from server since client command sent.
      */
     private int readTimeoutMillis = DEFAULT_READ_TIMEOUT_MILLIS;
 
@@ -31,7 +31,7 @@ public final class ImapAsyncSessionConfig {
 
     /**
      * Sets the maximum time for opening a connection in milliseconds.
-     * 
+     *
      * @param connectionTimeoutMillis time in milliseconds
      */
     public void setConnectionTimeoutMillis(final int connectionTimeoutMillis) {
@@ -47,11 +47,10 @@ public final class ImapAsyncSessionConfig {
 
     /**
      * Sets the maximum time for read timeout, this means the time waiting for server to respond.
-     * 
+     *
      * @param readTimeoutMillis time in milliseconds
      */
     public void setReadTimeoutMillis(final int readTimeoutMillis) {
         this.readTimeoutMillis = readTimeoutMillis;
     }
-
 }

@@ -51,19 +51,18 @@ public class ImapClientCommandRespHandler extends MessageToMessageDecoder<IMAPRe
     public void userEventTriggered(final ChannelHandlerContext ctx, final Object msg) {
         if (msg instanceof IdleStateEvent) { // Handle the IdleState if needed
             final IdleStateEvent event = (IdleStateEvent) msg;
-            if (event.state() == IdleState.READER_IDLE) {
+            if (event.state() == IdleState.ALL_IDLE) {
                 // handle idle event in processor itself: when during idleCommand, we allow server not to send, but disallow during other commands
                 processor.handleIdleEvent(event);
             }
         }
     }
 
-	/**
-	 * Handles the event when a channel is closed(disconnected) either by server or
-	 * client.
-	 * 
-	 * @param ctx channel handler ctx
-	 */
+    /**
+     * Handles the event when a channel is closed(disconnected) either by server or client.
+     * 
+     * @param ctx channel handler ctx
+     */
     @Override
     public void channelInactive(final ChannelHandlerContext ctx) {
         if (processor == null) {
