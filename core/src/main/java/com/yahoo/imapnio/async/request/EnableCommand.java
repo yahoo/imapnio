@@ -10,15 +10,26 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 
 /**
- * This class defines imap enable command request from client. https://tools.ietf.org/html/rfc5161
+ * This class defines imap enable command request from client. RFC5161 ABNF: https://tools.ietf.org/html/rfc5161
  *
- * enable = ENABLE SP CAPABILITY...
+ * <pre>
+ * capability =/ "ENABLE"
  *
- * @author yliu01
+ * command-any =/ "ENABLE" 1*(SP capability)
+ *
+ * response-data =/ "*" SP enable-data CRLF
+ *
+ * enable-data = "ENABLED" *(SP capability)
+ * </pre>
  *
  */
 public class EnableCommand extends ImapRequestAdapter {
 
+    /**
+     * Initializes a @{code EnableCommand}.
+     *
+     * @param capabilities List of capability to enable
+     */
     public EnableCommand(@Nonnull final String[] capabilities) {
         this.capabilities = capabilities;
     }
@@ -53,7 +64,9 @@ public class EnableCommand extends ImapRequestAdapter {
     /** Byte array for CR and LF, keeping the array local so it cannot be modified by others. */
     private static final byte[] CRLF_B = { '\r', '\n' };
 
+    /** Enable and space. */
     private static final byte[] ENABLE_SP_B = "ENABLE ".getBytes(StandardCharsets.US_ASCII);
 
+    /** Capability values. */
     private String[] capabilities;
 }

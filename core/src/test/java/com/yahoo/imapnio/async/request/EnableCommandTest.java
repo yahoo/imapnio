@@ -14,7 +14,7 @@ import org.testng.annotations.Test;
 
 public class EnableCommandTest {
     /** All items to obtain. */
-    private static final String[] ALL_ITEMS = { "X-ALL-MAIL", "CONDSTORE" };
+    private static final String[] CAPABILITIES = { "X-ALL-MAIL", "CONDSTORE" };
 
     /** Fields to check for cleanup. */
     private Set<Field> fieldsToCheck;
@@ -46,7 +46,7 @@ public class EnableCommandTest {
      */
     @Test
     public void testGetCommandLine() throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
-        final ImapRequest cmd = new EnableCommand(ALL_ITEMS);
+        final ImapRequest cmd = new EnableCommand(CAPABILITIES);
         Assert.assertEquals(cmd.getCommandLine(), "ENABLE X-ALL-MAIL CONDSTORE\r\n", "Expected result mismatched.");
 
         cmd.cleanup();
@@ -61,7 +61,7 @@ public class EnableCommandTest {
      */
     @Test
     public void testGetStreamingResponsesQueue() {
-        final ImapRequest cmd = new EnableCommand(ALL_ITEMS);
+        final ImapRequest cmd = new EnableCommand(CAPABILITIES);
         Assert.assertNull(cmd.getStreamingResponsesQueue(), "Expected result mismatched.");
     }
 
@@ -70,7 +70,7 @@ public class EnableCommandTest {
      */
     @Test
     public void testGetNextCommandLineAfterContinuation() {
-        final ImapRequest cmd = new EnableCommand(ALL_ITEMS);
+        final ImapRequest cmd = new EnableCommand(CAPABILITIES);
         final IMAPResponse serverResponse = null; // null or not null does not matter
         ImapAsyncClientException ex = null;
         try {
@@ -88,7 +88,7 @@ public class EnableCommandTest {
      */
     @Test
     public void testGetTerminateCommandLine() {
-        final ImapRequest cmd = new EnableCommand(ALL_ITEMS);
+        final ImapRequest cmd = new EnableCommand(CAPABILITIES);
         ImapAsyncClientException ex = null;
         try {
             cmd.getTerminateCommandLine();
@@ -105,7 +105,7 @@ public class EnableCommandTest {
      */
     @Test
     public void testGetCommandType() {
-        final ImapRequest cmd = new EnableCommand(ALL_ITEMS);
+        final ImapRequest cmd = new EnableCommand(CAPABILITIES);
         Assert.assertSame(cmd.getCommandType(), ImapCommandType.ENABLE);
     }
 }
