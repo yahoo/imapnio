@@ -5,15 +5,15 @@ import java.lang.reflect.Modifier;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.sun.mail.imap.protocol.IMAPResponse;
-import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
-
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import com.sun.mail.imap.protocol.IMAPResponse;
+import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
+
 public class EnableCommandTest {
-    /** All items to obtain. */
+    /** All capabilities to obtain. */
     private static final String[] CAPABILITIES = { "X-ALL-MAIL", "CONDSTORE" };
 
     /** Fields to check for cleanup. */

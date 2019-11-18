@@ -42,7 +42,7 @@ Then, update your project's pom.xml file dependencies, as follows:
   <dependency>
       <groupId>com.yahoo.imapnio</groupId>
       <artifactId>imapnio.core</artifactId>
-      <version>3.0.7</version>
+      <version>3.0.8</version>
   </dependency>
 ```
 Finally, import the relevant classes and use this library according to the usage section below.

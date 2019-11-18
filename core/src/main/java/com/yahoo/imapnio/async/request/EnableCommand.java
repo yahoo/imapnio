@@ -41,16 +41,15 @@ public class EnableCommand extends ImapRequestAdapter {
 
     @Override
     public ByteBuf getCommandLineBytes() throws ImapAsyncClientException {
-        final ByteBuf sb = Unpooled.buffer(ImapClientConstants.PAD_LEN);
+        final ByteBuf sb = Unpooled.buffer(ENABLE_BUF_LEN);
 
-        sb.writeBytes(ENABLE_SP_B);
+        sb.writeBytes(ENABLE_B);
 
-        final ImapArgumentFormatter formatter = new ImapArgumentFormatter();
-        for (int i = 0, len = capabilities.length; i < len; i++) {
-            formatter.formatArgument(capabilities[i], sb, false);
-            if (i < len - 1) { // do not add space for last item
-                sb.writeByte(ImapClientConstants.SPACE);
-            }
+        for (int i = 0; i < capabilities.length; i++) {
+            sb.writeByte(ImapClientConstants.SPACE);
+            // capability ABNF is:
+            // capability = ("AUTH=" auth-type) / atom
+            sb.writeBytes(capabilities[i].getBytes(StandardCharsets.US_ASCII));
         }
         sb.writeBytes(CRLF_B);
         return sb;
@@ -65,7 +64,10 @@ public class EnableCommand extends ImapRequestAdapter {
     private static final byte[] CRLF_B = { '\r', '\n' };
 
     /** Enable and space. */
-    private static final byte[] ENABLE_SP_B = "ENABLE ".getBytes(StandardCharsets.US_ASCII);
+    private static final byte[] ENABLE_B = "ENABLE".getBytes(StandardCharsets.US_ASCII);
+
+    /** Enable command buffer length. */
+    private static final int ENABLE_BUF_LEN = 200;
 
     /** Capability values. */
     private String[] capabilities;
