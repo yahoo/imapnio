@@ -1,9 +1,9 @@
 package com.yahoo.imapnio.async.exception;
 
+import java.io.IOException;
+
 import org.testng.Assert;
 import org.testng.annotations.Test;
-
-import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 
 /**
  * Unit test for {@code ImapAsyncClientException}.
@@ -19,7 +19,37 @@ public class ImapAsyncClientExceptionTest {
         final ImapAsyncClientException resp = new ImapAsyncClientException(failureType);
 
         Assert.assertEquals(resp.getFaiureType(), failureType, "result mismatched.");
+        Assert.assertNull(resp.getCause(), "cause of exception mismatched.");
         Assert.assertEquals(resp.getMessage(), "failureType=" + failureType.name(), "result mismatched.");
+    }
+
+    /**
+     * Tests ImapAsyncClientException constructor.
+     */
+    @Test
+    public void testImapAsyncClientExceptionWithFailureTypeAndCause() {
+        final ImapAsyncClientException.FailureType failureType = ImapAsyncClientException.FailureType.CHANNEL_DISCONNECTED;
+        final IOException cause = new IOException("Failiure in IO!");
+        final ImapAsyncClientException ex = new ImapAsyncClientException(failureType, cause);
+
+        Assert.assertEquals(ex.getFaiureType(), failureType, "result mismatched.");
+        Assert.assertEquals(ex.getMessage(), "failureType=CHANNEL_DISCONNECTED", "result mismatched.");
+        Assert.assertEquals(ex.getCause(), cause, "cause of exception mismatched.");
+    }
+
+    /**
+     * Tests ImapAsyncClientException constructor.
+     */
+    @Test
+    public void testImapAsyncClientExceptionWithSessionIdClientContext() {
+        final ImapAsyncClientException.FailureType failureType = ImapAsyncClientException.FailureType.CHANNEL_DISCONNECTED;
+        final Long sessionId = new Long(5);
+        final String sessCtx = "T123riceratops123@scar123y.com";
+        final ImapAsyncClientException ex = new ImapAsyncClientException(failureType, sessionId, sessCtx);
+
+        Assert.assertEquals(ex.getFaiureType(), failureType, "result mismatched.");
+        Assert.assertNull(ex.getCause(), "cause of exception mismatched.");
+        Assert.assertEquals(ex.getMessage(), "failureType=CHANNEL_DISCONNECTED,sId=5,uId=T123riceratops123@scar123y.com", "result mismatched.");
     }
 
     /**
@@ -29,6 +59,6 @@ public class ImapAsyncClientExceptionTest {
     public void testFailureType() {
         final ImapAsyncClientException.FailureType failureType = ImapAsyncClientException.FailureType.valueOf("CHANNEL_DISCONNECTED");
         Assert.assertEquals(failureType, ImapAsyncClientException.FailureType.CHANNEL_DISCONNECTED, "result mismatched.");
-        Assert.assertEquals(ImapAsyncClientException.FailureType.values().length, 15, "Number of enums mismatched.");
+        Assert.assertEquals(ImapAsyncClientException.FailureType.values().length, 14, "Number of enums mismatched.");
     }
 }

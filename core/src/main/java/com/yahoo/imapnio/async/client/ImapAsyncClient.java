@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -72,14 +72,17 @@ public class ImapAsyncClient {
     private static final String STRING_IMAP_MSG_RESPONSE_NAME = "ImapClientRespDecoder";
 
     /** Debug record. */
-    private static final String CONNECT_RESULT_REC = "[{}] connect operationComplete. result={}, imapServerUri={}, sniNames={}";
+    private static final String CONNECT_RESULT_REC = "[{},{}] connect operationComplete. result={}, imapServerUri={}, sniNames={}";
+
+    /** Client context not available. */
+    private static final String NA_CLIENT_CONTEXT = "NA";
 
     /** logger for sending error, warning, info, debug to the log file. */
     @Nonnull
     private final Logger logger;
 
     /** Counter for session. */
-    private final AtomicInteger sessionCount = new AtomicInteger(1);
+    private final AtomicLong sessionCount = new AtomicLong(1);
 
     /** The Netty bootstrap. */
     private final Bootstrap bootstrap;
@@ -162,12 +165,30 @@ public class ImapAsyncClient {
      */
     public Future<ImapAsyncCreateSessionResponse> createSession(@Nonnull final URI serverUri, @Nonnull final ImapAsyncSessionConfig config,
             @Nullable final InetSocketAddress localAddress, @Nullable final List<String> sniNames, @Nonnull final DebugMode logOpt) {
+        return createSession(serverUri, config, localAddress, sniNames, logOpt, NA_CLIENT_CONTEXT);
+    }
+
+    /**
+     * Connects to the remote server asynchronously and returns a future for the ImapSession if connection is established.
+     **
+     * @param serverUri IMAP server URI
+     * @param config configuration to be used for this session/connection
+     * @param localAddress the local network interface to us
+     * @param sniNames Server Name Indication names list
+     * @param logOpt session logging option for the session to be created
+     * @param sessionCtx context associated with the session created. Its toString() will be called upon displaying exception or debug logging
+     * @return the ChannelFuture object
+     */
+    public Future<ImapAsyncCreateSessionResponse> createSession(@Nonnull final URI serverUri, @Nonnull final ImapAsyncSessionConfig config,
+            @Nullable final InetSocketAddress localAddress, @Nullable final List<String> sniNames, @Nonnull final DebugMode logOpt,
+            @Nonnull final Object sessionCtx) {
 
         final boolean isSessionDebugOn = (logOpt == DebugMode.DEBUG_ON);
         // ------------------------------------------------------------
         // obtain config values
         final int connectionTimeMillis = config.getConnectionTimeoutMillis();
         final int readTimeMillis = config.getReadTimeoutMillis();
+
         // ------------------------------------------------------------
         // setup ChannelInitializer, handlers here need to be session-less
         bootstrap.handler(new ImapClientChannelInitializer(readTimeMillis, TimeUnit.MILLISECONDS));
@@ -215,18 +236,20 @@ public class ImapAsyncClient {
                             pipeline.addFirst(SSL_HANDLER, sslContext.newHandler(ch.alloc(), serverUri.getHost(), serverUri.getPort()));
                         }
                     }
-                    final int sessionId = sessionCount.incrementAndGet();
-                    pipeline.addLast(ImapClientConnectHandler.HANDLER_NAME,
-                            new ImapClientConnectHandler(sessionFuture, LoggerFactory.getLogger(ImapAsyncSessionImpl.class), logOpt, sessionId));
+
+                    final long sessionId = sessionCount.incrementAndGet();
+                    sessionCount.compareAndSet(Long.MAX_VALUE - 1, 1); // roll back to 1 if reaching the max
+                    pipeline.addLast(ImapClientConnectHandler.HANDLER_NAME, new ImapClientConnectHandler(sessionFuture,
+                            LoggerFactory.getLogger(ImapAsyncSessionImpl.class), logOpt, sessionId, sessionCtx));
 
                     if (logger.isTraceEnabled() || isSessionDebugOn) {
-                        logger.debug(CONNECT_RESULT_REC, sessionId, "success", serverUri.toASCIIString(), sniNames);
+                        logger.debug(CONNECT_RESULT_REC, sessionId, sessionCtx.toString(), "success", serverUri.toASCIIString(), sniNames);
                     }
                     // connect action is not done until we receive the first OK response from server, so we CANNOT call it done here
                 } else { // failure case
                     final ImapAsyncClientException ex = new ImapAsyncClientException(FailureType.CONNECTION_FAILED_EXCEPTION, future.cause());
                     sessionFuture.done(ex);
-                    logger.error(CONNECT_RESULT_REC, "NA", "failure", serverUri.toASCIIString(), sniNames, ex);
+                    logger.error(CONNECT_RESULT_REC, "NA", sessionCtx.toString(), "failure", serverUri.toASCIIString(), sniNames, ex);
                 }
             }
         });

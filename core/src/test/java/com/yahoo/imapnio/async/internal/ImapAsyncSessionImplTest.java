@@ -58,6 +58,9 @@ public class ImapAsyncSessionImplTest {
     /** Dummy session id. */
     private static final int SESSION_ID = 123456;
 
+    /** Dummy user id. */
+    private static final String USER_ID = "Argentinosaurus@long.enough";
+
     /** Timeout in milliseconds for making get on future. */
     private static final long FUTURE_GET_TIMEOUT_MILLIS = 5L;
 
@@ -111,7 +114,9 @@ public class ImapAsyncSessionImplTest {
         Mockito.when(logger.isDebugEnabled()).thenReturn(false);
 
         // construct, both class level and session level debugging are off
-        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_OFF, SESSION_ID, pipeline);
+
+        final String sessionCtx = USER_ID;
+        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_OFF, SESSION_ID, pipeline, sessionCtx);
 
         // execute Authenticate plain command
         {
@@ -120,7 +125,7 @@ public class ImapAsyncSessionImplTest {
             final ImapFuture<ImapAsyncResponse> future = aSession.execute(cmd);
             Mockito.verify(authWritePromise, Mockito.times(1)).addListener(Mockito.any(ImapAsyncSessionImpl.class));
             Mockito.verify(channel, Mockito.times(1)).writeAndFlush(Mockito.anyString(), Mockito.isA(ChannelPromise.class));
-            Mockito.verify(logger, Mockito.times(0)).debug(Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
+            Mockito.verify(logger, Mockito.times(0)).debug(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
 
             // simulate write to server completed successfully
             Mockito.when(authWritePromise.isSuccess()).thenReturn(true);
@@ -149,7 +154,7 @@ public class ImapAsyncSessionImplTest {
             Assert.assertTrue(endingResp.isOK(), "Response.isOK() mismatched.");
             Assert.assertEquals(endingResp.getTag(), "a1", "tag mismatched.");
             // verify no log messages
-            Mockito.verify(logger, Mockito.times(0)).debug(Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
+            Mockito.verify(logger, Mockito.times(0)).debug(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
         }
 
         {
@@ -162,7 +167,7 @@ public class ImapAsyncSessionImplTest {
 
             Mockito.verify(capaWritePromise, Mockito.times(1)).addListener(Mockito.any(ImapAsyncSessionImpl.class));
             Mockito.verify(channel, Mockito.times(3)).writeAndFlush(Mockito.anyString(), Mockito.isA(ChannelPromise.class));
-            Mockito.verify(logger, Mockito.times(1)).debug(Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
+            Mockito.verify(logger, Mockito.times(1)).debug(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
 
             // simulate write to server completed successfully
             Mockito.when(capaWritePromise.isSuccess()).thenReturn(true);
@@ -202,16 +207,26 @@ public class ImapAsyncSessionImplTest {
             final IMAPResponse endingResp = it.next();
             Assert.assertNotNull(endingResp, "Result mismatched.");
             Assert.assertTrue(endingResp.isOK(), "Response.isOK() mismatched.");
-            Assert.assertEquals(endingResp.getTag(), "a2", "tag mismatched.");// verify logging messages
-            final ArgumentCaptor<String> logCapture = ArgumentCaptor.forClass(String.class);
-            Mockito.verify(logger, Mockito.times(3)).debug(Mockito.anyString(), Mockito.anyString(), logCapture.capture());
-            final List<String> logMsgs = logCapture.getAllValues();
-            Assert.assertNotNull(logMsgs, "log messages mismatched.");
-            Assert.assertEquals(logMsgs.size(), 3, "log messages mismatched.");
-            Assert.assertEquals(logMsgs.get(0), "a2 CAPABILITY\r\n", "log messages from client mismatched.");
-            Assert.assertEquals(logMsgs.get(1), "* CAPABILITY IMAP4rev1 SASL-IR AUTH=PLAIN AUTH=XOAUTH2 AUTH=OAUTHBEARER ID MOVE NAMESPACE",
+            Assert.assertEquals(endingResp.getTag(), "a2", "tag mismatched.");
+            // verify logging messages
+            final ArgumentCaptor<Object> allArgsCapture = ArgumentCaptor.forClass(Object.class);
+            Mockito.verify(logger, Mockito.times(3)).debug(Mockito.anyString(), allArgsCapture.capture(), allArgsCapture.capture(),
+                    allArgsCapture.capture());
+
+            // since it is vargs, 3 calls with 3 parameters all accumulate to one list
+            final List<Object> logArgs = allArgsCapture.getAllValues();
+            Assert.assertNotNull(logArgs, "log messages mismatched.");
+            Assert.assertEquals(logArgs.size(), 9, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(2), "a2 CAPABILITY\r\n", "log messages from client mismatched.");
+            Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(5), "* CAPABILITY IMAP4rev1 SASL-IR AUTH=PLAIN AUTH=XOAUTH2 AUTH=OAUTHBEARER ID MOVE NAMESPACE",
                     "log messages from server mismatched.");
-            Assert.assertEquals(logMsgs.get(2), "a2 OK CAPABILITY completed", "log messages from server mismatched.");
+            Assert.assertEquals(logArgs.get(6), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(7), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(8), "a2 OK CAPABILITY completed", "Error message mismatched.");
         }
 
         // perform close session
@@ -259,7 +274,9 @@ public class ImapAsyncSessionImplTest {
         Mockito.when(logger.isTraceEnabled()).thenReturn(true);
 
         // construct, class level debug is enabled, session level debug is disabled
-        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_OFF, SESSION_ID, pipeline);
+
+        final String sessionCtx = USER_ID;
+        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_OFF, SESSION_ID, pipeline, sessionCtx);
 
         // execute Authenticate plain command
         {
@@ -295,15 +312,25 @@ public class ImapAsyncSessionImplTest {
             Assert.assertNotNull(endingResp, "Result mismatched.");
             Assert.assertTrue(endingResp.isOK(), "Response.isOK() mismatched.");
             Assert.assertEquals(endingResp.getTag(), "a1", "tag mismatched.");
+
             // verify logging messages
-            final ArgumentCaptor<String> logCapture = ArgumentCaptor.forClass(String.class);
-            Mockito.verify(logger, Mockito.times(3)).debug(Mockito.anyString(), Mockito.anyString(), logCapture.capture());
-            final List<String> logMsgs = logCapture.getAllValues();
-            Assert.assertNotNull(logMsgs, "log messages mismatched.");
-            Assert.assertEquals(logMsgs.size(), 3, "log messages mismatched.");
-            Assert.assertEquals(logMsgs.get(0), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
-            Assert.assertEquals(logMsgs.get(1), "+", "log messages from server mismatched.");
-            Assert.assertEquals(logMsgs.get(2), "a1 OK AUTHENTICATE completed", "log messages from server mismatched.");
+            final ArgumentCaptor<Object> allArgsCapture = ArgumentCaptor.forClass(Object.class);
+            Mockito.verify(logger, Mockito.times(3)).debug(Mockito.anyString(), allArgsCapture.capture(), allArgsCapture.capture(),
+                    allArgsCapture.capture());
+
+            // since it is vargs, 3 calls with 3 parameters all accumulate to one list, 3 * 3 =12
+            final List<Object> logArgs = allArgsCapture.getAllValues();
+            Assert.assertNotNull(logArgs, "log messages mismatched.");
+            Assert.assertEquals(logArgs.size(), 9, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(2), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
+            Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(5), "+", "log messages from server mismatched.");
+            Assert.assertEquals(logArgs.get(6), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(7), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(8), "a1 OK AUTHENTICATE completed", "Error message mismatched.");
         }
 
         {
@@ -335,17 +362,31 @@ public class ImapAsyncSessionImplTest {
             Assert.assertFalse(compressResp.isContinuation(), "Response.isContinuation() mismatched.");
             Assert.assertTrue(compressResp.isOK(), "Response.isOK() mismatched.");
             Assert.assertEquals(compressResp.getTag(), "a2", "tag mismatched.");
+
             // verify logging messages
-            final ArgumentCaptor<String> logCapture = ArgumentCaptor.forClass(String.class);
-            Mockito.verify(logger, Mockito.times(5)).debug(Mockito.anyString(), Mockito.anyString(), logCapture.capture());
-            final List<String> logMsgs = logCapture.getAllValues();
-            Assert.assertNotNull(logMsgs, "log messages mismatched.");
-            Assert.assertEquals(logMsgs.size(), 5, "log messages mismatched.");
-            Assert.assertEquals(logMsgs.get(0), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
-            Assert.assertEquals(logMsgs.get(1), "+", "log messages from server mismatched.");
-            Assert.assertEquals(logMsgs.get(2), "a1 OK AUTHENTICATE completed", "log messages from server mismatched.");
-            Assert.assertEquals(logMsgs.get(3), "a2 COMPRESS DEFLATE\r\n", "log messages from client mismatched.");
-            Assert.assertEquals(logMsgs.get(4), "a2 OK Success", "log messages from server mismatched.");
+            final ArgumentCaptor<Object> allArgsCapture = ArgumentCaptor.forClass(Object.class);
+            Mockito.verify(logger, Mockito.times(5)).debug(Mockito.anyString(), allArgsCapture.capture(), allArgsCapture.capture(),
+                    allArgsCapture.capture());
+
+            // since it is vargs, 5 calls with 3 parameters all accumulate to one list, 5 * 3 =18
+            final List<Object> logArgs = allArgsCapture.getAllValues();
+            Assert.assertNotNull(logArgs, "log messages mismatched.");
+            Assert.assertEquals(logArgs.size(), 15, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(2), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
+            Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(5), "+", "log messages from server mismatched.");
+            Assert.assertEquals(logArgs.get(6), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(7), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(8), "a1 OK AUTHENTICATE completed", "Error message mismatched.");
+            Assert.assertEquals(logArgs.get(9), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(10), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(11), "a2 COMPRESS DEFLATE\r\n", "log messages from client mismatched.");
+            Assert.assertEquals(logArgs.get(12), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(13), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(14), "a2 OK Success", "log messages from server mismatched.");
         }
     }
 
@@ -381,7 +422,9 @@ public class ImapAsyncSessionImplTest {
         Mockito.when(logger.isDebugEnabled()).thenReturn(true);
 
         // construct, turn on session level debugging by having logger.isDebugEnabled() true and session level debug on
-        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline);
+
+        final String sessionCtx = USER_ID;
+        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline, sessionCtx);
 
         // execute Authenticate plain command
         {
@@ -417,15 +460,25 @@ public class ImapAsyncSessionImplTest {
             Assert.assertNotNull(endingResp, "Result mismatched.");
             Assert.assertTrue(endingResp.isOK(), "Response.isOK() mismatched.");
             Assert.assertEquals(endingResp.getTag(), "a1", "tag mismatched.");
+
             // verify logging messages
-            final ArgumentCaptor<String> logCapture = ArgumentCaptor.forClass(String.class);
-            Mockito.verify(logger, Mockito.times(3)).debug(Mockito.anyString(), Mockito.anyString(), logCapture.capture());
-            final List<String> logMsgs = logCapture.getAllValues();
-            Assert.assertNotNull(logMsgs, "log messages mismatched.");
-            Assert.assertEquals(logMsgs.size(), 3, "log messages mismatched.");
-            Assert.assertEquals(logMsgs.get(0), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
-            Assert.assertEquals(logMsgs.get(1), "+", "log messages from server mismatched.");
-            Assert.assertEquals(logMsgs.get(2), "a1 OK AUTHENTICATE completed", "log messages from server mismatched.");
+            final ArgumentCaptor<Object> allArgsCapture = ArgumentCaptor.forClass(Object.class);
+            Mockito.verify(logger, Mockito.times(3)).debug(Mockito.anyString(), allArgsCapture.capture(), allArgsCapture.capture(),
+                    allArgsCapture.capture());
+
+            // since it is vargs, 3 calls with 3 parameters all accumulate to one list, 3 * 3 =9
+            final List<Object> logArgs = allArgsCapture.getAllValues();
+            Assert.assertNotNull(logArgs, "log messages mismatched.");
+            Assert.assertEquals(logArgs.size(), 9, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(2), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
+            Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(5), "+", "log messages from server mismatched.");
+            Assert.assertEquals(logArgs.get(6), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(7), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(8), "a1 OK AUTHENTICATE completed", "Error message mismatched.");
         }
 
         {
@@ -459,17 +512,31 @@ public class ImapAsyncSessionImplTest {
             Assert.assertFalse(compressResp.isContinuation(), "Response.isContinuation() mismatched.");
             Assert.assertTrue(compressResp.isOK(), "Response.isOK() mismatched.");
             Assert.assertEquals(compressResp.getTag(), "a2", "tag mismatched.");
+
             // verify logging messages
-            final ArgumentCaptor<String> logCapture = ArgumentCaptor.forClass(String.class);
-            Mockito.verify(logger, Mockito.times(5)).debug(Mockito.anyString(), Mockito.anyString(), logCapture.capture());
-            final List<String> logMsgs = logCapture.getAllValues();
-            Assert.assertNotNull(logMsgs, "log messages mismatched.");
-            Assert.assertEquals(logMsgs.size(), 5, "log messages mismatched.");
-            Assert.assertEquals(logMsgs.get(0), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
-            Assert.assertEquals(logMsgs.get(1), "+", "log messages from server mismatched.");
-            Assert.assertEquals(logMsgs.get(2), "a1 OK AUTHENTICATE completed", "log messages from server mismatched.");
-            Assert.assertEquals(logMsgs.get(3), "a2 COMPRESS DEFLATE\r\n", "log messages from client mismatched.");
-            Assert.assertEquals(logMsgs.get(4), "a2 OK Success", "log messages from server mismatched.");
+            final ArgumentCaptor<Object> allArgsCapture = ArgumentCaptor.forClass(Object.class);
+            Mockito.verify(logger, Mockito.times(5)).debug(Mockito.anyString(), allArgsCapture.capture(), allArgsCapture.capture(),
+                    allArgsCapture.capture());
+
+            // since it is vargs, 5 calls with 3 parameters all accumulate to one list, 5 * 3 =15
+            final List<Object> logArgs = allArgsCapture.getAllValues();
+            Assert.assertNotNull(logArgs, "log messages mismatched.");
+            Assert.assertEquals(logArgs.size(), 15, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(2), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
+            Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(5), "+", "log messages from server mismatched.");
+            Assert.assertEquals(logArgs.get(6), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(7), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(8), "a1 OK AUTHENTICATE completed", "Error message mismatched.");
+            Assert.assertEquals(logArgs.get(9), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(10), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(11), "a2 COMPRESS DEFLATE\r\n", "log messages from client mismatched.");
+            Assert.assertEquals(logArgs.get(12), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(13), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(14), "a2 OK Success", "log messages from server mismatched.");
         }
     }
 
@@ -503,7 +570,9 @@ public class ImapAsyncSessionImplTest {
         Mockito.when(logger.isDebugEnabled()).thenReturn(true);
 
         // construct, turn on session level debugging by having logger.isDebugEnabled() true and session level debug on
-        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline);
+
+        final String sessionCtx = USER_ID;
+        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline, sessionCtx);
 
         // execute Authenticate plain command
         {
@@ -512,7 +581,7 @@ public class ImapAsyncSessionImplTest {
             final ImapFuture<ImapAsyncResponse> future = aSession.execute(cmd);
             Mockito.verify(authWritePromise, Mockito.times(1)).addListener(Mockito.any(ImapAsyncSessionImpl.class));
             Mockito.verify(channel, Mockito.times(1)).writeAndFlush(Mockito.anyString(), Mockito.isA(ChannelPromise.class));
-            Mockito.verify(logger, Mockito.times(1)).debug(Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
+            Mockito.verify(logger, Mockito.times(1)).debug(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
 
             // simulate write to server completed successfully
             Mockito.when(authWritePromise.isSuccess()).thenReturn(true);
@@ -540,15 +609,25 @@ public class ImapAsyncSessionImplTest {
             Assert.assertNotNull(endingResp, "Result mismatched.");
             Assert.assertTrue(endingResp.isOK(), "Response.isOK() mismatched.");
             Assert.assertEquals(endingResp.getTag(), "a1", "tag mismatched.");
+
             // verify logging messages
-            final ArgumentCaptor<String> logCapture = ArgumentCaptor.forClass(String.class);
-            Mockito.verify(logger, Mockito.times(3)).debug(Mockito.anyString(), Mockito.anyString(), logCapture.capture());
-            final List<String> logMsgs = logCapture.getAllValues();
-            Assert.assertNotNull(logMsgs, "log messages mismatched.");
-            Assert.assertEquals(logMsgs.size(), 3, "log messages mismatched.");
-            Assert.assertEquals(logMsgs.get(0), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
-            Assert.assertEquals(logMsgs.get(1), "+", "log messages from server mismatched.");
-            Assert.assertEquals(logMsgs.get(2), "a1 OK AUTHENTICATE completed", "log messages from server mismatched.");
+            final ArgumentCaptor<Object> allArgsCapture = ArgumentCaptor.forClass(Object.class);
+            Mockito.verify(logger, Mockito.times(3)).debug(Mockito.anyString(), allArgsCapture.capture(), allArgsCapture.capture(),
+                    allArgsCapture.capture());
+
+            // since it is vargs, 3 calls with 3 parameters all accumulate to one list, 3 * 3 =12
+            final List<Object> logArgs = allArgsCapture.getAllValues();
+            Assert.assertNotNull(logArgs, "log messages mismatched.");
+            Assert.assertEquals(logArgs.size(), 9, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(2), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
+            Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(5), "+", "log messages from server mismatched.");
+            Assert.assertEquals(logArgs.get(6), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(7), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(8), "a1 OK AUTHENTICATE completed", "Error message mismatched.");
         }
 
         {
@@ -580,17 +659,31 @@ public class ImapAsyncSessionImplTest {
             Assert.assertFalse(compressResp.isContinuation(), "Response.isContinuation() mismatched.");
             Assert.assertFalse(compressResp.isOK(), "Response.isOK() mismatched.");
             Assert.assertEquals(compressResp.getTag(), "a2", "tag mismatched.");
+
             // verify logging messages
-            final ArgumentCaptor<String> logCapture = ArgumentCaptor.forClass(String.class);
-            Mockito.verify(logger, Mockito.times(5)).debug(Mockito.anyString(), Mockito.anyString(), logCapture.capture());
-            final List<String> logMsgs = logCapture.getAllValues();
-            Assert.assertNotNull(logMsgs, "log messages mismatched.");
-            Assert.assertEquals(logMsgs.size(), 5, "log messages mismatched.");
-            Assert.assertEquals(logMsgs.get(0), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
-            Assert.assertEquals(logMsgs.get(1), "+", "log messages from server mismatched.");
-            Assert.assertEquals(logMsgs.get(2), "a1 OK AUTHENTICATE completed", "log messages from server mismatched.");
-            Assert.assertEquals(logMsgs.get(3), "a2 COMPRESS DEFLATE\r\n", "log messages from client mismatched.");
-            Assert.assertEquals(logMsgs.get(4), "a2 NO Success", "log messages from server mismatched.");
+            final ArgumentCaptor<Object> allArgsCapture = ArgumentCaptor.forClass(Object.class);
+            Mockito.verify(logger, Mockito.times(5)).debug(Mockito.anyString(), allArgsCapture.capture(), allArgsCapture.capture(),
+                    allArgsCapture.capture());
+
+            // since it is vargs, 5 calls with 3 parameters all accumulate to one list, 5 * 3 =15
+            final List<Object> logArgs = allArgsCapture.getAllValues();
+            Assert.assertNotNull(logArgs, "log messages mismatched.");
+            Assert.assertEquals(logArgs.size(), 15, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(2), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
+            Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(5), "+", "log messages from server mismatched.");
+            Assert.assertEquals(logArgs.get(6), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(7), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(8), "a1 OK AUTHENTICATE completed", "Error message mismatched.");
+            Assert.assertEquals(logArgs.get(9), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(10), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(11), "a2 COMPRESS DEFLATE\r\n", "log messages from client mismatched.");
+            Assert.assertEquals(logArgs.get(12), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(13), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(14), "a2 NO Success", "log messages from server mismatched.");
         }
     }
 
@@ -620,7 +713,9 @@ public class ImapAsyncSessionImplTest {
         Mockito.when(logger.isDebugEnabled()).thenReturn(true);
 
         // construct, turn on session level debugging by having logger.isDebugEnabled() true and session level debug on
-        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline);
+
+        final String sessionCtx = USER_ID;
+        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline, sessionCtx);
 
         // execute
         final ImapRequest cmd = new CapaCommand();
@@ -678,7 +773,9 @@ public class ImapAsyncSessionImplTest {
         Mockito.when(logger.isDebugEnabled()).thenReturn(true);
 
         // construct, turn on session level debugging by having logger.isDebugEnabled() true and session level debug on
-        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline);
+
+        final String sessionCtx = USER_ID;
+        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline, sessionCtx);
 
         // execute
         final ImapRequest cmd = new CapaCommand();
@@ -718,7 +815,9 @@ public class ImapAsyncSessionImplTest {
         Mockito.when(logger.isDebugEnabled()).thenReturn(true);
 
         // construct
-        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline);
+
+        final String sessionCtx = USER_ID;
+        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline, sessionCtx);
 
         // command queue is empty
         final IdleStateEvent idleEvent = null;
@@ -753,7 +852,9 @@ public class ImapAsyncSessionImplTest {
         Mockito.when(logger.isDebugEnabled()).thenReturn(true);
 
         // construct
-        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline);
+
+        final String sessionCtx = USER_ID;
+        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline, sessionCtx);
 
         // execute
         final ImapRequest cmd = new CapaCommand();
@@ -761,7 +862,7 @@ public class ImapAsyncSessionImplTest {
 
         Mockito.verify(writeToServerPromise, Mockito.times(1)).addListener(Mockito.any(ImapAsyncSessionImpl.class));
         Mockito.verify(channel, Mockito.times(1)).writeAndFlush(Mockito.anyString(), Mockito.isA(ChannelPromise.class));
-        Mockito.verify(logger, Mockito.times(1)).debug(Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
+        Mockito.verify(logger, Mockito.times(1)).debug(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
 
         // simulate write to server completed with isSuccess() false
         Mockito.when(writeToServerPromise.isSuccess()).thenReturn(false);
@@ -816,19 +917,30 @@ public class ImapAsyncSessionImplTest {
         Assert.assertTrue(isSuccess, "Result mismatched.");
 
         // verify logging messages
-        final ArgumentCaptor<Object> logCapture = ArgumentCaptor.forClass(Object.class);
-        Mockito.verify(logger, Mockito.times(3)).debug(Mockito.anyString(), Mockito.anyString(), logCapture.capture());
-        final List<Object> logMsgs = logCapture.getAllValues();
-        Assert.assertNotNull(logMsgs, "log messages mismatched.");
-        Assert.assertEquals(logMsgs.size(), 3, "log messages mismatched.");
-        Assert.assertEquals(logMsgs.get(0), "a1 CAPABILITY\r\n", "log messages from client mismatched.");
-        Assert.assertEquals(logMsgs.get(1), "Closing the session via close().", "log messages from client mismatched.");
-        Assert.assertEquals(logMsgs.get(2), "Session is confirmed closed.", "Error message mismatched.");
+        final ArgumentCaptor<Object> allArgsCapture = ArgumentCaptor.forClass(Object.class);
+        Mockito.verify(logger, Mockito.times(3)).debug(Mockito.anyString(), allArgsCapture.capture(), allArgsCapture.capture(),
+                allArgsCapture.capture());
 
-        final ArgumentCaptor<ImapAsyncClientException> errCapture = ArgumentCaptor.forClass(ImapAsyncClientException.class);
-        Mockito.verify(logger, Mockito.times(1)).error(Mockito.anyString(), Mockito.anyString(), errCapture.capture());
-        final List<ImapAsyncClientException> errMsgs = errCapture.getAllValues();
-        final ImapAsyncClientException e = errMsgs.get(0);
+        // since it is vargs, 3 calls with 3 parameters all accumulate to one list
+        final List<Object> logArgs = allArgsCapture.getAllValues();
+        Assert.assertNotNull(logArgs, "log messages mismatched.");
+        Assert.assertEquals(logArgs.size(), 9, "log messages mismatched.");
+        Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
+        Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
+        Assert.assertEquals(logArgs.get(2), "a1 CAPABILITY\r\n", "log messages from client mismatched.");
+        Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
+        Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
+        Assert.assertEquals(logArgs.get(5), "Closing the session via close().", "log messages from client mismatched.");
+        Assert.assertEquals(logArgs.get(6), Long.valueOf(SESSION_ID), "log messages mismatched.");
+        Assert.assertEquals(logArgs.get(7), USER_ID, "log messages mismatched.");
+        Assert.assertEquals(logArgs.get(8), "Session is confirmed closed.", "Error message mismatched.");
+
+        final ArgumentCaptor<Object> errCapture = ArgumentCaptor.forClass(Object.class);
+        Mockito.verify(logger, Mockito.times(1)).error(Mockito.anyString(), errCapture.capture(), errCapture.capture(), errCapture.capture());
+        final List<Object> errArgs = errCapture.getAllValues();
+        Assert.assertEquals(errArgs.size(), 3, "log message mismatched.");
+        Assert.assertEquals(errArgs.get(2).getClass(), ImapAsyncClientException.class, "class mismatched.");
+        final ImapAsyncClientException e = (ImapAsyncClientException) errCapture.getAllValues().get(2);
         Assert.assertNotNull(e, "Log error for exception is missing");
         Assert.assertEquals(e.getFaiureType(), FailureType.CHANNEL_EXCEPTION, "Class mismatched.");
 
@@ -864,7 +976,9 @@ public class ImapAsyncSessionImplTest {
         Mockito.when(logger.isDebugEnabled()).thenReturn(true);
 
         // construct, class level logging is off, session level logging is on
-        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline);
+
+        final String sessionCtx = USER_ID;
+        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline, sessionCtx);
 
         // execute
         final ImapRequest cmd = new CapaCommand();
@@ -872,7 +986,7 @@ public class ImapAsyncSessionImplTest {
 
         Mockito.verify(writePromise, Mockito.times(1)).addListener(Mockito.any(ImapAsyncSessionImpl.class));
         Mockito.verify(channel, Mockito.times(1)).writeAndFlush(Mockito.anyString(), Mockito.isA(ChannelPromise.class));
-        Mockito.verify(logger, Mockito.times(1)).debug(Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
+        Mockito.verify(logger, Mockito.times(1)).debug(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
 
         // simulate channel closed
         aSession.handleChannelClosed();
@@ -891,20 +1005,32 @@ public class ImapAsyncSessionImplTest {
         Assert.assertEquals(cause.getClass(), ImapAsyncClientException.class, "Expected result mismatched.");
         final ImapAsyncClientException asynEx = (ImapAsyncClientException) cause;
         Assert.assertEquals(asynEx.getFaiureType(), FailureType.CHANNEL_DISCONNECTED, "Failure type mismatched.");
-        // verify logging messages
-        final ArgumentCaptor<Object> logCapture = ArgumentCaptor.forClass(Object.class);
-        Mockito.verify(logger, Mockito.times(3)).debug(Mockito.anyString(), Mockito.anyString(), logCapture.capture());
-        final List<Object> logMsgs = logCapture.getAllValues();
-        Assert.assertNotNull(logMsgs, "log messages mismatched.");
-        Assert.assertEquals(logMsgs.size(), 3, "log messages mismatched.");
-        Assert.assertEquals(logMsgs.get(0), "a1 CAPABILITY\r\n", "log messages from client mismatched.");
-        Assert.assertEquals(logMsgs.get(1), "Session is confirmed closed.", "log messages mismatched.");
-        Assert.assertEquals(logMsgs.get(2), "Closing the session via close().", "log messages mismatched.");
 
-        final ArgumentCaptor<ImapAsyncClientException> errCapture = ArgumentCaptor.forClass(ImapAsyncClientException.class);
-        Mockito.verify(logger, Mockito.times(1)).error(Mockito.anyString(), Mockito.anyString(), errCapture.capture());
-        final List<ImapAsyncClientException> errMsgs = errCapture.getAllValues();
-        final ImapAsyncClientException e = errMsgs.get(0);
+        // verify logging messages
+        final ArgumentCaptor<Object> allArgsCapture = ArgumentCaptor.forClass(Object.class);
+        Mockito.verify(logger, Mockito.times(3)).debug(Mockito.anyString(), allArgsCapture.capture(), allArgsCapture.capture(),
+                allArgsCapture.capture());
+
+        // since it is vargs, 3 calls with 3 parameters all accumulate to one list
+        final List<Object> logArgs = allArgsCapture.getAllValues();
+        Assert.assertNotNull(logArgs, "log messages mismatched.");
+        Assert.assertEquals(logArgs.size(), 9, "log messages mismatched.");
+        Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
+        Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
+        Assert.assertEquals(logArgs.get(2), "a1 CAPABILITY\r\n", "log messages from client mismatched.");
+        Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
+        Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
+        Assert.assertEquals(logArgs.get(5), "Session is confirmed closed.", "log messages from client mismatched.");
+        Assert.assertEquals(logArgs.get(6), Long.valueOf(SESSION_ID), "log messages mismatched.");
+        Assert.assertEquals(logArgs.get(7), USER_ID, "log messages mismatched.");
+        Assert.assertEquals(logArgs.get(8), "Closing the session via close().", "Error message mismatched.");
+
+        final ArgumentCaptor<Object> errCapture = ArgumentCaptor.forClass(Object.class);
+        Mockito.verify(logger, Mockito.times(1)).error(Mockito.anyString(), errCapture.capture(), errCapture.capture(), errCapture.capture());
+        final List<Object> errArgs = errCapture.getAllValues();
+        Assert.assertEquals(errArgs.size(), 3, "log message mismatched.");
+        Assert.assertEquals(errArgs.get(2).getClass(), ImapAsyncClientException.class, "class mismatched.");
+        final ImapAsyncClientException e = (ImapAsyncClientException) errCapture.getAllValues().get(2);
         Assert.assertNotNull(e, "Log error for exception is missing");
         Assert.assertEquals(e.getFaiureType(), FailureType.CHANNEL_DISCONNECTED, "Class mismatched.");
     }
@@ -939,7 +1065,9 @@ public class ImapAsyncSessionImplTest {
         Mockito.when(logger.isDebugEnabled()).thenReturn(false);
 
         // construct, class level logging is off, session level logging is on
-        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline);
+
+        final String sessionCtx = USER_ID;
+        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline, sessionCtx);
 
         // execute
         final ImapRequest cmd = new CapaCommand();
@@ -948,7 +1076,7 @@ public class ImapAsyncSessionImplTest {
         Mockito.verify(writePromise, Mockito.times(1)).addListener(Mockito.any(ImapAsyncSessionImpl.class));
         Mockito.verify(channel, Mockito.times(1)).writeAndFlush(Mockito.anyString(), Mockito.isA(ChannelPromise.class));
         // Ensure there is no call to debug() method
-        Mockito.verify(logger, Mockito.times(0)).debug(Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
+        Mockito.verify(logger, Mockito.times(0)).debug(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
 
         // simulate channel closed
         aSession.handleChannelClosed();
@@ -969,15 +1097,17 @@ public class ImapAsyncSessionImplTest {
         Assert.assertEquals(asynEx.getFaiureType(), FailureType.CHANNEL_DISCONNECTED, "Failure type mismatched.");
         // verify logging messages
         final ArgumentCaptor<Object> logCapture = ArgumentCaptor.forClass(Object.class);
-        Mockito.verify(logger, Mockito.times(0)).debug(Mockito.anyString(), Mockito.anyString(), logCapture.capture());
+        Mockito.verify(logger, Mockito.times(0)).debug(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), logCapture.capture());
         final List<Object> logMsgs = logCapture.getAllValues();
         Assert.assertNotNull(logMsgs, "log messages mismatched.");
         Assert.assertEquals(logMsgs.size(), 0, "log messages mismatched.");
 
-        final ArgumentCaptor<ImapAsyncClientException> errCapture = ArgumentCaptor.forClass(ImapAsyncClientException.class);
-        Mockito.verify(logger, Mockito.times(1)).error(Mockito.anyString(), Mockito.anyString(), errCapture.capture());
-        final List<ImapAsyncClientException> errMsgs = errCapture.getAllValues();
-        final ImapAsyncClientException e = errMsgs.get(0);
+        final ArgumentCaptor<Object> errCapture = ArgumentCaptor.forClass(Object.class);
+        Mockito.verify(logger, Mockito.times(1)).error(Mockito.anyString(), errCapture.capture(), errCapture.capture(), errCapture.capture());
+        final List<Object> errArgs = errCapture.getAllValues();
+        Assert.assertEquals(errArgs.size(), 3, "log message mismatched.");
+        Assert.assertEquals(errArgs.get(2).getClass(), ImapAsyncClientException.class, "class mismatched.");
+        final ImapAsyncClientException e = (ImapAsyncClientException) errCapture.getAllValues().get(2);
         Assert.assertNotNull(e, "Log error for exception is missing");
         Assert.assertEquals(e.getFaiureType(), FailureType.CHANNEL_DISCONNECTED, "Class mismatched.");
     }
@@ -1008,7 +1138,9 @@ public class ImapAsyncSessionImplTest {
         Mockito.when(logger.isDebugEnabled()).thenReturn(true);
 
         // construct
-        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline);
+
+        final String sessionCtx = USER_ID;
+        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline, sessionCtx);
 
         // execute
         final ConcurrentLinkedQueue<IMAPResponse> serverResponesQ = new ConcurrentLinkedQueue<IMAPResponse>();
@@ -1017,7 +1149,7 @@ public class ImapAsyncSessionImplTest {
 
         Mockito.verify(writePromise, Mockito.times(1)).addListener(Mockito.any(ImapAsyncSessionImpl.class));
         Mockito.verify(channel, Mockito.times(1)).writeAndFlush(Mockito.anyString(), Mockito.isA(ChannelPromise.class));
-        Mockito.verify(logger, Mockito.times(1)).debug(Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
+        Mockito.verify(logger, Mockito.times(1)).debug(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
 
         // simulate write to server completed successfully
         Mockito.when(writePromise.isSuccess()).thenReturn(true);
@@ -1068,18 +1200,34 @@ public class ImapAsyncSessionImplTest {
 
         Assert.assertNotNull(ex, "Expect exception to be thrown.");
         Assert.assertEquals(ex.getFaiureType(), FailureType.COMMAND_NOT_ALLOWED, "FailureTypet mismatched.");
-        // verify logging messages for all idle communication
-        final ArgumentCaptor<String> logCapture = ArgumentCaptor.forClass(String.class);
-        Mockito.verify(logger, Mockito.times(6)).debug(Mockito.anyString(), Mockito.anyString(), logCapture.capture());
-        final List<String> logMsgs = logCapture.getAllValues();
-        Assert.assertNotNull(logMsgs, "log messages mismatched.");
-        Assert.assertEquals(logMsgs.size(), 6, "log messages mismatched.");
-        Assert.assertEquals(logMsgs.get(0), "a1 IDLE\r\n", "log messages from client mismatched.");
-        Assert.assertEquals(logMsgs.get(1), "+ idling", "log messages from server mismatched.");
-        Assert.assertEquals(logMsgs.get(2), "* 2 EXPUNGE", "log messages from server mismatched.");
-        Assert.assertEquals(logMsgs.get(3), "* 3 EXISTS", "log messages from server mismatched.");
-        Assert.assertEquals(logMsgs.get(4), "DONE\r\n", "log messages from client mismatched.");
-        Assert.assertEquals(logMsgs.get(5), "a1 OK IDLE terminated", "log messages from server mismatched.");
+
+        // verify logging messages
+        final ArgumentCaptor<Object> allArgsCapture = ArgumentCaptor.forClass(Object.class);
+        Mockito.verify(logger, Mockito.times(6)).debug(Mockito.anyString(), allArgsCapture.capture(), allArgsCapture.capture(),
+                allArgsCapture.capture());
+
+        // since it is vargs, 6 calls with 3 parameters all accumulate to one list, 6 * 3 =18
+        final List<Object> logArgs = allArgsCapture.getAllValues();
+        Assert.assertNotNull(logArgs, "log messages mismatched.");
+        Assert.assertEquals(logArgs.size(), 18, "log messages mismatched.");
+        Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
+        Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
+        Assert.assertEquals(logArgs.get(2), "a1 IDLE\r\n", "log messages from client mismatched.");
+        Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
+        Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
+        Assert.assertEquals(logArgs.get(5), "+ idling", "log messages from server mismatched.");
+        Assert.assertEquals(logArgs.get(6), Long.valueOf(SESSION_ID), "log messages mismatched.");
+        Assert.assertEquals(logArgs.get(7), USER_ID, "log messages mismatched.");
+        Assert.assertEquals(logArgs.get(8), "* 2 EXPUNGE", "Error message mismatched.");
+        Assert.assertEquals(logArgs.get(9), Long.valueOf(SESSION_ID), "log messages mismatched.");
+        Assert.assertEquals(logArgs.get(10), USER_ID, "log messages mismatched.");
+        Assert.assertEquals(logArgs.get(11), "* 3 EXISTS", "Error message mismatched.");
+        Assert.assertEquals(logArgs.get(12), Long.valueOf(SESSION_ID), "log messages mismatched.");
+        Assert.assertEquals(logArgs.get(13), USER_ID, "log messages mismatched.");
+        Assert.assertEquals(logArgs.get(14), "DONE\r\n", "log messages from client mismatched.");
+        Assert.assertEquals(logArgs.get(15), Long.valueOf(SESSION_ID), "log messages mismatched.");
+        Assert.assertEquals(logArgs.get(16), USER_ID, "log messages mismatched.");
+        Assert.assertEquals(logArgs.get(17), "a1 OK IDLE terminated", "log messages from server mismatched.");
     }
 
     /**
@@ -1101,7 +1249,9 @@ public class ImapAsyncSessionImplTest {
 
         final Logger logger = Mockito.mock(Logger.class);
         Mockito.when(logger.isDebugEnabled()).thenReturn(true);
-        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline);
+
+        final String sessionCtx = USER_ID;
+        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline, sessionCtx);
         final ImapRequest cmd = new CapaCommand();
         aSession.execute(cmd);
 
@@ -1117,7 +1267,7 @@ public class ImapAsyncSessionImplTest {
         }
         Assert.assertNotNull(ex, "Exception should occur.");
         Assert.assertEquals(ex.getFaiureType(), FailureType.COMMAND_NOT_ALLOWED, "Failure type mismatched.");
-        Mockito.verify(logger, Mockito.times(1)).debug(Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
+        Mockito.verify(logger, Mockito.times(1)).debug(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
     }
 
     /**
@@ -1146,7 +1296,9 @@ public class ImapAsyncSessionImplTest {
         Mockito.when(logger.isDebugEnabled()).thenReturn(true);
 
         // constructor, class level debug is off, but session level is on
-        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline);
+
+        final String sessionCtx = USER_ID;
+        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline, sessionCtx);
         final ImapRequest cmd = new CapaCommand();
         ImapAsyncClientException ex = null;
         try {
@@ -1161,7 +1313,7 @@ public class ImapAsyncSessionImplTest {
         Mockito.verify(writePromise, Mockito.times(0)).addListener(Mockito.any(ImapAsyncSessionImpl.class));
         Mockito.verify(channel, Mockito.times(0)).writeAndFlush(Mockito.anyString(), Mockito.isA(ChannelPromise.class));
         // encountering the above exception in execute(), will not log the command sent over the wire
-        Mockito.verify(logger, Mockito.times(0)).debug(Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
+        Mockito.verify(logger, Mockito.times(0)).debug(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
 
         Mockito.when(closePromise.isSuccess()).thenReturn(true);
         final ImapFuture<Boolean> closeFuture = aSession.close();
@@ -1199,7 +1351,9 @@ public class ImapAsyncSessionImplTest {
         Mockito.when(logger.isDebugEnabled()).thenReturn(false);
 
         // construct, both class level and session level debugging are off
-        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_OFF, SESSION_ID, pipeline);
+
+        final String sessionCtx = USER_ID;
+        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_OFF, SESSION_ID, pipeline, sessionCtx);
 
         // perform close session, isSuccess() returns false
         Mockito.when(closePromise.isSuccess()).thenReturn(false);
@@ -1255,7 +1409,9 @@ public class ImapAsyncSessionImplTest {
         Mockito.when(logger.isDebugEnabled()).thenReturn(true);
 
         // construct, both class level and session level debugging are off
-        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_OFF, SESSION_ID, pipeline);
+
+        final String sessionCtx = USER_ID;
+        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_OFF, SESSION_ID, pipeline, sessionCtx);
 
         // execute Authenticate plain command
         {
@@ -1264,7 +1420,7 @@ public class ImapAsyncSessionImplTest {
             final ImapFuture<ImapAsyncResponse> future = aSession.execute(cmd);
             Mockito.verify(authWritePromise, Mockito.times(1)).addListener(Mockito.any(ImapAsyncSessionImpl.class));
             Mockito.verify(channel, Mockito.times(1)).writeAndFlush(Mockito.anyString(), Mockito.isA(ChannelPromise.class));
-            Mockito.verify(logger, Mockito.times(0)).debug(Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
+            Mockito.verify(logger, Mockito.times(0)).debug(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
 
             // simulate write to server completed successfully
             Mockito.when(authWritePromise.isSuccess()).thenReturn(true);
@@ -1296,17 +1452,24 @@ public class ImapAsyncSessionImplTest {
             Assert.assertEquals(asynEx.getFaiureType(), FailureType.CHANNEL_EXCEPTION, "Failure type mismatched.");
 
             // verify logging messages
-            final ArgumentCaptor<String> logCapture = ArgumentCaptor.forClass(String.class);
-            Mockito.verify(logger, Mockito.times(1)).debug(Mockito.anyString(), Mockito.anyString(), logCapture.capture());
-            final List<String> logMsgs = logCapture.getAllValues();
-            Assert.assertNotNull(logMsgs, "log messages mismatched.");
-            Assert.assertEquals(logMsgs.size(), 1, "log messages mismatched.");
-            Assert.assertEquals(logMsgs.get(0), "+", "log messages from client mismatched.");
+            final ArgumentCaptor<Object> allArgsCapture = ArgumentCaptor.forClass(Object.class);
+            Mockito.verify(logger, Mockito.times(1)).debug(Mockito.anyString(), allArgsCapture.capture(), allArgsCapture.capture(),
+                    allArgsCapture.capture());
 
-            final ArgumentCaptor<ImapAsyncClientException> errCapture = ArgumentCaptor.forClass(ImapAsyncClientException.class);
-            Mockito.verify(logger, Mockito.times(1)).error(Mockito.anyString(), Mockito.anyString(), errCapture.capture());
-            final List<ImapAsyncClientException> errMsgs = errCapture.getAllValues();
-            final ImapAsyncClientException e = errMsgs.get(0);
+            // since it is vargs, 1 calls with 3 parameters all accumulate to one list, 1 * 3 =3
+            final List<Object> logArgs = allArgsCapture.getAllValues();
+            Assert.assertNotNull(logArgs, "log messages mismatched.");
+            Assert.assertEquals(logArgs.size(), 3, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(2), "+", "log messages from server mismatched.");
+
+            final ArgumentCaptor<Object> errCapture = ArgumentCaptor.forClass(Object.class);
+            Mockito.verify(logger, Mockito.times(1)).error(Mockito.anyString(), errCapture.capture(), errCapture.capture(), errCapture.capture());
+            final List<Object> errArgs = errCapture.getAllValues();
+            Assert.assertEquals(errArgs.size(), 3, "log message mismatched.");
+            Assert.assertEquals(errArgs.get(2).getClass(), ImapAsyncClientException.class, "class mismatched.");
+            final ImapAsyncClientException e = (ImapAsyncClientException) errCapture.getAllValues().get(2);
             Assert.assertNotNull(e, "Log error for exception is missing");
             Assert.assertEquals(e.getFaiureType(), FailureType.CHANNEL_EXCEPTION, "Class mismatched.");
 
@@ -1346,7 +1509,9 @@ public class ImapAsyncSessionImplTest {
         Mockito.when(logger.isTraceEnabled()).thenReturn(true);
 
         // construct, class level debug is enabled, session level debug is disabled
-        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_OFF, SESSION_ID, pipeline);
+
+        final String sessionCtx = USER_ID;
+        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_OFF, SESSION_ID, pipeline, sessionCtx);
 
         // execute Authenticate plain command
         {
@@ -1382,15 +1547,25 @@ public class ImapAsyncSessionImplTest {
             Assert.assertNotNull(endingResp, "Result mismatched.");
             Assert.assertTrue(endingResp.isOK(), "Response.isOK() mismatched.");
             Assert.assertEquals(endingResp.getTag(), "a1", "tag mismatched.");
+
             // verify logging messages
-            final ArgumentCaptor<String> logCapture = ArgumentCaptor.forClass(String.class);
-            Mockito.verify(logger, Mockito.times(3)).debug(Mockito.anyString(), Mockito.anyString(), logCapture.capture());
-            final List<String> logMsgs = logCapture.getAllValues();
-            Assert.assertNotNull(logMsgs, "log messages mismatched.");
-            Assert.assertEquals(logMsgs.size(), 3, "log messages mismatched.");
-            Assert.assertEquals(logMsgs.get(0), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
-            Assert.assertEquals(logMsgs.get(1), "+", "log messages from server mismatched.");
-            Assert.assertEquals(logMsgs.get(2), "a1 OK AUTHENTICATE completed", "log messages from server mismatched.");
+            final ArgumentCaptor<Object> allArgsCapture = ArgumentCaptor.forClass(Object.class);
+            Mockito.verify(logger, Mockito.times(3)).debug(Mockito.anyString(), allArgsCapture.capture(), allArgsCapture.capture(),
+                    allArgsCapture.capture());
+
+            // since it is vargs, 3 calls with 3 parameters all accumulate to one list, 3 * 3 =12
+            final List<Object> logArgs = allArgsCapture.getAllValues();
+            Assert.assertNotNull(logArgs, "log messages mismatched.");
+            Assert.assertEquals(logArgs.size(), 9, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(2), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
+            Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(5), "+", "log messages from server mismatched.");
+            Assert.assertEquals(logArgs.get(6), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(7), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(8), "a1 OK AUTHENTICATE completed", "Error message mismatched.");
         }
 
         {
@@ -1429,16 +1604,29 @@ public class ImapAsyncSessionImplTest {
             Assert.assertEquals(asynEx.getFaiureType(), FailureType.OPERATION_PROHIBITED_ON_CLOSED_CHANNEL, "Failure type mismatched.");
 
             // verify logging messages
-            final ArgumentCaptor<String> logCapture = ArgumentCaptor.forClass(String.class);
-            Mockito.verify(logger, Mockito.times(5)).debug(Mockito.anyString(), Mockito.anyString(), logCapture.capture());
-            final List<String> logMsgs = logCapture.getAllValues();
-            Assert.assertNotNull(logMsgs, "log messages mismatched.");
-            Assert.assertEquals(logMsgs.size(), 5, "log messages mismatched.");
-            Assert.assertEquals(logMsgs.get(0), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
-            Assert.assertEquals(logMsgs.get(1), "+", "log messages from server mismatched.");
-            Assert.assertEquals(logMsgs.get(2), "a1 OK AUTHENTICATE completed", "log messages from server mismatched.");
-            Assert.assertEquals(logMsgs.get(3), "a2 COMPRESS DEFLATE\r\n", "log messages from client mismatched.");
-            Assert.assertEquals(logMsgs.get(4), "a2 OK Success", "log messages from server mismatched.");
+            final ArgumentCaptor<Object> allArgsCapture = ArgumentCaptor.forClass(Object.class);
+            Mockito.verify(logger, Mockito.times(5)).debug(Mockito.anyString(), allArgsCapture.capture(), allArgsCapture.capture(),
+                    allArgsCapture.capture());
+
+            // since it is vargs, 5 calls with 3 parameters all accumulate to one list, 6 * 3 =15
+            final List<Object> logArgs = allArgsCapture.getAllValues();
+            Assert.assertNotNull(logArgs, "log messages mismatched.");
+            Assert.assertEquals(logArgs.size(), 15, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(2), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
+            Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(5), "+", "log messages from server mismatched.");
+            Assert.assertEquals(logArgs.get(6), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(7), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(8), "a1 OK AUTHENTICATE completed", "Error message mismatched.");
+            Assert.assertEquals(logArgs.get(9), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(10), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(11), "a2 COMPRESS DEFLATE\r\n", "log messages from client mismatched.");
+            Assert.assertEquals(logArgs.get(12), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(13), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(14), "a2 OK Success", "log messages from server mismatched.");
         }
     }
 
