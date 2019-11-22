@@ -1,6 +1,7 @@
 package com.yahoo.imapnio.async.exception;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * This class defines various kinds of reason for imap asynchronous exception.
@@ -34,9 +35,6 @@ public class ImapAsyncClientException extends Exception {
 
         /** Write to imap server failed. */
         WRITE_TO_SERVER_FAILED("Write to imap server failed."),
-
-        /** Constructing imap command failed. */
-        COMMAND_CONSTRUCTION_FAILED("Constructing imap command failed."),
 
         /** Failed in closing conneciton. */
         CLOSING_CONNECTION_FAILED("Failed in closing conneciton"),
@@ -80,12 +78,45 @@ public class ImapAsyncClientException extends Exception {
     private FailureType failureType;
 
     /**
-     * Initializes a {code ImapAsyncClientException} with failure type.
+     * The session id.
+     */
+    @Nullable
+    private Long sessionId;
+
+    /**
+     * The information about this session that client wants to be printed when exception is displayed.
+     */
+    @Nullable
+    private String userInfo;
+
+    /**
+     * Initializes a {code ImapAsyncClientException} with failure type. It is used when session is not created.
      *
      * @param failureType the reason it fails
      */
     public ImapAsyncClientException(@Nonnull final FailureType failureType) {
-        this(failureType, null);
+        this(failureType, null, null, null);
+    }
+
+    /**
+     * Initializes a {code ImapAsyncClientException}with failure type and cause. It is used when session is not created.
+     *
+     * @param failureType the reason it fails
+     * @param cause the exception underneath
+     */
+    public ImapAsyncClientException(@Nonnull final FailureType failureType, final Throwable cause) {
+        this(failureType, cause, null, null);
+    }
+
+    /**
+     * Initializes a {code ImapAsyncClientException} with failure type and session id.
+     *
+     * @param failureType the reason it fails
+     * @param sessionId the session id
+     * @param sessionCtx user information sent by caller to identify this session, used for displaying in exception
+     */
+    public ImapAsyncClientException(@Nonnull final FailureType failureType, @Nonnull final Long sessionId, @Nonnull final Object sessionCtx) {
+        this(failureType, null, sessionId, sessionCtx);
     }
 
     /**
@@ -93,10 +124,15 @@ public class ImapAsyncClientException extends Exception {
      *
      * @param failureType the reason it fails
      * @param cause the exception underneath
+     * @param sessionId the session id
+     * @param sessionCtx user information sent by caller to identify this session, used for displaying in exception
      */
-    public ImapAsyncClientException(@Nonnull final FailureType failureType, final Throwable cause) {
+    public ImapAsyncClientException(@Nonnull final FailureType failureType, @Nullable final Throwable cause, @Nullable final Long sessionId,
+            @Nullable final Object sessionCtx) {
         super(cause);
         this.failureType = failureType;
+        this.sessionId = sessionId;
+        this.userInfo = (sessionCtx != null) ? sessionCtx.toString() : null;
     }
 
     /**
@@ -109,6 +145,12 @@ public class ImapAsyncClientException extends Exception {
     @Override
     public String getMessage() {
         final StringBuilder sb = new StringBuilder("failureType=").append(failureType.name());
+        if (sessionId != null) {
+            sb.append(",sId=").append(sessionId);
+        }
+        if (userInfo != null) {
+            sb.append(",uId=").append(userInfo);
+        }
         return sb.toString();
     }
 }

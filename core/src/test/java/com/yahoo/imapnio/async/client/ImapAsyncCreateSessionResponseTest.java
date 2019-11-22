@@ -29,7 +29,7 @@ public class ImapAsyncCreateSessionResponseTest {
 
     /**
      * Tests ImapAsyncResponse constructor and getters.
-     * 
+     *
      * @throws IOException will not throw
      * @throws ProtocolException will not throw
      * @throws ImapAsyncClientException will not throw
@@ -42,7 +42,11 @@ public class ImapAsyncCreateSessionResponseTest {
         final Channel channel = Mockito.mock(Channel.class);
 
         final Logger logger = Mockito.mock(Logger.class);
-        final ImapAsyncSession session = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline);
+
+        final String sessCtx = "Sauroposeidon@tallerthan.tree";
+
+        final ImapAsyncSession session = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline, sessCtx);
+
         final ImapAsyncCreateSessionResponse respOut = new ImapAsyncCreateSessionResponse(session, imapResponse);
 
         Assert.assertEquals(respOut.getSession(), session, "getSession() result mismatched.");
@@ -71,7 +75,7 @@ public class ImapAsyncCreateSessionResponseTest {
 
     /**
      * Tests ImapAsyncResponse constructor when greeting does not have capability.
-     * 
+     *
      * @throws IOException will not throw
      * @throws ProtocolException will not throw
      * @throws ImapAsyncClientException will not throw
@@ -84,7 +88,9 @@ public class ImapAsyncCreateSessionResponseTest {
         final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
         final Channel channel = Mockito.mock(Channel.class);
 
-        final ImapAsyncSession session = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline);
+        final String sessCtx = "Sauroposeidon@tallerthan.tree";
+
+        final ImapAsyncSession session = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline, sessCtx);
         final ImapAsyncCreateSessionResponse respOut = new ImapAsyncCreateSessionResponse(session, imapResponse);
         Assert.assertEquals(respOut.getSession(), session, "getSession() result mismatched.");
         final IMAPResponse greeting = respOut.getServerGreeting();

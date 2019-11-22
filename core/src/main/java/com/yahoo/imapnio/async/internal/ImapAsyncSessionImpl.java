@@ -41,14 +41,17 @@ import io.netty.handler.timeout.IdleStateEvent;
  */
 public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChannelEventProcessor, ChannelFutureListener {
 
-    /** Error record for the session, first {} is sessionId, exception will be printed too as stack. */
-    private static final String SESSION_LOG_REC = "[{}] {}";
+    /** Error record for the session, first {} is sessionId, 2nd user information. */
+    private static final String SESSION_LOG_REC = "[{},{}] {}";
 
-    /** Debug log record for server, first {} is sessionId, 2nd {} is for server message. */
-    private static final String SERVER_LOG_REC = "[{}] S:{}";
+    /** Error record for the session, first {} is sessionId, 2nd user information. */
+    private static final String SESSION_LOG_WITH_EXCEPTION = "[{},{}]";
 
-    /** Debug log record for client, first {} is sessionId, 2nd {} is for client message. */
-    private static final String CLIENT_LOG_REC = "[{}] C:{}";
+    /** Debug log record for server, first {} is sessionId, 2nd user information, 3rd for server message. */
+    private static final String SERVER_LOG_REC = "[{},{}] S:{}";
+
+    /** Debug log record for client, first {} is sessionId, 2nd user information, 3rd for client message. */
+    private static final String CLIENT_LOG_REC = "[{},{}] C:{}";
 
     /** Space character. */
     static final char SPACE = ' ';
@@ -62,11 +65,18 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
     /** Inflater handler name for enabling server compress. */
     private static final String ZLIB_ENCODER = "INFLATER";
 
+    /** Literal for NA. */
+    private static final String NA = "NA";
+
     /** The Netty channel object. */
     private AtomicReference<Channel> channelRef = new AtomicReference<Channel>();
 
     /** Session Id. */
-    private int sessionId;
+    private long sessionId;
+
+    /** Instance that stores the client context, we will call toString() of it. */
+    @Nonnull
+    private Object sessionCtx;
 
     /** Producer queue. */
     private ConcurrentLinkedQueue<ImapCommandEntry> requestsQueue;
@@ -175,16 +185,25 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
      * @param debugMode Flag for debugging
      * @param sessionId the session id
      * @param pipeline the ChannelPipeline object
+     * @param sessionCtx context for client to store information
      */
-    public ImapAsyncSessionImpl(@Nonnull final Channel channel, @Nonnull final Logger logger, @Nonnull final DebugMode debugMode, final int sessionId,
-            final ChannelPipeline pipeline) {
+    public ImapAsyncSessionImpl(@Nonnull final Channel channel, @Nonnull final Logger logger, @Nonnull final DebugMode debugMode,
+            final long sessionId, final ChannelPipeline pipeline, @Nonnull final Object sessionCtx) {
         this.channelRef.set(channel);
         this.logger = logger;
         this.debugModeRef.set(debugMode);
         this.sessionId = sessionId;
         this.requestsQueue = new ConcurrentLinkedQueue<ImapCommandEntry>();
         this.tagSequence = new AtomicLong(0);
+        this.sessionCtx = sessionCtx;
         pipeline.addLast(ImapClientCommandRespHandler.HANDLER_NAME, new ImapClientCommandRespHandler(this));
+    }
+
+    /**
+     * @return returns the user information
+     */
+    private String getUserInfo() {
+        return sessionCtx.toString();
     }
 
     /**
@@ -213,10 +232,10 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
     @Override
     public ImapFuture<ImapAsyncResponse> execute(@Nonnull final ImapRequest command) throws ImapAsyncClientException {
         if (isChannelClosed()) { // fail fast instead of entering to sendRequest() to fail
-            throw new ImapAsyncClientException(FailureType.OPERATION_PROHIBITED_ON_CLOSED_CHANNEL);
+            throw new ImapAsyncClientException(FailureType.OPERATION_PROHIBITED_ON_CLOSED_CHANNEL, sessionId, sessionCtx);
         }
         if (!requestsQueue.isEmpty()) { // when prior command is in process, do not allow the new one
-            throw new ImapAsyncClientException(FailureType.COMMAND_NOT_ALLOWED);
+            throw new ImapAsyncClientException(FailureType.COMMAND_NOT_ALLOWED, sessionId, sessionCtx);
         }
 
         final ImapFuture<ImapAsyncResponse> cmdFuture = new ImapFuture<ImapAsyncResponse>();
@@ -229,7 +248,7 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
         buf.writeBytes(command.getCommandLineBytes());
 
         if (isDebugEnabled() && command.isCommandLineDataSensitive()) { // if we cannot log data sent over wire, ask command to provide log info
-            logger.debug(CLIENT_LOG_REC, sessionId, command.getDebugData());
+            logger.debug(CLIENT_LOG_REC, sessionId, getUserInfo(), command.getDebugData());
         }
         sendRequest(buf, command.isCommandLineDataSensitive());
 
@@ -258,10 +277,10 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
      */
     private void sendRequest(@Nonnull final ByteBuf request, final boolean isDataSensitve) throws ImapAsyncClientException {
         if (isDebugEnabled() && !isDataSensitve) {
-            logger.debug(CLIENT_LOG_REC, sessionId, request.toString(StandardCharsets.UTF_8));
+            logger.debug(CLIENT_LOG_REC, sessionId, getUserInfo(), request.toString(StandardCharsets.UTF_8));
         }
         if (isChannelClosed()) {
-            throw new ImapAsyncClientException(FailureType.OPERATION_PROHIBITED_ON_CLOSED_CHANNEL);
+            throw new ImapAsyncClientException(FailureType.OPERATION_PROHIBITED_ON_CLOSED_CHANNEL, sessionId, sessionCtx);
         }
 
         // ChannelPromise is the suggested ChannelFuture that allows caller to setup listener before the action is made
@@ -275,7 +294,7 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
     @Override
     public ImapFuture<ImapAsyncResponse> terminateCommand(@Nonnull final ImapRequest command) throws ImapAsyncClientException {
         if (requestsQueue.isEmpty()) {
-            throw new ImapAsyncClientException(FailureType.COMMAND_NOT_ALLOWED);
+            throw new ImapAsyncClientException(FailureType.COMMAND_NOT_ALLOWED, sessionId, sessionCtx);
         }
 
         final ImapCommandEntry entry = requestsQueue.peek();
@@ -297,17 +316,17 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
         }
 
         if (!future.isSuccess()) { // failed to write to server
-            handleChannelException(new ImapAsyncClientException(FailureType.WRITE_TO_SERVER_FAILED, future.cause()));
+            handleChannelException(new ImapAsyncClientException(FailureType.WRITE_TO_SERVER_FAILED, future.cause(), sessionId, sessionCtx));
         }
     }
 
     @Override
     public void handleChannelClosed() {
         if (isDebugEnabled()) {
-            logger.debug(SESSION_LOG_REC, sessionId, "Session is confirmed closed.");
+            logger.debug(SESSION_LOG_REC, sessionId, getUserInfo(), "Session is confirmed closed.");
         }
         // set the future done if there is any
-        requestDoneWithException(new ImapAsyncClientException(FailureType.CHANNEL_DISCONNECTED));
+        requestDoneWithException(new ImapAsyncClientException(FailureType.CHANNEL_DISCONNECTED, sessionId, sessionCtx));
     }
 
     /**
@@ -345,7 +364,7 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
         }
 
         // log at error level
-        logger.error(SESSION_LOG_REC, sessionId, cause);
+        logger.error(SESSION_LOG_WITH_EXCEPTION, sessionId, getUserInfo(), cause);
         entry.getFuture().done(cause);
 
         // close session when encountering channel exception since the health of session is frail/unknown.
@@ -354,7 +373,8 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
 
     @Override
     public void handleChannelException(@Nonnull final Throwable cause) {
-        requestDoneWithException(new ImapAsyncClientException(FailureType.CHANNEL_EXCEPTION, cause));
+        final String userId = null;
+        requestDoneWithException(new ImapAsyncClientException(FailureType.CHANNEL_EXCEPTION, cause, sessionId, sessionCtx));
     }
 
     @Override
@@ -366,7 +386,7 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
         }
 
         // error out for any other commands sent but server is not responding
-        requestDoneWithException(new ImapAsyncClientException(FailureType.CHANNEL_TIMEOUT));
+        requestDoneWithException(new ImapAsyncClientException(FailureType.CHANNEL_TIMEOUT, sessionId, sessionCtx));
     }
 
     @Override
@@ -381,7 +401,7 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
         responses.add(serverResponse);
 
         if (isDebugEnabled()) { // logging all server responses when enabled
-            logger.debug(SERVER_LOG_REC, sessionId, serverResponse.toString());
+            logger.debug(SERVER_LOG_REC, sessionId, getUserInfo(), serverResponse.toString());
         }
 
         // server sends continuation message (+) for next request
@@ -397,7 +417,8 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
                 sendRequest(cmdAfterContinue, currentCmd.isCommandLineDataSensitive());
 
             } catch (final ImapAsyncClientException | RuntimeException e) { // when encountering an error on building request from client
-                requestDoneWithException(new ImapAsyncClientException(ImapAsyncClientException.FailureType.CHANNEL_EXCEPTION, e));
+                requestDoneWithException(
+                        new ImapAsyncClientException(ImapAsyncClientException.FailureType.CHANNEL_EXCEPTION, e, sessionId, sessionCtx));
             }
             return;
 
@@ -407,7 +428,8 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
                 if (currentCmd instanceof CompressCommand && serverResponse.isOK()) {
                     // check whether channel is closed before dereferencing.
                     if (isChannelClosed()) {
-                        requestDoneWithException(new ImapAsyncClientException(FailureType.OPERATION_PROHIBITED_ON_CLOSED_CHANNEL));
+                        requestDoneWithException(
+                                new ImapAsyncClientException(FailureType.OPERATION_PROHIBITED_ON_CLOSED_CHANNEL, sessionId, sessionCtx));
                         return;
                     }
 
@@ -430,7 +452,8 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
                 curEntry.getFuture().done(doneResponse);
                 return;
             } catch (final RuntimeException e) {
-                requestDoneWithException(new ImapAsyncClientException(ImapAsyncClientException.FailureType.CHANNEL_EXCEPTION, e));
+                requestDoneWithException(
+                        new ImapAsyncClientException(ImapAsyncClientException.FailureType.CHANNEL_EXCEPTION, e, sessionId, sessionCtx));
             }
         }
 
@@ -444,7 +467,7 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
             closeFuture.done(Boolean.TRUE);
         } else {
             if (isDebugEnabled()) {
-                logger.debug(SESSION_LOG_REC, sessionId, "Closing the session via close().");
+                logger.debug(SESSION_LOG_REC, sessionId, getUserInfo(), "Closing the session via close().");
             }
             final Channel channel = channelRef.get();
             final ChannelPromise channelPromise = channel.newPromise();
@@ -479,7 +502,8 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
             if (future.isSuccess()) {
                 imapSessionCloseFuture.done(Boolean.TRUE);
             } else {
-                imapSessionCloseFuture.done(new ImapAsyncClientException(FailureType.CLOSING_CONNECTION_FAILED, future.cause()));
+                imapSessionCloseFuture
+                        .done(new ImapAsyncClientException(FailureType.CLOSING_CONNECTION_FAILED, future.cause(), sessionId, sessionCtx));
             }
         }
 
