@@ -13,7 +13,6 @@ import java.util.Set;
 
 import javax.mail.search.SearchException;
 
-import org.mockito.ArgumentCaptor;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -70,6 +69,7 @@ public class AuthOauthBearerCommandTest {
         final Map<String, List<String>> capas = new HashMap<String, List<String>>();
         capas.put(ImapClientConstants.SASL_IR, Arrays.asList(ImapClientConstants.SASL_IR));
         final ImapRequest cmd = new AuthOauthBearerCommand(emailId, hostname, port, token, new Capability(capas));
+        Assert.assertTrue(cmd.isCommandLineDataSensitive(), "isCommandLineDataSensitive() result mismatched.");
 
         Assert.assertEquals(cmd.getCommandLine(),
                 "AUTHENTICATE OAUTHBEARER bixhPXVzZXJAZXhhbXBsZS5jb20sAWhvc3Q9c2VydmVyLmV4YW1wbGUuY29tAXBvcnQ9OTkzAWF1dGg9QmVhcmVyIHNlbGZkcml2aW5nAQE=\r\n",
@@ -100,7 +100,10 @@ public class AuthOauthBearerCommandTest {
         final String token = "selfdriving";
         final Map<String, List<String>> capas = new HashMap<String, List<String>>();
         final AuthOauthBearerCommand cmd = new AuthOauthBearerCommand(emailId, hostname, port, token, new Capability(capas));
+        Assert.assertTrue(cmd.isCommandLineDataSensitive(), "isCommandLineDataSensitive() result mismatched.");
+
         Assert.assertEquals(cmd.getCommandLine(), "AUTHENTICATE OAUTHBEARER\r\n", "Expected result mismatched.");
+        Assert.assertFalse(cmd.isCommandLineDataSensitive(), "isCommandLineDataSensitive() result mismatched.");
 
         final IMAPResponse serverResponse = null; // null or not null does not matter
 
@@ -109,6 +112,7 @@ public class AuthOauthBearerCommandTest {
         Assert.assertEquals(resp2.toString(StandardCharsets.US_ASCII),
                 "bixhPXVzZXJAZXhhbXBsZS5jb20sAWhvc3Q9c2VydmVyLmV4YW1wbGUuY29tAXBvcnQ9OTkzAWF1dGg9QmVhcmVyIHNlbGZkcml2aW5nAQE=\r\n",
                 "Expected result mismatched.");
+        Assert.assertTrue(cmd.isCommandLineDataSensitive(), "isCommandLineDataSensitive() result mismatched.");
 
         cmd.cleanup();
         // Verify if cleanup happened correctly.
@@ -148,10 +152,12 @@ public class AuthOauthBearerCommandTest {
         final Map<String, List<String>> capas = new HashMap<String, List<String>>();
         capas.put(ImapClientConstants.SASL_IR, Arrays.asList(ImapClientConstants.SASL_IR));
         final ImapRequest cmd = new AuthOauthBearerCommand(emailId, hostname, port, token, new Capability(capas));
+        Assert.assertTrue(cmd.isCommandLineDataSensitive(), "isCommandLineDataSensitive() result mismatched.");
 
         // asks for the first command, should contain client response since it is SASL_IR enabled
         Assert.assertEquals(cmd.getCommandLine(), "AUTHENTICATE OAUTHBEARER bixhPXVzZXJAZXhhbXBsZS5jb20sAWhvc3Q9c2VydmVyLmV4YW1wbG"
                 + "UuY29tAXBvcnQ9OTkzAWF1dGg9QmVhcmVyIHNlbGZkcml2aW5nAQE=\r\n", "Expected result mismatched.");
+        Assert.assertTrue(cmd.isCommandLineDataSensitive(), "isCommandLineDataSensitive() result mismatched.");
 
         // asks the next command after continuation with server error response encoded in base64
         final IMAPResponse serverResponse = new IMAPResponse(
@@ -159,6 +165,7 @@ public class AuthOauthBearerCommandTest {
         final ByteBuf nextClientReq = cmd.getNextCommandLineAfterContinuation(serverResponse);
         Assert.assertNotNull(nextClientReq, "expected command from client mismatched.");
         Assert.assertEquals(nextClientReq.toString(StandardCharsets.US_ASCII), "*\r\n", "expected command from client mismatched.");
+        Assert.assertFalse(cmd.isCommandLineDataSensitive(), "isCommandLineDataSensitive() result mismatched.");
     }
 
     /**

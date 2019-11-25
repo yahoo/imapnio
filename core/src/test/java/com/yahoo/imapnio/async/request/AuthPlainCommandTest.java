@@ -65,6 +65,7 @@ public class AuthPlainCommandTest {
         final Map<String, List<String>> capas = new HashMap<String, List<String>>();
         capas.put(ImapClientConstants.SASL_IR, Arrays.asList(ImapClientConstants.SASL_IR));
         final AuthPlainCommand cmd = new AuthPlainCommand(username, pwd, new Capability(capas));
+        Assert.assertTrue(cmd.isCommandLineDataSensitive(), "isCommandLineDataSensitive() result mismatched.");
 
         // verify getCommandLine()
         Assert.assertEquals(cmd.getCommandLine(), "AUTHENTICATE PLAIN AHRlc2xhAHNlbGZkcml2aW5n\r\n", "Expected result mismatched.");
@@ -76,6 +77,7 @@ public class AuthPlainCommandTest {
         final ByteBuf nextClientReq = cmd.getNextCommandLineAfterContinuation(serverResponse);
         Assert.assertNotNull(nextClientReq, "expected command from client mismatched.");
         Assert.assertEquals(nextClientReq.toString(StandardCharsets.US_ASCII), "*\r\n", "expected command from client mismatched.");
+        Assert.assertFalse(cmd.isCommandLineDataSensitive(), "isCommandLineDataSensitive() result mismatched.");
 
         cmd.cleanup();
         // Verify if cleanup happened correctly.
@@ -102,6 +104,7 @@ public class AuthPlainCommandTest {
         final Map<String, List<String>> capas = new HashMap<String, List<String>>();
         capas.put(ImapClientConstants.SASL_IR, Arrays.asList(ImapClientConstants.SASL_IR));
         final AuthPlainCommand cmd = new AuthPlainCommand(authId, username, token, new Capability(capas));
+        Assert.assertTrue(cmd.isCommandLineDataSensitive(), "isCommandLineDataSensitive() result mismatched.");
 
         // verify getCommandLine()
         Assert.assertEquals(cmd.getCommandLine(), "AUTHENTICATE PLAIN dGVzdGxhAG1vZGVseABzZWxmZHJpdmluZw==\r\n", "Expected result mismatched.");
@@ -114,6 +117,7 @@ public class AuthPlainCommandTest {
         final ByteBuf nextClientReq = cmd.getNextCommandLineAfterContinuation(serverResponse);
         Assert.assertNotNull(nextClientReq, "expected command from client mismatched.");
         Assert.assertEquals(nextClientReq.toString(StandardCharsets.US_ASCII), "*\r\n", "expected command from client mismatched.");
+        Assert.assertFalse(cmd.isCommandLineDataSensitive(), "isCommandLineDataSensitive() result mismatched.");
 
         cmd.cleanup();
         // Verify if cleanup happened correctly.
@@ -136,14 +140,18 @@ public class AuthPlainCommandTest {
         final String pwd = "selfdriving";
         final Map<String, List<String>> capas = new HashMap<String, List<String>>();
         final AuthPlainCommand cmd = new AuthPlainCommand(username, pwd, new Capability(capas));
+        Assert.assertTrue(cmd.isCommandLineDataSensitive(), "isCommandLineDataSensitive() result mismatched.");
+
         // verify getCommandLine()
         Assert.assertEquals(cmd.getCommandLine(), "AUTHENTICATE PLAIN\r\n", "Expected result mismatched.");
+        Assert.assertFalse(cmd.isCommandLineDataSensitive(), "isCommandLineDataSensitive() result mismatched.");
 
         // verify getNextCommandLineAfterContinuation()
         final IMAPResponse serverResponse = null; // should not cause anything if it is null
         final ByteBuf base64 = cmd.getNextCommandLineAfterContinuation(serverResponse);
         Assert.assertNotNull(base64, "Expected result mismatched.");
         Assert.assertEquals(base64.toString(StandardCharsets.US_ASCII), "AHRlc2xhAHNlbGZkcml2aW5n\r\n", "Expected result mismatched.");
+        Assert.assertTrue(cmd.isCommandLineDataSensitive(), "isCommandLineDataSensitive() result mismatched.");
 
         cmd.cleanup();
         // Verify if cleanup happened correctly.

@@ -67,6 +67,7 @@ public class AuthXoauth2CommandTest {
         final Map<String, List<String>> capas = new HashMap<String, List<String>>();
         capas.put(ImapClientConstants.SASL_IR, Arrays.asList(ImapClientConstants.SASL_IR));
         final ImapRequest cmd = new AuthXoauth2Command(username, token, new Capability(capas));
+        Assert.assertTrue(cmd.isCommandLineDataSensitive(), "isCommandLineDataSensitive() result mismatched.");
 
         Assert.assertEquals(cmd.getCommandLine(), "AUTHENTICATE XOAUTH2 dXNlcj10ZXNsYQFhdXRoPUJlYXJlciBzZWxmZHJpdmluZwEB\r\n",
                 "Expected result mismatched.");
@@ -94,13 +95,17 @@ public class AuthXoauth2CommandTest {
         final String token = "selfdriving";
         final Map<String, List<String>> capas = new HashMap<String, List<String>>();
         final AuthXoauth2Command cmd = new AuthXoauth2Command(username, token, new Capability(capas));
+        Assert.assertTrue(cmd.isCommandLineDataSensitive(), "isCommandLineDataSensitive() result mismatched.");
+
         Assert.assertEquals(cmd.getCommandLine(), "AUTHENTICATE XOAUTH2\r\n", "Expected result mismatched.");
+        Assert.assertFalse(cmd.isCommandLineDataSensitive(), "isCommandLineDataSensitive() result mismatched.");
 
         // asks the next command after continuation
         final IMAPResponse serverResponse = null; // null or not null does not matter
         final ByteBuf resp2 = cmd.getNextCommandLineAfterContinuation(serverResponse);
         Assert.assertEquals(resp2.toString(StandardCharsets.US_ASCII), "dXNlcj10ZXNsYQFhdXRoPUJlYXJlciBzZWxmZHJpdmluZwEB\r\n",
                 "Expected result mismatched.");
+        Assert.assertTrue(cmd.isCommandLineDataSensitive(), "isCommandLineDataSensitive() result mismatched.");
 
         cmd.cleanup();
         // Verify if cleanup happened correctly.
@@ -136,10 +141,12 @@ public class AuthXoauth2CommandTest {
         final Map<String, List<String>> capas = new HashMap<String, List<String>>();
         capas.put(ImapClientConstants.SASL_IR, Arrays.asList(ImapClientConstants.SASL_IR));
         final ImapRequest cmd = new AuthXoauth2Command(username, token, new Capability(capas));
+        Assert.assertTrue(cmd.isCommandLineDataSensitive(), "isCommandLineDataSensitive() result mismatched.");
 
         // asks for the first command, should contain client response since it is SASL_IR enabled
         Assert.assertEquals(cmd.getCommandLine(), "AUTHENTICATE XOAUTH2 dXNlcj10ZXNsYQFhdXRoPUJlYXJlciBzZWxmZHJpdmluZwEB\r\n",
                 "Expected result mismatched.");
+        Assert.assertTrue(cmd.isCommandLineDataSensitive(), "isCommandLineDataSensitive() result mismatched.");
 
         // asks the next command after continuation with server error response encoded in base64
         final IMAPResponse serverResponse = new IMAPResponse(
@@ -147,6 +154,7 @@ public class AuthXoauth2CommandTest {
         final ByteBuf nextClientReq = cmd.getNextCommandLineAfterContinuation(serverResponse);
         Assert.assertNotNull(nextClientReq, "expected command from client mismatched.");
         Assert.assertEquals(nextClientReq.toString(StandardCharsets.US_ASCII), "*\r\n", "expected command from client mismatched.");
+        Assert.assertFalse(cmd.isCommandLineDataSensitive(), "isCommandLineDataSensitive() result mismatched.");
     }
 
     /**
