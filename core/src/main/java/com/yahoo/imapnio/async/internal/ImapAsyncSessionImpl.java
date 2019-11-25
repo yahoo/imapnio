@@ -274,6 +274,7 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
      */
     private void sendRequest(@Nonnull final ByteBuf request, @Nonnull final ImapRequest command) throws ImapAsyncClientException {
         if (isDebugEnabled()) {
+            // log given request if it not sensitive, otherwise log the debug data decided by command
             logger.debug(CLIENT_LOG_REC, sessionId, getUserInfo(),
                     (!command.isCommandLineDataSensitive()) ? request.toString(StandardCharsets.UTF_8) : command.getDebugData());
         }

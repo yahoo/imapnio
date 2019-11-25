@@ -27,13 +27,13 @@ public abstract class AbstractAuthCommand extends ImapRequestAdapter {
     /** Byte buffer length for authenticate command, enough for the supported ones, oauth bear, plain, and xoauth2. */
     private static final int COMMAND_LEN = 50;
 
-    /** flag whether server allows one liner (Refer to RFC4959) instead of server challenge. */
+    /** Flag whether server allows one liner (Refer to RFC4959) instead of server challenge. */
     private boolean isSaslIREnabled;
 
     /** Flag whether the client response is sent already. */
     private boolean isClientResponseSent;
 
-    /** Flag whether the data sent out is sensitive. */
+    /** Flag whether the data just sent is sensitive or not. */
     private boolean isDataSensitive;
 
     /**
@@ -66,10 +66,12 @@ public abstract class AbstractAuthCommand extends ImapRequestAdapter {
         if (isSaslIREnabled) { // server allows client response in one line
             this.isDataSensitive = true; // containing sensitive data
             final String clientResp = buildClientResponse();
+
+            // SASL-IR, rfc4959. "AUTHENTICATE" SP auth-type [SP (base64 / "=")] *(CRLF base64) ex: AUTHENTICATE XOAUTH2 [base64 response]
             final ByteBuf sb = Unpooled.buffer(clientResp.length() + ImapClientConstants.PAD_LEN);
             buildCommand(sb); // ex: AUTHENTICATE XOAUTH2
             sb.writeByte(ImapClientConstants.SPACE);
-            sb.writeBytes(clientResp.getBytes(StandardCharsets.US_ASCII));
+            sb.writeBytes(clientResp.getBytes(StandardCharsets.US_ASCII)); // client responses
             sb.writeBytes(CRLF_B);
             this.isClientResponseSent = true; // setting to true to indicate client response is sent
             return sb;
