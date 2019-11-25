@@ -39,8 +39,6 @@ public abstract class AbstractAuthCommand extends ImapRequestAdapter {
     /**
      * Initializes an abstract authenticate command.
      *
-     * @param username the user name
-     * @param token xoauth2 token
      * @param capa the capability obtained from server
      */
     public AbstractAuthCommand(@Nonnull final Capability capa) {
