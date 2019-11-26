@@ -8,6 +8,9 @@ final class ImapClientConstants {
     /** Space character. */
     static final char SPACE = ' ';
 
+    /** Literal to cancel the command when server responds error. */
+    static final char CANCEL_B = '*';
+
     /** String for CR and LF. */
     static final String CRLF = "\r\n";
 
