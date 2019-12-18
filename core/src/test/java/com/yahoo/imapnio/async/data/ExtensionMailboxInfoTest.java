@@ -34,7 +34,7 @@ public class ExtensionMailboxInfoTest {
         content[4] = new IMAPResponse("* FLAGS (\\Answered \\Deleted \\Draft \\Flagged \\Seen $Forwarded $Junk $NotJunk)");
         content[5] = new IMAPResponse("* OK [PERMANENTFLAGS ()] No permanent flags permitted");
         content[6] = new IMAPResponse("* OK [HIGHESTMODSEQ 614]");
-        content[7] = new IMAPResponse("* OK [MAILBOXID (2147483647)] Ok");
+        content[7] = new IMAPResponse("* OK [MAILBOXID (214-mailbox)] Ok");
         content[8] = new IMAPResponse("002 OK [READ-ONLY] EXAMINE completed; now in selected state");
         final ExtensionMailboxInfo minfo = new ExtensionMailboxInfo(content);
 
@@ -49,7 +49,7 @@ public class ExtensionMailboxInfoTest {
         Assert.assertEquals(minfo.highestmodseq, 614, "highestmodseq mismatched.");
         Assert.assertEquals(minfo.uidvalidity, 1459808247, "uidvalidity mismatched.");
         Assert.assertEquals(minfo.uidnext, 150400, "uidnext mismatched.");
-        Assert.assertEquals(minfo.getMailboxId(), new Integer(2147483647), "MailboxId mismatched.");
+        Assert.assertEquals(minfo.getMailboxId(), "214-mailbox", "MailboxId mismatched.");
         Assert.assertNull(content[7], "This element should be nulled out");
     }
 
