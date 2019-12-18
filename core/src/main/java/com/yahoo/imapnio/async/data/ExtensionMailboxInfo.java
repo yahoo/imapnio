@@ -16,7 +16,7 @@ public class ExtensionMailboxInfo extends MailboxInfo {
     private static final String MAILBOX_ID = "MAILBOXID";
 
     /** Variable to store mailbox Id. */
-    private Integer mailboxId;
+    private String mailboxId;
 
     /**
      * Initializes an instance of @{code ExtensionMailboxInfo} from the server responses for the select or examine command.
@@ -47,7 +47,7 @@ public class ExtensionMailboxInfo extends MailboxInfo {
             if (key.equals(MAILBOX_ID)) { // example when 26 is the mailbox id:"* OK [MAILBOXID (26)] Ok"
                 final String[] values = ir.readSimpleList(); // reading the string, aka as above example, "(26)", within parentheses
                 if (values != null && values.length >= 1) {
-                    mailboxId = Integer.valueOf(values[0]);
+                    mailboxId = values[0];
                     resps[i] = null; // Nulls out this element in array to be consistent with MailboxInfo behavior
                     break;
                 }
@@ -60,7 +60,7 @@ public class ExtensionMailboxInfo extends MailboxInfo {
      * @return MAILBOXID, a server-allocated unique identifier for each mailbox. Please refer to OBJECTID, RFC 8474, for more detail.
      */
     @Nullable
-    public Integer getMailboxId() {
+    public String getMailboxId() {
         return mailboxId;
     }
 }
