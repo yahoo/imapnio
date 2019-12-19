@@ -372,7 +372,7 @@ public class ImapResponseMapperTest {
         content[4] = new IMAPResponse("* FLAGS (\\Answered \\Deleted \\Draft \\Flagged \\Seen $Forwarded $Junk $NotJunk)");
         content[5] = new IMAPResponse("* OK [PERMANENTFLAGS ()] No permanent flags permitted");
         content[6] = new IMAPResponse("* OK [HIGHESTMODSEQ 614]");
-        content[7] = new IMAPResponse("* OK [MAILBOXID (26)] Ok");
+        content[7] = new IMAPResponse("* OK [MAILBOXID (A26)] Ok");
         content[8] = new IMAPResponse("002 OK [READ-ONLY] EXAMINE completed; now in selected state");
         final ExtensionMailboxInfo minfo = mapper.readValue(content, ExtensionMailboxInfo.class);
 
@@ -388,7 +388,7 @@ public class ImapResponseMapperTest {
         Assert.assertEquals(minfo.highestmodseq, 614, "highestmodseq mismatched.");
         Assert.assertEquals(minfo.uidvalidity, 1459808247, "uidvalidity mismatched.");
         Assert.assertEquals(minfo.uidnext, 150400, "uidnext mismatched.");
-        Assert.assertEquals(minfo.getMailboxId(), new Integer(26), "MailboxId mismatched.");
+        Assert.assertEquals(minfo.getMailboxId(), "A26", "MailboxId mismatched.");
     }
 
     /**
