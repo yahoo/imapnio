@@ -33,7 +33,7 @@ public class QResyncSeqMatchData {
     }
 
     /**
-     * Get the uid numbers
+     * Get the uid numbers.
      * @return UIDs
      */
     public List<MessageNumberSet> getUids() {
@@ -41,7 +41,7 @@ public class QResyncSeqMatchData {
     }
 
     /**
-     * Convert to command line string
+     * Convert to command line string.
      * @return String
      */
     @Override

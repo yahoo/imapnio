@@ -1,9 +1,7 @@
 package com.yahoo.imapnio.async.data;
 
 import java.util.List;
-import java.util.Set;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**

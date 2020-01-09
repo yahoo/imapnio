@@ -3,10 +3,8 @@ package com.yahoo.imapnio.async.request;
 import java.nio.charset.StandardCharsets;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 import com.sun.mail.imap.protocol.BASE64MailboxEncoder;
-import com.yahoo.imapnio.async.data.QResyncParameter;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 
 import io.netty.buffer.ByteBuf;
@@ -63,12 +61,14 @@ abstract class AbstractFolderActionCommand extends ImapRequestAdapter {
 
     @Override
     public ByteBuf getCommandLineBytes() throws ImapAsyncClientException {
+
         final String base64Folder = BASE64MailboxEncoder.encode(folderName);
         // 2 * base64Folder.length(): assuming every char needs to be escaped, goal is eliminating resizing, and avoid complex length calculation
         final int len = 2 * base64Folder.length() + ImapClientConstants.PAD_LEN;
         final ByteBuf sb = Unpooled.buffer(len);
         sb.writeBytes(op.getBytes(StandardCharsets.US_ASCII));
         sb.writeByte(ImapClientConstants.SPACE);
+
         final ImapArgumentFormatter formatter = new ImapArgumentFormatter();
         formatter.formatArgument(base64Folder, sb, false); // already base64 encoded so can be formatted and write to sb
         sb.writeBytes(CRLF_B);
