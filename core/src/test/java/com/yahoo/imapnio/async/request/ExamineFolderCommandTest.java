@@ -16,6 +16,7 @@ import org.testng.annotations.Test;
 
 import com.yahoo.imapnio.async.data.MessageNumberSet;
 import com.yahoo.imapnio.async.data.QResyncParameter;
+import com.yahoo.imapnio.async.data.QResyncSeqMatchData;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 
 /**
@@ -118,10 +119,11 @@ public class ExamineFolderCommandTest {
         Assert.assertEquals(cmd.getCommandLine(), EXAMINE + "&bUuL1Q- (QRESYNC (100 4223212))\r\n", "Expected result mismatched.");
 
         final List<MessageNumberSet> uids = Collections.singletonList(new MessageNumberSet(1, 200));
-        final Set<Integer> messageSeqSet = Collections.singleton(10);
+        final List<MessageNumberSet> messageSeqNumbers = Collections.singletonList(new MessageNumberSet(1, 20));
+        final List<MessageNumberSet> matchUids = Collections.singletonList(new MessageNumberSet(1, 10));
 
-        qResyncParameter = new QResyncParameter(knownUidValidity, knownModSeq, uids, messageSeqSet);
+        qResyncParameter = new QResyncParameter(knownUidValidity, knownModSeq, uids, new QResyncSeqMatchData(messageSeqNumbers, matchUids));
         cmd = new ExamineFolderCommand(folderName, qResyncParameter);
-        Assert.assertEquals(cmd.getCommandLine(), EXAMINE + "&bUuL1Q- (QRESYNC (100 4223212 1:200 (10)))\r\n", "Expected result mismatched.");
+        Assert.assertEquals(cmd.getCommandLine(), EXAMINE + "&bUuL1Q- (QRESYNC (100 4223212 1:200 (1:20 1:10)))\r\n", "Expected result mismatched.");
     }
 }

@@ -3,6 +3,7 @@ package com.yahoo.imapnio.async.data;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
@@ -19,7 +20,7 @@ public class QResyncParameter {
     private List<MessageNumberSet> knownUids;
 
     /** Optional parenthesized list of known sequence ranges and their corresponding UIDs. */
-    private Set<Integer> messageSequenceSet;
+    private QResyncSeqMatchData qResyncSeqMatchData;
 
     /**
      * Constructor.
@@ -27,14 +28,14 @@ public class QResyncParameter {
      * @param knownUidValidity last known uidvalidity
      * @param knownModSeq last known modification sequence
      * @param knownUids known UIDs
-     * @param messageSequenceSet known message sequence set
+     * @param qResyncSeqMatchData known message sequence set and their corresponding UID
      */
     public QResyncParameter(final long knownUidValidity, final long knownModSeq, @Nullable final List<MessageNumberSet> knownUids,
-                            @Nullable final Set<Integer> messageSequenceSet) {
+                            @Nullable final QResyncSeqMatchData qResyncSeqMatchData) {
         this.knownUidValidity = knownUidValidity;
         this.knownModSeq = knownModSeq;
         this.knownUids = knownUids;
-        this.messageSequenceSet = messageSequenceSet;
+        this.qResyncSeqMatchData = qResyncSeqMatchData;
     }
 
     /**
@@ -62,11 +63,11 @@ public class QResyncParameter {
     }
 
     /**
-     * Get the message sequence set.
-     * @return message sequence set
+     * Get the message sequence set and corresponding UID.
+     * @return QResyncSeqMatchData
      */
-    public Set<Integer> getMessageSequenceSet() {
-        return messageSequenceSet;
+    public QResyncSeqMatchData getqResyncSeqMatchData() {
+        return qResyncSeqMatchData;
     }
 
     @Override
@@ -78,13 +79,9 @@ public class QResyncParameter {
             final MessageNumberSet[] messageNumberSets = new MessageNumberSet[knownUids.size()];
             sb.append(MessageNumberSet.buildString(knownUids.toArray(messageNumberSets)));
         }
-        if (messageSequenceSet != null && messageSequenceSet.size() > 0) {
+        if (qResyncSeqMatchData != null) {
             sb.append(" (");
-            for (Integer i : messageSequenceSet) {
-                sb.append(i).append(",");
-            }
-            // Remove extra ',' at the end.
-            sb.deleteCharAt(sb.length() - 1);
+            sb.append(qResyncSeqMatchData.toString());
             sb.append(")");
         }
         sb.append("))");
