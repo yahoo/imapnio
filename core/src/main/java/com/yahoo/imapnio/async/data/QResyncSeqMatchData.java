@@ -15,7 +15,7 @@ public class QResyncSeqMatchData {
     private List<MessageNumberSet> uids;
 
     /**
-     * Constructor
+     * Constructor.
      * @param messageNumberSet message sequence numbers
      * @param uid UIDs
      */
