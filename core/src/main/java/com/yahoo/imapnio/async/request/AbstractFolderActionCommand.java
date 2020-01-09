@@ -3,8 +3,10 @@ package com.yahoo.imapnio.async.request;
 import java.nio.charset.StandardCharsets;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import com.sun.mail.imap.protocol.BASE64MailboxEncoder;
+import com.yahoo.imapnio.async.data.QResyncParameter;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 
 import io.netty.buffer.ByteBuf;
@@ -24,6 +26,9 @@ abstract class AbstractFolderActionCommand extends ImapRequestAdapter {
     /** Folder name. */
     private String folderName;
 
+    /** Optional QResync parameter. */
+    private QResyncParameter qResyncParameter;
+
     /**
      * Initializes a @{code FolderActionCommand}.
      *
@@ -33,26 +38,53 @@ abstract class AbstractFolderActionCommand extends ImapRequestAdapter {
     protected AbstractFolderActionCommand(@Nonnull final String op, @Nonnull final String folderName) {
         this.op = op;
         this.folderName = folderName;
+        this.qResyncParameter = null;
     }
+
+    /**
+     * Initializes a @{code FolderActionCommand}.
+     *
+     * @param op command operator
+     * @param folderName folder name
+     */
+    protected AbstractFolderActionCommand(@Nonnull final String op, @Nonnull final String folderName,
+                                          @Nullable final QResyncParameter qResyncParameter) {
+        this.op = op;
+        this.folderName = folderName;
+        this.qResyncParameter = qResyncParameter;
+    }
+
+
 
     @Override
     public void cleanup() {
         this.op = null;
         this.folderName = null;
+        this.qResyncParameter = null;
     }
 
     @Override
     public ByteBuf getCommandLineBytes() throws ImapAsyncClientException {
 
         final String base64Folder = BASE64MailboxEncoder.encode(folderName);
+        int qResyncParamSize = 0;
+        String qResyncParamStr = null;
+        if (qResyncParameter != null) {
+            qResyncParamStr = qResyncParameter.toString();
+            qResyncParamSize = qResyncParamStr.length();
+        }
         // 2 * base64Folder.length(): assuming every char needs to be escaped, goal is eliminating resizing, and avoid complex length calculation
-        final int len = 2 * base64Folder.length() + ImapClientConstants.PAD_LEN;
+        final int len = 2 * base64Folder.length() + ImapClientConstants.PAD_LEN + qResyncParamSize;
         final ByteBuf sb = Unpooled.buffer(len);
         sb.writeBytes(op.getBytes(StandardCharsets.US_ASCII));
         sb.writeByte(ImapClientConstants.SPACE);
 
         final ImapArgumentFormatter formatter = new ImapArgumentFormatter();
         formatter.formatArgument(base64Folder, sb, false); // already base64 encoded so can be formatted and write to sb
+
+        if (qResyncParamStr != null) {
+            sb.writeBytes(qResyncParamStr.getBytes(StandardCharsets.US_ASCII));
+        }
         sb.writeBytes(CRLF_B);
 
         return sb;
