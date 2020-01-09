@@ -83,6 +83,7 @@ abstract class AbstractFolderActionCommand extends ImapRequestAdapter {
         formatter.formatArgument(base64Folder, sb, false); // already base64 encoded so can be formatted and write to sb
 
         if (qResyncParamStr != null) {
+            sb.writeByte(ImapClientConstants.SPACE);
             sb.writeBytes(qResyncParamStr.getBytes(StandardCharsets.US_ASCII));
         }
         sb.writeBytes(CRLF_B);
