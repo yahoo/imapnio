@@ -9,16 +9,16 @@ import javax.annotation.Nullable;
  */
 public class QResyncParameter {
     /** Last known UIDVALIDITY. */
-    private long knownUidValidity;
+    private long uidValidity;
 
     /** Last known modification sequence. */
-    private long knownModSeq;
+    private long modSeq;
 
     /** Optional set of known UIDs. */
-    private List<MessageNumberSet> knownUids;
+    private MessageNumberSet[] knownUids;
 
     /** Optional parenthesized list of known sequence ranges and their corresponding UIDs. */
-    private QResyncSeqMatchData qResyncSeqMatchData;
+    private QResyncSeqMatchData seqMatchData;
 
     /**
      * Constructor.
@@ -30,33 +30,35 @@ public class QResyncParameter {
      */
     public QResyncParameter(final long knownUidValidity, final long knownModSeq, @Nullable final List<MessageNumberSet> knownUids,
                             @Nullable final QResyncSeqMatchData qResyncSeqMatchData) {
-        this.knownUidValidity = knownUidValidity;
-        this.knownModSeq = knownModSeq;
-        this.knownUids = knownUids;
-        this.qResyncSeqMatchData = qResyncSeqMatchData;
+        this.uidValidity = knownUidValidity;
+        this.modSeq = knownModSeq;
+        if (knownUids != null) {
+            this.knownUids = knownUids.toArray(new MessageNumberSet[0]);
+        }
+        this.seqMatchData = qResyncSeqMatchData;
     }
 
     /**
      * Get the last known uidvalidity.
      * @return last known uidvalidity
      */
-    public long getKnownUidValidity() {
-        return knownUidValidity;
+    public long getUidValidity() {
+        return uidValidity;
     }
 
     /**
      * Get the last known modification sequence.
      * @return last known modification sequence
      */
-    public long getKnownModSeq() {
-        return knownModSeq;
+    public long getModSeq() {
+        return modSeq;
     }
 
     /**
      * Get the last known UIDs.
      * @return known UIDs
      */
-    public List<MessageNumberSet> getKnownUids() {
+    public MessageNumberSet[] getKnownUids() {
         return knownUids;
     }
 
@@ -64,22 +66,24 @@ public class QResyncParameter {
      * Get the message sequence set and corresponding UID.
      * @return QResyncSeqMatchData
      */
-    public QResyncSeqMatchData getqResyncSeqMatchData() {
-        return qResyncSeqMatchData;
+    public QResyncSeqMatchData getSeqMatchData() {
+        return seqMatchData;
     }
 
-    @Override
-    public String toString() {
+    /**
+     * Construct the command line string for QRESYNC parameter.
+     * @return the command line string
+     */
+    public String buildCommandLine() {
         StringBuilder sb = new StringBuilder();
-        sb.append("(QRESYNC (").append(knownUidValidity).append(" ").append(knownModSeq);
-        if (knownUids != null) {
+        sb.append("(QRESYNC (").append(uidValidity).append(" ").append(modSeq);
+        if (knownUids != null && knownUids.length > 0) {
             sb.append(" ");
-            final MessageNumberSet[] messageNumberSets = new MessageNumberSet[knownUids.size()];
-            sb.append(MessageNumberSet.buildString(knownUids.toArray(messageNumberSets)));
+            sb.append(MessageNumberSet.buildString(knownUids));
         }
-        if (qResyncSeqMatchData != null) {
+        if (seqMatchData != null) {
             sb.append(" (");
-            sb.append(qResyncSeqMatchData.toString());
+            sb.append(seqMatchData.buildCommandLine());
             sb.append(")");
         }
         sb.append("))");

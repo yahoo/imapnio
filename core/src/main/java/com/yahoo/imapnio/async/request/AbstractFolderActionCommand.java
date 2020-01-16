@@ -16,7 +16,7 @@ import io.netty.buffer.Unpooled;
 abstract class AbstractFolderActionCommand extends ImapRequestAdapter {
 
     /** Byte array for CR and LF, keeping the array local so it cannot be modified by others. */
-    protected static final byte[] CRLF_B = { '\r', '\n' };
+    private static final byte[] CRLF_B = { '\r', '\n' };
 
     /** Command operator, for example, "CREATE". */
     private String op;
@@ -39,24 +39,6 @@ abstract class AbstractFolderActionCommand extends ImapRequestAdapter {
     public void cleanup() {
         this.op = null;
         this.folderName = null;
-    }
-
-    /**
-     * Get the op name.
-     *
-     * @return operation name
-     */
-    public String getOp() {
-        return op;
-    }
-
-    /**
-     * Get the folder name.
-     *
-     * @return folder name.
-     */
-    public String getFolderName() {
-        return folderName;
     }
 
     @Override

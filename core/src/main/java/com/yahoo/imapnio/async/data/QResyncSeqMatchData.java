@@ -3,58 +3,62 @@ package com.yahoo.imapnio.async.data;
 import java.util.List;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
- * This class models the QRESYNC Sequence match data.
+ * This class models the QRESYNC Sequence match data defined in https://tools.ietf.org/html/rfc7162#page-26.
  */
 public class QResyncSeqMatchData {
     /** Message sequence number. */
-    private List<MessageNumberSet> messageSeqNumbers;
+    private MessageNumberSet[] knownSequenceSet;
 
     /** Corresponding UIDs. */
-    private List<MessageNumberSet> uids;
+    private MessageNumberSet[] knownUidSet;
 
     /**
      * Constructor.
-     * @param messageNumberSet message sequence numbers
-     * @param uid UIDs
+     * @param knownSequenceSet message sequence numbers
+     * @param knownUidSet UIDs
      */
-    public QResyncSeqMatchData(@Nonnull final List<MessageNumberSet> messageNumberSet, @Nonnull final List<MessageNumberSet> uid) {
-        this.messageSeqNumbers = messageNumberSet;
-        this.uids = uid;
+    public QResyncSeqMatchData(@Nullable final List<MessageNumberSet> knownSequenceSet, @Nullable final List<MessageNumberSet> knownUidSet) {
+        if (knownSequenceSet != null) {
+            this.knownSequenceSet = knownSequenceSet.toArray(new MessageNumberSet[0]);
+        }
+        if (knownUidSet != null) {
+            this.knownUidSet = knownUidSet.toArray(new MessageNumberSet[0]);
+        }
     }
 
     /**
      * Get the message sequence number.
      * @return message sequence numbers
      */
-    public List<MessageNumberSet> getMessageSeqNumbers() {
-        return messageSeqNumbers;
+    public MessageNumberSet[] getKnownSequenceSet() {
+        return knownSequenceSet;
     }
 
     /**
      * Get the uid numbers.
      * @return UIDs
      */
-    public List<MessageNumberSet> getUids() {
-        return uids;
+    public MessageNumberSet[] getKnownUidSet() {
+        return knownUidSet;
     }
 
     /**
-     * Convert to command line string.
-     * @return String
+     * Construct the command line string for message sequence match data.
+     * @return the command line string
      */
-    @Override
-    public String toString() {
+    public String buildCommandLine() {
         StringBuilder sb = new StringBuilder();
-        if (messageSeqNumbers != null && messageSeqNumbers.size() > 0) {
-            sb.append(MessageNumberSet.buildString(messageSeqNumbers.toArray(new MessageNumberSet[0])));
+        if (knownSequenceSet != null && knownSequenceSet.length > 0) {
+            sb.append(MessageNumberSet.buildString(knownSequenceSet));
         }
-        if (uids != null && uids.size() > 0) {
+        if (knownUidSet != null && knownUidSet.length > 0) {
             if (sb.length() != 0) {
                 sb.append(" ");
             }
-            sb.append(MessageNumberSet.buildString(uids.toArray(new MessageNumberSet[0])));
+            sb.append(MessageNumberSet.buildString(knownUidSet));
         }
         return sb.toString();
     }

@@ -8,44 +8,46 @@ import org.testng.annotations.Test;
 
 public class QResyncSeqMatchDataTest {
     /**
-     * Test the get method for Message sequence numebers.
+     * Test the get method for known Sequence set.
      */
     @Test
-    public void testGetMessageSeqNumbers() {
-        final List<MessageNumberSet> messageSeqNumbers = Collections.singletonList(new MessageNumberSet(100, 100));
-        final List<MessageNumberSet> matchUids = Collections.singletonList(new MessageNumberSet(200, 200));
-        final QResyncSeqMatchData qResyncSeqMatchData = new QResyncSeqMatchData(messageSeqNumbers, matchUids);
-        Assert.assertEquals(messageSeqNumbers, qResyncSeqMatchData.getMessageSeqNumbers(), "Message sequence number not matched");
+    public void testGetKnownSequenceSet() {
+        final List<MessageNumberSet> knownSeqSet = Collections.singletonList(new MessageNumberSet(100, 100));
+        final MessageNumberSet[] expectedMsgSeqNumbers = new MessageNumberSet[] { new MessageNumberSet(100, 100) };
+        final List<MessageNumberSet> knownUidSet = Collections.singletonList(new MessageNumberSet(200, 200));
+        final QResyncSeqMatchData qResyncSeqMatchData = new QResyncSeqMatchData(knownSeqSet, knownUidSet);
+        Assert.assertEquals(qResyncSeqMatchData.getKnownSequenceSet(), expectedMsgSeqNumbers, "Message sequence number not matched");
     }
 
     /**
-     * Test the get method for UIDs.
+     * Test the get method for known UID set.
      */
     @Test
-    public void testGetUids() {
-        final List<MessageNumberSet> messageSeqNumbers = Collections.singletonList(new MessageNumberSet(100, 100));
-        final List<MessageNumberSet> matchUids = Collections.singletonList(new MessageNumberSet(200, 200));
-        final QResyncSeqMatchData qResyncSeqMatchData = new QResyncSeqMatchData(messageSeqNumbers, matchUids);
-        Assert.assertEquals(matchUids, qResyncSeqMatchData.getUids(), "UIDs number not matched");
+    public void testGetKnownUidSet() {
+        final List<MessageNumberSet> knownSeqSet = Collections.singletonList(new MessageNumberSet(100, 100));
+        final List<MessageNumberSet> knownUidSet = Collections.singletonList(new MessageNumberSet(200, 200));
+        final MessageNumberSet[] expectedUids = new MessageNumberSet[] { new MessageNumberSet(200, 200) };
+        final QResyncSeqMatchData qResyncSeqMatchData = new QResyncSeqMatchData(knownSeqSet, knownUidSet);
+        Assert.assertEquals(qResyncSeqMatchData.getKnownUidSet(), expectedUids, "UIDs number not matched");
     }
 
     /**
-     * Test the toString method.
+     * Test the buildCommandLine method.
      */
     @Test
-    public void testTestToString() {
-        final List<MessageNumberSet> messageSeqNumbers = Collections.singletonList(new MessageNumberSet(100, 100));
-        final List<MessageNumberSet> matchUids = Collections.singletonList(new MessageNumberSet(200, 200));
-        final QResyncSeqMatchData qResyncSeqMatchData = new QResyncSeqMatchData(messageSeqNumbers, matchUids);
-        Assert.assertEquals(qResyncSeqMatchData.toString(), "100 200", "String mismatched");
+    public void testBuildCommandLine() {
+        final List<MessageNumberSet> knownSeqSet = Collections.singletonList(new MessageNumberSet(100, 100));
+        final List<MessageNumberSet> knownUidSet = Collections.singletonList(new MessageNumberSet(200, 200));
+        final QResyncSeqMatchData qResyncSeqMatchData = new QResyncSeqMatchData(knownSeqSet, knownUidSet);
+        Assert.assertEquals(qResyncSeqMatchData.buildCommandLine(), "100 200", "String mismatched");
 
-        final QResyncSeqMatchData qResyncSeqMatchData1 = new QResyncSeqMatchData(messageSeqNumbers, null);
-        Assert.assertEquals(qResyncSeqMatchData1.toString(), "100", "String mismatched");
+        final QResyncSeqMatchData qResyncSeqMatchData1 = new QResyncSeqMatchData(knownSeqSet, null);
+        Assert.assertEquals(qResyncSeqMatchData1.buildCommandLine(), "100", "String mismatched");
 
-        final QResyncSeqMatchData qResyncSeqMatchData2 = new QResyncSeqMatchData(null, matchUids);
-        Assert.assertEquals(qResyncSeqMatchData2.toString(), "200", "String mismatched");
+        final QResyncSeqMatchData qResyncSeqMatchData2 = new QResyncSeqMatchData(null, knownUidSet);
+        Assert.assertEquals(qResyncSeqMatchData2.buildCommandLine(), "200", "String mismatched");
 
         final QResyncSeqMatchData qResyncSeqMatchData3 = new QResyncSeqMatchData(null, null);
-        Assert.assertEquals(qResyncSeqMatchData3.toString(), "", "String mismatched");
+        Assert.assertEquals(qResyncSeqMatchData3.buildCommandLine(), "", "String mismatched");
     }
 }

@@ -9,21 +9,21 @@ import org.testng.annotations.Test;
 
 public class QResyncParameterTest {
     /**
-     * Test the get method for known uidvalidity.
+     * Test the get method for uidvalidity.
      */
     @Test
-    public void testGetKnownUidValidity() {
+    public void testGetUidValidity() {
         final QResyncParameter qResyncParameter = new QResyncParameter(100L, 200L, null, null);
-        Assert.assertEquals(100L, qResyncParameter.getKnownUidValidity());
+        Assert.assertEquals(100L, qResyncParameter.getUidValidity());
     }
 
     /**
-     * Test the get method for known moseq.
+     * Test the get method for moseq.
      */
     @Test
-    public void testGetKnownModSeq() {
+    public void testGetModSeq() {
         final QResyncParameter qResyncParameter = new QResyncParameter(100L, 200L, null, null);
-        Assert.assertEquals(200L, qResyncParameter.getKnownModSeq());
+        Assert.assertEquals(200L, qResyncParameter.getModSeq());
     }
 
     /**
@@ -31,46 +31,46 @@ public class QResyncParameterTest {
      */
     @Test
     public void testGetKnownUids() {
-        final List<MessageNumberSet> uids = new ArrayList<>();
-        uids.add(new MessageNumberSet(1, 5));
+        final List<MessageNumberSet> uids = Collections.singletonList(new MessageNumberSet(1, 5));
+        final MessageNumberSet[] expectedUids = new MessageNumberSet[] { new MessageNumberSet(1, 5) };
         final QResyncParameter qResyncParameter = new QResyncParameter(100L, 200L, uids, null);
-        Assert.assertEquals(uids, qResyncParameter.getKnownUids());
+        Assert.assertEquals(qResyncParameter.getKnownUids(), expectedUids, "UIDs should match");
     }
 
     /**
      * Test the get method for message sequence set.
      */
     @Test
-    public void testGetQResyncSeqMatchData() {
+    public void testGetSeqMatchData() {
         final List<MessageNumberSet> uids = Collections.singletonList(new MessageNumberSet(1, 5));
-        final List<MessageNumberSet> messageSeqNumbers = Collections.singletonList(new MessageNumberSet(1, 20));
-        final List<MessageNumberSet> matchUids =Collections.singletonList(new MessageNumberSet(1, 10));
-        final QResyncSeqMatchData qResyncSeqMatchData = new QResyncSeqMatchData(messageSeqNumbers, matchUids);
-        final QResyncParameter qResyncParameter = new QResyncParameter(100L, 200L, uids, qResyncSeqMatchData);
-        Assert.assertEquals(qResyncSeqMatchData, qResyncParameter.getqResyncSeqMatchData());
+        final List<MessageNumberSet> knownSeqSet = Collections.singletonList(new MessageNumberSet(1, 20));
+        final List<MessageNumberSet> knownUidSet =Collections.singletonList(new MessageNumberSet(1, 10));
+        final QResyncSeqMatchData seqMatchData = new QResyncSeqMatchData(knownSeqSet, knownUidSet);
+        final QResyncParameter qResyncParameter = new QResyncParameter(100L, 200L, uids, seqMatchData);
+        Assert.assertEquals(seqMatchData, qResyncParameter.getSeqMatchData());
     }
 
     /**
-     * Test the toString method.
+     * Test the buildCommandLine method.
      */
     @Test
-    public void testTestToString() {
+    public void testBuildCommandLine() {
         final List<MessageNumberSet> uids = Collections.singletonList(new MessageNumberSet(1, 5));
-        final List<MessageNumberSet> messageSeqNumbers = Collections.singletonList(new MessageNumberSet(100, 100));
-        final List<MessageNumberSet> matchUids = Collections.singletonList(new MessageNumberSet(200, 200));
-        final QResyncSeqMatchData qResyncSeqMatchData = new QResyncSeqMatchData(messageSeqNumbers, matchUids);
-        final QResyncParameter qResyncParameter = new QResyncParameter(100L, 200L, uids, qResyncSeqMatchData);
-        Assert.assertEquals(qResyncParameter.toString(), "(QRESYNC (100 200 1:5 (100 200)))");
+        final List<MessageNumberSet> knownSeqSet = Collections.singletonList(new MessageNumberSet(100, 100));
+        final List<MessageNumberSet> knownUidSet = Collections.singletonList(new MessageNumberSet(200, 200));
+        final QResyncSeqMatchData seqMatchData = new QResyncSeqMatchData(knownSeqSet, knownUidSet);
+        final QResyncParameter qResyncParameter = new QResyncParameter(100L, 200L, uids, seqMatchData);
+        Assert.assertEquals(qResyncParameter.buildCommandLine(), "(QRESYNC (100 200 1:5 (100 200)))");
 
         final QResyncParameter qResyncParameter1 = new QResyncParameter(300L, 400L, null, null);
-        Assert.assertEquals(qResyncParameter1.toString(), "(QRESYNC (300 400))");
+        Assert.assertEquals(qResyncParameter1.buildCommandLine(), "(QRESYNC (300 400))");
 
-        final QResyncSeqMatchData qResyncSeqMatchData1 = new QResyncSeqMatchData(messageSeqNumbers, null);
+        final QResyncSeqMatchData qResyncSeqMatchData1 = new QResyncSeqMatchData(knownSeqSet, null);
         final QResyncParameter qResyncParameter2 = new QResyncParameter(100L, 200L, uids, qResyncSeqMatchData1);
-        Assert.assertEquals(qResyncParameter2.toString(), "(QRESYNC (100 200 1:5 (100)))");
+        Assert.assertEquals(qResyncParameter2.buildCommandLine(), "(QRESYNC (100 200 1:5 (100)))");
 
-        final QResyncSeqMatchData qResyncSeqMatchData2 = new QResyncSeqMatchData(null, matchUids);
+        final QResyncSeqMatchData qResyncSeqMatchData2 = new QResyncSeqMatchData(null, knownUidSet);
         final QResyncParameter qResyncParameter3 = new QResyncParameter(100L, 200L, uids, qResyncSeqMatchData2);
-        Assert.assertEquals(qResyncParameter3.toString(), "(QRESYNC (100 200 1:5 (200)))");
+        Assert.assertEquals(qResyncParameter3.buildCommandLine(), "(QRESYNC (100 200 1:5 (200)))");
     }
 }
