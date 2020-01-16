@@ -23,19 +23,19 @@ public class QResyncParameter {
     /**
      * Constructor.
      *
-     * @param knownUidValidity last known uidvalidity
-     * @param knownModSeq last known modification sequence
+     * @param uidValidity last known uidvalidity
+     * @param modSeq last known modification sequence
      * @param knownUids known UIDs
-     * @param qResyncSeqMatchData known message sequence set and their corresponding UID
+     * @param seqMatchData known message sequence set and their corresponding UID
      */
-    public QResyncParameter(final long knownUidValidity, final long knownModSeq, @Nullable final List<MessageNumberSet> knownUids,
-                            @Nullable final QResyncSeqMatchData qResyncSeqMatchData) {
-        this.uidValidity = knownUidValidity;
-        this.modSeq = knownModSeq;
+    public QResyncParameter(final long uidValidity, final long modSeq, @Nullable final List<MessageNumberSet> knownUids,
+                            @Nullable final QResyncSeqMatchData seqMatchData) {
+        this.uidValidity = uidValidity;
+        this.modSeq = modSeq;
         if (knownUids != null) {
             this.knownUids = knownUids.toArray(new MessageNumberSet[0]);
         }
-        this.seqMatchData = qResyncSeqMatchData;
+        this.seqMatchData = seqMatchData;
     }
 
     /**

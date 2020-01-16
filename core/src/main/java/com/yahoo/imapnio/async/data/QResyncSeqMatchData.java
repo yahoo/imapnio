@@ -2,7 +2,6 @@ package com.yahoo.imapnio.async.data;
 
 import java.util.List;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
@@ -30,16 +29,16 @@ public class QResyncSeqMatchData {
     }
 
     /**
-     * Get the message sequence number.
-     * @return message sequence numbers
+     * Get the known sequence set.
+     * @return the known sequence set
      */
     public MessageNumberSet[] getKnownSequenceSet() {
         return knownSequenceSet;
     }
 
     /**
-     * Get the uid numbers.
-     * @return UIDs
+     * Get the known uid set.
+     * @return known UID set
      */
     public MessageNumberSet[] getKnownUidSet() {
         return knownUidSet;

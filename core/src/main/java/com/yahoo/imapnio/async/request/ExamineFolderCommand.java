@@ -1,15 +1,8 @@
 package com.yahoo.imapnio.async.request;
 
-import java.nio.charset.StandardCharsets;
-
 import javax.annotation.Nonnull;
 
-import com.sun.mail.imap.protocol.BASE64MailboxEncoder;
 import com.yahoo.imapnio.async.data.QResyncParameter;
-import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
-
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 
 /**
  * This class defines imap examine command request from client. According to RFC3501: The EXAMINE command is identical to SELECT and returns the same
