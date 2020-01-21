@@ -1,7 +1,5 @@
 package com.yahoo.imapnio.async.data;
 
-import java.util.List;
-
 import javax.annotation.Nullable;
 
 /**
@@ -19,13 +17,9 @@ public class QResyncSeqMatchData {
      * @param knownSequenceSet message sequence numbers
      * @param knownUidSet UIDs
      */
-    public QResyncSeqMatchData(@Nullable final List<MessageNumberSet> knownSequenceSet, @Nullable final List<MessageNumberSet> knownUidSet) {
-        if (knownSequenceSet != null) {
-            this.knownSequenceSet = knownSequenceSet.toArray(new MessageNumberSet[0]);
-        }
-        if (knownUidSet != null) {
-            this.knownUidSet = knownUidSet.toArray(new MessageNumberSet[0]);
-        }
+    public QResyncSeqMatchData(@Nullable final MessageNumberSet[] knownSequenceSet, @Nullable final MessageNumberSet[] knownUidSet) {
+        this.knownSequenceSet = knownSequenceSet;
+        this.knownUidSet = knownUidSet;
     }
 
     /**
@@ -42,23 +36,5 @@ public class QResyncSeqMatchData {
      */
     public MessageNumberSet[] getKnownUidSet() {
         return knownUidSet;
-    }
-
-    /**
-     * Construct the command line string for message sequence match data.
-     * @return the command line string
-     */
-    public String buildCommandLine() {
-        StringBuilder sb = new StringBuilder();
-        if (knownSequenceSet != null && knownSequenceSet.length > 0) {
-            sb.append(MessageNumberSet.buildString(knownSequenceSet));
-        }
-        if (knownUidSet != null && knownUidSet.length > 0) {
-            if (sb.length() != 0) {
-                sb.append(" ");
-            }
-            sb.append(MessageNumberSet.buildString(knownUidSet));
-        }
-        return sb.toString();
     }
 }

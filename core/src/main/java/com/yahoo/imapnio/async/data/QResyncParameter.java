@@ -1,7 +1,5 @@
 package com.yahoo.imapnio.async.data;
 
-import java.util.List;
-
 import javax.annotation.Nullable;
 
 /**
@@ -28,12 +26,12 @@ public class QResyncParameter {
      * @param knownUids known UIDs
      * @param seqMatchData known message sequence set and their corresponding UID
      */
-    public QResyncParameter(final long uidValidity, final long modSeq, @Nullable final List<MessageNumberSet> knownUids,
+    public QResyncParameter(final long uidValidity, final long modSeq, @Nullable final MessageNumberSet[] knownUids,
                             @Nullable final QResyncSeqMatchData seqMatchData) {
         this.uidValidity = uidValidity;
         this.modSeq = modSeq;
         if (knownUids != null) {
-            this.knownUids = knownUids.toArray(new MessageNumberSet[0]);
+            this.knownUids = knownUids;
         }
         this.seqMatchData = seqMatchData;
     }
@@ -68,25 +66,5 @@ public class QResyncParameter {
      */
     public QResyncSeqMatchData getSeqMatchData() {
         return seqMatchData;
-    }
-
-    /**
-     * Construct the command line string for QRESYNC parameter.
-     * @return the command line string
-     */
-    public String buildCommandLine() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("(QRESYNC (").append(uidValidity).append(" ").append(modSeq);
-        if (knownUids != null && knownUids.length > 0) {
-            sb.append(" ");
-            sb.append(MessageNumberSet.buildString(knownUids));
-        }
-        if (seqMatchData != null) {
-            sb.append(" (");
-            sb.append(seqMatchData.buildCommandLine());
-            sb.append(")");
-        }
-        sb.append("))");
-        return sb.toString();
     }
 }

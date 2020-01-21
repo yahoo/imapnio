@@ -119,13 +119,32 @@ public class SelectFolderCommandTest {
         ImapRequest cmd = new SelectFolderCommand(folderName, qResyncParameter);
         Assert.assertEquals(cmd.getCommandLine(), SELECT + "&bUuL1Q- (QRESYNC (100 4223212))\r\n", "Expected result mismatched.");
 
-        final List<MessageNumberSet> uids = Collections.singletonList(new MessageNumberSet(1, 200));
-        final List<MessageNumberSet> messageSeqNumbers = Collections.singletonList(new MessageNumberSet(1, 1));
-        final List<MessageNumberSet> matchUids = Collections.singletonList(new MessageNumberSet(1, 10));
-        final QResyncSeqMatchData qResyncSeqMatchData = new QResyncSeqMatchData(messageSeqNumbers, matchUids);
+        final MessageNumberSet[] uids = new MessageNumberSet[] { new MessageNumberSet(1, 200) };
 
+        qResyncParameter = new QResyncParameter(knownUidValidity, knownModSeq, uids, null);
+        cmd = new SelectFolderCommand(folderName, qResyncParameter);
+        Assert.assertEquals(cmd.getCommandLine(), SELECT + "&bUuL1Q- (QRESYNC (100 4223212 1:200))\r\n", "Expected result mismatched.");
+
+        final MessageNumberSet[] messageSeqNumbers = new MessageNumberSet[] { new MessageNumberSet(1, 1) };
+        final MessageNumberSet[] matchUids = new MessageNumberSet[] { new MessageNumberSet(1, 10) };
+        QResyncSeqMatchData qResyncSeqMatchData = new QResyncSeqMatchData(messageSeqNumbers, matchUids);
         qResyncParameter = new QResyncParameter(knownUidValidity, knownModSeq, uids, qResyncSeqMatchData);
         cmd = new SelectFolderCommand(folderName, qResyncParameter);
         Assert.assertEquals(cmd.getCommandLine(), SELECT + "&bUuL1Q- (QRESYNC (100 4223212 1:200 (1 1:10)))\r\n", "Expected result mismatched.");
+
+        qResyncSeqMatchData = new QResyncSeqMatchData(messageSeqNumbers, null);
+        qResyncParameter = new QResyncParameter(knownUidValidity, knownModSeq, uids, qResyncSeqMatchData);
+        cmd = new SelectFolderCommand(folderName, qResyncParameter);
+        Assert.assertEquals(cmd.getCommandLine(), SELECT + "&bUuL1Q- (QRESYNC (100 4223212 1:200 (1)))\r\n", "Expected result mismatched.");
+
+        qResyncSeqMatchData = new QResyncSeqMatchData(null, matchUids);
+        qResyncParameter = new QResyncParameter(knownUidValidity, knownModSeq, uids, qResyncSeqMatchData);
+        cmd = new SelectFolderCommand(folderName, qResyncParameter);
+        Assert.assertEquals(cmd.getCommandLine(), SELECT + "&bUuL1Q- (QRESYNC (100 4223212 1:200 (1:10)))\r\n", "Expected result mismatched.");
+
+        qResyncSeqMatchData = new QResyncSeqMatchData(null, null);
+        qResyncParameter = new QResyncParameter(knownUidValidity, knownModSeq, uids, qResyncSeqMatchData);
+        cmd = new SelectFolderCommand(folderName, qResyncParameter);
+        Assert.assertEquals(cmd.getCommandLine(), SELECT + "&bUuL1Q- (QRESYNC (100 4223212 1:200))\r\n", "Expected result mismatched.");
     }
 }

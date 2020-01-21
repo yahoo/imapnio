@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 import javax.annotation.Nonnull;
 
 import com.sun.mail.imap.protocol.BASE64MailboxEncoder;
+import com.yahoo.imapnio.async.data.MessageNumberSet;
 import com.yahoo.imapnio.async.data.QResyncParameter;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 
@@ -63,27 +64,46 @@ abstract class OpenFolderActionCommand extends ImapRequestAdapter {
     @Override
     public ByteBuf getCommandLineBytes() throws ImapAsyncClientException {
         final String base64Folder = BASE64MailboxEncoder.encode(folderName);
-        int qResyncParamSize = 0;
-        String qResyncParamStr = null;
+        StringBuilder sb = new StringBuilder();
         if (qResyncParameter != null) {
-            qResyncParamStr = qResyncParameter.buildCommandLine();
-            qResyncParamSize = qResyncParamStr.length();
+            sb.append("(QRESYNC (").append(qResyncParameter.getUidValidity()).append(ImapClientConstants.SPACE).append(qResyncParameter.getModSeq());
+            if (qResyncParameter.getKnownUids() != null) {
+                sb.append(ImapClientConstants.SPACE);
+                sb.append(MessageNumberSet.buildString(qResyncParameter.getKnownUids()));
+            }
+            if (qResyncParameter.getSeqMatchData() != null && (qResyncParameter.getSeqMatchData().getKnownSequenceSet() != null
+                    || qResyncParameter.getSeqMatchData().getKnownUidSet() != null)) {
+                sb.append(ImapClientConstants.SPACE).append("(");
+                if (qResyncParameter.getSeqMatchData().getKnownSequenceSet() != null) {
+                    sb.append(MessageNumberSet.buildString(qResyncParameter.getSeqMatchData().getKnownSequenceSet()));
+                }
+                if (qResyncParameter.getSeqMatchData().getKnownUidSet() != null) {
+                    if (qResyncParameter.getSeqMatchData().getKnownSequenceSet() != null
+                            && qResyncParameter.getSeqMatchData().getKnownSequenceSet().length > 0) {
+                        sb.append(ImapClientConstants.SPACE);
+                    }
+                    sb.append(MessageNumberSet.buildString(qResyncParameter.getSeqMatchData().getKnownUidSet()));
+                }
+                sb.append(")");
+            }
+            sb.append("))");
         }
         // 2 * base64Folder.length(): assuming every char needs to be escaped, goal is eliminating resizing, and avoid complex length calculation
-        final int len = 2 * base64Folder.length() + ImapClientConstants.PAD_LEN + qResyncParamSize;
-        final ByteBuf sb = Unpooled.buffer(len);
-        sb.writeBytes(op.getBytes(StandardCharsets.US_ASCII));
-        sb.writeByte(ImapClientConstants.SPACE);
+        final int len = 2 * base64Folder.length() + ImapClientConstants.PAD_LEN + sb.length();
+        final ByteBuf byteBuf = Unpooled.buffer(len);
+        byteBuf.writeBytes(op.getBytes(StandardCharsets.US_ASCII));
+        byteBuf.writeByte(ImapClientConstants.SPACE);
 
         final ImapArgumentFormatter formatter = new ImapArgumentFormatter();
-        formatter.formatArgument(base64Folder, sb, false); // already base64 encoded so can be formatted and write to sb
+        formatter.formatArgument(base64Folder, byteBuf, false); // already base64 encoded so can be formatted and write to sb
 
-        if (qResyncParamStr != null) {
-            sb.writeByte(ImapClientConstants.SPACE);
-            sb.writeBytes(qResyncParamStr.getBytes(StandardCharsets.US_ASCII));
+        if (sb.length() > 0) {
+            byteBuf.writeByte(ImapClientConstants.SPACE);
+            byteBuf.writeBytes(sb.toString().getBytes(StandardCharsets.US_ASCII));
         }
-        sb.writeBytes(CRLF_B);
 
-        return sb;
+        byteBuf.writeBytes(CRLF_B);
+
+        return byteBuf;
     }
 }
