@@ -1,6 +1,6 @@
 package com.yahoo.imapnio.async.data;
 
-import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
 
 /**
  * This class models the QRESYNC Sequence match data defined in https://tools.ietf.org/html/rfc7162#page-26.
@@ -17,7 +17,7 @@ public class QResyncSeqMatchData {
      * @param knownSequenceSet message sequence numbers
      * @param knownUidSet UIDs
      */
-    public QResyncSeqMatchData(@Nullable final MessageNumberSet[] knownSequenceSet, @Nullable final MessageNumberSet[] knownUidSet) {
+    public QResyncSeqMatchData(@Nonnull final MessageNumberSet[] knownSequenceSet, @Nonnull final MessageNumberSet[] knownUidSet) {
         this.knownSequenceSet = knownSequenceSet;
         this.knownUidSet = knownUidSet;
     }

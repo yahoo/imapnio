@@ -3,10 +3,7 @@ package com.yahoo.imapnio.async.request;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import javax.mail.search.SearchException;
@@ -74,11 +71,9 @@ public class SelectFolderCommandTest {
      * Tests getCommandLine method with folder name containing space.
      *
      * @throws ImapAsyncClientException will not throw
-     * @throws SearchException will not throw
-     * @throws IOException will not throw
      */
     @Test
-    public void testGetCommandLineWithEscapeChar() throws ImapAsyncClientException, SearchException, IOException {
+    public void testGetCommandLineWithEscapeChar() throws ImapAsyncClientException {
         final String folderName = "folder ABC";
         final ImapRequest cmd = new SelectFolderCommand(folderName);
         Assert.assertEquals(cmd.getCommandLine(), SELECT + "\"" + folderName + "\"\r\n", "Expected result mismatched.");
@@ -88,11 +83,9 @@ public class SelectFolderCommandTest {
      * Tests getCommandLine method with folder name with other character set encoding.
      *
      * @throws ImapAsyncClientException will not throw
-     * @throws SearchException will not throw
-     * @throws IOException will not throw
      */
     @Test
-    public void testGetCommandLineWithOtherCharSet() throws ImapAsyncClientException, SearchException, IOException {
+    public void testGetCommandLineWithOtherCharSet() throws ImapAsyncClientException {
         final String folderName = "测试";
         final ImapRequest cmd = new SelectFolderCommand(folderName);
         Assert.assertEquals(cmd.getCommandLine(), SELECT + "&bUuL1Q-\r\n", "Expected result mismatched.");
@@ -109,9 +102,11 @@ public class SelectFolderCommandTest {
 
     /**
      * Tests getCommandLine method with QRESYNC parameter.
+     *
+     * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testGetCommandLineWithQResyncParam() throws ImapAsyncClientException, SearchException, IOException {
+    public void testGetCommandLineWithQResyncParam() throws ImapAsyncClientException {
         final String folderName = "测试";
         final long knownUidValidity = 100;
         final long knownModSeq = 4223212;
@@ -120,31 +115,15 @@ public class SelectFolderCommandTest {
         Assert.assertEquals(cmd.getCommandLine(), SELECT + "&bUuL1Q- (QRESYNC (100 4223212))\r\n", "Expected result mismatched.");
 
         final MessageNumberSet[] uids = new MessageNumberSet[] { new MessageNumberSet(1, 200) };
-
         qResyncParameter = new QResyncParameter(knownUidValidity, knownModSeq, uids, null);
         cmd = new SelectFolderCommand(folderName, qResyncParameter);
         Assert.assertEquals(cmd.getCommandLine(), SELECT + "&bUuL1Q- (QRESYNC (100 4223212 1:200))\r\n", "Expected result mismatched.");
 
         final MessageNumberSet[] messageSeqNumbers = new MessageNumberSet[] { new MessageNumberSet(1, 1) };
         final MessageNumberSet[] matchUids = new MessageNumberSet[] { new MessageNumberSet(1, 10) };
-        QResyncSeqMatchData qResyncSeqMatchData = new QResyncSeqMatchData(messageSeqNumbers, matchUids);
-        qResyncParameter = new QResyncParameter(knownUidValidity, knownModSeq, uids, qResyncSeqMatchData);
+        QResyncSeqMatchData seqMatchData = new QResyncSeqMatchData(messageSeqNumbers, matchUids);
+        qResyncParameter = new QResyncParameter(knownUidValidity, knownModSeq, uids, seqMatchData);
         cmd = new SelectFolderCommand(folderName, qResyncParameter);
         Assert.assertEquals(cmd.getCommandLine(), SELECT + "&bUuL1Q- (QRESYNC (100 4223212 1:200 (1 1:10)))\r\n", "Expected result mismatched.");
-
-        qResyncSeqMatchData = new QResyncSeqMatchData(messageSeqNumbers, null);
-        qResyncParameter = new QResyncParameter(knownUidValidity, knownModSeq, uids, qResyncSeqMatchData);
-        cmd = new SelectFolderCommand(folderName, qResyncParameter);
-        Assert.assertEquals(cmd.getCommandLine(), SELECT + "&bUuL1Q- (QRESYNC (100 4223212 1:200 (1)))\r\n", "Expected result mismatched.");
-
-        qResyncSeqMatchData = new QResyncSeqMatchData(null, matchUids);
-        qResyncParameter = new QResyncParameter(knownUidValidity, knownModSeq, uids, qResyncSeqMatchData);
-        cmd = new SelectFolderCommand(folderName, qResyncParameter);
-        Assert.assertEquals(cmd.getCommandLine(), SELECT + "&bUuL1Q- (QRESYNC (100 4223212 1:200 (1:10)))\r\n", "Expected result mismatched.");
-
-        qResyncSeqMatchData = new QResyncSeqMatchData(null, null);
-        qResyncParameter = new QResyncParameter(knownUidValidity, knownModSeq, uids, qResyncSeqMatchData);
-        cmd = new SelectFolderCommand(folderName, qResyncParameter);
-        Assert.assertEquals(cmd.getCommandLine(), SELECT + "&bUuL1Q- (QRESYNC (100 4223212 1:200))\r\n", "Expected result mismatched.");
     }
 }

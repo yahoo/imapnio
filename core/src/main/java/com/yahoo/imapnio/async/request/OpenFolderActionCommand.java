@@ -71,19 +71,11 @@ abstract class OpenFolderActionCommand extends ImapRequestAdapter {
                 sb.append(ImapClientConstants.SPACE);
                 sb.append(MessageNumberSet.buildString(qResyncParameter.getKnownUids()));
             }
-            if (qResyncParameter.getSeqMatchData() != null && (qResyncParameter.getSeqMatchData().getKnownSequenceSet() != null
-                    || qResyncParameter.getSeqMatchData().getKnownUidSet() != null)) {
+            if (qResyncParameter.getSeqMatchData() != null) {
                 sb.append(ImapClientConstants.SPACE).append("(");
-                if (qResyncParameter.getSeqMatchData().getKnownSequenceSet() != null) {
-                    sb.append(MessageNumberSet.buildString(qResyncParameter.getSeqMatchData().getKnownSequenceSet()));
-                }
-                if (qResyncParameter.getSeqMatchData().getKnownUidSet() != null) {
-                    if (qResyncParameter.getSeqMatchData().getKnownSequenceSet() != null
-                            && qResyncParameter.getSeqMatchData().getKnownSequenceSet().length > 0) {
-                        sb.append(ImapClientConstants.SPACE);
-                    }
-                    sb.append(MessageNumberSet.buildString(qResyncParameter.getSeqMatchData().getKnownUidSet()));
-                }
+                sb.append(MessageNumberSet.buildString(qResyncParameter.getSeqMatchData().getKnownSequenceSet()));
+                sb.append(ImapClientConstants.SPACE);
+                sb.append(MessageNumberSet.buildString(qResyncParameter.getSeqMatchData().getKnownUidSet()));
                 sb.append(")");
             }
             sb.append("))");
