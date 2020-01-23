@@ -64,8 +64,10 @@ abstract class OpenFolderActionCommand extends ImapRequestAdapter {
     @Override
     public ByteBuf getCommandLineBytes() throws ImapAsyncClientException {
         final String base64Folder = BASE64MailboxEncoder.encode(folderName);
-        StringBuilder sb = new StringBuilder();
+        int qResyncParameterSize = 0;
+        StringBuilder sb = null;
         if (qResyncParameter != null) {
+            sb = new StringBuilder();
             sb.append("(QRESYNC (").append(qResyncParameter.getUidValidity()).append(ImapClientConstants.SPACE).append(qResyncParameter.getModSeq());
             if (qResyncParameter.getKnownUids() != null) {
                 sb.append(ImapClientConstants.SPACE);
@@ -79,9 +81,10 @@ abstract class OpenFolderActionCommand extends ImapRequestAdapter {
                 sb.append(")");
             }
             sb.append("))");
+            qResyncParameterSize = sb.length();
         }
         // 2 * base64Folder.length(): assuming every char needs to be escaped, goal is eliminating resizing, and avoid complex length calculation
-        final int len = 2 * base64Folder.length() + ImapClientConstants.PAD_LEN + sb.length();
+        final int len = 2 * base64Folder.length() + ImapClientConstants.PAD_LEN + qResyncParameterSize;
         final ByteBuf byteBuf = Unpooled.buffer(len);
         byteBuf.writeBytes(op.getBytes(StandardCharsets.US_ASCII));
         byteBuf.writeByte(ImapClientConstants.SPACE);
@@ -89,7 +92,7 @@ abstract class OpenFolderActionCommand extends ImapRequestAdapter {
         final ImapArgumentFormatter formatter = new ImapArgumentFormatter();
         formatter.formatArgument(base64Folder, byteBuf, false); // already base64 encoded so can be formatted and write to sb
 
-        if (sb.length() > 0) {
+        if (qResyncParameterSize > 0) {
             byteBuf.writeByte(ImapClientConstants.SPACE);
             byteBuf.writeBytes(sb.toString().getBytes(StandardCharsets.US_ASCII));
         }
