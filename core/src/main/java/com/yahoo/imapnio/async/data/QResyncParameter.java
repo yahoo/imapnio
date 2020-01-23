@@ -30,9 +30,7 @@ public class QResyncParameter {
                             @Nullable final QResyncSeqMatchData seqMatchData) {
         this.uidValidity = uidValidity;
         this.modSeq = modSeq;
-        if (knownUids != null) {
-            this.knownUids = knownUids;
-        }
+        this.knownUids = knownUids;
         this.seqMatchData = seqMatchData;
     }
 

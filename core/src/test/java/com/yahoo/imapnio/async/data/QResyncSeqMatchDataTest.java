@@ -1,8 +1,5 @@
 package com.yahoo.imapnio.async.data;
 
-import java.util.Collections;
-import java.util.List;
-
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
