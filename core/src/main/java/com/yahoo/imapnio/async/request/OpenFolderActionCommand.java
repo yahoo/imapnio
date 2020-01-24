@@ -20,6 +20,12 @@ abstract class OpenFolderActionCommand extends ImapRequestAdapter {
     /** Byte array for CR and LF, keeping the array local so it cannot be modified by others. */
     private static final byte[] CRLF_B = { '\r', '\n' };
 
+    /** Literal for CONDSTORE. */
+    private static final String CONDSTORE = "(CONDSTORE)";
+
+    /** Byte array for CONDSTORE. */
+    private static final byte[] CONDSTORE_B = CONDSTORE.getBytes(StandardCharsets.US_ASCII);
+
     /** Command operator, for example, "SELECT". */
     private String op;
 
@@ -28,6 +34,9 @@ abstract class OpenFolderActionCommand extends ImapRequestAdapter {
 
     /** Optional QResync parameter. */
     private QResyncParameter qResyncParameter;
+
+    /** Optional CondStore parameter. */
+    private boolean condStore;
 
     /**
      * Initializes a {@link OpenFolderActionCommand}.
@@ -39,6 +48,7 @@ abstract class OpenFolderActionCommand extends ImapRequestAdapter {
         this.op = op;
         this.folderName = folderName;
         this.qResyncParameter = null;
+        this.condStore = false;
     }
 
     /**
@@ -52,6 +62,21 @@ abstract class OpenFolderActionCommand extends ImapRequestAdapter {
         this.op = op;
         this.folderName = folderName;
         this.qResyncParameter = qResyncParameter;
+        this.condStore = false;
+    }
+
+    /**
+     * Initializes a @{code FolderActionCommand}.
+     *
+     * @param op command operator
+     * @param folderName folder name
+     * @param condStore whether to enable CondStore
+     */
+    protected OpenFolderActionCommand(@Nonnull final String op, @Nonnull final String folderName, final boolean condStore) {
+        this.op = op;
+        this.folderName = folderName;
+        this.qResyncParameter = null;
+        this.condStore = condStore;
     }
 
     @Override
@@ -95,6 +120,11 @@ abstract class OpenFolderActionCommand extends ImapRequestAdapter {
         if (qResyncParameterSize > 0) {
             byteBuf.writeByte(ImapClientConstants.SPACE);
             byteBuf.writeBytes(sb.toString().getBytes(StandardCharsets.US_ASCII));
+        }
+
+        if (this.condStore) {
+            byteBuf.writeByte(ImapClientConstants.SPACE);
+            byteBuf.writeBytes(CONDSTORE_B);
         }
 
         byteBuf.writeBytes(CRLF_B);

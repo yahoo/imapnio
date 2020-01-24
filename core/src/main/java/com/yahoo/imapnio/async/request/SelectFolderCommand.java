@@ -31,6 +31,16 @@ public class SelectFolderCommand extends OpenFolderActionCommand {
         super(SELECT, folderName, qResyncParameter);
     }
 
+    /**
+     * Initializes a @{code SelectCommand}.
+     *
+     * @param folderName folder name to select
+     * @param condStore whether to enable CondStore
+     */
+    public SelectFolderCommand(@Nonnull final String folderName, final boolean condStore) {
+        super(SELECT, folderName, condStore);
+    }
+
     @Override
     public ImapCommandType getCommandType() {
         return ImapCommandType.SELECT_FOLDER;

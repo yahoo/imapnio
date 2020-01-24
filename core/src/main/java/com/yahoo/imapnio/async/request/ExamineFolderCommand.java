@@ -33,6 +33,16 @@ public class ExamineFolderCommand extends OpenFolderActionCommand {
         super(EXAMINE, folderName, qResyncParameter);
     }
 
+    /**
+     * Initializes a @{code ExamineCommand}.
+     *
+     * @param folderName folder name to examine
+     * @param condStore whether to enable CondStore
+     */
+    public ExamineFolderCommand(@Nonnull final String folderName, final boolean condStore) {
+        super(EXAMINE, folderName, condStore);
+    }
+
     @Override
     public ImapCommandType getCommandType() {
         return ImapCommandType.EXAMINE_FOLDER;
