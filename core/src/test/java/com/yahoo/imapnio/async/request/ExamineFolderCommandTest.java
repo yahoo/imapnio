@@ -12,6 +12,9 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import com.yahoo.imapnio.async.data.MessageNumberSet;
+import com.yahoo.imapnio.async.data.QResyncParameter;
+import com.yahoo.imapnio.async.data.QResyncSeqMatchData;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 
 /**
@@ -68,11 +71,9 @@ public class ExamineFolderCommandTest {
      * Tests getCommandLine method with folder name containing space.
      *
      * @throws ImapAsyncClientException will not throw
-     * @throws SearchException will not throw
-     * @throws IOException will not throw
      */
     @Test
-    public void testGetCommandLineWithEscapeChar() throws ImapAsyncClientException, SearchException, IOException {
+    public void testGetCommandLineWithEscapeChar() throws ImapAsyncClientException {
         final String folderName = "folder ABC";
         final ImapRequest cmd = new ExamineFolderCommand(folderName);
         Assert.assertEquals(cmd.getCommandLine(), EXAMINE + "\"" + folderName + "\"\r\n", "Expected result mismatched.");
@@ -82,11 +83,9 @@ public class ExamineFolderCommandTest {
      * Tests getCommandLine method with folder name with other character set encoding.
      *
      * @throws ImapAsyncClientException will not throw
-     * @throws SearchException will not throw
-     * @throws IOException will not throw
      */
     @Test
-    public void testGetCommandLineWithOtherCharSet() throws ImapAsyncClientException, SearchException, IOException {
+    public void testGetCommandLineWithOtherCharSet() throws ImapAsyncClientException {
         final String folderName = "测试";
         final ImapRequest cmd = new ExamineFolderCommand(folderName);
         Assert.assertEquals(cmd.getCommandLine(), EXAMINE + "&bUuL1Q-\r\n", "Expected result mismatched.");
@@ -99,5 +98,32 @@ public class ExamineFolderCommandTest {
     public void testGetCommandType() {
         final ImapRequest cmd = new ExamineFolderCommand("testFolder");
         Assert.assertSame(cmd.getCommandType(), ImapCommandType.EXAMINE_FOLDER);
+    }
+
+    /**
+     * Tests getCommandLine method with QRESYNC parameter.
+     * @throws ImapAsyncClientException will not throw
+     * @throws IOException will not throw
+     */
+    @Test
+    public void testGetCommandLineWithQResyncParam() throws ImapAsyncClientException, IOException {
+        final String folderName = "测试";
+        final long knownUidValidity = 100;
+        final long knownModSeq = 4223212;
+        QResyncParameter qResyncParameter = new QResyncParameter(knownUidValidity, knownModSeq, null, null);
+        ImapRequest cmd = new ExamineFolderCommand(folderName, qResyncParameter);
+        Assert.assertEquals(cmd.getCommandLine(), EXAMINE + "&bUuL1Q- (QRESYNC (100 4223212))\r\n", "Expected result mismatched.");
+
+        final MessageNumberSet[] uids = new MessageNumberSet[] { new MessageNumberSet(1, 200) };
+        qResyncParameter = new QResyncParameter(knownUidValidity, knownModSeq, uids, null);
+        cmd = new ExamineFolderCommand(folderName, qResyncParameter);
+        Assert.assertEquals(cmd.getCommandLine(), EXAMINE + "&bUuL1Q- (QRESYNC (100 4223212 1:200))\r\n", "Expected result mismatched.");
+
+        final MessageNumberSet[] messageSeqNumbers = new MessageNumberSet[] { new MessageNumberSet(1, 1) };
+        final MessageNumberSet[] matchUids = new MessageNumberSet[] { new MessageNumberSet(1, 10) };
+        QResyncSeqMatchData seqMatchData = new QResyncSeqMatchData(messageSeqNumbers, matchUids);
+        qResyncParameter = new QResyncParameter(knownUidValidity, knownModSeq, uids, seqMatchData);
+        cmd = new ExamineFolderCommand(folderName, qResyncParameter);
+        Assert.assertEquals(cmd.getCommandLine(), EXAMINE + "&bUuL1Q- (QRESYNC (100 4223212 1:200 (1 1:10)))\r\n", "Expected result mismatched.");
     }
 }
