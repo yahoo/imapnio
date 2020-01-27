@@ -2,6 +2,7 @@ package com.yahoo.imapnio.async.request;
 
 import javax.annotation.Nonnull;
 
+import com.yahoo.imapnio.async.data.ChangedSince;
 import com.yahoo.imapnio.async.data.MessageNumberSet;
 
 /**
@@ -16,7 +17,7 @@ public class FetchCommand extends AbstractFetchCommand {
      * @param items the data items
      */
     public FetchCommand(@Nonnull final MessageNumberSet[] msgsets, @Nonnull final String items) {
-        super(false, msgsets, items);
+        super(false, msgsets, items, null);
     }
 
     /**
@@ -26,7 +27,29 @@ public class FetchCommand extends AbstractFetchCommand {
      * @param macro the macro
      */
     public FetchCommand(@Nonnull final MessageNumberSet[] msgsets, @Nonnull final FetchMacro macro) {
-        super(false, msgsets, macro);
+        super(false, msgsets, macro, null);
+    }
+
+    /**
+     * Initializes a @{code FetchCommand} with the @{code MessageNumberSet} array and fetch items.
+     *
+     * @param msgsets the set of message set
+     * @param items the data items
+     * @param changedSince changed since the given modification sequence
+     */
+    public FetchCommand(@Nonnull final MessageNumberSet[] msgsets, @Nonnull final String items, @Nonnull final ChangedSince changedSince) {
+        super(false, msgsets, items, changedSince);
+    }
+
+    /**
+     * Initializes a @{code FetchCommand} with the @{code MessageNumberSet} array and macro.
+     *
+     * @param msgsets the set of message set
+     * @param macro the macro
+     * @param changedSince changed since the given modification sequence
+     */
+    public FetchCommand(@Nonnull final MessageNumberSet[] msgsets, @Nonnull final FetchMacro macro, @Nonnull final ChangedSince changedSince) {
+        super(false, msgsets, macro, changedSince);
     }
 
     @Override

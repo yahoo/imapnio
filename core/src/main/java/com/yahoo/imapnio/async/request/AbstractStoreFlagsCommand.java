@@ -7,6 +7,7 @@ import javax.mail.Flags;
 
 import com.yahoo.imapnio.async.data.MessageNumberSet;
 
+import com.yahoo.imapnio.async.data.UnchangedSince;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 
@@ -62,6 +63,15 @@ public abstract class AbstractStoreFlagsCommand extends ImapRequestAdapter {
     /** Byte array for SILENT. */
     private static final byte[] SILENT_B = SILENT.getBytes(StandardCharsets.US_ASCII);
 
+    /** Literal for UNCHANGED SINCE. */
+    private static final String UNCHANGEDSINCE = "UNCHANGEDSINCE";
+
+    /** Byte array for UNCHANGED SINCE. */
+    private static final byte[] UNCHANGEDSINCE_B = UNCHANGEDSINCE.getBytes(StandardCharsets.US_ASCII);
+
+    /** Unchanged since the modification seqeuence. */
+    private UnchangedSince unchangedSince;
+
     /** Flag whether adding UID before store command. */
     private boolean isUid;
 
@@ -86,10 +96,11 @@ public abstract class AbstractStoreFlagsCommand extends ImapRequestAdapter {
      * @param flags the flags to be stored
      * @param action whether to replace, add or remove the flags
      * @param silent true if asking server to respond silently
+     * @param unchangedSince unchanged since the given modification sequence
      */
     protected AbstractStoreFlagsCommand(final boolean isUid, @Nonnull final MessageNumberSet[] msgsets, @Nonnull final Flags flags,
-            @Nonnull final FlagsAction action, final boolean silent) {
-        this(isUid, MessageNumberSet.buildString(msgsets), flags, action, silent);
+            @Nonnull final FlagsAction action, final boolean silent, final UnchangedSince unchangedSince) {
+        this(isUid, MessageNumberSet.buildString(msgsets), flags, action, silent, unchangedSince);
     }
 
     /**
@@ -100,14 +111,16 @@ public abstract class AbstractStoreFlagsCommand extends ImapRequestAdapter {
      * @param flags the flags to be stored
      * @param action whether to replace, add or remove the flags
      * @param silent true if asking server to respond silently
+     * @param unchangedSince unchanged since the given modification sequence
      */
     protected AbstractStoreFlagsCommand(final boolean isUid, @Nonnull final String msgNumbers, @Nonnull final Flags flags,
-            @Nonnull final FlagsAction action, final boolean silent) {
+            @Nonnull final FlagsAction action, final boolean silent, final UnchangedSince unchangedSince) {
         this.isUid = isUid;
         this.msgNumbers = msgNumbers;
         this.flags = flags;
         this.action = action;
         this.isSilent = silent;
+        this.unchangedSince = unchangedSince;
     }
 
     @Override
@@ -115,6 +128,7 @@ public abstract class AbstractStoreFlagsCommand extends ImapRequestAdapter {
         this.msgNumbers = null;
         this.flags = null;
         this.action = null;
+        this.unchangedSince = null;
     }
 
     @Override
@@ -124,6 +138,15 @@ public abstract class AbstractStoreFlagsCommand extends ImapRequestAdapter {
         sb.writeBytes(isUid ? UID_STORE_SP_B : STORE_SP_B);
         sb.writeBytes(msgNumbers.getBytes(StandardCharsets.US_ASCII));
         sb.writeByte(ImapClientConstants.SPACE);
+
+        if (unchangedSince != null) {
+            sb.writeByte(ImapClientConstants.L_PAREN);
+            sb.writeBytes(UNCHANGEDSINCE_B);
+            sb.writeByte(ImapClientConstants.SPACE);
+            sb.writeBytes(String.valueOf(unchangedSince.getModSeq()).getBytes(StandardCharsets.US_ASCII));
+            sb.writeByte(ImapClientConstants.R_PAREN);
+            sb.writeByte(ImapClientConstants.SPACE);
+        }
 
         if (action == FlagsAction.ADD) {
             sb.writeByte(ImapClientConstants.PLUS);
