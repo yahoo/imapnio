@@ -3,11 +3,11 @@ package com.yahoo.imapnio.async.request;
 import java.nio.charset.StandardCharsets;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.mail.Flags;
 
 import com.yahoo.imapnio.async.data.MessageNumberSet;
 
-import com.yahoo.imapnio.async.data.UnchangedSince;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 
@@ -70,7 +70,7 @@ public abstract class AbstractStoreFlagsCommand extends ImapRequestAdapter {
     private static final byte[] UNCHANGEDSINCE_B = UNCHANGEDSINCE.getBytes(StandardCharsets.US_ASCII);
 
     /** Unchanged since the modification seqeuence. */
-    private UnchangedSince unchangedSince;
+    private Long unchangedSince;
 
     /** Flag whether adding UID before store command. */
     private boolean isUid;
@@ -96,10 +96,25 @@ public abstract class AbstractStoreFlagsCommand extends ImapRequestAdapter {
      * @param flags the flags to be stored
      * @param action whether to replace, add or remove the flags
      * @param silent true if asking server to respond silently
+     */
+    protected AbstractStoreFlagsCommand(final boolean isUid, @Nonnull final MessageNumberSet[] msgsets, @Nonnull final Flags flags,
+                                        @Nonnull final FlagsAction action, final boolean silent) {
+        this(isUid, MessageNumberSet.buildString(msgsets), flags, action, silent, null);
+    }
+
+    /**
+     * Initializes a @{code AbstractStoreFlagsCommand} with the MessageNumberSet array, flags, action, silent flag whether server should return new
+     * values, and unchanged since the given modification sequence.
+     *
+     * @param isUid whether to have UID prepended
+     * @param msgsets the set of message set
+     * @param flags the flags to be stored
+     * @param action whether to replace, add or remove the flags
+     * @param silent true if asking server to respond silently
      * @param unchangedSince unchanged since the given modification sequence
      */
     protected AbstractStoreFlagsCommand(final boolean isUid, @Nonnull final MessageNumberSet[] msgsets, @Nonnull final Flags flags,
-            @Nonnull final FlagsAction action, final boolean silent, final UnchangedSince unchangedSince) {
+            @Nonnull final FlagsAction action, final boolean silent, @Nullable final Long unchangedSince) {
         this(isUid, MessageNumberSet.buildString(msgsets), flags, action, silent, unchangedSince);
     }
 
@@ -111,10 +126,24 @@ public abstract class AbstractStoreFlagsCommand extends ImapRequestAdapter {
      * @param flags the flags to be stored
      * @param action whether to replace, add or remove the flags
      * @param silent true if asking server to respond silently
+     */
+    protected AbstractStoreFlagsCommand(final boolean isUid, @Nonnull final String msgNumbers, @Nonnull final Flags flags,
+                                        @Nonnull final FlagsAction action, final boolean silent) {
+        this(isUid, msgNumbers, flags, action, silent, null);
+    }
+
+    /**
+     * Initializes a @{code AbstractStoreFlagsCommand} with string form message numbers (could be sequence sets or UIDs) and all other parameters.
+     *
+     * @param isUid whether to have UID prepended
+     * @param msgNumbers the message id
+     * @param flags the flags to be stored
+     * @param action whether to replace, add or remove the flags
+     * @param silent true if asking server to respond silently
      * @param unchangedSince unchanged since the given modification sequence
      */
     protected AbstractStoreFlagsCommand(final boolean isUid, @Nonnull final String msgNumbers, @Nonnull final Flags flags,
-            @Nonnull final FlagsAction action, final boolean silent, final UnchangedSince unchangedSince) {
+            @Nonnull final FlagsAction action, final boolean silent, @Nullable final Long unchangedSince) {
         this.isUid = isUid;
         this.msgNumbers = msgNumbers;
         this.flags = flags;
@@ -143,7 +172,7 @@ public abstract class AbstractStoreFlagsCommand extends ImapRequestAdapter {
             sb.writeByte(ImapClientConstants.L_PAREN);
             sb.writeBytes(UNCHANGEDSINCE_B);
             sb.writeByte(ImapClientConstants.SPACE);
-            sb.writeBytes(String.valueOf(unchangedSince.getModSeq()).getBytes(StandardCharsets.US_ASCII));
+            sb.writeBytes(String.valueOf(unchangedSince).getBytes(StandardCharsets.US_ASCII));
             sb.writeByte(ImapClientConstants.R_PAREN);
             sb.writeByte(ImapClientConstants.SPACE);
         }

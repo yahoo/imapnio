@@ -1,10 +1,10 @@
 package com.yahoo.imapnio.async.request;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.mail.Flags;
 
 import com.yahoo.imapnio.async.data.MessageNumberSet;
-import com.yahoo.imapnio.async.data.UnchangedSince;
 
 /**
  * This class defines imap store command request from client.
@@ -19,7 +19,7 @@ public class StoreFlagsCommand extends AbstractStoreFlagsCommand {
      * @param action whether to replace, add or remove the flags
      */
     public StoreFlagsCommand(@Nonnull final MessageNumberSet[] msgsets, @Nonnull final Flags flags, @Nonnull final FlagsAction action) {
-        super(false, msgsets, flags, action, false, null);
+        super(false, msgsets, flags, action, false);
     }
 
     /**
@@ -32,7 +32,7 @@ public class StoreFlagsCommand extends AbstractStoreFlagsCommand {
      */
     public StoreFlagsCommand(@Nonnull final MessageNumberSet[] msgsets, @Nonnull final Flags flags, @Nonnull final FlagsAction action,
             final boolean silent) {
-        super(false, msgsets, flags, action, silent, null);
+        super(false, msgsets, flags, action, silent);
     }
 
     /**
@@ -45,11 +45,12 @@ public class StoreFlagsCommand extends AbstractStoreFlagsCommand {
      * @param silent true if asking server to respond silently; false if requesting server to return the new values
      */
     public StoreFlagsCommand(@Nonnull final String msgNumbers, @Nonnull final Flags flags, @Nonnull final FlagsAction action, final boolean silent) {
-        super(false, msgNumbers, flags, action, silent, null);
+        super(false, msgNumbers, flags, action, silent);
     }
 
     /**
-     * Initializes a @{code StoreFlagsCommand} with the MessageNumberSet array, Flags and action. Requests server to return the new value.
+     * Initializes a @{code StoreFlagsCommand} with the MessageNumberSet array, Flags, action, and unchanged since modification sequence.
+     * Requests server to return the new value.
      *
      * @param msgsets the set of message set
      * @param flags the flags to be stored
@@ -57,13 +58,13 @@ public class StoreFlagsCommand extends AbstractStoreFlagsCommand {
      * @param unchangedSince unchanged since the given modification sequence
      */
     public StoreFlagsCommand(@Nonnull final MessageNumberSet[] msgsets, @Nonnull final Flags flags, @Nonnull final FlagsAction action,
-                             final UnchangedSince unchangedSince) {
+                             @Nullable final Long unchangedSince) {
         super(false, msgsets, flags, action, false, unchangedSince);
     }
 
     /**
-     * Initializes a @{code StoreFlagsCommand} with the MessageNumberSet array and flags.
-     *
+     * Initializes a @{code StoreFlagsCommand} with the MessageNumberSet array, flags, action, flag whether to request server to return the new
+     * value, and unchanged since modification sequence.
      * @param msgsets the set of message set
      * @param flags the flags to be stored
      * @param action whether to replace, add or remove the flags
@@ -71,7 +72,7 @@ public class StoreFlagsCommand extends AbstractStoreFlagsCommand {
      * @param unchangedSince unchanged since the given modification sequence
      */
     public StoreFlagsCommand(@Nonnull final MessageNumberSet[] msgsets, @Nonnull final Flags flags, @Nonnull final FlagsAction action,
-                                 final boolean silent, final UnchangedSince unchangedSince) {
+                                 final boolean silent, @Nullable final Long unchangedSince) {
         super(false, msgsets, flags, action, silent, unchangedSince);
     }
 
@@ -86,7 +87,7 @@ public class StoreFlagsCommand extends AbstractStoreFlagsCommand {
      * @param unchangedSince unchanged since the given modification sequence
      */
     public StoreFlagsCommand(@Nonnull final String msgNumbers, @Nonnull final Flags flags, @Nonnull final FlagsAction action,
-                             final boolean silent, final UnchangedSince unchangedSince) {
+                             final boolean silent, @Nullable final Long unchangedSince) {
         super(false, msgNumbers, flags, action, silent, unchangedSince);
     }
 

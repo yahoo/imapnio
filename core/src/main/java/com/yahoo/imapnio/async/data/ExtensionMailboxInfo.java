@@ -15,8 +15,14 @@ public class ExtensionMailboxInfo extends MailboxInfo {
     /** Literal for MAILBOXID. */
     private static final String MAILBOX_ID = "MAILBOXID";
 
+    /** Literal for NOMODSEQ. */
+    private static final String NOMODSEQ = "NOMODSEQ";
+
     /** Variable to store mailbox Id. */
     private String mailboxId;
+
+    /** Variable to indicate whether a server doesn't support the persistent storage of mod-sequencese after enabling CONDSTORE command. */
+    private boolean isNoModSeq;
 
     /**
      * Initializes an instance of {@link ExtensionMailboxInfo} from the server responses for the select or examine command.
@@ -51,6 +57,8 @@ public class ExtensionMailboxInfo extends MailboxInfo {
                     resps[i] = null; // Nulls out this element in array to be consistent with MailboxInfo behavior
                     break;
                 }
+            } else if (key.equals(NOMODSEQ)) {
+                isNoModSeq = true;
             }
             ir.reset(); // default back the parsing index
         }
@@ -62,5 +70,13 @@ public class ExtensionMailboxInfo extends MailboxInfo {
     @Nullable
     public String getMailboxId() {
         return mailboxId;
+    }
+
+    /**
+     * @return isNoModSeq, true if the server return NOMODSEQ response.
+     */
+    @Nonnull
+    public boolean isNoModSeq() {
+        return isNoModSeq;
     }
 }

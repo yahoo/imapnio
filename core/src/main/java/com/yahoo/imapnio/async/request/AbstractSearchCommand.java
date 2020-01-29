@@ -13,6 +13,7 @@ import com.sun.mail.iap.Argument;
 import com.sun.mail.iap.ProtocolException;
 import com.sun.mail.imap.protocol.SearchSequence;
 import com.yahoo.imapnio.async.data.Capability;
+import com.yahoo.imapnio.async.data.ExtendedSearchSequence;
 import com.yahoo.imapnio.async.data.MessageNumberSet;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException.FailureType;
@@ -124,7 +125,7 @@ public abstract class AbstractSearchCommand extends ImapRequestAdapter {
         this.charset = SearchSequence.isAscii(term) ? null : StandardCharsets.UTF_8.name();
 
         if (term != null) {
-            final SearchSequence searchSeq = new SearchSequence();
+            final ExtendedSearchSequence searchSeq = new ExtendedSearchSequence();
             this.searchExpr = searchSeq.generateSequence(term, charset == null ? null : MimeUtility.javaCharset(charset));
         }
         this.isLiteralPlusEnabled = (capa != null) ? capa.hasCapability(ImapClientConstants.LITERAL_PLUS) : false;

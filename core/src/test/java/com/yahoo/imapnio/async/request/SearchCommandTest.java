@@ -25,6 +25,7 @@ import org.testng.annotations.Test;
 import com.sun.mail.iap.Argument;
 import com.sun.mail.iap.Literal;
 import com.yahoo.imapnio.async.data.Capability;
+import com.yahoo.imapnio.async.data.ExtendedModifiedSinceTerm;
 import com.yahoo.imapnio.async.data.MessageNumberSet;
 import com.yahoo.imapnio.async.data.MessageNumberSet.LastMessage;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
@@ -229,6 +230,54 @@ public class SearchCommandTest {
         final FlagTerm messageFlagTerms = null;
         final ImapRequest cmd = new SearchCommand(msgsets, messageFlagTerms, null);
         Assert.assertEquals(cmd.getCommandLine(), "SEARCH 1:4\r\n", "Expected result mismatched.");
+
+        cmd.cleanup();
+        // Verify if cleanup happened correctly.
+        for (final Field field : fieldsToCheck) {
+            Assert.assertNull(field.get(cmd), "Cleanup should set " + field.getName() + " as null");
+        }
+    }
+
+    /**
+     * Tests getCommandLine method with null message sequences set, MODSEQ SearchTerm.
+     *
+     * @throws IOException will not throw
+     * @throws IllegalAccessException will not throw
+     * @throws IllegalArgumentException will not throw
+     * @throws ImapAsyncClientException will not throw
+     * @throws SearchException will not throw
+     */
+    @Test
+    public void testGetCommandLineNonNullModSeq()
+            throws IOException, IllegalArgumentException, IllegalAccessException, SearchException, ImapAsyncClientException {
+        final ExtendedModifiedSinceTerm extendedModifiedSinceTerm = new ExtendedModifiedSinceTerm(1L);
+        final MessageNumberSet[] msgsets = null;
+        final ImapRequest cmd = new SearchCommand(msgsets, extendedModifiedSinceTerm, null);
+        Assert.assertEquals(cmd.getCommandLine(), "SEARCH MODSEQ 1\r\n", "Expected result mismatched.");
+
+        cmd.cleanup();
+        // Verify if cleanup happened correctly.
+        for (final Field field : fieldsToCheck) {
+            Assert.assertNull(field.get(cmd), "Cleanup should set " + field.getName() + " as null");
+        }
+    }
+
+    /**
+     * Tests getCommandLine method with null message sequences set, MODSEQ SearchTerm with entry name and entry type.
+     *
+     * @throws IOException will not throw
+     * @throws IllegalAccessException will not throw
+     * @throws IllegalArgumentException will not throw
+     * @throws ImapAsyncClientException will not throw
+     * @throws SearchException will not throw
+     */
+    @Test
+    public void testGetCommandLineNonNullModSeqWithOptionalField()
+            throws IOException, IllegalArgumentException, IllegalAccessException, SearchException, ImapAsyncClientException {
+        final ExtendedModifiedSinceTerm extendedModifiedSinceTerm = new ExtendedModifiedSinceTerm("/SEEN", EntryTypeReq.ALL, 1L);
+        final MessageNumberSet[] msgsets = null;
+        final ImapRequest cmd = new SearchCommand(msgsets, extendedModifiedSinceTerm, null);
+        Assert.assertEquals(cmd.getCommandLine(), "SEARCH MODSEQ \"/SEEN\" ALL 1\r\n", "Expected result mismatched.");
 
         cmd.cleanup();
         // Verify if cleanup happened correctly.

@@ -7,7 +7,6 @@ import java.util.Set;
 
 import javax.mail.Flags;
 
-import com.yahoo.imapnio.async.data.UnchangedSince;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -233,8 +232,7 @@ public class StoreFlagsCommandTest {
         final Flags flags = new Flags();
         flags.add(Flags.Flag.SEEN);
         flags.add(Flags.Flag.DELETED);
-        final UnchangedSince unchangedSince = new UnchangedSince(1L);
-        final ImapRequest cmd = new StoreFlagsCommand(msgsets, flags, FlagsAction.ADD, unchangedSince);
+        final ImapRequest cmd = new StoreFlagsCommand(msgsets, flags, FlagsAction.ADD, 1L);
         Assert.assertEquals(cmd.getCommandLine(), "STORE 1:3 (UNCHANGEDSINCE 1) +FLAGS (\\Deleted \\Seen)\r\n", "Expected result mismatched.");
 
         cmd.cleanup();
@@ -261,8 +259,7 @@ public class StoreFlagsCommandTest {
         flags.add(Flags.Flag.SEEN);
         flags.add(Flags.Flag.DELETED);
         final boolean isSilent = true;
-        final UnchangedSince unchangedSince = new UnchangedSince(1L);
-        final ImapRequest cmd = new StoreFlagsCommand(msgsets, flags, FlagsAction.ADD, isSilent, unchangedSince);
+        final ImapRequest cmd = new StoreFlagsCommand(msgsets, flags, FlagsAction.ADD, isSilent, 1L);
         Assert.assertEquals(cmd.getCommandLine(), "STORE 1:3 (UNCHANGEDSINCE 1) +FLAGS.SILENT (\\Deleted \\Seen)\r\n", "Expected result mismatched.");
 
         cmd.cleanup();
@@ -288,8 +285,7 @@ public class StoreFlagsCommandTest {
         flags.add(Flags.Flag.SEEN);
         flags.add(Flags.Flag.DELETED);
         final boolean isSilent = true;
-        final UnchangedSince unchangedSince = new UnchangedSince(1L);
-        final ImapRequest cmd = new StoreFlagsCommand("1:*", flags, FlagsAction.ADD, isSilent, unchangedSince);
+        final ImapRequest cmd = new StoreFlagsCommand("1:*", flags, FlagsAction.ADD, isSilent, 1L);
         Assert.assertEquals(cmd.getCommandLine(), "STORE 1:* (UNCHANGEDSINCE 1) +FLAGS.SILENT (\\Deleted \\Seen)\r\n", "Expected result mismatched.");
 
         cmd.cleanup();

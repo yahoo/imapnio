@@ -9,7 +9,6 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import com.yahoo.imapnio.async.data.ChangedSince;
 import com.yahoo.imapnio.async.data.MessageNumberSet;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 
@@ -143,8 +142,7 @@ public class UidFetchCommandTest {
 
         final long[] msgs = { 1L, 2L, 3L };
         final MessageNumberSet[] msgsets = MessageNumberSet.createMessageNumberSets(msgs);
-        final ChangedSince changedSince = new ChangedSince(1L);
-        final ImapRequest cmd = new UidFetchCommand(msgsets, DATA_ITEMS, changedSince);
+        final ImapRequest cmd = new UidFetchCommand(msgsets, DATA_ITEMS, 1L);
         Assert.assertEquals(cmd.getCommandLine(), "UID FETCH 1:3 (FLAGS BODY[HEADER.FIELDS (DATE FROM)]) (CHANGEDSINCE 1)\r\n", "Expected result mismatched.");
 
         cmd.cleanup();
@@ -167,8 +165,7 @@ public class UidFetchCommandTest {
 
         final long[] msgs = { 4294967293L, 4294967294L, 4294967295L };
         final MessageNumberSet[] msgsets = MessageNumberSet.createMessageNumberSets(msgs);
-        final ChangedSince changedSince = new ChangedSince(1L);
-        final ImapRequest cmd = new UidFetchCommand(msgsets, FetchMacro.FAST, changedSince);
+        final ImapRequest cmd = new UidFetchCommand(msgsets, FetchMacro.FAST, 1L);
         Assert.assertEquals(cmd.getCommandLine(), "UID FETCH 4294967293:4294967295 FAST (CHANGEDSINCE 1)\r\n", "Expected result mismatched.");
 
         cmd.cleanup();
@@ -189,8 +186,7 @@ public class UidFetchCommandTest {
     public void testGetCommandLineFromConstructorWithUidStringDataItemsChangedSince()
             throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
 
-        final ChangedSince changedSince = new ChangedSince(1L);
-        final ImapRequest cmd = new UidFetchCommand("*:4,5:7", DATA_ITEMS, changedSince);
+        final ImapRequest cmd = new UidFetchCommand("*:4,5:7", DATA_ITEMS, 1L);
         Assert.assertEquals(cmd.getCommandLine(), "UID FETCH *:4,5:7 (FLAGS BODY[HEADER.FIELDS (DATE FROM)]) (CHANGEDSINCE 1)\r\n", "Expected result mismatched.");
 
         cmd.cleanup();
@@ -211,8 +207,7 @@ public class UidFetchCommandTest {
     public void GetCommandLineFromConstructorWithUidStringAndMacroChangedSince()
             throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
 
-        final ChangedSince changedSince = new ChangedSince(1L);
-        final ImapRequest cmd = new UidFetchCommand("1:*", FetchMacro.FAST, changedSince);
+        final ImapRequest cmd = new UidFetchCommand("1:*", FetchMacro.FAST, 1L);
         Assert.assertEquals(cmd.getCommandLine(), "UID FETCH 1:* FAST (CHANGEDSINCE 1)\r\n", "Expected result mismatched.");
 
         cmd.cleanup();
@@ -246,7 +241,7 @@ public class UidFetchCommandTest {
         final FetchMacro stateFast = FetchMacro.valueOf("FAST");
         Assert.assertSame(stateFast, FetchMacro.FAST, "Enum does not match.");
         // values below cannot be changed
-        final FetchMacro stateFull = FetchMacro.valueOf("FULL");
+        final  FetchMacro stateFull = FetchMacro.valueOf("FULL");
         Assert.assertSame(stateFull, FetchMacro.FULL, "Enum does not match.");
     }
 }

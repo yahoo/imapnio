@@ -21,7 +21,7 @@ abstract class OpenFolderActionCommand extends ImapRequestAdapter {
     private static final byte[] CRLF_B = { '\r', '\n' };
 
     /** Literal for CONDSTORE. */
-    private static final String CONDSTORE = "(CONDSTORE)";
+    private static final String CONDSTORE = " (CONDSTORE)";
 
     /** Byte array for CONDSTORE. */
     private static final byte[] CONDSTORE_B = CONDSTORE.getBytes(StandardCharsets.US_ASCII);
@@ -90,6 +90,7 @@ abstract class OpenFolderActionCommand extends ImapRequestAdapter {
     public ByteBuf getCommandLineBytes() throws ImapAsyncClientException {
         final String base64Folder = BASE64MailboxEncoder.encode(folderName);
         int qResyncParameterSize = 0;
+        int condStoreSize = 0;
         StringBuilder sb = null;
         if (qResyncParameter != null) {
             sb = new StringBuilder();
@@ -108,8 +109,12 @@ abstract class OpenFolderActionCommand extends ImapRequestAdapter {
             sb.append("))");
             qResyncParameterSize = sb.length();
         }
+
+        if (condStore) {
+            condStoreSize = CONDSTORE.length();
+        }
         // 2 * base64Folder.length(): assuming every char needs to be escaped, goal is eliminating resizing, and avoid complex length calculation
-        final int len = 2 * base64Folder.length() + ImapClientConstants.PAD_LEN + qResyncParameterSize;
+        final int len = 2 * base64Folder.length() + ImapClientConstants.PAD_LEN + qResyncParameterSize + condStoreSize;
         final ByteBuf byteBuf = Unpooled.buffer(len);
         byteBuf.writeBytes(op.getBytes(StandardCharsets.US_ASCII));
         byteBuf.writeByte(ImapClientConstants.SPACE);
@@ -122,8 +127,7 @@ abstract class OpenFolderActionCommand extends ImapRequestAdapter {
             byteBuf.writeBytes(sb.toString().getBytes(StandardCharsets.US_ASCII));
         }
 
-        if (this.condStore) {
-            byteBuf.writeByte(ImapClientConstants.SPACE);
+        if (condStore) {
             byteBuf.writeBytes(CONDSTORE_B);
         }
 

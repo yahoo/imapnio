@@ -1,8 +1,8 @@
 package com.yahoo.imapnio.async.request;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
-import com.yahoo.imapnio.async.data.ChangedSince;
 import com.yahoo.imapnio.async.data.MessageNumberSet;
 
 /**
@@ -17,7 +17,7 @@ public class FetchCommand extends AbstractFetchCommand {
      * @param items the data items
      */
     public FetchCommand(@Nonnull final MessageNumberSet[] msgsets, @Nonnull final String items) {
-        super(false, msgsets, items, null);
+        super(false, msgsets, items);
     }
 
     /**
@@ -27,28 +27,28 @@ public class FetchCommand extends AbstractFetchCommand {
      * @param macro the macro
      */
     public FetchCommand(@Nonnull final MessageNumberSet[] msgsets, @Nonnull final FetchMacro macro) {
-        super(false, msgsets, macro, null);
+        super(false, msgsets, macro);
     }
 
     /**
-     * Initializes a @{code FetchCommand} with the @{code MessageNumberSet} array and fetch items.
+     * Initializes a @{code FetchCommand} with the @{code MessageNumberSet} array, fetch items, and changed since the modification sequence.
      *
      * @param msgsets the set of message set
      * @param items the data items
      * @param changedSince changed since the given modification sequence
      */
-    public FetchCommand(@Nonnull final MessageNumberSet[] msgsets, @Nonnull final String items, @Nonnull final ChangedSince changedSince) {
+    public FetchCommand(@Nonnull final MessageNumberSet[] msgsets, @Nonnull final String items, @Nullable final Long changedSince) {
         super(false, msgsets, items, changedSince);
     }
 
     /**
-     * Initializes a @{code FetchCommand} with the @{code MessageNumberSet} array and macro.
+     * Initializes a @{code FetchCommand} with the @{code MessageNumberSet} array, macro, and changed since the modification sequence.
      *
      * @param msgsets the set of message set
      * @param macro the macro
      * @param changedSince changed since the given modification sequence
      */
-    public FetchCommand(@Nonnull final MessageNumberSet[] msgsets, @Nonnull final FetchMacro macro, @Nonnull final ChangedSince changedSince) {
+    public FetchCommand(@Nonnull final MessageNumberSet[] msgsets, @Nonnull final FetchMacro macro, @Nullable final Long changedSince) {
         super(false, msgsets, macro, changedSince);
     }
 
