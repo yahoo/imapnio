@@ -1,5 +1,6 @@
 package com.yahoo.imapnio.async.data;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -43,7 +44,7 @@ public final class ExtendedModifiedSinceTerm extends SearchTerm {
      * @param entryType type of the metadata item
      * @param modSeq modification sequence number
      */
-    public ExtendedModifiedSinceTerm(@Nullable final String entryName, @Nullable final EntryTypeReq entryType, final long modSeq) {
+    public ExtendedModifiedSinceTerm(@Nonnull final String entryName, @Nonnull final EntryTypeReq entryType, final long modSeq) {
         this.entryName = entryName;
         this.entryType = entryType;
         this.modSeq = modSeq;

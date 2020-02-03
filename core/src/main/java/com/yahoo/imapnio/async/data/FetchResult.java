@@ -34,7 +34,7 @@ public class FetchResult {
      * @param highestModSeq the highest modification from fetch command result
      * @param fetchResponses collection of fetch responses from fetch command result
      */
-    public FetchResult(@Nullable final Long highestModSeq, @Nonnull final List<FetchResponse> fetchResponses) {
+    public FetchResult(@Nonnull final Long highestModSeq, @Nonnull final List<FetchResponse> fetchResponses) {
         this.highestModSeq = highestModSeq;
         this.fetchResponses = fetchResponses;
     }

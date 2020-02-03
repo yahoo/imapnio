@@ -1,7 +1,6 @@
 package com.yahoo.imapnio.async.request;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 import com.yahoo.imapnio.async.data.MessageNumberSet;
 
@@ -47,7 +46,7 @@ public class UidFetchCommand extends AbstractFetchCommand {
      * @param macro the macro, for example, ALL
      */
     public UidFetchCommand(@Nonnull final String uids, @Nonnull final FetchMacro macro) {
-        super(true, uids, macro, null);
+        super(true, uids, macro);
     }
 
     /**
@@ -57,7 +56,7 @@ public class UidFetchCommand extends AbstractFetchCommand {
      * @param items the data items
      * @param changedSince changed since the given modification sequence
      */
-    public UidFetchCommand(@Nonnull final MessageNumberSet[] msgsets, @Nonnull final String items, @Nullable final Long changedSince) {
+    public UidFetchCommand(@Nonnull final MessageNumberSet[] msgsets, @Nonnull final String items, @Nonnull final Long changedSince) {
         super(true, msgsets, items, changedSince);
     }
 
@@ -68,7 +67,7 @@ public class UidFetchCommand extends AbstractFetchCommand {
      * @param macro the macro, for example, ALL
      * @param changedSince changed since the given modification sequence
      */
-    public UidFetchCommand(@Nonnull final MessageNumberSet[] msgsets, @Nonnull final FetchMacro macro, @Nullable final Long changedSince) {
+    public UidFetchCommand(@Nonnull final MessageNumberSet[] msgsets, @Nonnull final FetchMacro macro, @Nonnull final Long changedSince) {
         super(true, msgsets, macro, changedSince);
     }
 
@@ -79,7 +78,7 @@ public class UidFetchCommand extends AbstractFetchCommand {
      * @param items the data items
      * @param changedSince changed since the given modification sequence
      */
-    public UidFetchCommand(@Nonnull final String uids, @Nonnull final String items, @Nullable final Long changedSince) {
+    public UidFetchCommand(@Nonnull final String uids, @Nonnull final String items, @Nonnull final Long changedSince) {
         super(true, uids, items, changedSince);
     }
 
@@ -90,7 +89,7 @@ public class UidFetchCommand extends AbstractFetchCommand {
      * @param macro the macro, for example, ALL
      * @param changedSince changed since the given modification sequence
      */
-    public UidFetchCommand(@Nonnull final String uids, @Nonnull final FetchMacro macro, @Nullable final Long changedSince) {
+    public UidFetchCommand(@Nonnull final String uids, @Nonnull final FetchMacro macro, @Nonnull final Long changedSince) {
         super(true, uids, macro, changedSince);
     }
 

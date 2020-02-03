@@ -13,7 +13,7 @@ public class SearchResult {
     private final List<Long> msgNumbers;
 
     /** Modification sequence, is only shown when CondStore is enabled. */
-    private final Long modSeq;
+    private final Long highestModSeq;
 
     /**
      * Initializes a {@link SearchResult} object with message number collection.
@@ -21,18 +21,19 @@ public class SearchResult {
      * @param msgNumbers collection of message number from search command result
      */
     public SearchResult(@Nonnull final List<Long> msgNumbers) {
-        this(msgNumbers, null);
+        this.msgNumbers = msgNumbers;
+        this.highestModSeq = null;
     }
 
     /**
      * Initializes a {@code SearchResult} object with message number collection and modification sequence.
      *
      * @param msgNumbers collection of message number from search command result
-     * @param modSeq modification sequence from search command result
+     * @param highestModSeq the highest modification sequence from search command result
      */
-    public SearchResult(@Nonnull final List<Long> msgNumbers, @Nullable final Long modSeq) {
+    public SearchResult(@Nonnull final List<Long> msgNumbers, @Nonnull final Long highestModSeq) {
         this.msgNumbers = msgNumbers;
-        this.modSeq = modSeq;
+        this.highestModSeq = highestModSeq;
     }
 
     /**
@@ -44,10 +45,10 @@ public class SearchResult {
     }
 
     /**
-     * @return modification sequence from search command or UID search command result
+     * @return the highest modification sequence from search command or UID search command result
      */
     @Nullable
-    public Long getModSeq() {
-        return this.modSeq;
+    public Long getHighestModSeq() {
+        return this.highestModSeq;
     }
 }

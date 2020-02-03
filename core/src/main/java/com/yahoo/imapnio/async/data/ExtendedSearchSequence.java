@@ -3,7 +3,6 @@ package com.yahoo.imapnio.async.data;
 import java.io.IOException;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.mail.search.SearchException;
 import javax.mail.search.SearchTerm;
 
@@ -25,7 +24,11 @@ public class ExtendedSearchSequence extends SearchSequence {
      * @throws IOException will not throw
      */
     public Argument generateSequence(@Nonnull final SearchTerm term) throws IOException, SearchException {
-        return generateSequence(term, null);
+        if (term instanceof ExtendedModifiedSinceTerm) {
+            return modifiedSince((ExtendedModifiedSinceTerm) term);
+        } else {
+            return super.generateSequence(term, null);
+        }
     }
 
     /**
@@ -38,7 +41,7 @@ public class ExtendedSearchSequence extends SearchSequence {
      * @throws IOException will not throw
      */
     @Override
-    public Argument generateSequence(@Nonnull final SearchTerm term, @Nullable final String charset) throws SearchException, IOException {
+    public Argument generateSequence(@Nonnull final SearchTerm term, @Nonnull final String charset) throws SearchException, IOException {
         if (term instanceof ExtendedModifiedSinceTerm) {
             return modifiedSince((ExtendedModifiedSinceTerm) term);
         } else {

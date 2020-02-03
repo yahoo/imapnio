@@ -1,7 +1,6 @@
 package com.yahoo.imapnio.async.request;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.mail.Flags;
 
 import com.yahoo.imapnio.async.data.MessageNumberSet;
@@ -58,7 +57,7 @@ public class StoreFlagsCommand extends AbstractStoreFlagsCommand {
      * @param unchangedSince unchanged since the given modification sequence
      */
     public StoreFlagsCommand(@Nonnull final MessageNumberSet[] msgsets, @Nonnull final Flags flags, @Nonnull final FlagsAction action,
-                             @Nullable final Long unchangedSince) {
+                             @Nonnull final Long unchangedSince) {
         super(false, msgsets, flags, action, false, unchangedSince);
     }
 
@@ -72,7 +71,7 @@ public class StoreFlagsCommand extends AbstractStoreFlagsCommand {
      * @param unchangedSince unchanged since the given modification sequence
      */
     public StoreFlagsCommand(@Nonnull final MessageNumberSet[] msgsets, @Nonnull final Flags flags, @Nonnull final FlagsAction action,
-                                 final boolean silent, @Nullable final Long unchangedSince) {
+                                 final boolean silent, @Nonnull final Long unchangedSince) {
         super(false, msgsets, flags, action, silent, unchangedSince);
     }
 
@@ -87,7 +86,7 @@ public class StoreFlagsCommand extends AbstractStoreFlagsCommand {
      * @param unchangedSince unchanged since the given modification sequence
      */
     public StoreFlagsCommand(@Nonnull final String msgNumbers, @Nonnull final Flags flags, @Nonnull final FlagsAction action,
-                             final boolean silent, @Nullable final Long unchangedSince) {
+                             final boolean silent, @Nonnull final Long unchangedSince) {
         super(false, msgNumbers, flags, action, silent, unchangedSince);
     }
 

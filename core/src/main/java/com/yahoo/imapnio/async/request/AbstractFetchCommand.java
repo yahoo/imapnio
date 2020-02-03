@@ -3,7 +3,6 @@ package com.yahoo.imapnio.async.request;
 import java.nio.charset.StandardCharsets;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 import com.yahoo.imapnio.async.data.MessageNumberSet;
 
@@ -72,7 +71,11 @@ public abstract class AbstractFetchCommand extends ImapRequestAdapter {
      * @param items the data items
      */
     public AbstractFetchCommand(final boolean isUid, @Nonnull final MessageNumberSet[] msgsets, @Nonnull final String items) {
-        this(isUid, MessageNumberSet.buildString(msgsets), items, null);
+        this.isUid = isUid;
+        this.msgNumbers = MessageNumberSet.buildString(msgsets);
+        this.macro = null;
+        this.dataItems = items;
+        this.changedSince = null;
     }
 
     /**
@@ -83,7 +86,22 @@ public abstract class AbstractFetchCommand extends ImapRequestAdapter {
      * @param macro the macro
      */
     public AbstractFetchCommand(final boolean isUid, @Nonnull final MessageNumberSet[] msgsets, @Nonnull final FetchMacro macro) {
-        this(isUid, MessageNumberSet.buildString(msgsets), macro, null);
+        this(isUid, MessageNumberSet.buildString(msgsets), macro);
+    }
+
+    /**
+     * Initializes a @{code FetchCommand} with the @{code MessageNumberSet} array.
+     *
+     * @param isUid whether prepending UID
+     * @param msgNumbers the set of message set
+     * @param macro the macro
+     */
+    public AbstractFetchCommand(final boolean isUid, @Nonnull final String msgNumbers, @Nonnull final FetchMacro macro) {
+        this.isUid = isUid;
+        this.msgNumbers = msgNumbers;
+        this.macro = macro;
+        this.dataItems = null;
+        this.changedSince = null;
     }
 
     /**
@@ -94,7 +112,11 @@ public abstract class AbstractFetchCommand extends ImapRequestAdapter {
      * @param items the data items
      */
     public AbstractFetchCommand(final boolean isUid, @Nonnull final String msgNumbers, @Nonnull final String items) {
-        this(isUid, msgNumbers, items, null);
+        this.isUid = isUid;
+        this.msgNumbers = msgNumbers;
+        this.dataItems = items;
+        this.macro = null;
+        this.changedSince = null;
     }
 
     /**
@@ -106,7 +128,7 @@ public abstract class AbstractFetchCommand extends ImapRequestAdapter {
      * @param changedSince changed since the given modification sequence
      */
     public AbstractFetchCommand(final boolean isUid, @Nonnull final MessageNumberSet[] msgsets, @Nonnull final String items,
-                                @Nullable final Long changedSince) {
+                                @Nonnull final Long changedSince) {
         this(isUid, MessageNumberSet.buildString(msgsets), items, changedSince);
     }
 
@@ -119,7 +141,7 @@ public abstract class AbstractFetchCommand extends ImapRequestAdapter {
      * @param changedSince changed since the given modification sequence
      */
     public AbstractFetchCommand(final boolean isUid, @Nonnull final MessageNumberSet[] msgsets, @Nonnull final FetchMacro macro,
-                                @Nullable final Long changedSince) {
+                                @Nonnull final Long changedSince) {
         this(isUid, MessageNumberSet.buildString(msgsets), macro, changedSince);
     }
 
@@ -132,7 +154,7 @@ public abstract class AbstractFetchCommand extends ImapRequestAdapter {
      * @param changedSince changed since the given modification sequence
      */
     protected AbstractFetchCommand(final boolean isUid, @Nonnull final String msgNumbers, @Nonnull final String items,
-                                   @Nullable final Long changedSince) {
+                                   @Nonnull final Long changedSince) {
         this.isUid = isUid;
         this.msgNumbers = msgNumbers;
         this.dataItems = items;
@@ -149,7 +171,7 @@ public abstract class AbstractFetchCommand extends ImapRequestAdapter {
      * @param changedSince changed since the given modification sequence
      */
     protected AbstractFetchCommand(final boolean isUid, @Nonnull final String msgNumbers, @Nonnull final FetchMacro macro,
-                                   @Nullable final Long changedSince) {
+                                   @Nonnull final Long changedSince) {
         this.isUid = isUid;
         this.msgNumbers = msgNumbers;
         this.macro = macro;

@@ -20,7 +20,7 @@ public class SearchResultTest {
         ll.add(Long.MAX_VALUE - 1);
         final SearchResult infos = new SearchResult(ll, 1L);
         final List<Long> result = infos.getMessageNumbers();
-        final long modSeq = infos.getModSeq();
+        final long modSeq = infos.getHighestModSeq();
         Assert.assertEquals(result.size(), 1, "Result mismatched.");
         Assert.assertEquals(result.get(0), Long.valueOf(Long.MAX_VALUE - 1), "Result mismatched.");
         Assert.assertEquals(modSeq, 1L, "Result mismatched.");
@@ -34,6 +34,6 @@ public class SearchResultTest {
         final SearchResult infos = new SearchResult(null);
         final List<Long> result = infos.getMessageNumbers();
         Assert.assertNull(result, "Result mismatched.");
-        Assert.assertNull(infos.getModSeq(), "Result mismatched.");
+        Assert.assertNull(infos.getHighestModSeq(), "Result mismatched.");
     }
 }

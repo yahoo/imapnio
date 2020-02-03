@@ -999,7 +999,7 @@ public class ImapResponseMapperTest {
         Assert.assertEquals(list.get(0), Long.valueOf(150404), "getMessageSequence() mismatched.");
         Assert.assertEquals(list.get(1), Long.valueOf(150406), "getMessageSequence() mismatched.");
         Assert.assertEquals(list.get(2), Long.valueOf(150407), "getMessageSequence() mismatched.");
-        Assert.assertNull(result.getModSeq(), "getModSeq() mismatch.");
+        Assert.assertNull(result.getHighestModSeq(), "getModSeq() mismatch.");
     }
 
     /**
@@ -1021,7 +1021,7 @@ public class ImapResponseMapperTest {
         // verify the result
         Assert.assertNotNull(result, "result mismatched.");
         final List<Long> list = result.getMessageNumbers();
-        final long modSeq = result.getModSeq();
+        final long modSeq = result.getHighestModSeq();
         Assert.assertNotNull(list, "getMessageSequence() mismatched.");
         Assert.assertEquals(list.size(), 3, "getMessageSequence() mismatched.");
         Assert.assertEquals(list.get(0), Long.valueOf(150404), "getMessageSequence() mismatched.");

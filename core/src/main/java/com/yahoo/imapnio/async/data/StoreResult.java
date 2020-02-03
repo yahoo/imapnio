@@ -3,7 +3,6 @@ package com.yahoo.imapnio.async.data;
 import java.util.List;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 import com.sun.mail.imap.protocol.FetchResponse;
 
@@ -36,7 +35,7 @@ public class StoreResult extends FetchResult {
      * @param fetchResponses collection of fetch responses from store command result
      * @param modifiedMsgsets collection of modified message number from store command result
      */
-    public StoreResult(@Nullable final Long highestModSeq, @Nonnull final List<FetchResponse> fetchResponses,
+    public StoreResult(@Nonnull final Long highestModSeq, @Nonnull final List<FetchResponse> fetchResponses,
                        @Nonnull final List<Long> modifiedMsgsets) {
         super(highestModSeq, fetchResponses);
         this.modifiedMsgsets = modifiedMsgsets;
