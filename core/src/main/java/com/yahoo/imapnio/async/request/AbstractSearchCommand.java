@@ -13,7 +13,6 @@ import com.sun.mail.iap.Argument;
 import com.sun.mail.iap.ProtocolException;
 import com.sun.mail.imap.protocol.SearchSequence;
 import com.yahoo.imapnio.async.data.Capability;
-import com.yahoo.imapnio.async.data.ExtendedSearchSequence;
 import com.yahoo.imapnio.async.data.MessageNumberSet;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException.FailureType;
@@ -25,26 +24,38 @@ import io.netty.buffer.Unpooled;
  * This class defines IMAP search command request from client.
  *
  * <pre>
- * search         = "SEARCH" [SP "CHARSET" SP astring] 1*(SP search-key)
- *                   ; CHARSET argument to MUST be registered with IANA
+ * search              = "SEARCH" [SP "CHARSET" SP astring] 1*(SP search-key)
+ *                       ; CHARSET argument to MUST be registered with IANA
  *
- * search-key     = "ALL" / "ANSWERED" / "BCC" SP astring /
- *                  "BEFORE" SP date / "BODY" SP astring /
- *                  "CC" SP astring / "DELETED" / "FLAGGED" /
- *                  "FROM" SP astring / "KEYWORD" SP flag-keyword /
- *                  "NEW" / "OLD" / "ON" SP date / "RECENT" / "SEEN" /
- *                  "SINCE" SP date / "SUBJECT" SP astring /
- *                  "TEXT" SP astring / "TO" SP astring /
- *                  "UNANSWERED" / "UNDELETED" / "UNFLAGGED" /
- *                  "UNKEYWORD" SP flag-keyword / "UNSEEN" /
- *                    ; Above this line were in [IMAP2]
- *                  "DRAFT" / "HEADER" SP header-fld-name SP astring /
- *                  "LARGER" SP number / "NOT" SP search-key /
- *                  "OR" SP search-key SP search-key /
- *                  "SENTBEFORE" SP date / "SENTON" SP date /
- *                  "SENTSINCE" SP date / "SMALLER" SP number /
- *                  "UID" SP sequence-set / "UNDRAFT" / sequence-set /
- *                  "(" search-key *(SP search-key) ")"
+ * search-key          = "ALL" / "ANSWERED" / "BCC" SP astring /
+ *                       "BEFORE" SP date / "BODY" SP astring /
+ *                       "CC" SP astring / "DELETED" / "FLAGGED" /
+ *                       "FROM" SP astring / "KEYWORD" SP flag-keyword /
+ *                       "NEW" / "OLD" / "ON" SP date / "RECENT" / "SEEN" /
+ *                       "SINCE" SP date / "SUBJECT" SP astring /
+ *                       "TEXT" SP astring / "TO" SP astring /
+ *                       "UNANSWERED" / "UNDELETED" / "UNFLAGGED" /
+ *                       "UNKEYWORD" SP flag-keyword / "UNSEEN" /
+ *                         ; Above this line were in [IMAP2]
+ *                       "DRAFT" / "HEADER" SP header-fld-name SP astring /
+ *                       "LARGER" SP number / "NOT" SP search-key /
+ *                       "OR" SP search-key SP search-key /
+ *                       "SENTBEFORE" SP date / "SENTON" SP date /
+ *                       "SENTSINCE" SP date / "SMALLER" SP number /
+ *                       "UID" SP sequence-set / "UNDRAFT" / sequence-set /
+ *                       "(" search-key *(SP search-key) ")"
+ *
+ * search-key          =/ search-modsequence
+ *                       ;; Modifies original IMAP4 search-key.
+ *                       ;;
+ *                       ;; This change applies to all commands
+ *                       ;; referencing this non-terminal -- in
+ *                       ;; particular, SEARCH, SORT, and THREAD.
+ *
+ * search-modsequence  = "MODSEQ" [search-modseq-ext] SP
+ *                          mod-sequence-valzer
+ *
+ * search-modseq-ext   = SP entry-name SP entry-type-req
  * </pre>
  */
 public abstract class AbstractSearchCommand extends ImapRequestAdapter {

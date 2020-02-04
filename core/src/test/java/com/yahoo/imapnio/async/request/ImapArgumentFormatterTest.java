@@ -184,10 +184,10 @@ public class ImapArgumentFormatterTest {
     }
 
     /**
-     * Tests buildFlagString with all flags.
+     * Tests buildFlagListString with all flags.
      */
     @Test
-    public void testBuildFlagString() {
+    public void testBuildFlagListString() {
         final Flags flags = new Flags();
         flags.add(Flags.Flag.ANSWERED);
         flags.add(Flags.Flag.DELETED);
@@ -197,7 +197,7 @@ public class ImapArgumentFormatterTest {
         flags.add(Flags.Flag.SEEN);
         flags.add(Flags.Flag.USER); // for continue
         final ImapArgumentFormatter writer = new ImapArgumentFormatter();
-        final String s = writer.buildFlagString(flags);
+        final String s = writer.buildFlagListString(flags);
         Assert.assertNotNull(s, "buildFlagString() should not return null.");
         Assert.assertEquals(s, "(\\Answered \\Deleted \\Draft \\Flagged \\Recent \\Seen)", "result mismatched.");
     }
@@ -211,8 +211,60 @@ public class ImapArgumentFormatterTest {
         flags.add("userflag1");
         flags.add("userflag2");
         final ImapArgumentFormatter writer = new ImapArgumentFormatter();
-        final String s = writer.buildFlagString(flags);
+        final String s = writer.buildFlagListString(flags);
         Assert.assertNotNull(s, "buildFlagString() should not return null.");
         Assert.assertEquals(s, "(userflag1 userflag2)", "result mismatched.");
+    }
+
+    /**
+     * Tests buildEntryFlagName with all flags.
+     *
+     * @throws IOException will not throw
+     */
+    @Test
+    public void testbuildEntryFlagName() throws ImapAsyncClientException {
+        final String[] expectedFlags = "\\Answered \\Deleted \\Draft \\Flagged \\Recent \\Seen".split(" ");
+        final Flags flags = new Flags();
+        flags.add(Flags.Flag.ANSWERED);
+        flags.add(Flags.Flag.DELETED);
+        flags.add(Flags.Flag.DRAFT);
+        flags.add(Flags.Flag.FLAGGED);
+        flags.add(Flags.Flag.RECENT);
+        flags.add(Flags.Flag.SEEN);
+        flags.add("userflag1");
+        final ImapArgumentFormatter writer = new ImapArgumentFormatter();
+        final Flags.Flag[] systemFlags = flags.getSystemFlags();
+        for (int i = 0; i < systemFlags.length; i++) {
+            final Flags singleSystemFlag = new Flags();
+            singleSystemFlag.add(systemFlags[i]);
+            final String systemEntryName = writer.buildEntryFlagName(singleSystemFlag);
+            Assert.assertEquals(systemEntryName, "\"/flags/\\" + expectedFlags[i] + "\"", "result mismatched.");
+        }
+
+        final String[] userFlags = flags.getUserFlags();
+        final Flags singleUserFlag = new Flags();
+        singleUserFlag.add(userFlags[0]);
+        final String userEntryName = writer.buildEntryFlagName(singleUserFlag);
+
+        Assert.assertEquals(userFlags.length, 1, "result mismatched");
+        Assert.assertEquals(userEntryName, "\"/flags/userflag1\"", "result mismatched");
+    }
+
+    /**
+     * Tests buildEntryFlagName with exception.
+     */
+    @Test
+    public void testbuildEntryFlagNameFailed() {
+        final Flags flags = new Flags();
+        flags.add(Flags.Flag.ANSWERED);
+        flags.add(Flags.Flag.DELETED);
+        ImapAsyncClientException actual = null;
+        final ImapArgumentFormatter writer = new ImapArgumentFormatter();
+        try {
+            writer.buildEntryFlagName(flags);
+        } catch (ImapAsyncClientException e) {
+            actual = e;
+        }
+        Assert.assertNotNull(actual, "Should throw exception");
     }
 }

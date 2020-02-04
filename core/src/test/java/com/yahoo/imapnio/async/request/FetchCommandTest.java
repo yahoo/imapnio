@@ -117,8 +117,7 @@ public class FetchCommandTest {
      * @throws IllegalArgumentException will not throw
      */
     @Test
-    public void GetCommandLineFromConstructorWithChangedSince()
-            throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
+    public void GetCommandLineFromConstructorWithChangedSince() throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
 
         final long[] msgs = { 4294967293L, 4294967294L, 4294967295L };
         final MessageNumberSet[] msgsets = MessageNumberSet.createMessageNumberSets(msgs);
@@ -140,8 +139,7 @@ public class FetchCommandTest {
      * @throws IllegalArgumentException will not throw
      */
     @Test
-    public void testGetCommandLineFromConstructorWithDataItemsChangedSince()
-            throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
+    public void testGetCommandLineFromConstructorWithDataItemsChangedSince() throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
 
         final int[] msgs = { 1, 2, 3 };
         final MessageNumberSet[] msgsets = MessageNumberSet.createMessageNumberSets(msgs);

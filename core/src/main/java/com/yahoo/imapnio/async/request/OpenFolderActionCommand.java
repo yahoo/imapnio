@@ -21,10 +21,10 @@ abstract class OpenFolderActionCommand extends ImapRequestAdapter {
     private static final byte[] CRLF_B = { '\r', '\n' };
 
     /** Literal for CONDSTORE. */
-    private static final String CONDSTORE = " (CONDSTORE)";
+    private static final String SP_CONDSTORE = " (CONDSTORE)";
 
     /** Byte array for CONDSTORE. */
-    private static final byte[] CONDSTORE_B = CONDSTORE.getBytes(StandardCharsets.US_ASCII);
+    private static final byte[] SP_CONDSTORE_B = SP_CONDSTORE.getBytes(StandardCharsets.US_ASCII);
 
     /** Command operator, for example, "SELECT". */
     private String op;
@@ -111,7 +111,7 @@ abstract class OpenFolderActionCommand extends ImapRequestAdapter {
         }
 
         if (condStore) {
-            condStoreSize = CONDSTORE.length();
+            condStoreSize = SP_CONDSTORE.length();
         }
         // 2 * base64Folder.length(): assuming every char needs to be escaped, goal is eliminating resizing, and avoid complex length calculation
         final int len = 2 * base64Folder.length() + ImapClientConstants.PAD_LEN + qResyncParameterSize + condStoreSize;
@@ -128,7 +128,7 @@ abstract class OpenFolderActionCommand extends ImapRequestAdapter {
         }
 
         if (condStore) {
-            byteBuf.writeBytes(CONDSTORE_B);
+            byteBuf.writeBytes(SP_CONDSTORE_B);
         }
 
         byteBuf.writeBytes(CRLF_B);

@@ -1,6 +1,6 @@
 package com.yahoo.imapnio.async.data;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.testng.Assert;
@@ -16,8 +16,7 @@ public class SearchResultTest {
      */
     @Test
     public void testSearchResult() {
-        final List<Long> ll = new ArrayList<>();
-        ll.add(Long.MAX_VALUE - 1);
+        final List<Long> ll = Collections.singletonList(Long.MAX_VALUE - 1);
         final SearchResult infos = new SearchResult(ll, 1L);
         final List<Long> result = infos.getMessageNumbers();
         final long modSeq = infos.getHighestModSeq();

@@ -48,7 +48,7 @@ public class ExtensionMailboxInfoTest {
         Assert.assertEquals(minfo.uidvalidity, 1459808247, "uidvalidity mismatched.");
         Assert.assertEquals(minfo.uidnext, 150400, "uidnext mismatched.");
         Assert.assertEquals(minfo.getMailboxId(), "214-mailbox", "MailboxId mismatched.");
-        Assert.assertEquals(minfo.isNoModSeq(), false, "NOMODSEQ mismatched.");
+        Assert.assertFalse(minfo.isNoModSeq(), "NOMODSEQ mismatched.");
         Assert.assertNull(content[7], "This element should be nulled out");
     }
 

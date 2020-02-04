@@ -47,6 +47,12 @@ final class ImapClientConstants {
     /** Extra buffer length for command line builder to add. */
     static final int PAD_LEN = 100;
 
+    /** Literal for double quota. */
+    static final char DQUOTA = '\"';
+
+    /** Literal for back slash. */
+    static final char BACKSLASH = '\\';
+
     /**
      * Private constructor to avoid constructing instance of this class.
      */

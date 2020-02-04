@@ -64,6 +64,7 @@ public class StoreFlagsCommand extends AbstractStoreFlagsCommand {
     /**
      * Initializes a @{code StoreFlagsCommand} with the MessageNumberSet array, flags, action, flag whether to request server to return the new
      * value, and unchanged since modification sequence.
+     *
      * @param msgsets the set of message set
      * @param flags the flags to be stored
      * @param action whether to replace, add or remove the flags

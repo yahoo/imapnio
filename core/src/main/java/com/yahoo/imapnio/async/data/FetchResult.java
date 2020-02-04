@@ -3,55 +3,31 @@ package com.yahoo.imapnio.async.data;
 import java.util.List;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
-import com.sun.mail.imap.protocol.FetchResponse;
+import com.sun.mail.imap.protocol.IMAPResponse;
 
 /**
- * This class provides the highest modification sequence and the list of fetch response from fetch command response.
+ * This class provides the list of IMAP response from fetch command response.
  */
 public class FetchResult {
 
-    /** The highest modification sequence, only shown when CondStore is enabled. */
-    private Long highestModSeq;
-
-    /** The collection of fetch response. */
-    private final List<FetchResponse> fetchResponses;
+    /** The collection of IMAP responses. */
+    private final List<IMAPResponse> imapResponses;
 
     /**
-     * Initializes a {@code FetchResult} object with fetch responses collection.
+     * Initializes a {@code FetchResult} object with IMAP responses collection.
      *
-     * @param fetchResponses collection of fetch responses from fetch command result
+     * @param imapResponses collection of IMAP responses from fetch command result
      */
-    public FetchResult(@Nonnull final List<FetchResponse> fetchResponses) {
-        this.highestModSeq = null;
-        this.fetchResponses = fetchResponses;
+    public FetchResult(@Nonnull final List<IMAPResponse> imapResponses) {
+        this.imapResponses = imapResponses;
     }
 
     /**
-     * Initializes a {@code FetchResult} object with the highest modification sequence and fetch responses collection.
-     *
-     * @param highestModSeq the highest modification from fetch command result
-     * @param fetchResponses collection of fetch responses from fetch command result
-     */
-    public FetchResult(@Nonnull final Long highestModSeq, @Nonnull final List<FetchResponse> fetchResponses) {
-        this.highestModSeq = highestModSeq;
-        this.fetchResponses = fetchResponses;
-    }
-
-    /**
-     * @return the highest modification sequence from fetch or UID fetch command result
-     */
-    @Nullable
-    public Long getHighestModSeq() {
-        return highestModSeq;
-    }
-
-    /**
-     * @return fetch responses collection from fetch or UID fetch command result
+     * @return IMAP responses collection from fetch or UID fetch command result
      */
     @Nonnull
-    public List<FetchResponse> getFetchResponses() {
-        return fetchResponses;
+    public List<IMAPResponse> getIMAPResponses() {
+        return imapResponses;
     }
 }

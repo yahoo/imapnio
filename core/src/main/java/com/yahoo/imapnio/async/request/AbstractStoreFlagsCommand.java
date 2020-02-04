@@ -15,22 +15,34 @@ import io.netty.buffer.Unpooled;
  *
  * <pre>
  *
- * store           = "STORE" SP sequence-set SP store-att-flags
+ * store                = "STORE" SP sequence-set SP store-att-flags
  *
- * store-att-flags = (["+" / "-"] "FLAGS" [".SILENT"]) SP
- *                   (flag-list / (flag *(SP flag)))
- * flag-list       = "(" [flag *(SP flag)] ")"
- * flag            = "\Answered" / "\Flagged" / "\Deleted" /
- *                   "\Seen" / "\Draft" / flag-keyword / flag-extension
- *                   ; Does not include "\Recent"
+ * store-att-flags      = (["+" / "-"] "FLAGS" [".SILENT"]) SP
+ *                        (flag-list / (flag *(SP flag)))
+ * flag-list            = "(" [flag *(SP flag)] ")"
  *
- * flag-extension  = "\" atom
- *                   ; Future expansion.  Client implementations
- *                   ; MUST accept flag-extension flags.  Server
- *                   ; implementations MUST NOT generate
- *                   ; flag-extension flags except as defined by
- *                   ; future standard or standards-track
- *                   ; revisions of this specification.
+ * flag                 = "\Answered" / "\Flagged" / "\Deleted" /
+ *                        "\Seen" / "\Draft" / flag-keyword / flag-extension
+ *                        ; Does not include "\Recent"
+ *
+ * flag-extension       = "\" atom
+ *                        ; Future expansion.  Client implementations
+ *                        ; MUST accept flag-extension flags.  Server
+ *                        ; implementations MUST NOT generate
+ *                        ; flag-extension flags except as defined by
+ *                        ; future standard or standards-track
+ *                        ; revisions of this specification.
+ *
+ * store-modifier      =/ "UNCHANGEDSINCE" SP mod-sequence-valzer
+ *                       ;; Only a single "UNCHANGEDSINCE" may be
+ *                       ;; specified in a STORE operation.
+ *
+ * mod-sequence-value  = 1*DIGIT
+ *                       ;; Positive unsigned 63-bit integer
+ *                       ;; (mod-sequence)
+ *                       ;; (1 \leq n \leq 9,223,372,036,854,775,807).
+ *
+ * mod-sequence-valzer = "0" / mod-sequence-value
  * </pre>
  */
 public abstract class AbstractStoreFlagsCommand extends ImapRequestAdapter {
@@ -53,20 +65,11 @@ public abstract class AbstractStoreFlagsCommand extends ImapRequestAdapter {
     /** Literal for FLAGS. */
     private static final String FLAGS = "FLAGS";
 
-    /** Byte array for FLAGS. */
-    private static final byte[] FLAGS_B = FLAGS.getBytes(StandardCharsets.US_ASCII);
-
     /** Literal for .SILENT to append after FLAGS. */
     private static final String SILENT = ".SILENT";
 
-    /** Byte array for SILENT. */
-    private static final byte[] SILENT_B = SILENT.getBytes(StandardCharsets.US_ASCII);
-
-    /** Literal for UNCHANGED SINCE. */
+    /** Literal for UNCHANGEDSINCE. */
     private static final String UNCHANGEDSINCE = "UNCHANGEDSINCE";
-
-    /** Byte array for UNCHANGED SINCE. */
-    private static final byte[] UNCHANGEDSINCE_B = UNCHANGEDSINCE.getBytes(StandardCharsets.US_ASCII);
 
     /** Unchanged since the modification seqeuence. */
     private Long unchangedSince;
@@ -97,13 +100,8 @@ public abstract class AbstractStoreFlagsCommand extends ImapRequestAdapter {
      * @param silent true if asking server to respond silently
      */
     protected AbstractStoreFlagsCommand(final boolean isUid, @Nonnull final MessageNumberSet[] msgsets, @Nonnull final Flags flags,
-                                        @Nonnull final FlagsAction action, final boolean silent) {
-        this.isUid = isUid;
-        this.msgNumbers = MessageNumberSet.buildString(msgsets);
-        this.flags = flags;
-        this.action = action;
-        this.isSilent = silent;
-        this.unchangedSince = null;
+            @Nonnull final FlagsAction action, final boolean silent) {
+        this(isUid, MessageNumberSet.buildString(msgsets), flags, action, silent);
     }
 
     /**
@@ -123,7 +121,8 @@ public abstract class AbstractStoreFlagsCommand extends ImapRequestAdapter {
     }
 
     /**
-     * Initializes a {@link AbstractStoreFlagsCommand} with string form message numbers (could be sequence sets or UIDs) and all other parameters.
+     * Initializes a @{code AbstractStoreFlagsCommand} with string form message numbers (could be sequence sets or UIDs), flags, action,
+     * and silent flag whether server should return new value.
      *
      * @param isUid whether to have UID prepended
      * @param msgNumbers the message id
@@ -132,7 +131,7 @@ public abstract class AbstractStoreFlagsCommand extends ImapRequestAdapter {
      * @param silent true if asking server to respond silently
      */
     protected AbstractStoreFlagsCommand(final boolean isUid, @Nonnull final String msgNumbers, @Nonnull final Flags flags,
-                                        @Nonnull final FlagsAction action, final boolean silent) {
+            @Nonnull final FlagsAction action, final boolean silent) {
         this.isUid = isUid;
         this.msgNumbers = msgNumbers;
         this.flags = flags;
@@ -142,7 +141,8 @@ public abstract class AbstractStoreFlagsCommand extends ImapRequestAdapter {
     }
 
     /**
-     * Initializes a @{code AbstractStoreFlagsCommand} with string form message numbers (could be sequence sets or UIDs) and all other parameters.
+     * Initializes a @{code AbstractStoreFlagsCommand} with string form message numbers (could be sequence sets or UIDs), flags, action,
+     * silent flag whether server should return new values, and unchanged since the given modification sequence.
      *
      * @param isUid whether to have UID prepended
      * @param msgNumbers the message id
@@ -172,38 +172,44 @@ public abstract class AbstractStoreFlagsCommand extends ImapRequestAdapter {
     @Override
     public ByteBuf getCommandLineBytes() {
         // Ex:STORE 2:4 +FLAGS (\Deleted)
-        final ByteBuf sb = Unpooled.buffer();
-        sb.writeBytes(isUid ? UID_STORE_SP_B : STORE_SP_B);
-        sb.writeBytes(msgNumbers.getBytes(StandardCharsets.US_ASCII));
-        sb.writeByte(ImapClientConstants.SPACE);
-
+        final StringBuilder sb = new StringBuilder();
+        sb.append(msgNumbers);
+        sb.append(ImapClientConstants.SPACE);
         if (unchangedSince != null) {
-            sb.writeByte(ImapClientConstants.L_PAREN);
-            sb.writeBytes(UNCHANGEDSINCE_B);
-            sb.writeByte(ImapClientConstants.SPACE);
-            sb.writeBytes(String.valueOf(unchangedSince).getBytes(StandardCharsets.US_ASCII));
-            sb.writeByte(ImapClientConstants.R_PAREN);
-            sb.writeByte(ImapClientConstants.SPACE);
+            sb.append(ImapClientConstants.L_PAREN);
+            sb.append(UNCHANGEDSINCE);
+            sb.append(ImapClientConstants.SPACE);
+            sb.append(unchangedSince);
+            sb.append(ImapClientConstants.R_PAREN);
+            sb.append(ImapClientConstants.SPACE);
         }
 
         if (action == FlagsAction.ADD) {
-            sb.writeByte(ImapClientConstants.PLUS);
+            sb.append(ImapClientConstants.PLUS);
         } else if (action == FlagsAction.REMOVE) {
-            sb.writeByte(ImapClientConstants.MINUS);
+            sb.append(ImapClientConstants.MINUS);
         }
 
-        sb.writeBytes(FLAGS_B);
+        sb.append(FLAGS);
 
         if (isSilent) {
-            sb.writeBytes(SILENT_B);
+            sb.append(SILENT);
         }
+
+        sb.append(ImapClientConstants.SPACE);
 
         // buildFlagString generates "(" [flag *(SP flag)] ")"
         final ImapArgumentFormatter argWriter = new ImapArgumentFormatter();
-        sb.writeByte(ImapClientConstants.SPACE);
-        sb.writeBytes(argWriter.buildFlagString(flags).getBytes(StandardCharsets.US_ASCII));
-        sb.writeBytes(CRLF_B);
+        sb.append(argWriter.buildFlagListString(flags));
 
-        return sb;
+        final String storeCmdStr = sb.toString();
+        final int len = ImapClientConstants.PAD_LEN  + storeCmdStr.length();
+        final ByteBuf byteBuf = Unpooled.buffer(len);
+        byteBuf.writeBytes(isUid ? UID_STORE_SP_B : STORE_SP_B);
+        byteBuf.writeBytes(storeCmdStr.getBytes(StandardCharsets.US_ASCII));
+
+        byteBuf.writeBytes(CRLF_B);
+
+        return byteBuf;
     }
 }

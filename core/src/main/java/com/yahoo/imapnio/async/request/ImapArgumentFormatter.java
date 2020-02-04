@@ -181,7 +181,7 @@ public class ImapArgumentFormatter {
      * @param flags the flags
      * @return the flag list string
      */
-    String buildFlagString(@Nonnull final Flags flags) {
+    String buildFlagListString(@Nonnull final Flags flags) {
         final StringBuilder sb = new StringBuilder();
         sb.append(ImapClientConstants.L_PAREN); // start of flag_list
 
@@ -224,6 +224,61 @@ public class ImapArgumentFormatter {
         }
 
         sb.append(ImapClientConstants.R_PAREN); // terminate flag_list
+        return sb.toString();
+    }
+
+    /**
+     * Creates an IMAP entry-flag-name from the given Flag object. The following is the ABNF from RFC7162
+     * <pre>
+     * entry-flag-name     = DQUOTE "/flags/" attr-flag DQUOTE
+     *                        ;; Each system or user-defined flag <flag>
+     *                        ;; is mapped to "/flags/<flag>".
+     *                        ;;
+     *                        ;; <entry-flag-name> follows the escape rules
+     *                        ;; used by "quoted" string as described in
+     *                        ;; Section 4.3 of [RFC3501]; e.g., for the
+     *                        ;; flag \Seen, the corresponding <entry-name>
+     *                        ;; is "/flags/\\seen", and for the flag
+     *                        ;; $MDNSent, the corresponding <entry-name>
+     *                        ;; is "/flags/$mdnsent".
+     * </pre>
+     *
+     * @param flag the flags with one flag
+     * @throws ImapAsyncClientException when the number of flags is larger than 1
+     * @return the entry flag name string
+     */
+     String buildEntryFlagName(@Nonnull final Flags flag) throws ImapAsyncClientException {
+        final Flags.Flag[] sf = flag.getSystemFlags(); // get the system flags
+        final String[] uf = flag.getUserFlags(); // get the user flag strings
+        if (sf.length + uf.length != 1) {
+            throw new ImapAsyncClientException(ImapAsyncClientException.FailureType.INVALID_INPUT);
+        }
+        final StringBuilder sb = new StringBuilder();
+        sb.append(ImapClientConstants.DQUOTA);
+        sb.append("/flags/"); // start of entry flag name
+        String s = "";
+
+        if (sf.length == 1) {
+            if (sf[0] == Flags.Flag.ANSWERED) {
+                s = ANSWERED;
+            } else if (sf[0] == Flags.Flag.DELETED) {
+                s = DELETED;
+            } else if (sf[0] == Flags.Flag.DRAFT) {
+                s = DRAFT;
+            } else if (sf[0] == Flags.Flag.FLAGGED) {
+                s = FLAGGED;
+            } else if (sf[0] == Flags.Flag.RECENT) {
+                s = RECENT;
+            } else if (sf[0] == Flags.Flag.SEEN) {
+                s = SEEN;
+            }
+            sb.append(ImapClientConstants.BACKSLASH);
+        } else {
+            s = uf[0];
+        }
+
+        sb.append(s);
+        sb.append(ImapClientConstants.DQUOTA);
         return sb.toString();
     }
 }
