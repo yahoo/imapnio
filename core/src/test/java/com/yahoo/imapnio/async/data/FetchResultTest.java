@@ -38,7 +38,7 @@ public class FetchResultTest {
      */
     @Test
     public void testFetchhResultNullHighestModSeq() {
-        final FetchResult infos = new FetchResult(new ArrayList<>());
+        final FetchResult infos = new FetchResult(Collections.emptyList());
         final List<IMAPResponse>fetchResponsesResult = infos.getIMAPResponses();
         Assert.assertEquals(fetchResponsesResult.size(), 0, "Result mismatched.");
     }

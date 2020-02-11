@@ -29,10 +29,22 @@ public class SearchResultTest {
      * Tests SearchResult constructor and getters when passing null list and not passing modification sequence.
      */
     @Test
-    public void testSearchResultNullList() {
-        final SearchResult infos = new SearchResult(null);
+    public void testSearchResultNoFiled() {
+        final SearchResult infos = new SearchResult();
+        Assert.assertNull(infos.getMessageNumbers(), "Result mismatched.");
+        Assert.assertNull(infos.getHighestModSeq(), "Result mismatched.");
+    }
+
+    /**
+     * Tests SearchResult constructor and getters.
+     */
+    @Test
+    public void testSearchResultNullHighestModSeq() {
+        final List<Long> ll = Collections.singletonList(Long.MAX_VALUE - 1);
+        final SearchResult infos = new SearchResult(ll);
         final List<Long> result = infos.getMessageNumbers();
-        Assert.assertNull(result, "Result mismatched.");
+        Assert.assertEquals(result.size(), 1, "Result mismatched.");
+        Assert.assertEquals(result.get(0), Long.valueOf(Long.MAX_VALUE - 1), "Result mismatched.");
         Assert.assertNull(infos.getHighestModSeq(), "Result mismatched.");
     }
 }

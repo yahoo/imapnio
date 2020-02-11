@@ -72,8 +72,14 @@ public abstract class AbstractFetchCommand extends ImapRequestAdapter {
     /** Changed Since and space. */
     private static final String CHANGEDSINCE_SP = "CHANGEDSINCE ";
 
-    /** Space and vanished. */
+    /** Byte array for Changed Since and Space. */
+    private static final byte[] CHANGEDSINCE_SP_B = CHANGEDSINCE_SP.getBytes(StandardCharsets.US_ASCII);
+
+    /** Space and Vanished. */
     private static final String SP_VANISHED = " VANISHED";
+
+    /** Byte array for Space and Vanished. */
+    private static final byte[] SP_VANISHED_B = SP_VANISHED.getBytes(StandardCharsets.US_ASCII);
 
     /** Byte array for CR and LF, keeping the array local so it cannot be modified by others. */
     private static final byte[] CRLF_B = { '\r', '\n' };
@@ -278,36 +284,36 @@ public abstract class AbstractFetchCommand extends ImapRequestAdapter {
     @Override
     public ByteBuf getCommandLineBytes() {
         // Ex:UID FETCH 300:500 (FLAGS) (CHANGEDSINCE 1234 VANISHED)
-        final StringBuilder sb = new StringBuilder();
-        sb.append(msgNumbers);
-        sb.append(ImapClientConstants.SPACE);
+        final int dataItemsSize = dataItems == null ? macro.name().length() : dataItems.length();
+        final String changedSinceStr = changedSince == null ? "" : changedSince.toString();
+        final int len = ImapClientConstants.PAD_LEN  + changedSinceStr.length() + dataItemsSize + msgNumbers.length();
+        final ByteBuf sb = Unpooled.buffer(len);
+
+        sb.writeBytes(isUid ? UID_FETCH_SP_B : FETCH_SP_B);
+        sb.writeBytes(msgNumbers.getBytes(StandardCharsets.US_ASCII));
+        sb.writeByte(ImapClientConstants.SPACE);
+
         if (dataItems != null) {
-            sb.append(ImapClientConstants.L_PAREN);
-            sb.append(dataItems);
-            sb.append(ImapClientConstants.R_PAREN);
+            sb.writeByte(ImapClientConstants.L_PAREN);
+            sb.writeBytes(dataItems.getBytes(StandardCharsets.US_ASCII));
+            sb.writeByte(ImapClientConstants.R_PAREN);
         } else {
-            sb.append(macro.name());
+            sb.writeBytes(macro.name().getBytes(StandardCharsets.US_ASCII));
         }
 
         if (changedSince != null) {
-            sb.append(ImapClientConstants.SPACE);
-            sb.append(ImapClientConstants.L_PAREN);
-            sb.append(CHANGEDSINCE_SP);
-            sb.append(changedSince);
+            sb.writeByte(ImapClientConstants.SPACE);
+            sb.writeByte(ImapClientConstants.L_PAREN);
+            sb.writeBytes(CHANGEDSINCE_SP_B);
+            sb.writeBytes(changedSinceStr.getBytes(StandardCharsets.US_ASCII));
             if (vanished) {
-                sb.append(SP_VANISHED);
+                sb.writeBytes(SP_VANISHED_B);
             }
-            sb.append(ImapClientConstants.R_PAREN);
+            sb.writeByte(ImapClientConstants.R_PAREN);
         }
 
-        final String fetchCmdStr = sb.toString();
-        final int len = ImapClientConstants.PAD_LEN  + fetchCmdStr.length();
-        final ByteBuf byteBuf = Unpooled.buffer(len);
-        byteBuf.writeBytes(isUid ? UID_FETCH_SP_B : FETCH_SP_B);
-        byteBuf.writeBytes(fetchCmdStr.getBytes(StandardCharsets.US_ASCII));
+        sb.writeBytes(CRLF_B);
 
-        byteBuf.writeBytes(CRLF_B);
-
-        return byteBuf;
+        return sb;
     }
 }

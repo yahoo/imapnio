@@ -286,7 +286,8 @@ public final class MessageNumberSet {
                 if (element.equals("*")) { // Ex: *
                     msgSets[i] = new MessageNumberSet(LastMessage.LAST_MESSAGE);
                 } else { // Ex: 1
-                    msgSets[i] = new MessageNumberSet(Long.valueOf(element), Long.valueOf(element));
+                    final long num = Long.valueOf(element);
+                    msgSets[i] = new MessageNumberSet(num, num);
                 }
             }
             i++;

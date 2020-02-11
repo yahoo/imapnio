@@ -9,7 +9,6 @@ import javax.mail.search.SearchTerm;
 import com.sun.mail.iap.Argument;
 import com.sun.mail.imap.protocol.SearchSequence;
 import com.yahoo.imapnio.async.data.ExtendedModifiedSinceTerm;
-import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 
 /**
  * This class extends the search sequence for modification sequence with the optional fields entry
@@ -25,11 +24,10 @@ public class ExtendedSearchSequence extends SearchSequence {
      *
      * @param term the search term
      * @return the IMAP search sequence argument
-     * @throws SearchException will not throw
-     * @throws IOException will not throw
-     * @throws ImapAsyncClientException will not throw
+     * @throws SearchException when search too complex
+     * @throws IOException when failing to convert the given string into bytes in the specified charset
      */
-    public Argument generateSequence(@Nonnull final SearchTerm term) throws IOException, SearchException, ImapAsyncClientException {
+    public Argument generateSequence(@Nonnull final SearchTerm term) throws SearchException, IOException {
         if (term instanceof ExtendedModifiedSinceTerm) {
             return modifiedSince((ExtendedModifiedSinceTerm) term);
         } else {
@@ -43,17 +41,13 @@ public class ExtendedSearchSequence extends SearchSequence {
      * @param term the search term
      * @param charset the character set
      * @return the IMAP search sequence argument
-     * @throws SearchException will not throw
-     * @throws IOException will not throw
+     * @throws SearchException when search too complex
+     * @throws IOException when failing to convert the given string into bytes in the specified charset
      */
     @Override
     public Argument generateSequence(@Nonnull final SearchTerm term, @Nonnull final String charset) throws SearchException, IOException {
         if (term instanceof ExtendedModifiedSinceTerm) {
-            try {
-                return modifiedSince((ExtendedModifiedSinceTerm) term);
-            } catch (ImapAsyncClientException e) {
-                throw new SearchException(e.getMessage());
-            }
+            return modifiedSince((ExtendedModifiedSinceTerm) term);
         } else {
             return super.generateSequence(term, charset);
         }
@@ -64,9 +58,8 @@ public class ExtendedSearchSequence extends SearchSequence {
      *
      * @param term the extended modified since search term
      * @return the IMAP search sequence argument
-     * @throws ImapAsyncClientException will not throw
      */
-    protected Argument modifiedSince(@Nonnull final ExtendedModifiedSinceTerm term) throws ImapAsyncClientException {
+    private Argument modifiedSince(@Nonnull final ExtendedModifiedSinceTerm term) {
         final Argument result = new Argument();
         result.writeAtom(MODSEQ);
         if (term.getEntryName() != null && term.getEntryType() != null) {

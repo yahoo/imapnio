@@ -65,11 +65,20 @@ public abstract class AbstractStoreFlagsCommand extends ImapRequestAdapter {
     /** Literal for FLAGS. */
     private static final String FLAGS = "FLAGS";
 
+    /** Byte array for FLAGS. */
+    private static final byte[] FLAGS_B = FLAGS.getBytes(StandardCharsets.US_ASCII);
+
     /** Literal for .SILENT to append after FLAGS. */
     private static final String SILENT = ".SILENT";
 
-    /** Literal for UNCHANGEDSINCE. */
-    private static final String UNCHANGEDSINCE = "UNCHANGEDSINCE";
+    /** Byte array for SILENT. */
+    private static final byte[] SILENT_B = SILENT.getBytes(StandardCharsets.US_ASCII);
+
+    /** Literal for UNCHANGEDSINCE and Space. */
+    private static final String UNCHANGEDSINCE_SP = "UNCHANGEDSINCE ";
+
+    /** Byte array for UNCHANGEDSINCE and Space. */
+    private static final byte[] UNCHANGEDSINCE_SP_B = UNCHANGEDSINCE_SP.getBytes(StandardCharsets.US_ASCII);
 
     /** Unchanged since the modification seqeuence. */
     private Long unchangedSince;
@@ -172,44 +181,40 @@ public abstract class AbstractStoreFlagsCommand extends ImapRequestAdapter {
     @Override
     public ByteBuf getCommandLineBytes() {
         // Ex:STORE 2:4 +FLAGS (\Deleted)
-        final StringBuilder sb = new StringBuilder();
-        sb.append(msgNumbers);
-        sb.append(ImapClientConstants.SPACE);
+        final ImapArgumentFormatter argWriter = new ImapArgumentFormatter();
+        final String flagListString = argWriter.buildFlagString(flags);
+        final String unchangedSinceStr = unchangedSince == null ? "" : unchangedSince.toString();
+        final int len = ImapClientConstants.PAD_LEN  + msgNumbers.length() + unchangedSinceStr.length() + flagListString.length();
+        final ByteBuf sb = Unpooled.buffer(len);
+        sb.writeBytes(isUid ? UID_STORE_SP_B : STORE_SP_B);
+        sb.writeBytes(msgNumbers.getBytes(StandardCharsets.US_ASCII));
+        sb.writeByte(ImapClientConstants.SPACE);
+
         if (unchangedSince != null) {
-            sb.append(ImapClientConstants.L_PAREN);
-            sb.append(UNCHANGEDSINCE);
-            sb.append(ImapClientConstants.SPACE);
-            sb.append(unchangedSince);
-            sb.append(ImapClientConstants.R_PAREN);
-            sb.append(ImapClientConstants.SPACE);
+            sb.writeByte(ImapClientConstants.L_PAREN);
+            sb.writeBytes(UNCHANGEDSINCE_SP_B);
+            sb.writeBytes(unchangedSinceStr.getBytes(StandardCharsets.US_ASCII));
+            sb.writeByte(ImapClientConstants.R_PAREN);
+            sb.writeByte(ImapClientConstants.SPACE);
         }
 
         if (action == FlagsAction.ADD) {
-            sb.append(ImapClientConstants.PLUS);
+            sb.writeByte(ImapClientConstants.PLUS);
         } else if (action == FlagsAction.REMOVE) {
-            sb.append(ImapClientConstants.MINUS);
+            sb.writeByte(ImapClientConstants.MINUS);
         }
 
-        sb.append(FLAGS);
+        sb.writeBytes(FLAGS_B);
 
         if (isSilent) {
-            sb.append(SILENT);
+            sb.writeBytes(SILENT_B);
         }
 
-        sb.append(ImapClientConstants.SPACE);
-
         // buildFlagString generates "(" [flag *(SP flag)] ")"
-        final ImapArgumentFormatter argWriter = new ImapArgumentFormatter();
-        sb.append(argWriter.buildFlagListString(flags));
+        sb.writeByte(ImapClientConstants.SPACE);
+        sb.writeBytes(flagListString.getBytes(StandardCharsets.US_ASCII));
+        sb.writeBytes(CRLF_B);
 
-        final String storeCmdStr = sb.toString();
-        final int len = ImapClientConstants.PAD_LEN  + storeCmdStr.length();
-        final ByteBuf byteBuf = Unpooled.buffer(len);
-        byteBuf.writeBytes(isUid ? UID_STORE_SP_B : STORE_SP_B);
-        byteBuf.writeBytes(storeCmdStr.getBytes(StandardCharsets.US_ASCII));
-
-        byteBuf.writeBytes(CRLF_B);
-
-        return byteBuf;
+        return sb;
     }
 }

@@ -147,10 +147,11 @@ public class MessageNumberSetTest {
     @Test
     public void testBuildMessageNumberSetsWithOneString() throws ImapAsyncClientException {
         final String msgSetStr = "1";
+        final MessageNumberSet messageNumberSet = new MessageNumberSet(1, 1);
         final MessageNumberSet[] messageNumberSets = MessageNumberSet.buildMessageNumberSets(msgSetStr);
         Assert.assertNotNull(messageNumberSets, "Result mismatched.");
         Assert.assertEquals(messageNumberSets.length, 1, "Result mismatched.");
-        Assert.assertEquals(MessageNumberSet.buildString(messageNumberSets), msgSetStr, "Result mismatched");
+        Assert.assertTrue(messageNumberSets[0].equals(messageNumberSet), "Result mismatched");
     }
 
     /**
@@ -160,9 +161,10 @@ public class MessageNumberSetTest {
     public void testBuildMessageNumberSetsWithStartEnd() throws ImapAsyncClientException {
         final String msgSetStr = "1:100";
         final MessageNumberSet[] messageNumberSets = MessageNumberSet.buildMessageNumberSets(msgSetStr);
+        final MessageNumberSet messageNumberSet = new MessageNumberSet(1, 100);
         Assert.assertNotNull(messageNumberSets, "Result mismatched.");
         Assert.assertEquals(messageNumberSets.length, 1, "Result mismatched.");
-        Assert.assertEquals(MessageNumberSet.buildString(messageNumberSets), msgSetStr, "Result mismatched");
+        Assert.assertTrue(messageNumberSets[0].equals(messageNumberSet), "Result mismatched");
     }
 
     /**
@@ -171,10 +173,11 @@ public class MessageNumberSetTest {
     @Test
     public void testBuildMessageNumberSetsWithStartEndWithLast() throws ImapAsyncClientException {
         final String msgSetStr = "1:*";
+        final MessageNumberSet messageNumberSet = new MessageNumberSet(1, LastMessage.LAST_MESSAGE);
         final MessageNumberSet[] messageNumberSets = MessageNumberSet.buildMessageNumberSets(msgSetStr);
         Assert.assertNotNull(messageNumberSets, "Result mismatched.");
         Assert.assertEquals(messageNumberSets.length, 1, "Result mismatched.");
-        Assert.assertEquals(MessageNumberSet.buildString(messageNumberSets), msgSetStr, "Result mismatched");
+        Assert.assertTrue(messageNumberSets[0].equals(messageNumberSet), "Result mismatched");
     }
 
     /**
@@ -184,9 +187,10 @@ public class MessageNumberSetTest {
     public void testBuildMessageNumberSetsWithLastMessageOnlyTrue() throws ImapAsyncClientException {
         final String msgSetStr = "*";
         final MessageNumberSet[] messageNumberSets = MessageNumberSet.buildMessageNumberSets(msgSetStr);
+        final MessageNumberSet messageNumberSet = new MessageNumberSet(LastMessage.LAST_MESSAGE);
         Assert.assertNotNull(messageNumberSets, "Result mismatched.");
         Assert.assertEquals(messageNumberSets.length, 1, "Result mismatched.");
-        Assert.assertEquals(MessageNumberSet.buildString(messageNumberSets), msgSetStr, "Result mismatched");
+        Assert.assertTrue(messageNumberSets[0].equals(messageNumberSet), "Result mismatched");
     }
 
     /**
@@ -195,10 +199,18 @@ public class MessageNumberSetTest {
     @Test
     public void testBuildMessageNumberSetsWithMultipleMsgNumSets() throws ImapAsyncClientException {
         final String msgSetStr = "1:5,1:*,2,*";
+        final int numMsgs = 4;
+        final MessageNumberSet[] expectedMsgs = new MessageNumberSet[numMsgs];
+        expectedMsgs[0] = new MessageNumberSet(1, 5);
+        expectedMsgs[1] = new MessageNumberSet(1, LastMessage.LAST_MESSAGE);
+        expectedMsgs[2] = new MessageNumberSet(2, 2);
+        expectedMsgs[3] = new MessageNumberSet(LastMessage.LAST_MESSAGE);
         final MessageNumberSet[] messageNumberSets = MessageNumberSet.buildMessageNumberSets(msgSetStr);
         Assert.assertNotNull(messageNumberSets, "Result mismatched.");
-        Assert.assertEquals(messageNumberSets.length, 4, "Result mismatched.");
-        Assert.assertEquals(MessageNumberSet.buildString(messageNumberSets), msgSetStr, "Result mismatched");
+        Assert.assertEquals(messageNumberSets.length, numMsgs, "Result mismatched.");
+        for (int i = 0; i < numMsgs; i++) {
+            Assert.assertTrue(messageNumberSets[i].equals(expectedMsgs[i]), "Result mismatched.");
+        }
     }
 
     /**

@@ -16,7 +16,15 @@ public class SearchResult {
     private final Long highestModSeq;
 
     /**
-     * Initializes a {@link SearchResult} object with message number collection.
+     * Initializes a {@code SearchResult} object.
+     */
+    public SearchResult() {
+        this.msgNumbers = null;
+        this.highestModSeq = null;
+    }
+
+    /**
+     * Initializes a {@code SearchResult} object with message number collection.
      *
      * @param msgNumbers collection of message number from search command result
      */
@@ -31,7 +39,7 @@ public class SearchResult {
      * @param msgNumbers collection of message number from search command result
      * @param highestModSeq the highest modification sequence from search command result
      */
-    public SearchResult(@Nonnull final List<Long> msgNumbers, @Nonnull final Long highestModSeq) {
+    public SearchResult(@Nonnull final List<Long> msgNumbers, @Nullable final Long highestModSeq) {
         this.msgNumbers = msgNumbers;
         this.highestModSeq = highestModSeq;
     }

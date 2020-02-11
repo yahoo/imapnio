@@ -72,7 +72,7 @@ public class StoreFlagsCommand extends AbstractStoreFlagsCommand {
      * @param unchangedSince unchanged since the given modification sequence
      */
     public StoreFlagsCommand(@Nonnull final MessageNumberSet[] msgsets, @Nonnull final Flags flags, @Nonnull final FlagsAction action,
-                                 final boolean silent, @Nonnull final Long unchangedSince) {
+                             final boolean silent, @Nonnull final Long unchangedSince) {
         super(false, msgsets, flags, action, silent, unchangedSince);
     }
 

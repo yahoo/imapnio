@@ -108,7 +108,7 @@ public class AppendCommand implements ImapRequest {
 
         // flags
         if (flags != null) { // set Flags in appended message
-            buf.writeBytes(argWriter.buildFlagListString(flags).getBytes(StandardCharsets.US_ASCII));
+            buf.writeBytes(argWriter.buildFlagString(flags).getBytes(StandardCharsets.US_ASCII));
             buf.writeByte(ImapClientConstants.SPACE);
         }
 

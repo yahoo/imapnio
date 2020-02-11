@@ -2,12 +2,12 @@ package com.yahoo.imapnio.async.data;
 
 import javax.mail.Flags;
 
-import org.mockito.Mockito;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import com.sun.mail.imap.IMAPMessage;
+import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 import com.yahoo.imapnio.async.request.EntryTypeReq;
+import com.yahoo.imapnio.async.request.ImapArgumentFormatter;
 
 /**
  * Unit test for {@code ExtendedModifiedSinceTerm}.
@@ -16,9 +16,10 @@ public class ExtendedModifiedSinceTermTest {
 
     /**
      * Tests ExtendedModifiedSinceTerm constructor and getters.
+     * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testExtendedModifiedSinceTermWithOptionalField() {
+    public void testExtendedModifiedSinceTermWithOptionalField() throws ImapAsyncClientException {
         final Flags flags = new Flags();
         flags.add(Flags.Flag.SEEN);
         final ExtendedModifiedSinceTerm extendedModifiedSinceTerm = new ExtendedModifiedSinceTerm(flags, EntryTypeReq.ALL, 1L);
@@ -41,35 +42,36 @@ public class ExtendedModifiedSinceTermTest {
     }
 
     /**
-     * Tests ExtendedModifiedSinceTerm match null.
+     * Tests ExtendedModifiedSinceTerm match throw exception.
      */
     @Test
-    public void testExtendedModifiedSinceTermMatchNull() {
+    public void testExtendedModifiedSinceTermMatchException() {
         final ExtendedModifiedSinceTerm extendedModifiedSinceTerm = new ExtendedModifiedSinceTerm(1L);
-        final IMAPMessage imapMessage = null;
-
-        Assert.assertFalse(extendedModifiedSinceTerm.match(imapMessage), "match() mismatched.");
+        UnsupportedOperationException actual = null;
+        try {
+            extendedModifiedSinceTerm.match(null);
+        } catch (final UnsupportedOperationException e) {
+            actual = e;
+        }
+        Assert.assertNotNull(actual, "Should throw exception");
     }
 
     /**
-     * Tests ExtendedModifiedSinceTerm not match.
+     * Tests buildEntryFlagName with exception.
      */
     @Test
-    public void testExtendedModifiedSinceTermNotMatch() {
-        final ExtendedModifiedSinceTerm extendedModifiedSinceTerm = new ExtendedModifiedSinceTerm(1L);
-        final IMAPMessage imapMessage = Mockito.mock(IMAPMessage.class);
-
-        Assert.assertFalse(extendedModifiedSinceTerm.match(imapMessage), "match() mismatched.");
-    }
-
-    /**
-     * Tests ExtendedModifiedSinceTerm match.
-     */
-    @Test
-    public void testExtendedModifiedSinceTermMatch() {
-        final ExtendedModifiedSinceTerm extendedModifiedSinceTerm = new ExtendedModifiedSinceTerm(-1L);
-        final IMAPMessage imapMessage = Mockito.mock(IMAPMessage.class);
-
-        Assert.assertEquals(extendedModifiedSinceTerm.match(imapMessage), true, "match() mismatched.");
+    public void testbuildEntryFlagNameFailed() {
+        final Flags flags = new Flags();
+        flags.add(Flags.Flag.ANSWERED);
+        flags.add(Flags.Flag.DELETED);
+        ImapAsyncClientException actual = null;
+        final ImapArgumentFormatter writer = new ImapArgumentFormatter();
+        try {
+            final ExtendedModifiedSinceTerm extendedModifiedSinceTerm = new ExtendedModifiedSinceTerm(flags, EntryTypeReq.ALL, 1L);
+        } catch (final ImapAsyncClientException e) {
+            actual = e;
+        }
+        Assert.assertNotNull(actual, "Should throw exception");
+        Assert.assertEquals(actual.getFaiureType(), ImapAsyncClientException.FailureType.INVALID_INPUT, "Should throw exception");
     }
 }

@@ -4,10 +4,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.mail.Flags;
 import javax.mail.Message;
-import javax.mail.MessagingException;
 import javax.mail.search.SearchTerm;
 
-import com.sun.mail.imap.IMAPMessage;
+import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 import com.yahoo.imapnio.async.request.EntryTypeReq;
 
 /**
@@ -78,8 +77,15 @@ public final class ExtendedModifiedSinceTerm extends SearchTerm {
      * @param entryName name of the metadata item
      * @param entryType type of the metadata item
      * @param modSeq modification sequence number
+     * @throws ImapAsyncClientException if entryName has more than one flag.
      */
-    public ExtendedModifiedSinceTerm(@Nonnull final Flags entryName, @Nonnull final EntryTypeReq entryType, final long modSeq) {
+    public ExtendedModifiedSinceTerm(@Nonnull final Flags entryName, @Nonnull final EntryTypeReq entryType, final long modSeq)
+            throws ImapAsyncClientException {
+        final Flags.Flag[] sf = entryName.getSystemFlags(); // get the system flags
+        final String[] uf = entryName.getUserFlags(); // get the user flag strings
+        if (sf.length + uf.length != 1) {
+            throw new ImapAsyncClientException(ImapAsyncClientException.FailureType.INVALID_INPUT);
+        }
         this.entryName = entryName;
         this.entryType = entryType;
         this.modSeq = modSeq;
@@ -109,22 +115,13 @@ public final class ExtendedModifiedSinceTerm extends SearchTerm {
     }
 
     /**
-     * The match method.
+     * This method should never be called for ExtendedModifiedSinceTerm.
      *
      * @param msg the date comparator is applied to this Message's MODSEQ
-     * @return true if the comparison succeeds, otherwise false
+     * @return UnsupportedOperationException if the method is called
      */
     @Override
     public boolean match(final Message msg) {
-        try {
-            if (msg instanceof IMAPMessage) {
-                final long m = ((IMAPMessage) msg).getModSeq();
-                return m >= modSeq;
-            } else {
-                return false;
-            }
-        } catch (MessagingException e) {
-            return false;
-        }
+        throw new UnsupportedOperationException();
     }
 }

@@ -68,7 +68,7 @@ public class StoreResult {
      * @param imapResponses collection of IMAP responses from store command result
      * @param modifiedMsgSets collection of modified message number from store command result
      */
-    public StoreResult(@Nonnull final Long highestModSeq, @Nonnull final List<IMAPResponse> imapResponses,
+    public StoreResult(@Nullable final Long highestModSeq, @Nonnull final List<IMAPResponse> imapResponses,
                        @Nullable final MessageNumberSet[] modifiedMsgSets) {
         this.highestModSeq = highestModSeq;
         this.imapResponses = imapResponses;
