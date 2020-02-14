@@ -1,5 +1,6 @@
 package com.yahoo.imapnio.async.netty;
 
+import java.net.UnknownHostException;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -16,6 +17,7 @@ import com.yahoo.imapnio.async.internal.ImapAsyncSessionImpl;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
+import io.netty.channel.ConnectTimeoutException;
 import io.netty.handler.codec.MessageToMessageDecoder;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
@@ -87,7 +89,15 @@ public class ImapClientConnectHandler extends MessageToMessageDecoder<IMAPRespon
     @Override
     public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) {
         logger.error("[{},{}] Connection failed due to encountering exception:{}.", sessionId, sessionCtx.toString(), cause);
-        sessionCreatedFuture.done(new ImapAsyncClientException(FailureType.CONNECTION_FAILED_EXCEPTION, cause));
+        FailureType type = null;
+        if (cause instanceof UnknownHostException) {
+            type = FailureType.UNKNOWN_HOST_EXCEPTION;
+        } else if (cause instanceof ConnectTimeoutException) {
+            type = FailureType.CONNECTION_TIMEOUT_EXCEPTION;
+        } else {
+            type = FailureType.CONNECTION_FAILED_EXCEPTION;
+        }
+        sessionCreatedFuture.done(new ImapAsyncClientException(type, cause));
     }
 
     @Override
