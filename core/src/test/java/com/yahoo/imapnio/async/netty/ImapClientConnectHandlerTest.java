@@ -203,7 +203,7 @@ public class ImapClientConnectHandlerTest {
         Assert.assertEquals(ex.getCause().getClass(), ImapAsyncClientException.class, "Expected result mismatched.");
         final ImapAsyncClientException imapEx = (ImapAsyncClientException) ex.getCause();
         Assert.assertNotNull(imapEx.getCause(), "expect cause");
-        Assert.assertTrue(imapEx.getCause() instanceof UnknownHostException, "Cause should be UnknownHost exception.");
+        Assert.assertEquals(imapEx.getCause().getClass(), UnknownHostException.class, "Cause should be UnknownHost exception.");
         Assert.assertEquals(imapEx.getFaiureType(), FailureType.UNKNOWN_HOST_EXCEPTION, "Failure type mismatch");
     }
 
@@ -225,7 +225,7 @@ public class ImapClientConnectHandlerTest {
         final ImapClientConnectHandler handler = new ImapClientConnectHandler(imapFuture, logger, DebugMode.DEBUG_ON, SESSION_ID, sessCtx);
 
         final ChannelHandlerContext ctx = Mockito.mock(ChannelHandlerContext.class);
-        final ConnectTimeoutException connectTimeoutEx = new ConnectTimeoutException("Unknown host");
+        final ConnectTimeoutException connectTimeoutEx = new ConnectTimeoutException("connection timeout");
         handler.exceptionCaught(ctx, connectTimeoutEx);
 
         Assert.assertTrue(imapFuture.isDone(), "Future should be done");
@@ -240,7 +240,7 @@ public class ImapClientConnectHandlerTest {
         Assert.assertEquals(ex.getCause().getClass(), ImapAsyncClientException.class, "Expected result mismatched.");
         final ImapAsyncClientException imapEx = (ImapAsyncClientException) ex.getCause();
         Assert.assertNotNull(imapEx.getCause(), "expect cause");
-        Assert.assertTrue(imapEx.getCause() instanceof ConnectTimeoutException, "Cause should be ConnectTimeout exception.");
+        Assert.assertEquals(imapEx.getCause().getClass(), ConnectTimeoutException.class, "Cause should be ConnectTimeout exception.");
         Assert.assertEquals(imapEx.getFaiureType(), FailureType.CONNECTION_TIMEOUT_EXCEPTION, "Failure type mismatch");
     }
 
