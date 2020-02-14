@@ -2,6 +2,7 @@ package com.yahoo.imapnio.async.client;
 
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
@@ -33,6 +34,7 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
+import io.netty.channel.ConnectTimeoutException;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
@@ -247,7 +249,16 @@ public class ImapAsyncClient {
                     }
                     // connect action is not done until we receive the first OK response from server, so we CANNOT call it done here
                 } else { // failure case
-                    final ImapAsyncClientException ex = new ImapAsyncClientException(FailureType.CONNECTION_FAILED_EXCEPTION, future.cause());
+                    final Throwable cause = future.cause();
+                    FailureType type = null;
+                    if (cause instanceof UnknownHostException) {
+                        type = FailureType.UNKNOWN_HOST_EXCEPTION;
+                    } else if (cause instanceof ConnectTimeoutException) {
+                        type = FailureType.CONNECTION_TIMEOUT_EXCEPTION;
+                    } else {
+                        type = FailureType.CONNECTION_FAILED_EXCEPTION;
+                    }
+                    final ImapAsyncClientException ex = new ImapAsyncClientException(type, cause);
                     sessionFuture.done(ex);
                     logger.error(CONNECT_RESULT_REC, "NA", sessionCtx.toString(), "failure", serverUri.toASCIIString(), sniNames, ex);
                 }

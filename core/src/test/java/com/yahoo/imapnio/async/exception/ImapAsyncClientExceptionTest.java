@@ -59,6 +59,6 @@ public class ImapAsyncClientExceptionTest {
     public void testFailureType() {
         final ImapAsyncClientException.FailureType failureType = ImapAsyncClientException.FailureType.valueOf("CHANNEL_DISCONNECTED");
         Assert.assertEquals(failureType, ImapAsyncClientException.FailureType.CHANNEL_DISCONNECTED, "result mismatched.");
-        Assert.assertEquals(ImapAsyncClientException.FailureType.values().length, 14, "Number of enums mismatched.");
+        Assert.assertEquals(ImapAsyncClientException.FailureType.values().length, 16, "Number of enums mismatched.");
     }
 }
