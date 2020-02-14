@@ -225,7 +225,7 @@ public class ImapClientConnectHandlerTest {
         final ImapClientConnectHandler handler = new ImapClientConnectHandler(imapFuture, logger, DebugMode.DEBUG_ON, SESSION_ID, sessCtx);
 
         final ChannelHandlerContext ctx = Mockito.mock(ChannelHandlerContext.class);
-        final ConnectTimeoutException connectTimeoutEx = new ConnectTimeoutException("Unknown host");
+        final ConnectTimeoutException connectTimeoutEx = new ConnectTimeoutException("connection timeout");
         handler.exceptionCaught(ctx, connectTimeoutEx);
 
         Assert.assertTrue(imapFuture.isDone(), "Future should be done");
