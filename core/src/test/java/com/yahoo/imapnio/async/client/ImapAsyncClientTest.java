@@ -640,9 +640,9 @@ public class ImapAsyncClientTest {
             Assert.assertNotNull(ex.getCause(), "Expect cause.");
             Assert.assertEquals(ex.getClass(), ExecutionException.class, "Class type mismatch.");
             final Exception exception = (Exception) ex.getCause();
-            Assert.assertTrue(exception instanceof ImapAsyncClientException, "exception type mismatch." + ex);
-            Assert.assertNotNull(exception.getCause(), "Cause should be unot be null");
-            Assert.assertTrue(exception.getCause() instanceof UnknownHostException, "Cause should be unknown host exception");
+            Assert.assertEquals(exception.getClass(), ImapAsyncClientException.class, "Exception class type mismatch.");
+            Assert.assertNotNull(exception.getCause(), "Cause should not be null");
+            Assert.assertEquals(exception.getCause().getClass(), UnknownHostException.class, "Cause should be unknown host exception");
             Assert.assertSame(exception.getCause(), nettyConnectFuture.cause(), "Cause should be same object");
             Assert.assertEquals(((ImapAsyncClientException) exception).getFaiureType(), FailureType.UNKNOWN_HOST_EXCEPTION,
                     "Exception type should be UNKNOWN_HOST_EXCEPTION");
@@ -725,9 +725,9 @@ public class ImapAsyncClientTest {
             Assert.assertNotNull(ex.getCause(), "Expect cause.");
             Assert.assertEquals(ex.getClass(), ExecutionException.class, "Class type mismatch.");
             final Exception exception = (Exception) ex.getCause();
-            Assert.assertTrue(exception instanceof ImapAsyncClientException, "exception type mismatch." + ex);
-            Assert.assertNotNull(exception.getCause(), "Cause should be unot be null");
-            Assert.assertTrue(exception.getCause() instanceof ConnectTimeoutException, "Cause should be connection timeout exception");
+            Assert.assertEquals(exception.getClass(), ImapAsyncClientException.class, "exception type mismatch." + ex);
+            Assert.assertNotNull(exception.getCause(), "Cause should not be null");
+            Assert.assertEquals(exception.getCause().getClass(), ConnectTimeoutException.class, "Cause should be connection timeout exception");
             Assert.assertSame(exception.getCause(), nettyConnectFuture.cause(), "Cause should be same object");
             Assert.assertEquals(((ImapAsyncClientException) exception).getFaiureType(), FailureType.CONNECTION_TIMEOUT_EXCEPTION,
                     "Exception type should be CONNECTION_TIMEOUT_EXCEPTION");
