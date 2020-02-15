@@ -636,10 +636,14 @@ public class ImapAsyncClientTest {
             future.get(5, TimeUnit.MILLISECONDS);
             Assert.fail("Should throw unknown host exception");
         } catch (final ExecutionException | InterruptedException ex) {
-            Exception exception = ex instanceof ExecutionException && ex.getCause() instanceof Exception ? (Exception) ex.getCause() : ex;
+            Assert.assertNotNull(ex, "Expect exception to be thrown.");
+            Assert.assertNotNull(ex.getCause(), "Expect cause.");
+            Assert.assertEquals(ex.getClass(), ExecutionException.class, "Class type mismatch.");
+            final Exception exception = (Exception) ex.getCause();
             Assert.assertTrue(exception instanceof ImapAsyncClientException, "exception type mismatch." + ex);
             Assert.assertNotNull(exception.getCause(), "Cause should be unot be null");
             Assert.assertTrue(exception.getCause() instanceof UnknownHostException, "Cause should be unknown host exception");
+            Assert.assertSame(exception.getCause(), nettyConnectFuture.cause(), "Cause should be same object");
             Assert.assertEquals(((ImapAsyncClientException) exception).getFaiureType(), FailureType.UNKNOWN_HOST_EXCEPTION,
                     "Exception type should be UNKNOWN_HOST_EXCEPTION");
         }
@@ -674,7 +678,6 @@ public class ImapAsyncClientTest {
         final ImapAsyncSessionConfig config = new ImapAsyncSessionConfig();
         config.setConnectionTimeoutMillis(5000);
         config.setReadTimeoutMillis(6000);
-        ;
         final List<String> sniNames = null;
 
         // test create session
@@ -718,10 +721,14 @@ public class ImapAsyncClientTest {
             future.get(5, TimeUnit.MILLISECONDS);
             Assert.fail("Should throw connect timeout exception");
         } catch (final ExecutionException | InterruptedException ex) {
-            Exception exception = ex instanceof ExecutionException && ex.getCause() instanceof Exception ? (Exception) ex.getCause() : ex;
+            Assert.assertNotNull(ex, "Expect exception to be thrown.");
+            Assert.assertNotNull(ex.getCause(), "Expect cause.");
+            Assert.assertEquals(ex.getClass(), ExecutionException.class, "Class type mismatch.");
+            final Exception exception = (Exception) ex.getCause();
             Assert.assertTrue(exception instanceof ImapAsyncClientException, "exception type mismatch." + ex);
             Assert.assertNotNull(exception.getCause(), "Cause should be unot be null");
             Assert.assertTrue(exception.getCause() instanceof ConnectTimeoutException, "Cause should be connection timeout exception");
+            Assert.assertSame(exception.getCause(), nettyConnectFuture.cause(), "Cause should be same object");
             Assert.assertEquals(((ImapAsyncClientException) exception).getFaiureType(), FailureType.CONNECTION_TIMEOUT_EXCEPTION,
                     "Exception type should be CONNECTION_TIMEOUT_EXCEPTION");
         }
