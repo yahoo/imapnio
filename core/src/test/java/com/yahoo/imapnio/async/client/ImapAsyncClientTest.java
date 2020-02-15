@@ -592,7 +592,6 @@ public class ImapAsyncClientTest {
         final ImapAsyncSessionConfig config = new ImapAsyncSessionConfig();
         config.setConnectionTimeoutMillis(5000);
         config.setReadTimeoutMillis(6000);
-        ;
         final List<String> sniNames = null;
 
         // test create session
