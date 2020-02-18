@@ -77,8 +77,8 @@ public class ImapResponseMapper {
      */
     @SuppressWarnings("unchecked")
     @Nonnull
-    public <T> T readValue(@Nonnull final IMAPResponse[] content, @Nonnull final Class<T> valueType)
-            throws ImapAsyncClientException, ProtocolException {
+    public <T> T readValue(@Nonnull final IMAPResponse[] content, @Nonnull final Class<T> valueType) throws ImapAsyncClientException,
+            ProtocolException {
         if (valueType == Capability.class) {
             return (T) parser.parseToCapabilities(content);
         }
@@ -415,7 +415,7 @@ public class ImapResponseMapper {
         /**
          * Parses the ID responses to a {@link IdResult} object.
          *
-         * @param r the list of responses from ID command, the input responses array should contain the tagged/final one
+         * @param ir the list of responses from ID command, the input responses array should contain the tagged/final one
          * @return IdResult object constructed based on the given IMAPResponse array
          * @throws ImapAsyncClientException when input value is not valid
          */
@@ -518,16 +518,16 @@ public class ImapResponseMapper {
             if (taggedResponse.isBAD()) {
                 throw new ImapAsyncClientException(FailureType.INVALID_INPUT);
             }
-            final List<IMAPResponse> imapResponses = new ArrayList<>(ir.length); // will always return a non-null array
+            final List<FetchResponse> fetchResponses = new ArrayList<>(); // will always return a non-null array
 
             MessageNumberSet[] modifiedMsgsets = null; // only one response will contain modified numbers
             Long highestModSeq = null;
 
             for (final IMAPResponse sr: ir) {
-                imapResponses.add(parseToFetchResponse(sr, extensionItems));
-
                 sr.skipSpaces();
-                if (sr.readByte() == (byte) L_BRACKET) { // HIGHESTMODSEQ or MODIFIED
+                if (sr.keyEquals("FETCH")) {
+                    fetchResponses.add(parseToFetchResponse(sr, extensionItems));
+                } else if (sr.readByte() == (byte) L_BRACKET) { // HIGHESTMODSEQ or MODIFIED
                     final String responseCode = sr.readAtom();
                     if (sr.isOK() && responseCode.equalsIgnoreCase("HIGHESTMODSEQ")) {
                         highestModSeq = sr.readLong();
@@ -537,7 +537,7 @@ public class ImapResponseMapper {
                 }
             }
 
-            return new StoreResult(highestModSeq, imapResponses, modifiedMsgsets);
+            return new StoreResult(highestModSeq, fetchResponses, modifiedMsgsets);
         }
 
         /**
@@ -559,35 +559,34 @@ public class ImapResponseMapper {
             if (!taggedResponse.isOK()) {
                 throw new ImapAsyncClientException(FailureType.INVALID_INPUT);
             }
-            final List<IMAPResponse> imapResponses = new ArrayList<>(ir.length); // will always return a non-null array
+            final List<FetchResponse> fetchResponses = new ArrayList<>(); // will always return a non-null array
 
             for (final IMAPResponse sr: ir) {
-                imapResponses.add(parseToFetchResponse(sr, extensionItems));
+                if (sr.keyEquals("FETCH")) {
+                    fetchResponses.add(parseToFetchResponse(sr, extensionItems));
+                }
             }
 
-            return new FetchResult(imapResponses);
+            return new FetchResult(fetchResponses);
         }
 
         /**
-         * This methods converts a response to @{code FetchResponse} if it detects it is a fetch response format; otherwise it keeps as it is.
+         * This methods converts a response to @{code FetchResponse}.
          *
-         * @param response IMAPResponse to be converted to Fetch response
+         * @param response ImapResponse to be converted to Fetch response
          * @param extensionItems the array of extension FetchItem
-         * @return parsed response if IMAPResponse is a fetch response else return the passed value
+         * @return parsed response if FetchResponse is a fetch response
          * @throws ProtocolException when encountering error
          */
         @Nonnull
-        private IMAPResponse parseToFetchResponse(@Nonnull final IMAPResponse response, @Nonnull final FetchItem[] extensionItems)
+        private FetchResponse parseToFetchResponse(@Nonnull final IMAPResponse response, @Nonnull final FetchItem[] extensionItems)
                 throws ProtocolException {
-            if (response.keyEquals("FETCH")) {
-                try {
-                    final FetchResponse r = new FetchResponse(response, extensionItems);
-                    return r;
-                } catch (final IOException e) {
-                    throw new ProtocolException("Encountering IOException when constructing FetchResponse", e);
-                }
+            try {
+                final FetchResponse r = new FetchResponse(response, extensionItems);
+                return r;
+            } catch (final IOException e) {
+                throw new ProtocolException("Encountering IOException when constructing FetchResponse", e);
             }
-            return response;
         }
     }
 }

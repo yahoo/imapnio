@@ -48,7 +48,7 @@ public class ExtensionMailboxInfoTest {
         Assert.assertEquals(minfo.uidvalidity, 1459808247, "uidvalidity mismatched.");
         Assert.assertEquals(minfo.uidnext, 150400, "uidnext mismatched.");
         Assert.assertEquals(minfo.getMailboxId(), "214-mailbox", "MailboxId mismatched.");
-        Assert.assertFalse(minfo.isNoModSeq(), "NOMODSEQ mismatched.");
+        Assert.assertFalse(minfo.isNoModSeq(), "isNoModSeq() mismatched.");
         Assert.assertNull(content[7], "This element should be nulled out");
     }
 
@@ -230,6 +230,6 @@ public class ExtensionMailboxInfoTest {
         Assert.assertTrue(minfo.availableFlags.contains(Flag.SEEN), "availableFlags mismatched.");
         Assert.assertEquals(minfo.uidvalidity, 1459808247, "uidvalidity mismatched.");
         Assert.assertEquals(minfo.uidnext, 150400, "uidnext mismatched.");
-        Assert.assertEquals(minfo.isNoModSeq(), true, "NOMODSEQ mismatched.");
+        Assert.assertTrue(minfo.isNoModSeq(), "isNoModSeq() mismatched.");
     }
 }

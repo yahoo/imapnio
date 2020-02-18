@@ -50,15 +50,16 @@ public class ExtensionMailboxInfo extends MailboxInfo {
                 continue;
             }
             key = key.toUpperCase();
-            if (key.equals(NOMODSEQ)) {
-                isNoModSeq = true;
-            } else if (key.equals(MAILBOX_ID)) { // example when 26 is the mailbox id:"* OK [MAILBOXID (26)] Ok"
+
+            if (key.equals(MAILBOX_ID)) { // example when 26 is the mailbox id:"* OK [MAILBOXID (26)] Ok"
                 final String[] values = ir.readSimpleList(); // reading the string, aka as above example, "(26)", within parentheses
                 if (values != null && values.length >= 1) {
                     mailboxId = values[0];
                     resps[i] = null; // Nulls out this element in array to be consistent with MailboxInfo behavior
                     break;
                 }
+            } else if (key.equals(NOMODSEQ)) { // example: * OK [NOMODSEQ] Sorry, this mailbox format doesn't support modsequences
+                isNoModSeq = true;
             }
             ir.reset(); // default back the parsing index
         }
@@ -75,7 +76,6 @@ public class ExtensionMailboxInfo extends MailboxInfo {
     /**
      * @return isNoModSeq, true if the server return NOMODSEQ response.
      */
-    @Nonnull
     public boolean isNoModSeq() {
         return isNoModSeq;
     }

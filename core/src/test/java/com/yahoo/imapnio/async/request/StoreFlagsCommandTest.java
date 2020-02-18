@@ -224,7 +224,8 @@ public class StoreFlagsCommandTest {
      * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testGetCommandLineWithFlagsAddedNotSilentUnchangedSince() throws IllegalArgumentException, IllegalAccessException, ImapAsyncClientException {
+    public void testGetCommandLineWithFlagsAddedNotSilentUnchangedSince() throws IllegalArgumentException, IllegalAccessException,
+            ImapAsyncClientException {
 
         final int[] msgs = { 1, 2, 3 };
         final MessageNumberSet[] msgsets = MessageNumberSet.createMessageNumberSets(msgs);
@@ -232,7 +233,8 @@ public class StoreFlagsCommandTest {
         flags.add(Flags.Flag.SEEN);
         flags.add(Flags.Flag.DELETED);
         final ImapRequest cmd = new StoreFlagsCommand(msgsets, flags, FlagsAction.ADD, 1L);
-        Assert.assertEquals(cmd.getCommandLine(), "STORE 1:3 (UNCHANGEDSINCE 1) +FLAGS (\\Deleted \\Seen)\r\n", "Expected result mismatched.");
+        Assert.assertEquals(cmd.getCommandLine(), "STORE 1:3 (UNCHANGEDSINCE 1) +FLAGS (\\Deleted \\Seen)\r\n",
+                "getCommandLine() mismatched.");
 
         cmd.cleanup();
         // Verify if cleanup happened correctly.
@@ -249,7 +251,8 @@ public class StoreFlagsCommandTest {
      * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testGetCommandLineWithFlagsAddedSilentUnchangedSince() throws IllegalArgumentException, IllegalAccessException, ImapAsyncClientException {
+    public void testGetCommandLineWithFlagsAddedSilentUnchangedSince() throws IllegalArgumentException, IllegalAccessException,
+            ImapAsyncClientException {
 
         final int[] msgs = { 1, 2, 3 };
         final MessageNumberSet[] msgsets = MessageNumberSet.createMessageNumberSets(msgs);
@@ -258,7 +261,8 @@ public class StoreFlagsCommandTest {
         flags.add(Flags.Flag.DELETED);
         final boolean isSilent = true;
         final ImapRequest cmd = new StoreFlagsCommand(msgsets, flags, FlagsAction.ADD, isSilent, 1L);
-        Assert.assertEquals(cmd.getCommandLine(), "STORE 1:3 (UNCHANGEDSINCE 1) +FLAGS.SILENT (\\Deleted \\Seen)\r\n", "Expected result mismatched.");
+        Assert.assertEquals(cmd.getCommandLine(), "STORE 1:3 (UNCHANGEDSINCE 1) +FLAGS.SILENT (\\Deleted \\Seen)\r\n",
+                "getCommandLine() mismatched.");
 
         cmd.cleanup();
         // Verify if cleanup happened correctly.
@@ -270,10 +274,8 @@ public class StoreFlagsCommandTest {
     /**
      * Tests getCommandLine method with message sequences, adding flags, silent, and the given unchanged since modification sequence.
      *
-     * @throws IOException will not throw
      * @throws IllegalAccessException will not throw
      * @throws ImapAsyncClientException will not throw
-     * @throws SearchException will not throw
      */
     @Test
     public void testGetCommandLineWithMessageSeqStringFlagsAddedAndSilentUnchangedSince() throws IllegalAccessException, ImapAsyncClientException {
@@ -283,7 +285,8 @@ public class StoreFlagsCommandTest {
         flags.add(Flags.Flag.DELETED);
         final boolean isSilent = true;
         final ImapRequest cmd = new StoreFlagsCommand("1:*", flags, FlagsAction.ADD, isSilent, 1L);
-        Assert.assertEquals(cmd.getCommandLine(), "STORE 1:* (UNCHANGEDSINCE 1) +FLAGS.SILENT (\\Deleted \\Seen)\r\n", "Expected result mismatched.");
+        Assert.assertEquals(cmd.getCommandLine(), "STORE 1:* (UNCHANGEDSINCE 1) +FLAGS.SILENT (\\Deleted \\Seen)\r\n",
+                "getCommandLine() mismatched.");
 
         cmd.cleanup();
         // Verify if cleanup happened correctly.

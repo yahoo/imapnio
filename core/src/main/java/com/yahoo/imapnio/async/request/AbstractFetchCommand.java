@@ -47,7 +47,7 @@ import io.netty.buffer.Unpooled;
  *                       ;; (mod-sequence)
  *                       ;; (1 <= n <= 9,223,372,036,854,775,807).
  *
- * rexpunges-fetch-mod  =  "VANISHED"
+ * rexpunges-fetch-mod =  "VANISHED"
  *                       ;; VANISHED UID FETCH modifier conforms
  *                       ;; to the fetch-modifier syntax
  *                       ;; defined in [RFC4466].  It is only
@@ -100,7 +100,7 @@ public abstract class AbstractFetchCommand extends ImapRequestAdapter {
     private Long changedSince;
 
     /** Indicate whether vanished flag is used. */
-    private boolean vanished;
+    private boolean isVanished;
 
     /**
      * Initializes a @{code FetchCommand} with the flag indicate whether prepending UID, the @{code MessageNumberSet} array and the data items.
@@ -109,7 +109,7 @@ public abstract class AbstractFetchCommand extends ImapRequestAdapter {
      * @param msgsets the set of message set
      * @param items the data items
      */
-    public AbstractFetchCommand(final boolean isUid, @Nonnull final MessageNumberSet[] msgsets, @Nonnull final String items) {
+    protected AbstractFetchCommand(final boolean isUid, @Nonnull final MessageNumberSet[] msgsets, @Nonnull final String items) {
         this(isUid, MessageNumberSet.buildString(msgsets), items, null, false);
     }
 
@@ -120,7 +120,7 @@ public abstract class AbstractFetchCommand extends ImapRequestAdapter {
      * @param msgsets the set of message set
      * @param macro the macro
      */
-    public AbstractFetchCommand(final boolean isUid, @Nonnull final MessageNumberSet[] msgsets, @Nonnull final FetchMacro macro) {
+    protected AbstractFetchCommand(final boolean isUid, @Nonnull final MessageNumberSet[] msgsets, @Nonnull final FetchMacro macro) {
         this(isUid, MessageNumberSet.buildString(msgsets), macro);
     }
 
@@ -131,8 +131,8 @@ public abstract class AbstractFetchCommand extends ImapRequestAdapter {
      * @param msgNumbers the message numbers string
      * @param macro the macro
      */
-    public AbstractFetchCommand(final boolean isUid, @Nonnull final String msgNumbers, @Nonnull final FetchMacro macro) {
-        this(isUid, msgNumbers, macro, null);
+    protected AbstractFetchCommand(final boolean isUid, @Nonnull final String msgNumbers, @Nonnull final FetchMacro macro) {
+        this(isUid, msgNumbers, macro, null, false);
     }
 
     /**
@@ -142,64 +142,8 @@ public abstract class AbstractFetchCommand extends ImapRequestAdapter {
      * @param msgNumbers the message numbers string
      * @param items the data items
      */
-    public AbstractFetchCommand(final boolean isUid, @Nonnull final String msgNumbers, @Nonnull final String items) {
-        this(isUid, msgNumbers, items, null);
-    }
-
-    /**
-     * Initializes a @{code FetchCommand} with the flag indicate whether prepending UID, the @{code MessageNumberSet} array,
-     * the data items, and changed since the given modification sequence.
-     *
-     * @param isUid whether prepending UID
-     * @param msgsets the set of message set
-     * @param items the data items
-     * @param changedSince changed since the given modification sequence
-     */
-    public AbstractFetchCommand(final boolean isUid, @Nonnull final MessageNumberSet[] msgsets, @Nonnull final String items,
-                                @Nullable final Long changedSince) {
-        this(isUid, MessageNumberSet.buildString(msgsets), items, changedSince);
-    }
-
-    /**
-     * Initializes a @{code FetchCommand} with the flag indicate whether prepending UID, the @{code MessageNumberSet} array, the macro,
-     * and changed since the given modification sequence.
-     *
-     * @param isUid whether prepending UID
-     * @param msgsets the set of message set
-     * @param macro the macro
-     * @param changedSince changed since the given modification sequence
-     */
-    public AbstractFetchCommand(final boolean isUid, @Nonnull final MessageNumberSet[] msgsets, @Nonnull final FetchMacro macro,
-                                @Nullable final Long changedSince) {
-        this(isUid, MessageNumberSet.buildString(msgsets), macro, changedSince);
-    }
-
-    /**
-     * Initializes a @{code FetchCommand} with the flag indicate whether prepending UID, the message numbers string, the data items,
-     * and changed since the given modification sequence.
-     *
-     * @param isUid whether prepending UID
-     * @param msgNumbers the message numbers string
-     * @param items the data items
-     * @param changedSince changed since the given modification sequence
-     */
-    protected AbstractFetchCommand(final boolean isUid, @Nonnull final String msgNumbers, @Nonnull final String items,
-                                   @Nullable final Long changedSince) {
-        this(isUid, msgNumbers, items, changedSince, false);
-    }
-
-    /**
-     * Initializes a @{code FetchCommand} with the flag indicate whether prepending UID, the message numbers string, the macro,
-     * and changed since the given modification sequence.
-     *
-     * @param isUid whether prepending UID
-     * @param msgNumbers the message numbers string
-     * @param macro the macro
-     * @param changedSince changed since the given modification sequence
-     */
-    protected AbstractFetchCommand(final boolean isUid, @Nonnull final String msgNumbers, @Nonnull final FetchMacro macro,
-                                   @Nullable final Long changedSince) {
-        this(isUid, msgNumbers, macro, changedSince, false);
+    protected AbstractFetchCommand(final boolean isUid, @Nonnull final String msgNumbers, @Nonnull final String items) {
+        this(isUid, msgNumbers, items, null, false);
     }
 
     /**
@@ -210,11 +154,11 @@ public abstract class AbstractFetchCommand extends ImapRequestAdapter {
      * @param msgsets the set of message set
      * @param items the data items
      * @param changedSince changed since the given modification sequence
-     * @param vanished whether uid fetch with vanished option
+     * @param isVanished whether uid fetch with vanished option
      */
     public AbstractFetchCommand(final boolean isUid, @Nonnull final MessageNumberSet[] msgsets, @Nonnull final String items,
-                                @Nullable final Long changedSince, final boolean vanished) {
-        this(isUid, MessageNumberSet.buildString(msgsets), items, changedSince, vanished);
+                                @Nullable final Long changedSince, final boolean isVanished) {
+        this(isUid, MessageNumberSet.buildString(msgsets), items, changedSince, isVanished);
     }
 
     /**
@@ -225,11 +169,11 @@ public abstract class AbstractFetchCommand extends ImapRequestAdapter {
      * @param msgsets the set of message set
      * @param macro the macro
      * @param changedSince changed since the given modification sequence
-     * @param vanished whether uid fetch with vanished option
+     * @param isVanished whether uid fetch with vanished option
      */
     public AbstractFetchCommand(final boolean isUid, @Nonnull final MessageNumberSet[] msgsets, @Nonnull final FetchMacro macro,
-                                @Nullable final Long changedSince, final boolean vanished) {
-        this(isUid, MessageNumberSet.buildString(msgsets), macro, changedSince, vanished);
+                                @Nullable final Long changedSince, final boolean isVanished) {
+        this(isUid, MessageNumberSet.buildString(msgsets), macro, changedSince, isVanished);
     }
 
     /**
@@ -240,16 +184,16 @@ public abstract class AbstractFetchCommand extends ImapRequestAdapter {
      * @param msgNumbers the message numbers string
      * @param items the data items
      * @param changedSince changed since the given modification sequence
-     * @param vanished whether uid fetch with vanished option
+     * @param isVanished whether uid fetch with vanished option
      */
     protected AbstractFetchCommand(final boolean isUid, @Nonnull final String msgNumbers, @Nonnull final String items,
-                                   @Nullable final Long changedSince, final boolean vanished) {
+                                   @Nullable final Long changedSince, final boolean isVanished) {
         this.isUid = isUid;
         this.msgNumbers = msgNumbers;
         this.dataItems = items;
         this.macro = null;
         this.changedSince = changedSince;
-        this.vanished = vanished;
+        this.isVanished = isVanished;
     }
 
     /**
@@ -260,18 +204,17 @@ public abstract class AbstractFetchCommand extends ImapRequestAdapter {
      * @param msgNumbers the message numbers string
      * @param macro the macro
      * @param changedSince changed since the given modification sequence
-     * @param vanished whether uid fetch with vanished option
+     * @param isVanished whether uid fetch with vanished option
      */
     protected AbstractFetchCommand(final boolean isUid, @Nonnull final String msgNumbers, @Nonnull final FetchMacro macro,
-                                   @Nullable final Long changedSince, final boolean vanished) {
+                                   @Nullable final Long changedSince, final boolean isVanished) {
         this.isUid = isUid;
         this.msgNumbers = msgNumbers;
         this.macro = macro;
         this.dataItems = null;
         this.changedSince = changedSince;
-        this.vanished = vanished;
+        this.isVanished = isVanished;
     }
-
 
     @Override
     public void cleanup() {
@@ -286,7 +229,8 @@ public abstract class AbstractFetchCommand extends ImapRequestAdapter {
         // Ex:UID FETCH 300:500 (FLAGS) (CHANGEDSINCE 1234 VANISHED)
         final int dataItemsSize = dataItems == null ? macro.name().length() : dataItems.length();
         final String changedSinceStr = changedSince == null ? "" : changedSince.toString();
-        final int len = ImapClientConstants.PAD_LEN  + changedSinceStr.length() + dataItemsSize + msgNumbers.length();
+        final int vanishedSize = isVanished ? SP_VANISHED.length() : 0;
+        final int len = ImapClientConstants.PAD_LEN  + changedSinceStr.length() + dataItemsSize + msgNumbers.length() + vanishedSize;
         final ByteBuf sb = Unpooled.buffer(len);
 
         sb.writeBytes(isUid ? UID_FETCH_SP_B : FETCH_SP_B);
@@ -306,7 +250,7 @@ public abstract class AbstractFetchCommand extends ImapRequestAdapter {
             sb.writeByte(ImapClientConstants.L_PAREN);
             sb.writeBytes(CHANGEDSINCE_SP_B);
             sb.writeBytes(changedSinceStr.getBytes(StandardCharsets.US_ASCII));
-            if (vanished) {
+            if (isVanished) {
                 sb.writeBytes(SP_VANISHED_B);
             }
             sb.writeByte(ImapClientConstants.R_PAREN);

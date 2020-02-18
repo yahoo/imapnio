@@ -37,7 +37,7 @@ public class FetchCommand extends AbstractFetchCommand {
      * @param changedSince changed since the given modification sequence
      */
     public FetchCommand(@Nonnull final MessageNumberSet[] msgsets, @Nonnull final String items, @Nonnull final Long changedSince) {
-        super(false, msgsets, items, changedSince);
+        super(false, msgsets, items, changedSince, false);
     }
 
     /**
@@ -48,7 +48,7 @@ public class FetchCommand extends AbstractFetchCommand {
      * @param changedSince changed since the given modification sequence
      */
     public FetchCommand(@Nonnull final MessageNumberSet[] msgsets, @Nonnull final FetchMacro macro, @Nonnull final Long changedSince) {
-        super(false, msgsets, macro, changedSince);
+        super(false, msgsets, macro, changedSince, false);
     }
 
     @Override

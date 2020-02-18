@@ -250,11 +250,12 @@ public class SearchCommandTest {
      * @throws SearchException will not throw
      */
     @Test
-    public void testGetCommandLineNonNullModSeq() throws IOException, IllegalArgumentException, IllegalAccessException, SearchException, ImapAsyncClientException {
+    public void testGetCommandLineNonNullModSeq() throws IOException, IllegalArgumentException, IllegalAccessException, SearchException,
+            ImapAsyncClientException {
         final ExtendedModifiedSinceTerm extendedModifiedSinceTerm = new ExtendedModifiedSinceTerm(1L);
         final MessageNumberSet[] msgsets = null;
         final ImapRequest cmd = new SearchCommand(msgsets, extendedModifiedSinceTerm, null);
-        Assert.assertEquals(cmd.getCommandLine(), "SEARCH MODSEQ 1\r\n", "Expected result mismatched.");
+        Assert.assertEquals(cmd.getCommandLine(), "SEARCH MODSEQ 1\r\n", "getCommandLine() mismatched.");
 
         cmd.cleanup();
         // Verify if cleanup happened correctly.
@@ -273,13 +274,14 @@ public class SearchCommandTest {
      * @throws SearchException will not throw
      */
     @Test
-    public void testGetCommandLineNonNullModSeqWithFlagAnsweredTypeAll() throws IOException, IllegalArgumentException, IllegalAccessException, SearchException, ImapAsyncClientException {
+    public void testGetCommandLineNonNullModSeqWithFlagAnsweredTypeAll() throws IOException, IllegalArgumentException, IllegalAccessException,
+            SearchException, ImapAsyncClientException {
         final Flags flags = new Flags();
         flags.add(Flags.Flag.ANSWERED);
-        final ExtendedModifiedSinceTerm extendedModifiedSinceTerm = new ExtendedModifiedSinceTerm(flags, EntryTypeReq.ALL, 1L);
+        final ExtendedModifiedSinceTerm extendedModifiedSinceTerm = new ExtendedModifiedSinceTerm(flags, EntryTypeRequest.ALL, 1L);
         final MessageNumberSet[] msgsets = null;
         final ImapRequest cmd = new SearchCommand(msgsets, extendedModifiedSinceTerm, null);
-        Assert.assertEquals(cmd.getCommandLine(), "SEARCH MODSEQ \"/flags/\\\\Answered\" ALL 1\r\n", "Expected result mismatched.");
+        Assert.assertEquals(cmd.getCommandLine(), "SEARCH MODSEQ \"/flags/\\\\Answered\" ALL 1\r\n", "getCommandLine() mismatched.");
 
         cmd.cleanup();
         // Verify if cleanup happened correctly.
@@ -298,13 +300,14 @@ public class SearchCommandTest {
      * @throws SearchException will not throw
      */
     @Test
-    public void testGetCommandLineNonNullModSeqWithFlagDeletedTypePriv() throws IOException, IllegalArgumentException, IllegalAccessException, SearchException, ImapAsyncClientException {
+    public void testGetCommandLineNonNullModSeqWithFlagDeletedTypePriv() throws IOException, IllegalArgumentException, IllegalAccessException,
+            SearchException, ImapAsyncClientException {
         final Flags flags = new Flags();
         flags.add(Flags.Flag.DELETED);
-        final ExtendedModifiedSinceTerm extendedModifiedSinceTerm = new ExtendedModifiedSinceTerm(flags, EntryTypeReq.PRIV, 1L);
+        final ExtendedModifiedSinceTerm extendedModifiedSinceTerm = new ExtendedModifiedSinceTerm(flags, EntryTypeRequest.PRIVATE, 1L);
         final MessageNumberSet[] msgsets = null;
         final ImapRequest cmd = new SearchCommand(msgsets, extendedModifiedSinceTerm, null);
-        Assert.assertEquals(cmd.getCommandLine(), "SEARCH MODSEQ \"/flags/\\\\Deleted\" PRIV 1\r\n", "Expected result mismatched.");
+        Assert.assertEquals(cmd.getCommandLine(), "SEARCH MODSEQ \"/flags/\\\\Deleted\" PRIV 1\r\n", "getCommandLine() mismatched.");
 
         cmd.cleanup();
         // Verify if cleanup happened correctly.
@@ -323,13 +326,14 @@ public class SearchCommandTest {
      * @throws SearchException will not throw
      */
     @Test
-    public void testGetCommandLineNonNullModSeqWithFlagDraftTypeShared() throws IOException, IllegalArgumentException, IllegalAccessException, SearchException, ImapAsyncClientException {
+    public void testGetCommandLineNonNullModSeqWithFlagDraftTypeShared() throws IOException, IllegalArgumentException, IllegalAccessException,
+            SearchException, ImapAsyncClientException {
         final Flags flags = new Flags();
         flags.add(Flags.Flag.DRAFT);
-        final ExtendedModifiedSinceTerm extendedModifiedSinceTerm = new ExtendedModifiedSinceTerm(flags, EntryTypeReq.SHARED, 1L);
+        final ExtendedModifiedSinceTerm extendedModifiedSinceTerm = new ExtendedModifiedSinceTerm(flags, EntryTypeRequest.SHARED, 1L);
         final MessageNumberSet[] msgsets = null;
         final ImapRequest cmd = new SearchCommand(msgsets, extendedModifiedSinceTerm, null);
-        Assert.assertEquals(cmd.getCommandLine(), "SEARCH MODSEQ \"/flags/\\\\Draft\" SHARED 1\r\n", "Expected result mismatched.");
+        Assert.assertEquals(cmd.getCommandLine(), "SEARCH MODSEQ \"/flags/\\\\Draft\" SHARED 1\r\n", "getCommandLine() mismatched.");
 
         cmd.cleanup();
         // Verify if cleanup happened correctly.
@@ -348,15 +352,17 @@ public class SearchCommandTest {
      * @throws SearchException will not throw
      */
     @Test
-    public void testGetCommandLineOrNonNullModSeqWithFlagDraftTypeShared() throws IOException, IllegalArgumentException, IllegalAccessException, SearchException, ImapAsyncClientException {
+    public void testGetCommandLineOrNonNullModSeqWithFlagDraftTypeShared() throws IOException, IllegalArgumentException, IllegalAccessException,
+            SearchException, ImapAsyncClientException {
         final Flags flags = new Flags();
         flags.add(Flags.Flag.DRAFT);
-        final ExtendedModifiedSinceTerm extendedModifiedSinceTerm = new ExtendedModifiedSinceTerm(flags, EntryTypeReq.SHARED, 1L);
+        final ExtendedModifiedSinceTerm extendedModifiedSinceTerm = new ExtendedModifiedSinceTerm(flags, EntryTypeRequest.SHARED, 1L);
         final BodyTerm bodyTerm = new BodyTerm("Text");
         final OrTerm orTerm = new OrTerm(extendedModifiedSinceTerm, bodyTerm);
         final MessageNumberSet[] msgsets = null;
         final ImapRequest cmd = new SearchCommand(msgsets, orTerm, null);
-        Assert.assertEquals(cmd.getCommandLine(), "SEARCH OR MODSEQ \"/flags/\\\\Draft\" SHARED 1 BODY Text\r\n", "Expected result mismatched.");
+        Assert.assertEquals(cmd.getCommandLine(), "SEARCH OR MODSEQ \"/flags/\\\\Draft\" SHARED 1 BODY Text\r\n",
+                "getCommandLine() mismatched.");
 
         cmd.cleanup();
         // Verify if cleanup happened correctly.

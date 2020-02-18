@@ -7,7 +7,7 @@ import javax.mail.Message;
 import javax.mail.search.SearchTerm;
 
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
-import com.yahoo.imapnio.async.request.EntryTypeReq;
+import com.yahoo.imapnio.async.request.EntryTypeRequest;
 
 /**
  * This class models search-modsequence with {@code EntryTypeReq} from RFC7162. ABNF from RFC7162 is documented below.
@@ -55,13 +55,13 @@ public final class ExtendedModifiedSinceTerm extends SearchTerm {
     private final Flags entryName;
 
     /** The type of metadata item. */
-    private final EntryTypeReq entryType;
+    private final EntryTypeRequest entryType;
 
     /** The given modification sequence. */
     private final long modSeq;
 
     /**
-     * Constructor.
+     * Initializes the @{code ExtendedModifiedSinceTerm} class with modification sequence.
      *
      * @param modSeq modification sequence number
      */
@@ -72,14 +72,14 @@ public final class ExtendedModifiedSinceTerm extends SearchTerm {
     }
 
     /**
-     * Constructor.
+     * Initializes the @{code ExtendedModifiedSinceTerm} class with entry name, entry type, and modification sequence.
      *
      * @param entryName name of the metadata item
      * @param entryType type of the metadata item
      * @param modSeq modification sequence number
      * @throws ImapAsyncClientException if entryName has more than one flag.
      */
-    public ExtendedModifiedSinceTerm(@Nonnull final Flags entryName, @Nonnull final EntryTypeReq entryType, final long modSeq)
+    public ExtendedModifiedSinceTerm(@Nonnull final Flags entryName, @Nonnull final EntryTypeRequest entryType, final long modSeq)
             throws ImapAsyncClientException {
         final Flags.Flag[] sf = entryName.getSystemFlags(); // get the system flags
         final String[] uf = entryName.getUserFlags(); // get the user flag strings
@@ -103,7 +103,7 @@ public final class ExtendedModifiedSinceTerm extends SearchTerm {
      * @return the entry type
      */
     @Nullable
-    public EntryTypeReq getEntryType() {
+    public EntryTypeRequest getEntryType() {
         return entryType;
     }
 
@@ -122,6 +122,6 @@ public final class ExtendedModifiedSinceTerm extends SearchTerm {
      */
     @Override
     public boolean match(final Message msg) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("This method should not be used. Only for override purpose.");
     }
 }

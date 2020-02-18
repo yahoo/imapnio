@@ -80,7 +80,7 @@ public abstract class AbstractStoreFlagsCommand extends ImapRequestAdapter {
     /** Byte array for UNCHANGEDSINCE and Space. */
     private static final byte[] UNCHANGEDSINCE_SP_B = UNCHANGEDSINCE_SP.getBytes(StandardCharsets.US_ASCII);
 
-    /** Unchanged since the modification seqeuence. */
+    /** Unchanged since the modification sequence. */
     private Long unchangedSince;
 
     /** Flag whether adding UID before store command. */

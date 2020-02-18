@@ -278,15 +278,17 @@ public final class MessageNumberSet {
             if (element.contains(":")) {
                 final String[] elements = element.split(":");
                 if (elements[1].equals("*")) { // Ex: 1:*
-                    msgSets[i] = new MessageNumberSet(Long.valueOf(elements[0]), LastMessage.LAST_MESSAGE);
+                    msgSets[i] = new MessageNumberSet(Long.parseLong(elements[0]), LastMessage.LAST_MESSAGE);
+                } else if (elements[0].equals("*")) {
+                    msgSets[i] = new MessageNumberSet(Long.parseLong(elements[1]), LastMessage.LAST_MESSAGE);
                 } else { // Ex: 1:2
-                    msgSets[i] = new MessageNumberSet(Long.valueOf(elements[0]), Long.valueOf(elements[1]));
+                    msgSets[i] = new MessageNumberSet(Long.parseLong(elements[0]), Long.parseLong(elements[1]));
                 }
             } else {
                 if (element.equals("*")) { // Ex: *
                     msgSets[i] = new MessageNumberSet(LastMessage.LAST_MESSAGE);
                 } else { // Ex: 1
-                    final long num = Long.valueOf(element);
+                    final long num = Long.parseLong(element);
                     msgSets[i] = new MessageNumberSet(num, num);
                 }
             }

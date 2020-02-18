@@ -6,8 +6,7 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
-import com.yahoo.imapnio.async.request.EntryTypeReq;
-import com.yahoo.imapnio.async.request.ImapArgumentFormatter;
+import com.yahoo.imapnio.async.request.EntryTypeRequest;
 
 /**
  * Unit test for {@code ExtendedModifiedSinceTerm}.
@@ -22,11 +21,13 @@ public class ExtendedModifiedSinceTermTest {
     public void testExtendedModifiedSinceTermWithOptionalField() throws ImapAsyncClientException {
         final Flags flags = new Flags();
         flags.add(Flags.Flag.SEEN);
-        final ExtendedModifiedSinceTerm extendedModifiedSinceTerm = new ExtendedModifiedSinceTerm(flags, EntryTypeReq.ALL, 1L);
+        final ExtendedModifiedSinceTerm extendedModifiedSinceTerm = new ExtendedModifiedSinceTerm(flags, EntryTypeRequest.ALL, 1L);
 
-        Assert.assertEquals(extendedModifiedSinceTerm.getModSeq(), 1L, "Result mismatched.");
-        Assert.assertTrue(extendedModifiedSinceTerm.getEntryName().contains(Flags.Flag.SEEN), "Result mismatched.");
-        Assert.assertEquals(extendedModifiedSinceTerm.getEntryType().name(), "ALL", "Result mismatched.");
+        Assert.assertEquals(extendedModifiedSinceTerm.getModSeq(), 1L, "getModSeq() mismatched.");
+        Assert.assertNotNull(extendedModifiedSinceTerm.getEntryName(), "getEntryName() should not return null.");
+        Assert.assertTrue(extendedModifiedSinceTerm.getEntryName().contains(Flags.Flag.SEEN), "getEntryName() mismatched.");
+        Assert.assertNotNull(extendedModifiedSinceTerm.getEntryType(), "getEntryType() should not return null.");
+        Assert.assertEquals(extendedModifiedSinceTerm.getEntryType().name(), "ALL", "getEntryType() mismatched.");
     }
 
     /**
@@ -36,42 +37,36 @@ public class ExtendedModifiedSinceTermTest {
     public void testExtendedModifiedSinceTermWithoutOptionalField() {
         final ExtendedModifiedSinceTerm extendedModifiedSinceTerm = new ExtendedModifiedSinceTerm(1L);
 
-        Assert.assertEquals(extendedModifiedSinceTerm.getModSeq(), 1L, "Result mismatched.");
-        Assert.assertNull(extendedModifiedSinceTerm.getEntryName(), "Entry name not null");
-        Assert.assertNull(extendedModifiedSinceTerm.getEntryType(), "Entry type not null.");
+        Assert.assertEquals(extendedModifiedSinceTerm.getModSeq(), 1L, "getModSeq() mismatched.");
+        Assert.assertNull(extendedModifiedSinceTerm.getEntryName(), "Entry name should be null");
+        Assert.assertNull(extendedModifiedSinceTerm.getEntryType(), "Entry type should be null.");
     }
 
     /**
-     * Tests ExtendedModifiedSinceTerm match throw exception.
+     * Tests ExtendedModifiedSinceTerm match throws UnsupportedOperationException.
      */
-    @Test
+    @Test(expectedExceptions = UnsupportedOperationException.class)
     public void testExtendedModifiedSinceTermMatchException() {
         final ExtendedModifiedSinceTerm extendedModifiedSinceTerm = new ExtendedModifiedSinceTerm(1L);
-        UnsupportedOperationException actual = null;
-        try {
-            extendedModifiedSinceTerm.match(null);
-        } catch (final UnsupportedOperationException e) {
-            actual = e;
-        }
-        Assert.assertNotNull(actual, "Should throw exception");
+        extendedModifiedSinceTerm.match(null);
     }
 
     /**
-     * Tests buildEntryFlagName with exception.
+     * Tests buildEntryFlagName with ImapAsyncClientException.
      */
     @Test
-    public void testbuildEntryFlagNameFailed() {
+    public void testBuildEntryFlagNameFailed() {
         final Flags flags = new Flags();
         flags.add(Flags.Flag.ANSWERED);
         flags.add(Flags.Flag.DELETED);
         ImapAsyncClientException actual = null;
-        final ImapArgumentFormatter writer = new ImapArgumentFormatter();
+
         try {
-            final ExtendedModifiedSinceTerm extendedModifiedSinceTerm = new ExtendedModifiedSinceTerm(flags, EntryTypeReq.ALL, 1L);
+            new ExtendedModifiedSinceTerm(flags, EntryTypeRequest.ALL, 1L);
         } catch (final ImapAsyncClientException e) {
             actual = e;
         }
-        Assert.assertNotNull(actual, "Should throw exception");
-        Assert.assertEquals(actual.getFaiureType(), ImapAsyncClientException.FailureType.INVALID_INPUT, "Should throw exception");
+        Assert.assertNotNull(actual, "Should throw ImapAsyncClientException");
+        Assert.assertEquals(actual.getFaiureType(), ImapAsyncClientException.FailureType.INVALID_INPUT, "FailureType should be INVALID_INPUT");
     }
 }

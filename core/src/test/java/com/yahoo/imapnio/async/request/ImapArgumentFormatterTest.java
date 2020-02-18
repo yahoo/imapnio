@@ -220,8 +220,8 @@ public class ImapArgumentFormatterTest {
      * Tests buildEntryFlagName with all flags.
      */
     @Test
-    public void testbuildEntryFlagName() {
-        final String[] expectedFlags = "\\Answered \\Deleted \\Draft \\Flagged \\Recent \\Seen".split(" ");
+    public void testBuildEntryFlagName() {
+        final String[] expectedFlags = new String[] {"\\Answered", "\\Deleted", "\\Draft", "\\Flagged", "\\Recent", "\\Seen"};
         final Flags flags = new Flags();
         flags.add(Flags.Flag.ANSWERED);
         flags.add(Flags.Flag.DELETED);
@@ -236,7 +236,7 @@ public class ImapArgumentFormatterTest {
             final Flags singleSystemFlag = new Flags();
             singleSystemFlag.add(systemFlags[i]);
             final String systemEntryName = writer.buildEntryFlagName(singleSystemFlag);
-            Assert.assertEquals(systemEntryName, "\"/flags/\\" + expectedFlags[i] + "\"", "result mismatched.");
+            Assert.assertEquals(systemEntryName, "\"/flags/\\" + expectedFlags[i] + "\"", "buildEntryFlagName() mismatched.");
         }
 
         final String[] userFlags = flags.getUserFlags();
@@ -245,6 +245,6 @@ public class ImapArgumentFormatterTest {
         final String userEntryName = writer.buildEntryFlagName(singleUserFlag);
 
         Assert.assertEquals(userFlags.length, 1, "result mismatched");
-        Assert.assertEquals(userEntryName, "\"/flags/userflag1\"", "result mismatched");
+        Assert.assertEquals(userEntryName, "\"/flags/userflag1\"", "buildEntryFlagName() mismatched");
     }
 }

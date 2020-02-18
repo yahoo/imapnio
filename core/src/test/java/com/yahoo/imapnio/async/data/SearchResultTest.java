@@ -17,34 +17,14 @@ public class SearchResultTest {
     @Test
     public void testSearchResult() {
         final List<Long> ll = Collections.singletonList(Long.MAX_VALUE - 1);
-        final SearchResult infos = new SearchResult(ll, 1L);
-        final List<Long> result = infos.getMessageNumbers();
-        final long modSeq = infos.getHighestModSeq();
-        Assert.assertEquals(result.size(), 1, "Result mismatched.");
-        Assert.assertEquals(result.get(0), Long.valueOf(Long.MAX_VALUE - 1), "Result mismatched.");
-        Assert.assertEquals(modSeq, 1L, "Result mismatched.");
-    }
+        final SearchResult sr = new SearchResult(ll, 1L);
+        final List<Long> result = sr.getMessageNumbers();
+        final Long modSeq = sr.getHighestModSeq();
 
-    /**
-     * Tests SearchResult constructor and getters when passing null list and not passing modification sequence.
-     */
-    @Test
-    public void testSearchResultNoFiled() {
-        final SearchResult infos = new SearchResult();
-        Assert.assertNull(infos.getMessageNumbers(), "Result mismatched.");
-        Assert.assertNull(infos.getHighestModSeq(), "Result mismatched.");
-    }
-
-    /**
-     * Tests SearchResult constructor and getters.
-     */
-    @Test
-    public void testSearchResultNullHighestModSeq() {
-        final List<Long> ll = Collections.singletonList(Long.MAX_VALUE - 1);
-        final SearchResult infos = new SearchResult(ll);
-        final List<Long> result = infos.getMessageNumbers();
-        Assert.assertEquals(result.size(), 1, "Result mismatched.");
-        Assert.assertEquals(result.get(0), Long.valueOf(Long.MAX_VALUE - 1), "Result mismatched.");
-        Assert.assertNull(infos.getHighestModSeq(), "Result mismatched.");
+        Assert.assertNotNull(result, "getMessageNumbers() should not return null.");
+        Assert.assertEquals(result.size(), 1, "getMessageNumbers() size mismatched.");
+        Assert.assertEquals(result.get(0), Long.valueOf(Long.MAX_VALUE - 1), "getMessageNumbers() mismatched.");
+        Assert.assertNotNull(modSeq, "getHighestModSeq() should not return null");
+        Assert.assertEquals(modSeq, Long.valueOf(1), "getHighestModSeq() mismatched.");
     }
 }

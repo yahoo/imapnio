@@ -57,7 +57,7 @@ public class UidFetchCommand extends AbstractFetchCommand {
      * @param changedSince changed since the given modification sequence
      */
     public UidFetchCommand(@Nonnull final MessageNumberSet[] msgsets, @Nonnull final String items, @Nonnull final Long changedSince) {
-        super(true, msgsets, items, changedSince);
+        super(true, msgsets, items, changedSince, false);
     }
 
     /**
@@ -68,81 +68,35 @@ public class UidFetchCommand extends AbstractFetchCommand {
      * @param changedSince changed since the given modification sequence
      */
     public UidFetchCommand(@Nonnull final MessageNumberSet[] msgsets, @Nonnull final FetchMacro macro, @Nonnull final Long changedSince) {
-        super(true, msgsets, macro, changedSince);
-    }
-
-    /**
-     * Initializes a @{code UidFetchCommand} with string form uids, data items, and changed since the modification sequence.
-     *
-     * @param uids the UID string following the RFC3501 syntax. For ex:3857529045,3857529047:3857529065
-     * @param items the data items
-     * @param changedSince changed since the given modification sequence
-     */
-    public UidFetchCommand(@Nonnull final String uids, @Nonnull final String items, @Nonnull final Long changedSince) {
-        super(true, uids, items, changedSince);
-    }
-
-    /**
-     * Initializes a @{code UidFetchCommand} with string form uids, macro, and changed since the modification sequence.
-     *
-     * @param uids the UID string following the RFC3501 syntax. For ex:3857529045,3857529047:3857529065
-     * @param macro the macro, for example, ALL
-     * @param changedSince changed since the given modification sequence
-     */
-    public UidFetchCommand(@Nonnull final String uids, @Nonnull final FetchMacro macro, @Nonnull final Long changedSince) {
-        super(true, uids, macro, changedSince);
+        super(true, msgsets, macro, changedSince, false);
     }
 
     /**
      * Initializes a @{code UidFetchCommand} with the @{code MessageNumberSet} array, data items, changed since the modification sequence,
-     * and vanished flag.
+     * and isVanished flag.
      *
      * @param msgsets the set of message set
      * @param items the data items
      * @param changedSince changed since the given modification sequence
-     * @param vanished the flag to check whether uid fetch with vanished option
+     * @param isVanished the flag to check whether uid fetch with isVanished option
      */
     public UidFetchCommand(@Nonnull final MessageNumberSet[] msgsets, @Nonnull final String items, @Nonnull final Long changedSince,
-                           final boolean vanished) {
-        super(true, msgsets, items, changedSince, vanished);
+                           final boolean isVanished) {
+        super(true, msgsets, items, changedSince, isVanished);
     }
 
     /**
      * Initializes a @{code UidFetchCommand} with the @{code MessageNumberSet} array, macro, changed since the modification sequence,
-     * and vanished flag.
+     * and isVanished flag.
      *
      * @param msgsets the set of message set
      * @param macro the macro, for example, ALL
      * @param changedSince changed since the given modification sequence
-     * @param vanished the flag to check whether uid fetch with vanished option
+     * @param isVanished the flag to check whether uid fetch with isVanished option
      */
     public UidFetchCommand(@Nonnull final MessageNumberSet[] msgsets, @Nonnull final FetchMacro macro, @Nonnull final Long changedSince,
-                           final boolean vanished) {
-        super(true, msgsets, macro, changedSince, vanished);
-    }
-
-    /**
-     * Initializes a @{code UidFetchCommand} with string form uids, data items, changed since the modification sequence, and vanished flag.
-     *
-     * @param uids the UID string following the RFC3501 syntax. For ex:3857529045,3857529047:3857529065
-     * @param items the data items
-     * @param changedSince changed since the given modification sequence
-     * @param vanished the flag to check whether uid fetch with vanished option
-     */
-    public UidFetchCommand(@Nonnull final String uids, @Nonnull final String items, @Nonnull final Long changedSince, final boolean vanished) {
-        super(true, uids, items, changedSince, vanished);
-    }
-
-    /**
-     * Initializes a @{code UidFetchCommand} with string form uids, macro, changed since the modification sequence, and vanished flag.
-     *
-     * @param uids the UID string following the RFC3501 syntax. For ex:3857529045,3857529047:3857529065
-     * @param macro the macro, for example, ALL
-     * @param changedSince changed since the given modification sequence
-     * @param vanished the flag to check whether uid fetch with vanished option
-     */
-    public UidFetchCommand(@Nonnull final String uids, @Nonnull final FetchMacro macro, @Nonnull final Long changedSince, final boolean vanished) {
-        super(true, uids, macro, changedSince, vanished);
+                           final boolean isVanished) {
+        super(true, msgsets, macro, changedSince, isVanished);
     }
 
     @Override

@@ -10,28 +10,11 @@ import javax.annotation.Nullable;
  */
 public class SearchResult {
     /** Search command response sequence number, could be message sequence or UID. */
+    @Nonnull
     private final List<Long> msgNumbers;
 
     /** Modification sequence, is only shown when CondStore is enabled. */
     private final Long highestModSeq;
-
-    /**
-     * Initializes a {@code SearchResult} object.
-     */
-    public SearchResult() {
-        this.msgNumbers = null;
-        this.highestModSeq = null;
-    }
-
-    /**
-     * Initializes a {@code SearchResult} object with message number collection.
-     *
-     * @param msgNumbers collection of message number from search command result
-     */
-    public SearchResult(@Nonnull final List<Long> msgNumbers) {
-        this.msgNumbers = msgNumbers;
-        this.highestModSeq = null;
-    }
 
     /**
      * Initializes a {@code SearchResult} object with message number collection and modification sequence.
@@ -47,7 +30,7 @@ public class SearchResult {
     /**
      * @return message number collection from search command or UID search command result
      */
-    @Nullable
+    @Nonnull
     public List<Long> getMessageNumbers() {
         return this.msgNumbers;
     }

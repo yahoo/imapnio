@@ -131,6 +131,6 @@ public class SelectFolderCommandTest {
     public void testGetCommandLineWithCondStore() throws ImapAsyncClientException {
         final String folderName = "测试";
         ImapRequest cmd = new SelectFolderCommand(folderName, true);
-        Assert.assertEquals(cmd.getCommandLine(), SELECT + "&bUuL1Q- (CONDSTORE)\r\n", "Expected result mismatched.");
+        Assert.assertEquals(cmd.getCommandLine(), SELECT + "&bUuL1Q- (CONDSTORE)\r\n", "getCommandLine() mismatched.");
     }
 }
