@@ -6,7 +6,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -43,7 +43,7 @@ import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.GenericFutureListener;
 
 /**
- * Unit test for {@code ImapAsyncClient}.
+ * Unit test for {@link ImapAsyncClient}.
  */
 public class ImapAsyncClientTest {
 
@@ -58,7 +58,7 @@ public class ImapAsyncClientTest {
      *
      * @throws SSLException will not throw
      * @throws URISyntaxException will not throw
-     * @throws Exception when calling operationComplete() at GenericFutureListenr
+     * @throws Exception when calling operationComplete() at GenericFutureListener
      */
     @Test
     public void testCreateSessionNoLocalAddressNoSNISuccessful() throws SSLException, URISyntaxException, Exception {
@@ -150,7 +150,7 @@ public class ImapAsyncClientTest {
      *
      * @throws SSLException will not throw
      * @throws URISyntaxException will not throw
-     * @throws Exception when calling operationComplete() at GenericFutureListenr
+     * @throws Exception when calling operationComplete() at GenericFutureListener
      */
     @Test
     public void testCreateSessionNoLocalAddressNoSSLSuccessful() throws SSLException, URISyntaxException, Exception {
@@ -197,7 +197,7 @@ public class ImapAsyncClientTest {
         Mockito.verify(nettyConnectFuture, Mockito.times(1)).addListener(listenerCaptor.capture());
         Assert.assertEquals(listenerCaptor.getAllValues().size(), 1, "Unexpected count of ImapClientChannelInitializer.");
 
-        // test connection estabalished and channel initialized new
+        // test connection established and channel initialized new
         final SocketChannel socketChannel = Mockito.mock(SocketChannel.class);
         final ChannelPipeline socketPipeline = Mockito.mock(ChannelPipeline.class);
         Mockito.when(socketChannel.pipeline()).thenReturn(socketPipeline);
@@ -238,7 +238,7 @@ public class ImapAsyncClientTest {
      *
      * @throws SSLException will not throw
      * @throws URISyntaxException will not throw
-     * @throws Exception when calling operationComplete() at GenericFutureListenr
+     * @throws Exception when calling operationComplete() at GenericFutureListener
      */
     @Test
     public void testCreateSessionNoLocalAddressSNIEmptySuccessful() throws SSLException, URISyntaxException, Exception {
@@ -327,7 +327,7 @@ public class ImapAsyncClientTest {
      *
      * @throws SSLException will not throw
      * @throws URISyntaxException will not throw
-     * @throws Exception when calling operationComplete() at GenericFutureListenr
+     * @throws Exception when calling operationComplete() at GenericFutureListener
      */
     @Test
     public void testCreateSessionWithLocalAddressSniSuccessfulSessionDebugOff() throws SSLException, URISyntaxException, Exception {
@@ -410,7 +410,7 @@ public class ImapAsyncClientTest {
      *
      * @throws SSLException will not throw
      * @throws URISyntaxException will not throw
-     * @throws Exception when calling operationComplete() at GenericFutureListenr
+     * @throws Exception when calling operationComplete() at GenericFutureListener
      */
     @Test
     public void testCreateSessionWithLocalAddressSniSuccessfulSessionDebugOn() throws SSLException, URISyntaxException, Exception {
@@ -491,7 +491,7 @@ public class ImapAsyncClientTest {
         // verify logging messages
         Mockito.verify(logger, Mockito.times(1)).debug(Mockito.eq("[{},{}] connect operationComplete. result={}, imapServerUri={}, sniNames={}"),
                 Mockito.eq(Long.valueOf(2)), Mockito.eq("someUserId"), Mockito.eq("success"), Mockito.eq("imaps://one.two.three.com:993"),
-                Mockito.eq(Arrays.asList("one.two.three.com")));
+                Mockito.eq(Collections.singletonList("one.two.three.com")));
     }
 
     /**
@@ -499,7 +499,7 @@ public class ImapAsyncClientTest {
      *
      * @throws SSLException will not throw
      * @throws URISyntaxException will not throw
-     * @throws Exception when calling operationComplete() at GenericFutureListenr
+     * @throws Exception when calling operationComplete() at GenericFutureListener
      */
     @Test
     public void testCreateSessionNoLocalAddressConnectFailed() throws SSLException, URISyntaxException, Exception {
@@ -522,7 +522,6 @@ public class ImapAsyncClientTest {
         final ImapAsyncSessionConfig config = new ImapAsyncSessionConfig();
         config.setConnectionTimeoutMillis(5000);
         config.setReadTimeoutMillis(6000);
-        ;
         final List<String> sniNames = null;
 
         // test create session
@@ -568,7 +567,7 @@ public class ImapAsyncClientTest {
      *
      * @throws SSLException will not throw
      * @throws URISyntaxException will not throw
-     * @throws Exception when calling operationComplete() at GenericFutureListenr
+     * @throws Exception when calling operationComplete() at GenericFutureListener
      */
     @Test
     public void testCreateSessionUnknownHostConnectFailed() throws SSLException, URISyntaxException, Exception {
@@ -653,10 +652,10 @@ public class ImapAsyncClientTest {
      *
      * @throws SSLException will not throw
      * @throws URISyntaxException will not throw
-     * @throws Exception when calling operationComplete() at GenericFutureListenr
+     * @throws Exception when calling operationComplete() at GenericFutureListener
      */
     @Test
-    public void testCreateSessionConnecctionTimeoutFailed() throws SSLException, URISyntaxException, Exception {
+    public void testCreateSessionConnectionTimeoutFailed() throws SSLException, URISyntaxException, Exception {
 
         final Bootstrap bootstrap = Mockito.mock(Bootstrap.class);
         final ChannelFuture nettyConnectFuture = Mockito.mock(ChannelFuture.class);

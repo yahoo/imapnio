@@ -1,14 +1,11 @@
 package com.yahoo.imapnio.async.request;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
-
-import javax.mail.search.SearchException;
 
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
@@ -20,7 +17,7 @@ import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 import io.netty.buffer.ByteBuf;
 
 /**
- * Unit test for {@code IdleCommand}.
+ * Unit test for {@link IdleCommand}.
  */
 public class IdleCommandTest {
 
@@ -49,13 +46,11 @@ public class IdleCommandTest {
      * Tests getCommandLine method.
      *
      * @throws ImapAsyncClientException will not throw
-     * @throws SearchException will not throw
-     * @throws IOException will not throw
      * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
      */
     @Test
-    public void testGetCommandLine() throws IOException, ImapAsyncClientException, SearchException, IllegalArgumentException, IllegalAccessException {
+    public void testGetCommandLine() throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
         final ConcurrentLinkedQueue<IMAPResponse> serverStreamingResponses = new ConcurrentLinkedQueue<IMAPResponse>();
         final ImapRequest cmd = new IdleCommand(serverStreamingResponses);
         Assert.assertEquals(cmd.getCommandLine(), "IDLE\r\n", "Expected result mismatched.");

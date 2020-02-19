@@ -55,11 +55,9 @@ public class UidSearchCommand extends AbstractSearchCommand {
      * @param args the search term in argument format
      * @param capa the capability instance to find if it has literal
      * @throws ImapAsyncClientException when both msgNumber and searchString are null
-     * @throws IOException when parsing error for generate sequence
-     * @throws SearchException when search term cannot be found
      */
     public UidSearchCommand(@Nullable final String msgNumbers, @Nullable final String charset, @Nonnull final Argument args,
-            @Nullable final Capability capa) throws ImapAsyncClientException, SearchException, IOException {
+            @Nullable final Capability capa) throws ImapAsyncClientException {
         super(true, msgNumbers, charset, args, capa);
     }
 

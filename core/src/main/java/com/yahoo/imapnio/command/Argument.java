@@ -58,9 +58,7 @@ public class Argument extends com.sun.mail.iap.Argument {
             proxyProtocol = new ProxyProtocol();
             write(proxyProtocol);
             result = proxyProtocol.toString();
-        } catch (final IOException e) {
-            e.printStackTrace();
-        } catch (final ProtocolException e) {
+        } catch (final IOException | ProtocolException e) {
             e.printStackTrace();
         } finally {
             try {

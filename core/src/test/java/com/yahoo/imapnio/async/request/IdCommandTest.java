@@ -1,14 +1,11 @@
 package com.yahoo.imapnio.async.request;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
-import javax.mail.search.SearchException;
 
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
@@ -18,7 +15,7 @@ import com.sun.mail.imap.protocol.IMAPResponse;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 
 /**
- * Unit test for {@code IdCommand}.
+ * Unit test for {@link IdCommand}.
  */
 public class IdCommandTest {
 
@@ -47,13 +44,11 @@ public class IdCommandTest {
      * Tests getCommandLine method.
      *
      * @throws ImapAsyncClientException will not throw
-     * @throws SearchException will not throw
-     * @throws IOException will not throw
      * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
      */
     @Test
-    public void testGetCommandLine() throws IOException, ImapAsyncClientException, SearchException, IllegalArgumentException, IllegalAccessException {
+    public void testGetCommandLine() throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
         final Map<String, String> params = new HashMap<String, String>();
         params.put("name", "so\"dr");
         params.put("version", "19.34");
@@ -71,14 +66,12 @@ public class IdCommandTest {
      * Tests getCommandLine method.
      * 
      * @throws ImapAsyncClientException will not throw
-     * @throws SearchException will not throw
-     * @throws IOException will not throw
      * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
      */
     @Test
     public void testGetCommandLineParameterNull()
-            throws IOException, ImapAsyncClientException, SearchException, IllegalArgumentException, IllegalAccessException {
+            throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
         final ImapRequest cmd = new IdCommand(null);
         Assert.assertEquals(cmd.getCommandLine(), "ID NIL\r\n", "Expected result mismatched.");
         Assert.assertFalse(cmd.isCommandLineDataSensitive(), "isCommandLineDataSensitive() result mismatched.");

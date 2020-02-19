@@ -31,7 +31,7 @@ public class RenameFolderCommand extends ImapRequestAdapter {
     private String newFolder;
 
     /**
-     * Initializes a @{code RenameCommand}.
+     * Initializes a {@link RenameFolderCommand}.
      *
      * @param oldFolder old folder name
      * @param newFolder new folder name

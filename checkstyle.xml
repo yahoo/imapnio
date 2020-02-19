@@ -19,19 +19,14 @@
         <module name="FileContentsHolder" />
         <module name="SuppressWarningsHolder" />
         <module name="JavadocMethod">
-            <property name="scope" value="public" />
             <property name="suppressLoadErrors" value="false" />
             <property name="allowUndeclaredRTE" value="false" />
             <property name="allowMissingParamTags" value="false" />
             <property name="allowMissingReturnTag" value="false" />
             <property name="allowMissingThrowsTags" value="false" />
         </module>
-        <module name="JavadocType">
-            <property name="scope" value="public" />
-        </module>
-        <module name="JavadocVariable">
-            <property name="scope" value="public" />
-        </module>
+        <module name="JavadocType" />
+        <module name="JavadocVariable" />
         <module name="JavadocStyle" />
         <module name="ConstantName" />
         <module name="LocalFinalVariableName" />

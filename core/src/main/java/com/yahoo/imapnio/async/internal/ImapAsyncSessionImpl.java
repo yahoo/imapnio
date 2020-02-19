@@ -1,6 +1,5 @@
 package com.yahoo.imapnio.async.internal;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -8,7 +7,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.annotation.Nonnull;
-import javax.mail.search.SearchException;
 
 import org.slf4j.Logger;
 
@@ -65,9 +63,6 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
     /** Inflater handler name for enabling server compress. */
     private static final String ZLIB_ENCODER = "INFLATER";
 
-    /** Literal for NA. */
-    private static final String NA = "NA";
-
     /** The Netty channel object. */
     private AtomicReference<Channel> channelRef = new AtomicReference<Channel>();
 
@@ -107,12 +102,13 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
             REQUEST_SENT,
             /** Server done with responses for the given client request. Server is not obligated to send more responses per given request. */
             RESPONSES_DONE
-        };
+        }
 
         /** An Imap command. */
         @Nonnull
         private final ImapRequest cmd;
 
+        /** The state of command. */
         @Nonnull
         private CommandState state;
 
@@ -125,8 +121,8 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
         private final ImapFuture<ImapAsyncResponse> future;
 
         /**
-         * Initializes a newly created {@code ImapCommandJob} object so that it can handle the command responses and determine whether the request is
-         * done.
+         * Initializes a newly created {@link ImapCommandEntry} object so that it can handle the command responses and determine whether the request
+         * is done.
          *
          * @param cmd ImapRequest instance
          * @param future ImapFuture instance
@@ -253,7 +249,7 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
     }
 
     @Override
-    public <T> ImapFuture<ImapAsyncResponse> startCompression() throws ImapAsyncClientException, SearchException, IOException {
+    public <T> ImapFuture<ImapAsyncResponse> startCompression() throws ImapAsyncClientException {
         final ImapFuture<ImapAsyncResponse> future = execute(new CompressCommand());
         return future;
     }
@@ -269,7 +265,7 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
      * Sends the given request to server when being called.
      *
      * @param request the message of the request
-     * @param isDataSensitve flag whether data is sensitive
+     * @param command the imap command
      * @throws ImapAsyncClientException when channel is closed
      */
     private void sendRequest(@Nonnull final ByteBuf request, @Nonnull final ImapRequest command) throws ImapAsyncClientException {
@@ -471,7 +467,7 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
             final ChannelPromise channelPromise = channel.newPromise();
             final ImapChannelClosedListener channelClosedListener = new ImapChannelClosedListener(closeFuture);
             channelPromise.addListener(channelClosedListener);
-            // this triggers handleChannelDisconnected() hence no need to handle queue here. We use close() instead of disconenct() to ensure it is
+            // this triggers handleChannelDisconnected() hence no need to handle queue here. We use close() instead of disconnect() to ensure it is
             // clearly a close action regardless TCP or UDP
             channel.close(channelPromise);
         }

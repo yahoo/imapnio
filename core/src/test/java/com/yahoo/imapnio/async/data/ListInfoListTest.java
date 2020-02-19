@@ -10,10 +10,9 @@ import org.testng.annotations.Test;
 import com.sun.mail.iap.ProtocolException;
 import com.sun.mail.imap.protocol.IMAPResponse;
 import com.sun.mail.imap.protocol.ListInfo;
-import com.yahoo.imapnio.async.data.ListInfoList;
 
 /**
- * Unit test for {@code ListInfoList}.
+ * Unit test for {@link ListInfoList}.
  */
 public class ListInfoListTest {
 

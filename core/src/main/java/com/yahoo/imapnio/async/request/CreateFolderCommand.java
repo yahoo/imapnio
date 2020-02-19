@@ -11,7 +11,7 @@ public class CreateFolderCommand extends AbstractFolderActionCommand {
     private static final String CREATE = "CREATE";
 
     /**
-     * Initializes a @{code CreateCommand}.
+     * Initializes a {@link CreateFolderCommand}.
      *
      * @param folderName folder name to create
      */

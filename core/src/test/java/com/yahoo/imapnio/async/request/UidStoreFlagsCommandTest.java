@@ -1,13 +1,11 @@
 package com.yahoo.imapnio.async.request;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.HashSet;
 import java.util.Set;
 
 import javax.mail.Flags;
-import javax.mail.search.SearchException;
 
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
@@ -17,7 +15,7 @@ import com.yahoo.imapnio.async.data.MessageNumberSet;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 
 /**
- * Unit test for {@code UidStoreFlagsCommand}.
+ * Unit test for {@link UidStoreFlagsCommand}.
  */
 public class UidStoreFlagsCommandTest {
 
@@ -45,15 +43,13 @@ public class UidStoreFlagsCommandTest {
     /**
      * Tests getCommandLine method using message sequences, flags, adding flags and not silent.
      *
-     * @throws IOException will not throw
      * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
      * @throws ImapAsyncClientException will not throw
-     * @throws SearchException will not throw
      */
     @Test
     public void testGetCommandLineWithFlagsAddedNotSilent()
-            throws IOException, IllegalArgumentException, IllegalAccessException, SearchException, ImapAsyncClientException {
+            throws IllegalArgumentException, IllegalAccessException, ImapAsyncClientException {
 
         final int[] msgs = { 1, 2, 3 };
         final MessageNumberSet[] msgsets = MessageNumberSet.createMessageNumberSets(msgs);
@@ -73,15 +69,13 @@ public class UidStoreFlagsCommandTest {
     /**
      * Tests getCommandLine method using message sequences, flags, replacing flags and not silent.
      *
-     * @throws IOException will not throw
      * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
      * @throws ImapAsyncClientException will not throw
-     * @throws SearchException will not throw
      */
     @Test
     public void testGetCommandLineWithFlagsReplacedNotSilent()
-            throws IOException, IllegalArgumentException, IllegalAccessException, SearchException, ImapAsyncClientException {
+            throws IllegalArgumentException, IllegalAccessException, ImapAsyncClientException {
 
         final int[] msgs = { 1, 2, 3 };
         final MessageNumberSet[] msgsets = MessageNumberSet.createMessageNumberSets(msgs);
@@ -101,15 +95,13 @@ public class UidStoreFlagsCommandTest {
     /**
      * Tests getCommandLine method using message sequences, flags, adding flags and silent.
      *
-     * @throws IOException will not throw
      * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
      * @throws ImapAsyncClientException will not throw
-     * @throws SearchException will not throw
      */
     @Test
     public void testGetCommandLineWithFlagsAddedSilent()
-            throws IOException, IllegalArgumentException, IllegalAccessException, SearchException, ImapAsyncClientException {
+            throws IllegalArgumentException, IllegalAccessException, ImapAsyncClientException {
 
         final int[] msgs = { 1, 2, 3 };
         final MessageNumberSet[] msgsets = MessageNumberSet.createMessageNumberSets(msgs);
@@ -130,15 +122,13 @@ public class UidStoreFlagsCommandTest {
     /**
      * Tests getCommandLine method using message sequences, flags, replacing flags and silent.
      *
-     * @throws IOException will not throw
      * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
      * @throws ImapAsyncClientException will not throw
-     * @throws SearchException will not throw
      */
     @Test
     public void testGetCommandLineWithFlagsReplacedSilent()
-            throws IOException, IllegalArgumentException, IllegalAccessException, SearchException, ImapAsyncClientException {
+            throws IllegalArgumentException, IllegalAccessException, ImapAsyncClientException {
 
         final int[] msgs = { 1, 2, 3 };
         final MessageNumberSet[] msgsets = MessageNumberSet.createMessageNumberSets(msgs);
@@ -159,13 +149,11 @@ public class UidStoreFlagsCommandTest {
     /**
      * Tests getCommandLine method with message sequences, flags, removing flags and not silent.
      *
-     * @throws IOException will not throw
      * @throws IllegalAccessException will not throw
      * @throws ImapAsyncClientException will not throw
-     * @throws SearchException will not throw
      */
     @Test
-    public void testGetCommandLineWithFlagsRemovedNotSilent() throws IOException, IllegalAccessException, SearchException, ImapAsyncClientException {
+    public void testGetCommandLineWithFlagsRemovedNotSilent() throws IllegalAccessException, ImapAsyncClientException {
 
         final Flags flags = new Flags();
         flags.add(Flags.Flag.SEEN);
@@ -183,13 +171,11 @@ public class UidStoreFlagsCommandTest {
     /**
      * Tests getCommandLine method with message sequences, removing flags and silent.
      *
-     * @throws IOException will not throw
      * @throws IllegalAccessException will not throw
      * @throws ImapAsyncClientException will not throw
-     * @throws SearchException will not throw
      */
     @Test
-    public void testGetCommandLineWithFlagsRemovedAndSilent() throws IOException, IllegalAccessException, SearchException, ImapAsyncClientException {
+    public void testGetCommandLineWithFlagsRemovedAndSilent() throws IllegalAccessException, ImapAsyncClientException {
 
         final Flags flags = new Flags();
         flags.add(Flags.Flag.SEEN);
@@ -209,14 +195,12 @@ public class UidStoreFlagsCommandTest {
     /**
      * Tests getCommandLine method with message sequences, adding flags and silent.
      *
-     * @throws IOException will not throw
      * @throws IllegalAccessException will not throw
      * @throws ImapAsyncClientException will not throw
-     * @throws SearchException will not throw
      */
     @Test
     public void testGetCommandLineWithMessageSeqStringFlagsAddedAndSilent()
-            throws IOException, IllegalAccessException, SearchException, ImapAsyncClientException {
+            throws IllegalAccessException, ImapAsyncClientException {
 
         final Flags flags = new Flags();
         flags.add(Flags.Flag.SEEN);

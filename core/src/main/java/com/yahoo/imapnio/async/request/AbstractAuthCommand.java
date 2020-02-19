@@ -48,16 +48,16 @@ public abstract class AbstractAuthCommand extends ImapRequestAdapter {
     }
 
     /**
-     * Builds the command (for example, "AUTHENTICATE XOAUTH2") and populate to the given {@code ButBuf} instance.
+     * Builds the command (for example, "AUTHENTICATE XOAUTH2") and populate to the given {@link ByteBuf} instance.
      *
-     * @param buf the @{code ByteBuf} instance to populate to
+     * @param buf the {@link ByteBuf} instance to populate to
      */
     abstract void buildCommand(@Nonnull final ByteBuf buf);
 
     /**
-     * Builds the IR, aka client Initial Response (RFC4959) and populates to the given {@code ButBuf} instance.
+     * Builds the IR, aka client Initial Response (RFC4959) and populates to the given {@link ByteBuf} instance.
      *
-     * @param buf the @{code ByteBuf} instance to populate to
+     * @return a string as a client initial response
      */
     abstract String buildClientResponse();
 
@@ -96,7 +96,7 @@ public abstract class AbstractAuthCommand extends ImapRequestAdapter {
     }
 
     @Override
-    public ByteBuf getNextCommandLineAfterContinuation(final IMAPResponse serverResponse) throws ImapAsyncClientException {
+    public ByteBuf getNextCommandLineAfterContinuation(final IMAPResponse serverResponse) {
         if (isClientResponseSent) { // when server sends "+ [base64 encoded error response]" after client response is sent, we send cancel
             this.isDataSensitive = false;
             final ByteBuf buf = Unpooled.buffer(CANCEL_LEN);

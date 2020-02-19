@@ -11,7 +11,7 @@ public class UnsubscribeFolderCommand extends AbstractFolderActionCommand {
     private static final String UNSUBSCRIBE = "UNSUBSCRIBE";
 
     /**
-     * Initializes a @{code UnsubscribeCommand}.
+     * Initializes a {@link UnsubscribeFolderCommand}.
      *
      * @param folderName folder name to UNSUBSCRIBE
      */

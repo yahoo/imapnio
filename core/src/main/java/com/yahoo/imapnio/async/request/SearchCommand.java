@@ -18,7 +18,7 @@ import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 public class SearchCommand extends AbstractSearchCommand {
 
     /**
-     * Initializes a @{code SearchCommand} with the MessageNumberSet array, search string and character set name.
+     * Initializes a {@link SearchCommand} with the MessageNumberSet array, search string and character set name.
      *
      * @param msgsets the set of MessageNumberSet
      * @param term the search term
@@ -55,11 +55,9 @@ public class SearchCommand extends AbstractSearchCommand {
      * @param args the search term in argument format
      * @param capa the capability instance to check if it has literal
      * @throws ImapAsyncClientException when both msgNumber and searchString are null
-     * @throws IOException when parsing error for generate sequence
-     * @throws SearchException when search term cannot be found
      */
     public SearchCommand(@Nullable final String msgNumbers, @Nullable final String charset, @Nonnull final Argument args,
-            @Nullable final Capability capa) throws ImapAsyncClientException, SearchException, IOException {
+            @Nullable final Capability capa) throws ImapAsyncClientException {
         super(false, msgNumbers, charset, args, capa);
     }
 

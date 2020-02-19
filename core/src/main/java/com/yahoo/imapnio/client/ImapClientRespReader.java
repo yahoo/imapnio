@@ -56,6 +56,11 @@ public class ImapClientRespReader extends DelimiterBasedFrameDecoder {
      *
      * (b) literal mode : When the client receiving a literal response({digits}), it will keep buffering the bytes until all literal data read and
      * then continue read the next CRLF.
+     *
+     * @param ctx the {@link ChannelHandlerContext} which this decoder belongs to
+     * @param inputBuf the {@link ByteBuf} from which to read data
+     * @return the {@link ByteBuf} which represent the frame or {@code null} if no frame could be created.
+     * @throws Exception on decode failure
      */
     @Override
     protected Object decode(final ChannelHandlerContext ctx, final ByteBuf inputBuf) throws Exception {
@@ -110,7 +115,7 @@ public class ImapClientRespReader extends DelimiterBasedFrameDecoder {
      */
     private void writeLiteralBufFromLineBuf(@Nonnull final ByteBuf lineBuf) {
         literalBuf.writeBytes(lineBuf);
-        ReferenceCountUtil.release(lineBuf); // Decreases the reference count by {@code 1}
+        ReferenceCountUtil.release(lineBuf); // Decreases the reference count by {@link 1}
     }
 
     /**

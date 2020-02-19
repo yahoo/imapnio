@@ -97,7 +97,7 @@ class OutputStreamProxy extends OutputStream {
     private String result = "";
 
     @Override
-    public void write(final int b) throws IOException {
+    public void write(final int b) {
         result = result.concat(String.valueOf((char) b));
     }
 

@@ -6,7 +6,7 @@ import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -33,7 +33,7 @@ import com.yahoo.imapnio.async.exception.ImapAsyncClientException.FailureType;
 import io.netty.buffer.ByteBuf;
 
 /**
- * Unit test for {@code SearchCommand}.
+ * Unit test for {@link SearchCommand}.
  */
 public class SearchCommandTest {
 
@@ -93,11 +93,10 @@ public class SearchCommandTest {
      * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
      * @throws ImapAsyncClientException will not throw
-     * @throws SearchException will not throw
      */
     @Test
     public void testGetCommandLineNoneMessageSeqAndArgument()
-            throws IOException, IllegalArgumentException, IllegalAccessException, SearchException, ImapAsyncClientException {
+            throws IOException, IllegalArgumentException, IllegalAccessException, ImapAsyncClientException {
 
         final Argument args = new Argument();
 
@@ -107,7 +106,7 @@ public class SearchCommandTest {
         final SimpleLiteral byteLiteral = new SimpleLiteral(inputBytes);
         args.writeBytes(byteLiteral);
         final Map<String, List<String>> capas = new HashMap<String, List<String>>();
-        capas.put(ImapClientConstants.LITERAL_PLUS, Arrays.asList(ImapClientConstants.LITERAL_PLUS));
+        capas.put(ImapClientConstants.LITERAL_PLUS, Collections.singletonList(ImapClientConstants.LITERAL_PLUS));
 
         final ImapRequest cmd = new SearchCommand(null, "UTF-8", args, new Capability(capas));
         final ByteArrayOutputStream expectedOutput = new ByteArrayOutputStream();
@@ -242,14 +241,12 @@ public class SearchCommandTest {
      * Tests getCommandLine method with none-null message sequences set, null SearchTerm.
      *
      * @throws IOException will not throw
-     * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
-     * @throws ImapAsyncClientException will not throw
      * @throws SearchException will not throw
      */
     @Test
     public void testGetCommandLineNullMessageSeqSetsNullSearchTerm()
-            throws IOException, IllegalArgumentException, IllegalAccessException, SearchException, ImapAsyncClientException {
+            throws IOException, IllegalArgumentException, SearchException {
         final MessageNumberSet[] msgSets = null;
         final String charset = null;
         ImapAsyncClientException actualEx = null;
@@ -265,15 +262,11 @@ public class SearchCommandTest {
     /**
      * Tests getCommandLine method with none-null message sequences set, null SearchTerm.
      *
-     * @throws IOException will not throw
-     * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
-     * @throws ImapAsyncClientException will not throw
-     * @throws SearchException will not throw
      */
     @Test
     public void testGetCommandLineNullMessageSeqSetsNullArgument()
-            throws IOException, IllegalArgumentException, IllegalAccessException, SearchException, ImapAsyncClientException {
+            throws IllegalArgumentException {
         final String msgSeqs = null;
         ImapAsyncClientException actualEx = null;
         final Argument args = null;
@@ -305,7 +298,7 @@ public class SearchCommandTest {
         final SubjectTerm term = new SubjectTerm("ΩΩ"); // have none-ascii characters
 
         final Map<String, List<String>> capas = new HashMap<String, List<String>>();
-        capas.put(ImapClientConstants.LITERAL_PLUS, Arrays.asList(ImapClientConstants.LITERAL_PLUS));
+        capas.put(ImapClientConstants.LITERAL_PLUS, Collections.singletonList(ImapClientConstants.LITERAL_PLUS));
 
         final ImapRequest cmd = new SearchCommand(msgsets, term, new Capability(capas));
         Assert.assertEquals(cmd.getCommandLine(), "SEARCH CHARSET UTF-8 1:3 SUBJECT {4+}\r\n����\r\n", "Expected result mismatched.");

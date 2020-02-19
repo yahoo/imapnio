@@ -14,9 +14,9 @@ public class UidCopyMessageCommand extends AbstractMessageActionCommand {
     private static final String COPY = "COPY";
 
     /**
-     * Initializes a @{code UidCopyMessageCommand} with the message sequence syntax using UIDSet object.
+     * Initializes a {@link UidCopyMessageCommand} with the message sequence syntax using UIDSet object.
      *
-     * @param uidsets list of @{code UIDSet}
+     * @param uidsets list of {@link UIDSet}
      * @param targetFolder the targetFolder to be stored
      */
     public UidCopyMessageCommand(@Nonnull final UIDSet[] uidsets, @Nonnull final String targetFolder) {
@@ -24,7 +24,7 @@ public class UidCopyMessageCommand extends AbstractMessageActionCommand {
     }
 
     /**
-     * Initializes a @{code UidCopyMessageCommand} with the message sequence syntax.
+     * Initializes a {@link UidCopyMessageCommand} with the message sequence syntax.
      *
      * @param uids the string representing UID based on RFC3501
      * @param targetFolder the targetFolder to be stored
@@ -34,9 +34,9 @@ public class UidCopyMessageCommand extends AbstractMessageActionCommand {
     }
 
     /**
-     * Initializes a @{code UidCopyMessageCommand} with the @{code MessageNumberSet} array.
+     * Initializes a {@link UidCopyMessageCommand} with the {@link MessageNumberSet} array.
      *
-     * @param msgsets the set of @{code MessageNumberSet}
+     * @param msgsets the set of {@link MessageNumberSet}
      * @param targetFolder the targetFolder to be stored
      */
     public UidCopyMessageCommand(@Nonnull final MessageNumberSet[] msgsets, @Nonnull final String targetFolder) {

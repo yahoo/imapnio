@@ -38,7 +38,7 @@ public class StatusCommand extends ImapRequestAdapter {
     private String[] items;
 
     /**
-     * Initializes a @{code StatusCommand}.
+     * Initializes a {@link StatusCommand}.
      *
      * @param folderName folder name
      * @param items list of items. Available ones are : "MESSAGES", "RECENT", "UNSEEN", "UIDNEXT", "UIDVALIDITY"

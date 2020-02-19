@@ -10,7 +10,7 @@ import com.yahoo.imapnio.async.data.MessageNumberSet;
 public class FetchCommand extends AbstractFetchCommand {
 
     /**
-     * Initializes a @{code FetchCommand} with the @{code MessageNumberSet} array and fetch items.
+     * Initializes a {@link FetchCommand} with the {@link MessageNumberSet} array and fetch items.
      *
      * @param msgsets the set of message set
      * @param items the data items
@@ -20,7 +20,7 @@ public class FetchCommand extends AbstractFetchCommand {
     }
 
     /**
-     * Initializes a @{code FetchCommand} with the @{code MessageNumberSet} array and macro.
+     * Initializes a {@link FetchCommand} with the {@link MessageNumberSet} array and macro.
      *
      * @param msgsets the set of message set
      * @param macro the macro

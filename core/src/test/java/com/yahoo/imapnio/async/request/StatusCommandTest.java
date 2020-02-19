@@ -1,12 +1,9 @@
 package com.yahoo.imapnio.async.request;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.HashSet;
 import java.util.Set;
-
-import javax.mail.search.SearchException;
 
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
@@ -16,7 +13,7 @@ import com.sun.mail.imap.protocol.IMAPResponse;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 
 /**
- * Unit test for {@code StatusCommand}.
+ * Unit test for {@link StatusCommand}.
  */
 public class StatusCommandTest {
 
@@ -48,13 +45,11 @@ public class StatusCommandTest {
      * Tests getCommandLine method.
      *
      * @throws ImapAsyncClientException will not throw
-     * @throws SearchException will not throw
-     * @throws IOException will not throw
      * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
      */
     @Test
-    public void testGetCommandLine() throws IOException, ImapAsyncClientException, SearchException, IllegalArgumentException, IllegalAccessException {
+    public void testGetCommandLine() throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
         final ImapRequest cmd = new StatusCommand("inbox", ALL_ITEMS);
         Assert.assertEquals(cmd.getCommandLine(), "STATUS inbox (UIDVALIDITY UIDNEXT MESSAGES HIGHESTMODSEQ UNSEEN)\r\n",
                 "Expected result mismatched.");
@@ -70,14 +65,12 @@ public class StatusCommandTest {
      * Tests getCommandLine method with mailbox name containing characters that need to escape.
      *
      * @throws ImapAsyncClientException will not throw
-     * @throws SearchException will not throw
-     * @throws IOException will not throw
      * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
      */
     @Test
     public void testGetCommandLineEscapeChars()
-            throws IOException, ImapAsyncClientException, SearchException, IllegalArgumentException, IllegalAccessException {
+            throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
         final ImapRequest cmd = new StatusCommand("F\"iber", ALL_ITEMS);
         Assert.assertEquals(cmd.getCommandLine(), "STATUS \"F\\\"iber\" (UIDVALIDITY UIDNEXT MESSAGES HIGHESTMODSEQ UNSEEN)\r\n",
                 "Expected result mismatched.");

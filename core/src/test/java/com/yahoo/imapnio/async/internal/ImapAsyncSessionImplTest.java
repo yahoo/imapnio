@@ -3,8 +3,8 @@ package com.yahoo.imapnio.async.internal;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -15,8 +15,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-
-import javax.mail.search.SearchException;
 
 import org.mockito.ArgumentCaptor;
 import org.mockito.Matchers;
@@ -53,21 +51,18 @@ import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.timeout.IdleStateEvent;
 
 /**
- * Unit test for {@code ImapAsyncSessionImpl}.
+ * Unit test for {@link ImapAsyncSessionImpl}.
  */
 public class ImapAsyncSessionImplTest {
 
     /** Dummy session id. */
-    private static final int SESSION_ID = 123456;
+    private static final Long SESSION_ID = Long.valueOf(123456);
 
     /** Dummy user id. */
     private static final String USER_ID = "Argentinosaurus@long.enough";
 
     /** Timeout in milliseconds for making get on future. */
     private static final long FUTURE_GET_TIMEOUT_MILLIS = 5L;
-
-    /** Fields to check for cleanup. */
-    private Set<Field> fieldsToCheck;
 
     /**
      * Setup reflection.
@@ -76,7 +71,8 @@ public class ImapAsyncSessionImplTest {
     public void setUp() {
         // Use reflection to get all declared non-primitive non-static fields (We do not care about inherited fields)
         final Class<?> c = ImapAsyncSessionImpl.class;
-        fieldsToCheck = new HashSet<>();
+        /** Fields to check for cleanup. */
+        final Set<Field> fieldsToCheck = new HashSet<>();
 
         for (final Field declaredField : c.getDeclaredFields()) {
             if (!declaredField.getType().isPrimitive() && !Modifier.isStatic(declaredField.getModifiers())) {
@@ -95,11 +91,10 @@ public class ImapAsyncSessionImplTest {
      * @throws TimeoutException will not throw
      * @throws ExecutionException will not throw
      * @throws InterruptedException will not throw
-     * @throws SearchException will not throw
      */
     @Test
     public void testExecuteAuthCapaAndFlushHandleResponseCloseSessionAllSuccess() throws ImapAsyncClientException, IOException, ProtocolException,
-            InterruptedException, ExecutionException, TimeoutException, SearchException {
+            InterruptedException, ExecutionException, TimeoutException {
 
         final Channel channel = Mockito.mock(Channel.class);
         final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
@@ -219,14 +214,14 @@ public class ImapAsyncSessionImplTest {
             final List<Object> logArgs = allArgsCapture.getAllValues();
             Assert.assertNotNull(logArgs, "log messages mismatched.");
             Assert.assertEquals(logArgs.size(), 9, "log messages mismatched.");
-            Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(0), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(2), "a2 CAPABILITY\r\n", "log messages from client mismatched.");
-            Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(3), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(5), "* CAPABILITY IMAP4rev1 SASL-IR AUTH=PLAIN AUTH=XOAUTH2 AUTH=OAUTHBEARER ID MOVE NAMESPACE",
                     "log messages from server mismatched.");
-            Assert.assertEquals(logArgs.get(6), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(6), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(7), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(8), "a2 OK CAPABILITY completed", "Error message mismatched.");
         }
@@ -255,11 +250,10 @@ public class ImapAsyncSessionImplTest {
      * @throws TimeoutException will not throw
      * @throws ExecutionException will not throw
      * @throws InterruptedException will not throw
-     * @throws SearchException will not throw
      */
     @Test
     public void testExecuteAuthXoauth2InvalidTokenNoSASLIR() throws ImapAsyncClientException, IOException, ProtocolException, InterruptedException,
-            ExecutionException, TimeoutException, SearchException {
+            ExecutionException, TimeoutException {
 
         final Channel channel = Mockito.mock(Channel.class);
         final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
@@ -338,23 +332,23 @@ public class ImapAsyncSessionImplTest {
             final List<Object> logArgs = allArgsCapture.getAllValues();
             Assert.assertNotNull(logArgs, "log messages mismatched.");
             Assert.assertEquals(logArgs.size(), 18, "log messages mismatched.");
-            Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(0), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(2), "a1 AUTHENTICATE XOAUTH2\r\n", "log messages from client mismatched.");
-            Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(3), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(5), "+", "log messages from server mismatched.");
-            Assert.assertEquals(logArgs.get(6), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(6), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(7), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(8), "AUTHENTICATE XOAUTH2 FOR USER:orange", "Error message mismatched.");
-            Assert.assertEquals(logArgs.get(9), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(9), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(10), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(11), "+ eyJzdGF0dXMiOiI0MDAiLCJzY2hlbWVzIjoiQmVhcmVyIiwic2NvcGUiOiJodHRwczovL21haWwuZ29vZ2xlLmNvbS8ifQ==",
                     "Error message mismatched.");
-            Assert.assertEquals(logArgs.get(12), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(12), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(13), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(14), "*\r\n", "log messages from server mismatched.");
-            Assert.assertEquals(logArgs.get(15), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(15), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(16), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(17), "a1 BAD Invalid SASL argument.", "Error message mismatched.");
         }
@@ -369,11 +363,10 @@ public class ImapAsyncSessionImplTest {
      * @throws TimeoutException will not throw
      * @throws ExecutionException will not throw
      * @throws InterruptedException will not throw
-     * @throws SearchException will not throw
      */
     @Test
     public void testExecuteAuthXoauth2InvalidTokenSASLIREnabled() throws ImapAsyncClientException, IOException, ProtocolException,
-            InterruptedException, ExecutionException, TimeoutException, SearchException {
+            InterruptedException, ExecutionException, TimeoutException {
 
         final Channel channel = Mockito.mock(Channel.class);
         final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
@@ -393,7 +386,7 @@ public class ImapAsyncSessionImplTest {
         // execute Authenticate XOAUTH2 command
         {
             final Map<String, List<String>> capas = new HashMap<String, List<String>>();
-            capas.put("SASL-IR", Arrays.asList("SASL-IR"));
+            capas.put("SASL-IR", Collections.singletonList("SASL-IR"));
             final ImapRequest cmd = new AuthXoauth2Command("orange", "someToken", new Capability(capas));
             final ImapFuture<ImapAsyncResponse> future = aSession.execute(cmd);
             Mockito.verify(authWritePromise, Mockito.times(1)).addListener(Mockito.any(ImapAsyncSessionImpl.class));
@@ -443,17 +436,17 @@ public class ImapAsyncSessionImplTest {
             final List<Object> logArgs = allArgsCapture.getAllValues();
             Assert.assertNotNull(logArgs, "log messages mismatched.");
             Assert.assertEquals(logArgs.size(), 12, "log messages mismatched.");
-            Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(0), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(2), "AUTHENTICATE XOAUTH2 FOR USER:orange", "Error message mismatched.");
-            Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(3), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(5), "+ eyJzdGF0dXMiOiI0MDAiLCJzY2hlbWVzIjoiQmVhcmVyIiwic2NvcGUiOiJodHRwczovL21haWwuZ29vZ2xlLmNvbS8ifQ==",
                     "Error message mismatched.");
-            Assert.assertEquals(logArgs.get(6), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(6), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(7), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(8), "*\r\n", "log messages from server mismatched.");
-            Assert.assertEquals(logArgs.get(9), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(9), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(10), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(11), "a1 BAD Invalid SASL argument.", "Error message mismatched.");
         }
@@ -468,11 +461,10 @@ public class ImapAsyncSessionImplTest {
      * @throws TimeoutException will not throw
      * @throws ExecutionException will not throw
      * @throws InterruptedException will not throw
-     * @throws SearchException will not throw
      */
     @Test
     public void testExecuteAuthCompressHandleResponseNoSslHandler() throws ImapAsyncClientException, IOException, ProtocolException,
-            InterruptedException, ExecutionException, TimeoutException, SearchException {
+            InterruptedException, ExecutionException, TimeoutException {
 
         final Channel channel = Mockito.mock(Channel.class);
         final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
@@ -537,16 +529,16 @@ public class ImapAsyncSessionImplTest {
             final List<Object> logArgs = allArgsCapture.getAllValues();
             Assert.assertNotNull(logArgs, "log messages mismatched.");
             Assert.assertEquals(logArgs.size(), 12, "log messages mismatched.");
-            Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(0), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(2), "a1 AUTHENTICATE PLAIN\r\n", "log messages from client mismatched.");
-            Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(3), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(5), "+", "log messages from server mismatched.");
-            Assert.assertEquals(logArgs.get(6), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(6), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(7), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(8), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
-            Assert.assertEquals(logArgs.get(9), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(9), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(10), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(11), "a1 OK AUTHENTICATE completed", "Error message mismatched.");
         }
@@ -590,22 +582,22 @@ public class ImapAsyncSessionImplTest {
             final List<Object> logArgs = allArgsCapture.getAllValues();
             Assert.assertNotNull(logArgs, "log messages mismatched.");
             Assert.assertEquals(logArgs.size(), 18, "log messages mismatched.");
-            Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(0), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(2), "a1 AUTHENTICATE PLAIN\r\n", "log messages from client mismatched.");
-            Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(3), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(5), "+", "log messages from server mismatched.");
-            Assert.assertEquals(logArgs.get(6), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(6), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(7), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(8), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
-            Assert.assertEquals(logArgs.get(9), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(9), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(10), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(11), "a1 OK AUTHENTICATE completed", "Error message mismatched.");
-            Assert.assertEquals(logArgs.get(12), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(12), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(13), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(14), "a2 COMPRESS DEFLATE\r\n", "log messages from client mismatched.");
-            Assert.assertEquals(logArgs.get(15), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(15), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(16), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(17), "a2 OK Success", "log messages from server mismatched.");
         }
@@ -620,11 +612,10 @@ public class ImapAsyncSessionImplTest {
      * @throws TimeoutException will not throw
      * @throws ExecutionException will not throw
      * @throws InterruptedException will not throw
-     * @throws SearchException will not throw
      */
     @Test
     public void testExecuteAuthCompressHandleResponseWithSslHandler() throws ImapAsyncClientException, IOException, ProtocolException,
-            InterruptedException, ExecutionException, TimeoutException, SearchException {
+            InterruptedException, ExecutionException, TimeoutException {
 
         final Channel channel = Mockito.mock(Channel.class);
         final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
@@ -691,16 +682,16 @@ public class ImapAsyncSessionImplTest {
             final List<Object> logArgs = allArgsCapture.getAllValues();
             Assert.assertNotNull(logArgs, "log messages mismatched.");
             Assert.assertEquals(logArgs.size(), 12, "log messages mismatched.");
-            Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(0), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(2), "a1 AUTHENTICATE PLAIN\r\n", "log messages from client mismatched.");
-            Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(3), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(5), "+", "log messages from server mismatched.");
-            Assert.assertEquals(logArgs.get(6), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(6), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(7), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(8), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
-            Assert.assertEquals(logArgs.get(9), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(9), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(10), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(11), "a1 OK AUTHENTICATE completed", "Error message mismatched.");
         }
@@ -746,22 +737,22 @@ public class ImapAsyncSessionImplTest {
             final List<Object> logArgs = allArgsCapture.getAllValues();
             Assert.assertNotNull(logArgs, "log messages mismatched.");
             Assert.assertEquals(logArgs.size(), 18, "log messages mismatched.");
-            Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(0), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(2), "a1 AUTHENTICATE PLAIN\r\n", "log messages from client mismatched.");
-            Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(3), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(5), "+", "log messages from server mismatched.");
-            Assert.assertEquals(logArgs.get(6), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(6), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(7), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(8), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
-            Assert.assertEquals(logArgs.get(9), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(9), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(10), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(11), "a1 OK AUTHENTICATE completed", "Error message mismatched.");
-            Assert.assertEquals(logArgs.get(12), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(12), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(13), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(14), "a2 COMPRESS DEFLATE\r\n", "log messages from client mismatched.");
-            Assert.assertEquals(logArgs.get(15), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(15), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(16), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(17), "a2 OK Success", "log messages from server mismatched.");
         }
@@ -776,11 +767,10 @@ public class ImapAsyncSessionImplTest {
      * @throws TimeoutException will not throw
      * @throws ExecutionException will not throw
      * @throws InterruptedException will not throw
-     * @throws SearchException will not throw
      */
     @Test
     public void testExecuteAuthCompressFailedHandleResponse() throws ImapAsyncClientException, IOException, ProtocolException, InterruptedException,
-            ExecutionException, TimeoutException, SearchException {
+            ExecutionException, TimeoutException {
 
         final Channel channel = Mockito.mock(Channel.class);
         final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
@@ -846,16 +836,16 @@ public class ImapAsyncSessionImplTest {
             final List<Object> logArgs = allArgsCapture.getAllValues();
             Assert.assertNotNull(logArgs, "log messages mismatched.");
             Assert.assertEquals(logArgs.size(), 12, "log messages mismatched.");
-            Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(0), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(2), "a1 AUTHENTICATE PLAIN\r\n", "log messages from client mismatched.");
-            Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(3), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(5), "+", "log messages from server mismatched.");
-            Assert.assertEquals(logArgs.get(6), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(6), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(7), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(8), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
-            Assert.assertEquals(logArgs.get(9), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(9), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(10), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(11), "a1 OK AUTHENTICATE completed", "Error message mismatched.");
         }
@@ -899,22 +889,22 @@ public class ImapAsyncSessionImplTest {
             final List<Object> logArgs = allArgsCapture.getAllValues();
             Assert.assertNotNull(logArgs, "log messages mismatched.");
             Assert.assertEquals(logArgs.size(), 18, "log messages mismatched.");
-            Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(0), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(2), "a1 AUTHENTICATE PLAIN\r\n", "log messages from client mismatched.");
-            Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(3), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(5), "+", "log messages from server mismatched.");
-            Assert.assertEquals(logArgs.get(6), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(6), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(7), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(8), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
-            Assert.assertEquals(logArgs.get(9), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(9), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(10), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(11), "a1 OK AUTHENTICATE completed", "Error message mismatched.");
-            Assert.assertEquals(logArgs.get(12), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(12), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(13), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(14), "a2 COMPRESS DEFLATE\r\n", "log messages from client mismatched.");
-            Assert.assertEquals(logArgs.get(15), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(15), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(16), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(17), "a2 NO Success", "log messages from server mismatched.");
         }
@@ -923,17 +913,13 @@ public class ImapAsyncSessionImplTest {
     /**
      * Tests server idle event happens while command queue is NOT empty and command in queue is in REQUEST_SENT state.
      *
-     * @throws IOException will not throw
      * @throws ImapAsyncClientException will not throw
-     * @throws ProtocolException will not throw
      * @throws TimeoutException will not throw
-     * @throws ExecutionException will not throw
      * @throws InterruptedException will not throw
-     * @throws SearchException will not throw
      */
     @Test
-    public void testHandleIdleEventQueueNotEmptyAndCommandSentToServer() throws ImapAsyncClientException, IOException, ProtocolException,
-            InterruptedException, ExecutionException, TimeoutException, SearchException {
+    public void testHandleIdleEventQueueNotEmptyAndCommandSentToServer() throws ImapAsyncClientException,
+            InterruptedException, TimeoutException {
 
         final Channel channel = Mockito.mock(Channel.class);
         final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
@@ -983,17 +969,10 @@ public class ImapAsyncSessionImplTest {
     /**
      * Tests server idle event happens while command queue is NOT empty, and command is in NOT_SENT state.
      *
-     * @throws IOException will not throw
      * @throws ImapAsyncClientException will not throw
-     * @throws ProtocolException will not throw
-     * @throws TimeoutException will not throw
-     * @throws ExecutionException will not throw
-     * @throws InterruptedException will not throw
-     * @throws SearchException will not throw
      */
     @Test
-    public void testHandleIdleEventQueueNotEmptyCommandNotSentToServer() throws ImapAsyncClientException, IOException, ProtocolException,
-            InterruptedException, ExecutionException, TimeoutException, SearchException {
+    public void testHandleIdleEventQueueNotEmptyCommandNotSentToServer() throws ImapAsyncClientException {
 
         final Channel channel = Mockito.mock(Channel.class);
         final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
@@ -1025,16 +1004,9 @@ public class ImapAsyncSessionImplTest {
     /**
      * Tests server idles event happens while command queue is empty.
      *
-     * @throws IOException will not throw
-     * @throws ImapAsyncClientException will not throw
-     * @throws ProtocolException will not throw
-     * @throws TimeoutException will not throw
-     * @throws ExecutionException will not throw
-     * @throws InterruptedException will not throw
      */
     @Test
-    public void testHandleIdleEventQueueEmpty()
-            throws ImapAsyncClientException, IOException, ProtocolException, InterruptedException, ExecutionException, TimeoutException {
+    public void testHandleIdleEventQueueEmpty() {
 
         final Channel channel = Mockito.mock(Channel.class);
         final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
@@ -1060,17 +1032,14 @@ public class ImapAsyncSessionImplTest {
     /**
      * Tests constructing the session, executing, flushing to server failed.
      *
-     * @throws IOException will not throw
      * @throws ImapAsyncClientException will not throw
-     * @throws ProtocolException will not throw
      * @throws TimeoutException will not throw
      * @throws ExecutionException will not throw
      * @throws InterruptedException will not throw
-     * @throws SearchException will not throw
      */
     @Test
-    public void testExecuteAndFlushToServerFailedCloseSessionFailed() throws ImapAsyncClientException, IOException, ProtocolException,
-            InterruptedException, ExecutionException, TimeoutException, SearchException {
+    public void testExecuteAndFlushToServerFailedCloseSessionFailed() throws ImapAsyncClientException,
+            InterruptedException, ExecutionException, TimeoutException {
 
         final Channel channel = Mockito.mock(Channel.class);
         final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
@@ -1158,13 +1127,13 @@ public class ImapAsyncSessionImplTest {
         final List<Object> logArgs = allArgsCapture.getAllValues();
         Assert.assertNotNull(logArgs, "log messages mismatched.");
         Assert.assertEquals(logArgs.size(), 9, "log messages mismatched.");
-        Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
+        Assert.assertEquals(logArgs.get(0), SESSION_ID, "log messages mismatched.");
         Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
         Assert.assertEquals(logArgs.get(2), "a1 CAPABILITY\r\n", "log messages from client mismatched.");
-        Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
+        Assert.assertEquals(logArgs.get(3), SESSION_ID, "log messages mismatched.");
         Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
         Assert.assertEquals(logArgs.get(5), "Closing the session via close().", "log messages from client mismatched.");
-        Assert.assertEquals(logArgs.get(6), Long.valueOf(SESSION_ID), "log messages mismatched.");
+        Assert.assertEquals(logArgs.get(6), SESSION_ID, "log messages mismatched.");
         Assert.assertEquals(logArgs.get(7), USER_ID, "log messages mismatched.");
         Assert.assertEquals(logArgs.get(8), "Session is confirmed closed.", "Error message mismatched.");
 
@@ -1184,19 +1153,14 @@ public class ImapAsyncSessionImplTest {
     /**
      * Tests constructing the session, execute, and channel is closed abruptly before server response is back.
      *
-     * @throws IOException will not throw
      * @throws ImapAsyncClientException will not throw
-     * @throws ProtocolException will not throw
      * @throws TimeoutException will not throw
-     * @throws ExecutionException will not throw
      * @throws InterruptedException will not throw
-     * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
-     * @throws SearchException will not throw
      */
     @Test
-    public void testExecuteChannelCloseBeforeServerResponseArrived() throws ImapAsyncClientException, IOException, ProtocolException,
-            InterruptedException, ExecutionException, TimeoutException, IllegalArgumentException, IllegalAccessException, SearchException {
+    public void testExecuteChannelCloseBeforeServerResponseArrived() throws ImapAsyncClientException,
+            InterruptedException, TimeoutException, IllegalArgumentException {
 
         final Channel channel = Mockito.mock(Channel.class);
         final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
@@ -1248,13 +1212,13 @@ public class ImapAsyncSessionImplTest {
         final List<Object> logArgs = allArgsCapture.getAllValues();
         Assert.assertNotNull(logArgs, "log messages mismatched.");
         Assert.assertEquals(logArgs.size(), 9, "log messages mismatched.");
-        Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
+        Assert.assertEquals(logArgs.get(0), SESSION_ID, "log messages mismatched.");
         Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
         Assert.assertEquals(logArgs.get(2), "a1 CAPABILITY\r\n", "log messages from client mismatched.");
-        Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
+        Assert.assertEquals(logArgs.get(3), SESSION_ID, "log messages mismatched.");
         Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
         Assert.assertEquals(logArgs.get(5), "Session is confirmed closed.", "log messages from client mismatched.");
-        Assert.assertEquals(logArgs.get(6), Long.valueOf(SESSION_ID), "log messages mismatched.");
+        Assert.assertEquals(logArgs.get(6), SESSION_ID, "log messages mismatched.");
         Assert.assertEquals(logArgs.get(7), USER_ID, "log messages mismatched.");
         Assert.assertEquals(logArgs.get(8), "Closing the session via close().", "Error message mismatched.");
 
@@ -1272,19 +1236,14 @@ public class ImapAsyncSessionImplTest {
      * Tests constructing the session, execute, and channel is closed abruptly before server response is back. In this test, the log level is in info,
      * not in debug, we want to make sure it does not call debug().
      *
-     * @throws IOException will not throw
      * @throws ImapAsyncClientException will not throw
-     * @throws ProtocolException will not throw
      * @throws TimeoutException will not throw
-     * @throws ExecutionException will not throw
      * @throws InterruptedException will not throw
-     * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
-     * @throws SearchException will not throw
      */
     @Test
-    public void testExecuteChannelCloseBeforeServerResponseArrivedLogLevelInfo() throws ImapAsyncClientException, IOException, ProtocolException,
-            InterruptedException, ExecutionException, TimeoutException, IllegalArgumentException, IllegalAccessException, SearchException {
+    public void testExecuteChannelCloseBeforeServerResponseArrivedLogLevelInfo() throws ImapAsyncClientException,
+            InterruptedException, TimeoutException, IllegalArgumentException {
 
         final Channel channel = Mockito.mock(Channel.class);
         final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
@@ -1354,11 +1313,10 @@ public class ImapAsyncSessionImplTest {
      * @throws TimeoutException will not throw
      * @throws ExecutionException will not throw
      * @throws InterruptedException will not throw
-     * @throws SearchException will not throw
      */
     @Test
     public void testExecuteIdleHandleResponseFlushCompleteTerminateSuccess() throws ImapAsyncClientException, IOException, ProtocolException,
-            InterruptedException, ExecutionException, TimeoutException, SearchException {
+            InterruptedException, ExecutionException, TimeoutException {
 
         final Channel channel = Mockito.mock(Channel.class);
         final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
@@ -1376,8 +1334,8 @@ public class ImapAsyncSessionImplTest {
         final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline, sessionCtx);
 
         // execute
-        final ConcurrentLinkedQueue<IMAPResponse> serverResponesQ = new ConcurrentLinkedQueue<IMAPResponse>();
-        final ImapRequest cmd = new IdleCommand(serverResponesQ);
+        final ConcurrentLinkedQueue<IMAPResponse> serverResponseQ = new ConcurrentLinkedQueue<IMAPResponse>();
+        final ImapRequest cmd = new IdleCommand(serverResponseQ);
         ImapFuture<ImapAsyncResponse> future = aSession.execute(cmd);
 
         Mockito.verify(writePromise, Mockito.times(1)).addListener(Mockito.any(ImapAsyncSessionImpl.class));
@@ -1432,7 +1390,7 @@ public class ImapAsyncSessionImplTest {
         }
 
         Assert.assertNotNull(ex, "Expect exception to be thrown.");
-        Assert.assertEquals(ex.getFaiureType(), FailureType.COMMAND_NOT_ALLOWED, "FailureTypet mismatched.");
+        Assert.assertEquals(ex.getFaiureType(), FailureType.COMMAND_NOT_ALLOWED, "FailureType mismatched.");
 
         // verify logging messages
         final ArgumentCaptor<Object> allArgsCapture = ArgumentCaptor.forClass(Object.class);
@@ -1443,22 +1401,22 @@ public class ImapAsyncSessionImplTest {
         final List<Object> logArgs = allArgsCapture.getAllValues();
         Assert.assertNotNull(logArgs, "log messages mismatched.");
         Assert.assertEquals(logArgs.size(), 18, "log messages mismatched.");
-        Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
+        Assert.assertEquals(logArgs.get(0), SESSION_ID, "log messages mismatched.");
         Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
         Assert.assertEquals(logArgs.get(2), "a1 IDLE\r\n", "log messages from client mismatched.");
-        Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
+        Assert.assertEquals(logArgs.get(3), SESSION_ID, "log messages mismatched.");
         Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
         Assert.assertEquals(logArgs.get(5), "+ idling", "log messages from server mismatched.");
-        Assert.assertEquals(logArgs.get(6), Long.valueOf(SESSION_ID), "log messages mismatched.");
+        Assert.assertEquals(logArgs.get(6), SESSION_ID, "log messages mismatched.");
         Assert.assertEquals(logArgs.get(7), USER_ID, "log messages mismatched.");
         Assert.assertEquals(logArgs.get(8), "* 2 EXPUNGE", "Error message mismatched.");
-        Assert.assertEquals(logArgs.get(9), Long.valueOf(SESSION_ID), "log messages mismatched.");
+        Assert.assertEquals(logArgs.get(9), SESSION_ID, "log messages mismatched.");
         Assert.assertEquals(logArgs.get(10), USER_ID, "log messages mismatched.");
         Assert.assertEquals(logArgs.get(11), "* 3 EXISTS", "Error message mismatched.");
-        Assert.assertEquals(logArgs.get(12), Long.valueOf(SESSION_ID), "log messages mismatched.");
+        Assert.assertEquals(logArgs.get(12), SESSION_ID, "log messages mismatched.");
         Assert.assertEquals(logArgs.get(13), USER_ID, "log messages mismatched.");
         Assert.assertEquals(logArgs.get(14), "DONE\r\n", "log messages from client mismatched.");
-        Assert.assertEquals(logArgs.get(15), Long.valueOf(SESSION_ID), "log messages mismatched.");
+        Assert.assertEquals(logArgs.get(15), SESSION_ID, "log messages mismatched.");
         Assert.assertEquals(logArgs.get(16), USER_ID, "log messages mismatched.");
         Assert.assertEquals(logArgs.get(17), "a1 OK IDLE terminated", "log messages from server mismatched.");
     }
@@ -1466,12 +1424,10 @@ public class ImapAsyncSessionImplTest {
     /**
      * Tests execute method when command queue is not empty.
      *
-     * @throws IOException will not throw
      * @throws ImapAsyncClientException will not throw
-     * @throws SearchException will not throw
      */
     @Test
-    public void testExecuteFailedDueToQueueNotEmpty() throws ImapAsyncClientException, IOException, SearchException {
+    public void testExecuteFailedDueToQueueNotEmpty() throws ImapAsyncClientException {
 
         final Channel channel = Mockito.mock(Channel.class);
         final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
@@ -1506,16 +1462,13 @@ public class ImapAsyncSessionImplTest {
     /**
      * Tests execute method when channel is inactive, then call close() to close session.
      *
-     * @throws IOException will not throw
-     * @throws ImapAsyncClientException will not throw
      * @throws TimeoutException will not throw
      * @throws ExecutionException will not throw
      * @throws InterruptedException will not throw
-     * @throws SearchException will not throw
      */
     @Test
     public void testExecuteFailedChannelInactiveAndCloseChannel()
-            throws ImapAsyncClientException, IOException, InterruptedException, ExecutionException, TimeoutException, SearchException {
+            throws InterruptedException, ExecutionException, TimeoutException {
 
         final Channel channel = Mockito.mock(Channel.class);
         final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
@@ -1561,17 +1514,12 @@ public class ImapAsyncSessionImplTest {
     /**
      * Tests close() method and its close listener. Specifically testing operationComplete with a future that returns false for isSuccess().
      *
-     * @throws IOException will not throw
-     * @throws ImapAsyncClientException will not throw
-     * @throws ProtocolException will not throw
      * @throws TimeoutException will not throw
-     * @throws ExecutionException will not throw
      * @throws InterruptedException will not throw
-     * @throws SearchException will not throw
      */
     @Test
-    public void testCloseSessionOperationCompleteFutureIsUnsuccessful() throws ImapAsyncClientException, IOException, ProtocolException,
-            InterruptedException, ExecutionException, TimeoutException, SearchException {
+    public void testCloseSessionOperationCompleteFutureIsUnsuccessful() throws
+            InterruptedException, TimeoutException {
 
         final Channel channel = Mockito.mock(Channel.class);
         final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
@@ -1619,13 +1567,11 @@ public class ImapAsyncSessionImplTest {
      * @throws ImapAsyncClientException will not throw
      * @throws ProtocolException will not throw
      * @throws TimeoutException will not throw
-     * @throws ExecutionException will not throw
      * @throws InterruptedException will not throw
-     * @throws SearchException will not throw
      */
     @Test
     public void testExecuteAuthHandleResponseChannelInactive() throws ImapAsyncClientException, IOException, ProtocolException, InterruptedException,
-            ExecutionException, TimeoutException, SearchException {
+            TimeoutException {
 
         final Channel channel = Mockito.mock(Channel.class);
         final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
@@ -1693,10 +1639,10 @@ public class ImapAsyncSessionImplTest {
             final List<Object> logArgs = allArgsCapture.getAllValues();
             Assert.assertNotNull(logArgs, "log messages mismatched.");
             Assert.assertEquals(logArgs.size(), 6, "log messages mismatched.");
-            Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(0), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(2), "+", "log messages from server mismatched.");
-            Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(3), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(5), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
 
@@ -1724,11 +1670,10 @@ public class ImapAsyncSessionImplTest {
      * @throws TimeoutException will not throw
      * @throws ExecutionException will not throw
      * @throws InterruptedException will not throw
-     * @throws SearchException will not throw
      */
     @Test
     public void testExecuteAuthCompressHandleResponseChannelIsClosed() throws ImapAsyncClientException, IOException, ProtocolException,
-            InterruptedException, ExecutionException, TimeoutException, SearchException {
+            InterruptedException, ExecutionException, TimeoutException {
 
         final Channel channel = Mockito.mock(Channel.class);
         final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
@@ -1793,16 +1738,16 @@ public class ImapAsyncSessionImplTest {
             final List<Object> logArgs = allArgsCapture.getAllValues();
             Assert.assertNotNull(logArgs, "log messages mismatched.");
             Assert.assertEquals(logArgs.size(), 12, "log messages mismatched.");
-            Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(0), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(2), "a1 AUTHENTICATE PLAIN\r\n", "log messages from client mismatched.");
-            Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(3), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(5), "+", "log messages from server mismatched.");
-            Assert.assertEquals(logArgs.get(6), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(6), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(7), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(8), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
-            Assert.assertEquals(logArgs.get(9), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(9), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(10), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(11), "a1 OK AUTHENTICATE completed", "Error message mismatched.");
         }
@@ -1851,22 +1796,22 @@ public class ImapAsyncSessionImplTest {
             final List<Object> logArgs = allArgsCapture.getAllValues();
             Assert.assertNotNull(logArgs, "log messages mismatched.");
             Assert.assertEquals(logArgs.size(), 18, "log messages mismatched.");
-            Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(0), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(2), "a1 AUTHENTICATE PLAIN\r\n", "log messages from client mismatched.");
-            Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(3), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(5), "+", "log messages from server mismatched.");
-            Assert.assertEquals(logArgs.get(6), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(6), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(7), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(8), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
-            Assert.assertEquals(logArgs.get(9), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(9), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(10), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(11), "a1 OK AUTHENTICATE completed", "Error message mismatched.");
-            Assert.assertEquals(logArgs.get(12), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(12), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(13), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(14), "a2 COMPRESS DEFLATE\r\n", "log messages from client mismatched.");
-            Assert.assertEquals(logArgs.get(15), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(15), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(16), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(17), "a2 OK Success", "log messages from server mismatched.");
         }

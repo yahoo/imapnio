@@ -9,7 +9,7 @@ public class NamespaceCommand extends AbstractNoArgsCommand {
     private static final String NAMESPACE = "NAMESPACE";
 
     /**
-     * Initializes the @{code NamespaceCommand}.
+     * Initializes the {@link NamespaceCommand}.
      */
     public NamespaceCommand() {
         super(NAMESPACE);

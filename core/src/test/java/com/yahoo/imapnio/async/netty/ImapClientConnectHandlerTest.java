@@ -33,7 +33,7 @@ import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 
 /**
- * Unit test for {@code ImapClientConnectHandler}.
+ * Unit test for {@link ImapClientConnectHandler}.
  */
 public class ImapClientConnectHandlerTest {
 
@@ -63,7 +63,6 @@ public class ImapClientConnectHandlerTest {
     /**
      * Tests decode method when successful.
      *
-     * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
      * @throws ProtocolException will not throw
      * @throws IOException will not throw
@@ -72,7 +71,7 @@ public class ImapClientConnectHandlerTest {
      * @throws TimeoutException will not throw
      */
     @Test
-    public void testDecodeConnectSuccess() throws IllegalArgumentException, IllegalAccessException, IOException, ProtocolException,
+    public void testDecodeConnectSuccess() throws IllegalArgumentException, IOException, ProtocolException,
             InterruptedException, ExecutionException, TimeoutException {
         final ImapFuture<ImapAsyncCreateSessionResponse> imapFuture = new ImapFuture<ImapAsyncCreateSessionResponse>();
         final Logger logger = Mockito.mock(Logger.class);
@@ -97,17 +96,15 @@ public class ImapClientConnectHandlerTest {
     /**
      * Tests decode method when successful.
      *
-     * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
      * @throws ProtocolException will not throw
      * @throws IOException will not throw
-     * @throws ExecutionException will not throw
      * @throws InterruptedException will not throw
      * @throws TimeoutException will not throw
      */
     @Test
-    public void testDecodeConnectFailed() throws IllegalArgumentException, IllegalAccessException, IOException, ProtocolException,
-            InterruptedException, ExecutionException, TimeoutException {
+    public void testDecodeConnectFailed() throws IllegalArgumentException, IOException, ProtocolException,
+            InterruptedException, TimeoutException {
         final ImapFuture<ImapAsyncCreateSessionResponse> imapFuture = new ImapFuture<ImapAsyncCreateSessionResponse>();
         final Logger logger = Mockito.mock(Logger.class);
 
@@ -142,13 +139,12 @@ public class ImapClientConnectHandlerTest {
     /**
      * Tests exceptionCaught method.
      *
-     * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
      * @throws InterruptedException will not throw
      * @throws TimeoutException will not throw
      */
     @Test
-    public void testExceptionCaught() throws IllegalArgumentException, IllegalAccessException, InterruptedException, TimeoutException {
+    public void testExceptionCaught() throws IllegalArgumentException, InterruptedException, TimeoutException {
         final ImapFuture<ImapAsyncCreateSessionResponse> imapFuture = new ImapFuture<ImapAsyncCreateSessionResponse>();
         final Logger logger = Mockito.mock(Logger.class);
 
@@ -174,13 +170,12 @@ public class ImapClientConnectHandlerTest {
     /**
      * Tests exceptionCaught method with unKnownHostException.
      *
-     * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
      * @throws InterruptedException will not throw
      * @throws TimeoutException will not throw
      */
     @Test
-    public void testExceptionCaughtWithUnKnownHost() throws IllegalArgumentException, IllegalAccessException, InterruptedException, TimeoutException {
+    public void testExceptionCaughtWithUnKnownHost() throws IllegalArgumentException, InterruptedException, TimeoutException {
         final ImapFuture<ImapAsyncCreateSessionResponse> imapFuture = new ImapFuture<ImapAsyncCreateSessionResponse>();
         final Logger logger = Mockito.mock(Logger.class);
 
@@ -210,14 +205,13 @@ public class ImapClientConnectHandlerTest {
     /**
      * Tests exceptionCaught method with ConnectTimeout exception.
      *
-     * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
      * @throws InterruptedException will not throw
      * @throws TimeoutException will not throw
      */
     @Test
     public void testExceptionCaughtWithConnectTimeoutException()
-            throws IllegalArgumentException, IllegalAccessException, InterruptedException, TimeoutException {
+            throws IllegalArgumentException, InterruptedException, TimeoutException {
         final ImapFuture<ImapAsyncCreateSessionResponse> imapFuture = new ImapFuture<ImapAsyncCreateSessionResponse>();
         final Logger logger = Mockito.mock(Logger.class);
 
@@ -247,14 +241,13 @@ public class ImapClientConnectHandlerTest {
     /**
      * Tests userEventTriggered method and the event is IdleStateEvent, state is READ_IDLE.
      *
-     * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
      * @throws InterruptedException will not throw
      * @throws TimeoutException will not throw
      */
     @Test
     public void testUserEventTriggeredIdleStateEventReadIdle()
-            throws IllegalArgumentException, IllegalAccessException, InterruptedException, TimeoutException {
+            throws IllegalArgumentException, InterruptedException, TimeoutException {
         final ImapFuture<ImapAsyncCreateSessionResponse> imapFuture = new ImapFuture<ImapAsyncCreateSessionResponse>();
         final Logger logger = Mockito.mock(Logger.class);
 
@@ -280,7 +273,7 @@ public class ImapClientConnectHandlerTest {
         Assert.assertNotNull(cause, "Expect cause.");
         Assert.assertEquals(cause.getClass(), ImapAsyncClientException.class, "Expected result mismatched.");
         final ImapAsyncClientException aEx = (ImapAsyncClientException) cause;
-        Assert.assertEquals(aEx.getFaiureType(), FailureType.CONNECTION_FAILED_EXCEED_IDLE_MAX, "Falure type mismatched");
+        Assert.assertEquals(aEx.getFaiureType(), FailureType.CONNECTION_FAILED_EXCEED_IDLE_MAX, "Failure type mismatched");
 
         // call channelInactive, should not encounter npe
         handler.channelInactive(ctx);
@@ -289,11 +282,10 @@ public class ImapClientConnectHandlerTest {
     /**
      * Tests userEventTriggered method and the event is IdleStateEvent, state is NOT READ_IDLE.
      *
-     * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
      */
     @Test
-    public void testUserEventTriggeredIdleStateEventNotReadIdle() throws IllegalArgumentException, IllegalAccessException {
+    public void testUserEventTriggeredIdleStateEventNotReadIdle() throws IllegalArgumentException {
         final ImapFuture<ImapAsyncCreateSessionResponse> imapFuture = new ImapFuture<ImapAsyncCreateSessionResponse>();
         final Logger logger = Mockito.mock(Logger.class);
 
@@ -310,11 +302,10 @@ public class ImapClientConnectHandlerTest {
     /**
      * Tests userEventTriggered method and the event is NOT IdleStateEvent.
      *
-     * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
      */
     @Test
-    public void testUserEventTriggeredNotIdleStateEvent() throws IllegalArgumentException, IllegalAccessException {
+    public void testUserEventTriggeredNotIdleStateEvent() throws IllegalArgumentException {
         final ImapFuture<ImapAsyncCreateSessionResponse> imapFuture = new ImapFuture<ImapAsyncCreateSessionResponse>();
         final Logger logger = Mockito.mock(Logger.class);
 
@@ -322,7 +313,7 @@ public class ImapClientConnectHandlerTest {
         final ImapClientConnectHandler handler = new ImapClientConnectHandler(imapFuture, logger, DebugMode.DEBUG_ON, SESSION_ID, sessCtx);
 
         final ChannelHandlerContext ctx = Mockito.mock(ChannelHandlerContext.class);
-        final String otherEvent = new String("king is coming!!!");
+        final String otherEvent = "king is coming!!!";
         handler.userEventTriggered(ctx, otherEvent);
         Assert.assertFalse(imapFuture.isDone(), "Future should NOT be done");
     }

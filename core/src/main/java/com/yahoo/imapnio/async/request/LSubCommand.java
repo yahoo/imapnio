@@ -11,7 +11,7 @@ public class LSubCommand extends AbstractQueryFoldersCommand {
     private static final String LSUB = "LSUB";
 
     /**
-     * Initializes a @{code LSubCommand}.
+     * Initializes a {@link LSubCommand}.
      *
      * @param ref the reference string
      * @param pattern folder name with possible wildcards, see RFC3501 LSUB command for detail.

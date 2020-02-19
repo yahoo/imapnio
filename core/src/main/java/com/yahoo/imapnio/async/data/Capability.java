@@ -14,7 +14,7 @@ public final class Capability {
     private final Map<String, List<String>> capas;
 
     /**
-     * Initializes the @{code Capability} class.
+     * Initializes the {@link Capability} class.
      *
      * @param capabilities map of capability name with its values if existing
      */

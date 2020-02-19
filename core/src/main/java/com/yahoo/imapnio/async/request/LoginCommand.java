@@ -33,7 +33,7 @@ public class LoginCommand extends ImapRequestAdapter {
     private String dwp;
 
     /**
-     * Initializes an @{code LoginCommand}. User name and pass given have to be ASCII.
+     * Initializes an {@link LoginCommand}. User name and pass given have to be ASCII.
      *
      * @param username the user name
      * @param dwp the secret

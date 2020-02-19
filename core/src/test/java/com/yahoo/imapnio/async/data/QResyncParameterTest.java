@@ -3,6 +3,9 @@ package com.yahoo.imapnio.async.data;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+/**
+ * Unit test for {@link QResyncParameter}.
+ */
 public class QResyncParameterTest {
     /**
      * Test the get method for uidvalidity.

@@ -32,7 +32,7 @@ public class IdCommand extends ImapRequestAdapter {
     private Map<String, String> params;
 
     /**
-     * Initializes a @{code IdCommand}.
+     * Initializes a {@link IdCommand}.
      *
      * @param params a collection of parameters, key and value should all be ascii.
      */

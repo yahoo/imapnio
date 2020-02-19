@@ -11,7 +11,7 @@ public class ListCommand extends AbstractQueryFoldersCommand {
     private static final String LIST = "LIST";
 
     /**
-     * Initializes a @{code ListCommand}.
+     * Initializes a {@link ListCommand}.
      *
      * @param ref the reference string
      * @param pattern folder name with possible wildcards, see RFC3501 list command for detail.

@@ -4,7 +4,7 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 /**
- * Unit test for {@code ImapCommandType}.
+ * Unit test for {@link ImapCommandType}.
  */
 public class ImapCommandTypeTest {
 

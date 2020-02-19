@@ -28,7 +28,7 @@ public class UidExpungeCommand extends ImapRequestAdapter {
     private String uids;
 
     /**
-     * Initializes a @{code UidExpungeCommand} with the message sequence syntax.
+     * Initializes a {@link UidExpungeCommand} with the message sequence syntax.
      *
      * @param uidsets the set of UIDSet representing UID based on RFC3501
      */
@@ -37,7 +37,7 @@ public class UidExpungeCommand extends ImapRequestAdapter {
     }
 
     /**
-     * Initializes a @{code UidExpungeCommand} with the message sequence syntax. MessageNumberSet allows last message.
+     * Initializes a {@link UidExpungeCommand} with the message sequence syntax. MessageNumberSet allows last message.
      *
      * @param uidsets the set of MessageNumberSet representing UID based on RFC3501
      */
@@ -46,7 +46,7 @@ public class UidExpungeCommand extends ImapRequestAdapter {
     }
 
     /**
-     * Initializes a @{code UidExpungeCommand} with the message sequence syntax.
+     * Initializes a {@link UidExpungeCommand} with the message sequence syntax.
      *
      * @param uids the string representing UID string based on RFC3501
      */

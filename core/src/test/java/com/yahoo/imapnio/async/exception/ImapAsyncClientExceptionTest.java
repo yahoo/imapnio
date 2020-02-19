@@ -6,7 +6,7 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 /**
- * Unit test for {@code ImapAsyncClientException}.
+ * Unit test for {@link ImapAsyncClientException}.
  */
 public class ImapAsyncClientExceptionTest {
 
@@ -29,7 +29,7 @@ public class ImapAsyncClientExceptionTest {
     @Test
     public void testImapAsyncClientExceptionWithFailureTypeAndCause() {
         final ImapAsyncClientException.FailureType failureType = ImapAsyncClientException.FailureType.CHANNEL_DISCONNECTED;
-        final IOException cause = new IOException("Failiure in IO!");
+        final IOException cause = new IOException("Failure in IO!");
         final ImapAsyncClientException ex = new ImapAsyncClientException(failureType, cause);
 
         Assert.assertEquals(ex.getFaiureType(), failureType, "result mismatched.");
