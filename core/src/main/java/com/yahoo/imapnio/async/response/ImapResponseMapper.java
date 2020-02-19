@@ -380,13 +380,12 @@ public class ImapResponseMapper {
         /**
          * Parses the ID responses to a @{code IdResult} object.
          *
-         * @param r the list of responses from ID command, the input responses array should contain the tagged/final one
+         * @param ir the list of responses from ID command, the input responses array should contain the tagged/final one
          * @return IdResult object constructed based on the given IMAPResponse array
-         * @throws ParsingException when encountering parsing exception
          * @throws ImapAsyncClientException when input value is not valid
          */
         @Nonnull
-        private IdResult parseToIdResult(@Nonnull final IMAPResponse[] ir) throws ParsingException, ImapAsyncClientException {
+        private IdResult parseToIdResult(@Nonnull final IMAPResponse[] ir) throws ImapAsyncClientException {
             if (ir.length < 1) {
                 throw new ImapAsyncClientException(FailureType.INVALID_INPUT);
             }

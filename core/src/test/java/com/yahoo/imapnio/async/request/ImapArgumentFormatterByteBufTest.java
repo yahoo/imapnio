@@ -1,6 +1,5 @@
 package com.yahoo.imapnio.async.request;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 import org.testng.Assert;
@@ -19,11 +18,10 @@ public class ImapArgumentFormatterByteBufTest {
     /**
      * Tests when source string has space.
      *
-     * @throws IOException will not throw
      * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testSourceNoQuoteNeeded() throws IOException, ImapAsyncClientException {
+    public void testSourceNoQuoteNeeded() throws ImapAsyncClientException {
         final ImapArgumentFormatter writer = new ImapArgumentFormatter();
         final String src = "Bulk";
         final ByteBuf out = Unpooled.buffer();
@@ -35,11 +33,10 @@ public class ImapArgumentFormatterByteBufTest {
     /**
      * Tests when source string has CR or LF or \0 or special chars(>127).
      *
-     * @throws IOException will not throw
      * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testSourceAsItIs() throws IOException, ImapAsyncClientException {
+    public void testSourceAsItIs() throws ImapAsyncClientException {
         // \r
         {
             final ImapArgumentFormatter writer = new ImapArgumentFormatter();
@@ -91,11 +88,10 @@ public class ImapArgumentFormatterByteBufTest {
     /**
      * Tests when source string has character that needs to be double quoted.
      *
-     * @throws IOException will not throw
      * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testSourceNeedsQuote() throws IOException, ImapAsyncClientException {
+    public void testSourceNeedsQuote() throws ImapAsyncClientException {
         // if (b == '*' || b == '%' || b == '(' || b == ')' || b == '{' || b == '"' || b == '\\' || ((b & 0xff) <= ' ')) {
         final ImapArgumentFormatter writer = new ImapArgumentFormatter();
         final boolean doQuote = false;
@@ -126,17 +122,17 @@ public class ImapArgumentFormatterByteBufTest {
         }
         {
             final ByteBuf out = Unpooled.buffer();
-            writer.formatArgument("B\"", out, doQuote); // excpects double quote and escape
+            writer.formatArgument("B\"", out, doQuote); // expects double quote and escape
             Assert.assertEquals(out.toString(StandardCharsets.US_ASCII), "\"B\\\"\"", "Encoded result mismatched.");
         }
         {
             final ByteBuf out = Unpooled.buffer();
-            writer.formatArgument("B\\", out, doQuote); // excpects double quote and escape
+            writer.formatArgument("B\\", out, doQuote); // expects double quote and escape
             Assert.assertEquals(out.toString(StandardCharsets.US_ASCII), "\"B\\\\\"", "Encoded result mismatched.");
         }
         {
             final ByteBuf out = Unpooled.buffer();
-            final char c = '\u0011'; // spcial char less than space ascii code
+            final char c = '\u0011'; // special char less than space ascii code
             final String src = Character.toString(c);
             writer.formatArgument(src, out, doQuote);
             Assert.assertEquals(out.toString(StandardCharsets.US_ASCII), "\"\"", "Encoded result mismatched.");
@@ -152,11 +148,10 @@ public class ImapArgumentFormatterByteBufTest {
     /**
      * Tests when source has NIL literal.
      *
-     * @throws IOException will not throw
      * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testHasLiteralNIL() throws IOException, ImapAsyncClientException {
+    public void testHasLiteralNIL() throws ImapAsyncClientException {
         final ImapArgumentFormatter writer = new ImapArgumentFormatter();
         final boolean doQuote = false;
         {

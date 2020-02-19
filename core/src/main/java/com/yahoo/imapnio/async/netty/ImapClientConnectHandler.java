@@ -27,9 +27,6 @@ import io.netty.handler.timeout.IdleStateEvent;
  */
 public class ImapClientConnectHandler extends MessageToMessageDecoder<IMAPResponse> {
 
-    /** Literal for NA. */
-    private static final String NA = "NA";
-
     /** Literal for the name registered in pipeline. */
     public static final String HANDLER_NAME = "ImapClientConnectHandler";
 
@@ -89,7 +86,7 @@ public class ImapClientConnectHandler extends MessageToMessageDecoder<IMAPRespon
     @Override
     public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) {
         logger.error("[{},{}] Connection failed due to encountering exception:{}.", sessionId, sessionCtx.toString(), cause);
-        FailureType type = null;
+        FailureType type;
         if (cause instanceof UnknownHostException) {
             type = FailureType.UNKNOWN_HOST_EXCEPTION;
         } else if (cause instanceof ConnectTimeoutException) {

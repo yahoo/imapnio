@@ -4,14 +4,12 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import javax.mail.search.SearchException;
 
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
@@ -54,18 +52,16 @@ public class AuthXoauth2CommandTest {
      * Tests getCommandLine method.
      *
      * @throws ImapAsyncClientException will not throw
-     * @throws SearchException will not throw
-     * @throws IOException will not throw
      * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
      */
     @Test
     public void testGetCommandLineSaslIREnabled()
-            throws IOException, ImapAsyncClientException, SearchException, IllegalArgumentException, IllegalAccessException {
+            throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
         final String username = "tesla";
         final String token = "selfdriving";
         final Map<String, List<String>> capas = new HashMap<String, List<String>>();
-        capas.put(ImapClientConstants.SASL_IR, Arrays.asList(ImapClientConstants.SASL_IR));
+        capas.put(ImapClientConstants.SASL_IR, Collections.singletonList(ImapClientConstants.SASL_IR));
         final ImapRequest cmd = new AuthXoauth2Command(username, token, new Capability(capas));
         Assert.assertTrue(cmd.isCommandLineDataSensitive(), "isCommandLineDataSensitive() result mismatched.");
 
@@ -84,13 +80,12 @@ public class AuthXoauth2CommandTest {
     /**
      * Tests getCommandLine method.
      *
-     * @throws IOException will not throw
      * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
      * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testGetCommandLineSaslIRDisabled() throws IOException, IllegalArgumentException, IllegalAccessException, ImapAsyncClientException {
+    public void testGetCommandLineSaslIRDisabled() throws IllegalArgumentException, IllegalAccessException, ImapAsyncClientException {
         final String username = "tesla";
         final String token = "selfdriving";
         final Map<String, List<String>> capas = new HashMap<String, List<String>>();
@@ -122,7 +117,7 @@ public class AuthXoauth2CommandTest {
         final String username = "tesla";
         final String token = "selfdriving";
         final Map<String, List<String>> capas = new HashMap<String, List<String>>();
-        capas.put(ImapClientConstants.SASL_IR, Arrays.asList(ImapClientConstants.SASL_IR));
+        capas.put(ImapClientConstants.SASL_IR, Collections.singletonList(ImapClientConstants.SASL_IR));
         final ImapRequest cmd = new AuthXoauth2Command(username, token, new Capability(capas));
         Assert.assertNull(cmd.getStreamingResponsesQueue(), "Expected result mismatched.");
     }
@@ -139,7 +134,7 @@ public class AuthXoauth2CommandTest {
         final String username = "tesla";
         final String token = "selfdriving";
         final Map<String, List<String>> capas = new HashMap<String, List<String>>();
-        capas.put(ImapClientConstants.SASL_IR, Arrays.asList(ImapClientConstants.SASL_IR));
+        capas.put(ImapClientConstants.SASL_IR, Collections.singletonList(ImapClientConstants.SASL_IR));
         final ImapRequest cmd = new AuthXoauth2Command(username, token, new Capability(capas));
         Assert.assertTrue(cmd.isCommandLineDataSensitive(), "isCommandLineDataSensitive() result mismatched.");
 
@@ -165,7 +160,7 @@ public class AuthXoauth2CommandTest {
         final String username = "tesla";
         final String token = "selfdriving";
         final Map<String, List<String>> capas = new HashMap<String, List<String>>();
-        capas.put(ImapClientConstants.SASL_IR, Arrays.asList(ImapClientConstants.SASL_IR));
+        capas.put(ImapClientConstants.SASL_IR, Collections.singletonList(ImapClientConstants.SASL_IR));
         final ImapRequest cmd = new AuthXoauth2Command(username, token, new Capability(capas));
         ImapAsyncClientException ex = null;
         try {
@@ -186,7 +181,7 @@ public class AuthXoauth2CommandTest {
         final String username = "tesla";
         final String token = "selfdriving";
         final Map<String, List<String>> capas = new HashMap<String, List<String>>();
-        capas.put(ImapClientConstants.SASL_IR, Arrays.asList(ImapClientConstants.SASL_IR));
+        capas.put(ImapClientConstants.SASL_IR, Collections.singletonList(ImapClientConstants.SASL_IR));
         final ImapRequest cmd = new AuthXoauth2Command(username, token, new Capability(capas));
         Assert.assertSame(cmd.getCommandType(), ImapCommandType.AUTHENTICATE);
     }

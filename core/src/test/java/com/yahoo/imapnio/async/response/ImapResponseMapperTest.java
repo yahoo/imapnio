@@ -69,12 +69,10 @@ public class ImapResponseMapperTest {
     /**
      * Tests parseToCapabilities method when ImapResponse array has zero length.
      *
-     * @throws IOException will not throw
      * @throws ProtocolException will not throw
-     * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testParseToCapabilitiesArrayLengthZero() throws IOException, ProtocolException, ImapAsyncClientException {
+    public void testParseToCapabilitiesArrayLengthZero() throws ProtocolException {
         final ImapResponseMapper mapper = new ImapResponseMapper();
         final IMAPResponse[] content = {};
 
@@ -182,12 +180,10 @@ public class ImapResponseMapperTest {
     /**
      * Tests ImapResponseParse parseCopyUid when Responses array is empty.
      *
-     * @throws IOException will not throw
      * @throws ProtocolException will not throw
-     * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testParseCopyUidResponesesArrayZero() throws IOException, ProtocolException, ImapAsyncClientException {
+    public void testParseCopyUidResponseArrayZero() throws ProtocolException {
         final ImapResponseMapper mapper = new ImapResponseMapper();
         final IMAPResponse[] content = new IMAPResponse[0];
 
@@ -228,12 +224,10 @@ public class ImapResponseMapperTest {
     /**
      * Tests parseToCapabilities method when ImapResponse array has zero length.
      *
-     * @throws IOException will not throw
      * @throws ProtocolException will not throw
-     * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testParseToAppendUidsArrayLengthZero() throws IOException, ProtocolException, ImapAsyncClientException {
+    public void testParseToAppendUidsArrayLengthZero() throws ProtocolException {
         final ImapResponseMapper mapper = new ImapResponseMapper();
         final IMAPResponse[] content = {};
 
@@ -253,10 +247,9 @@ public class ImapResponseMapperTest {
      *
      * @throws IOException will not throw
      * @throws ProtocolException will not throw
-     * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testParseAppendUidNotOK() throws IOException, ProtocolException, ImapAsyncClientException {
+    public void testParseAppendUidNotOK() throws IOException, ProtocolException {
         final ImapResponseMapper mapper = new ImapResponseMapper();
         final IMAPResponse[] content = { new IMAPResponse("* BAD Some junks") };
 
@@ -277,10 +270,9 @@ public class ImapResponseMapperTest {
      *
      * @throws IOException will not throw
      * @throws ProtocolException will not throw
-     * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testParseAppendUidByteReadExhausted() throws IOException, ProtocolException, ImapAsyncClientException {
+    public void testParseAppendUidByteReadExhausted() throws IOException, ProtocolException {
         final ImapResponseMapper mapper = new ImapResponseMapper();
         final IMAPResponse[] content = { new IMAPResponse("* OK") }; // test when b is 0
 
@@ -300,10 +292,9 @@ public class ImapResponseMapperTest {
      *
      * @throws IOException will not throw
      * @throws ProtocolException will not throw
-     * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testParseAppendUidNoAppendUidKeyword() throws IOException, ProtocolException, ImapAsyncClientException {
+    public void testParseAppendUidNoAppendUidKeyword() throws IOException, ProtocolException {
         final ImapResponseMapper mapper = new ImapResponseMapper();
         final IMAPResponse[] content = { new IMAPResponse("* OK [appendButNotUid 111 222 3]") }; // test when b is 0
 
@@ -464,12 +455,10 @@ public class ImapResponseMapperTest {
     /**
      * Tests parseMailboxInfo method successfully with READ-WRITE mode.
      *
-     * @throws IOException will not throw
      * @throws ProtocolException will not throw
-     * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testParseMailboxInfoResponseArray0() throws IOException, ProtocolException {
+    public void testParseMailboxInfoResponseArray0() throws ProtocolException {
         final ImapResponseMapper mapper = new ImapResponseMapper();
         final IMAPResponse[] content = new IMAPResponse[0];
         ImapAsyncClientException cause = null;
@@ -589,10 +578,9 @@ public class ImapResponseMapperTest {
      *
      * @throws IOException will not throw
      * @throws ProtocolException will not throw
-     * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testParseListInfosNoOK() throws IOException, ProtocolException, ImapAsyncClientException {
+    public void testParseListInfosNoOK() throws IOException, ProtocolException {
         final ImapResponseMapper mapper = new ImapResponseMapper();
         final List<IMAPResponse> content = new ArrayList<>();
         final List<String> names = new ArrayList<>();
@@ -639,12 +627,10 @@ public class ImapResponseMapperTest {
     /**
      * Tests parseListInfos method when response array length is 0.
      *
-     * @throws IOException will not throw
      * @throws ProtocolException will not throw
-     * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testParseListInfosEmptyResponses() throws IOException, ProtocolException, ImapAsyncClientException {
+    public void testParseListInfosEmptyResponses() throws ProtocolException {
         final ImapResponseMapper mapper = new ImapResponseMapper();
         final List<IMAPResponse> content = new ArrayList<>();
         ImapAsyncClientException cause = null;
@@ -661,12 +647,10 @@ public class ImapResponseMapperTest {
     /**
      * Tests ExtensionMailboxInfo method when response array length is 0.
      *
-     * @throws IOException will not throw
      * @throws ProtocolException will not throw
-     * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testParseMailboxExtensionInfosEmptyResponses() throws IOException, ProtocolException, ImapAsyncClientException {
+    public void testParseMailboxExtensionInfosEmptyResponses() throws ProtocolException {
         final ImapResponseMapper mapper = new ImapResponseMapper();
         final List<IMAPResponse> content = new ArrayList<>();
         ImapAsyncClientException cause = null;
@@ -683,12 +667,10 @@ public class ImapResponseMapperTest {
     /**
      * Tests parseStatus method with response array 0.
      *
-     * @throws IOException will not throw
      * @throws ProtocolException will not throw
-     * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testParseStatusArray0() throws IOException, ProtocolException {
+    public void testParseStatusArray0() throws ProtocolException {
         final ImapResponseMapper mapper = new ImapResponseMapper();
         final IMAPResponse[] content = new IMAPResponse[0];
         ImapAsyncClientException cause = null;
@@ -707,7 +689,6 @@ public class ImapResponseMapperTest {
      *
      * @throws IOException will not throw
      * @throws ProtocolException will not throw
-     * @throws ImapAsyncClientException will not throw
      */
     @Test
     public void testParseClassUnknown() throws IOException, ProtocolException {
@@ -731,7 +712,6 @@ public class ImapResponseMapperTest {
      *
      * @throws IOException will not throw
      * @throws ProtocolException will not throw
-     * @throws ImapAsyncClientException will not throw
      */
     @Test
     public void testParseStatusNotOK() throws IOException, ProtocolException {
@@ -756,10 +736,9 @@ public class ImapResponseMapperTest {
      *
      * @throws IOException will not throw
      * @throws ProtocolException will not throw
-     * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testParseStatusNoStatusResponse() throws IOException, ProtocolException, ImapAsyncClientException {
+    public void testParseStatusNoStatusResponse() throws IOException, ProtocolException {
         final ImapResponseMapper mapper = new ImapResponseMapper();
         final IMAPResponse[] content = new IMAPResponse[2];
         content[0] = new IMAPResponse("* NOSTATUS blurdybloop (MESSAGES 231 UIDNEXT 44292)");
@@ -807,12 +786,10 @@ public class ImapResponseMapperTest {
     /**
      * Tests parseToID method with response array 0.
      *
-     * @throws IOException will not throw
      * @throws ProtocolException will not throw
-     * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testParseToIdResultArray0() throws IOException, ProtocolException {
+    public void testParseToIdResultArray0() throws ProtocolException {
         final ImapResponseMapper mapper = new ImapResponseMapper();
         final IMAPResponse[] content = new IMAPResponse[0];
         ImapAsyncClientException cause = null;
@@ -831,7 +808,6 @@ public class ImapResponseMapperTest {
      *
      * @throws IOException will not throw
      * @throws ProtocolException will not throw
-     * @throws ImapAsyncClientException will not throw
      */
     @Test
     public void testParseToIdResultNotOK() throws IOException, ProtocolException {
@@ -900,10 +876,9 @@ public class ImapResponseMapperTest {
      *
      * @throws IOException will not throw
      * @throws ProtocolException will not throw
-     * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testParseToIdResultNotStartWithLeftParenthesis() throws IOException, ProtocolException, ImapAsyncClientException {
+    public void testParseToIdResultNotStartWithLeftParenthesis() throws IOException, ProtocolException {
         final ImapResponseMapper mapper = new ImapResponseMapper();
         final IMAPResponse[] content = new IMAPResponse[2];
         content[0] = new IMAPResponse("* ID X \n");
@@ -926,10 +901,9 @@ public class ImapResponseMapperTest {
      *
      * @throws IOException will not throw
      * @throws ProtocolException will not throw
-     * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testParseToIdResultNameAbsent() throws IOException, ProtocolException, ImapAsyncClientException {
+    public void testParseToIdResultNameAbsent() throws IOException, ProtocolException {
         final ImapResponseMapper mapper = new ImapResponseMapper();
         final IMAPResponse[] content = new IMAPResponse[2];
         content[0] = new IMAPResponse("* ID () \n");
@@ -952,10 +926,9 @@ public class ImapResponseMapperTest {
      *
      * @throws IOException will not throw
      * @throws ProtocolException will not throw
-     * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testParseToIdResultValueAbsent() throws IOException, ProtocolException, ImapAsyncClientException {
+    public void testParseToIdResultValueAbsent() throws IOException, ProtocolException {
         final ImapResponseMapper mapper = new ImapResponseMapper();
         final IMAPResponse[] content = new IMAPResponse[2];
         content[0] = new IMAPResponse("* ID (') \n");
@@ -1049,12 +1022,10 @@ public class ImapResponseMapperTest {
     /**
      * Tests parseToSearchResult method when tagged response is not OK.
      *
-     * @throws IOException will not throw
      * @throws ProtocolException will not throw
-     * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testParseToSearchResultZeroLengthResponse() throws IOException, ProtocolException, ImapAsyncClientException {
+    public void testParseToSearchResultZeroLengthResponse() throws ProtocolException {
         final ImapResponseMapper mapper = new ImapResponseMapper();
         final IMAPResponse[] content = new IMAPResponse[0];
 
@@ -1065,7 +1036,7 @@ public class ImapResponseMapperTest {
             actual = e;
         }
         // verify the result
-        Assert.assertNotNull(actual, "ImapAsyncClientException should occurr.");
+        Assert.assertNotNull(actual, "ImapAsyncClientException should occur.");
         Assert.assertEquals(actual.getFaiureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
     }
 
@@ -1074,10 +1045,9 @@ public class ImapResponseMapperTest {
      *
      * @throws IOException will not throw
      * @throws ProtocolException will not throw
-     * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testParseToSearchResultNotOK() throws IOException, ProtocolException, ImapAsyncClientException {
+    public void testParseToSearchResultNotOK() throws IOException, ProtocolException {
         final ImapResponseMapper mapper = new ImapResponseMapper();
         final IMAPResponse[] content = new IMAPResponse[1];
         content[0] = new IMAPResponse("a3 BAD SEARCH completed (Failure)\r\n");
@@ -1089,7 +1059,7 @@ public class ImapResponseMapperTest {
             actual = e;
         }
         // verify the result
-        Assert.assertNotNull(actual, "ImapAsyncClientException should occurr.");
+        Assert.assertNotNull(actual, "ImapAsyncClientException should occur.");
         Assert.assertEquals(actual.getFaiureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
     }
 }

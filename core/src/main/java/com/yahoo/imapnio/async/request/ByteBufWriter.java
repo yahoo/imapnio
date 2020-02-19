@@ -93,7 +93,7 @@ class ByteBufOutputStream extends OutputStream {
     }
 
     @Override
-    public void write(final int b) throws IOException {
+    public void write(final int b) {
         buf.writeByte(b);
     }
 }

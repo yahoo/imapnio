@@ -1,12 +1,9 @@
 package com.yahoo.imapnio.async.request;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.HashSet;
 import java.util.Set;
-
-import javax.mail.search.SearchException;
 
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
@@ -45,14 +42,12 @@ public class UnsubscribeFolderCommandTest {
     /**
      * Tests getCommandLine method.
      *
-     * @throws IOException will not throw
      * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
      * @throws ImapAsyncClientException will not throw
-     * @throws SearchException will not throw
      */
     @Test
-    public void testGetCommandLine() throws IOException, IllegalArgumentException, IllegalAccessException, SearchException, ImapAsyncClientException {
+    public void testGetCommandLine() throws IllegalArgumentException, IllegalAccessException, ImapAsyncClientException {
         final String folderName = "folderABC";
         final ImapRequest cmd = new UnsubscribeFolderCommand(folderName);
         Assert.assertEquals(cmd.getCommandLine(), UNSUBSCRIBE + folderName + "\r\n", "Expected result mismatched.");
@@ -68,11 +63,9 @@ public class UnsubscribeFolderCommandTest {
      * Tests getCommandLine method with folder name containing space.
      * 
      * @throws ImapAsyncClientException will not throw
-     * @throws SearchException will not throw
-     * @throws IOException will not throw
      */
     @Test
-    public void testGetCommandLineWithEscapeChar() throws IOException, SearchException, ImapAsyncClientException {
+    public void testGetCommandLineWithEscapeChar() throws ImapAsyncClientException {
         final String folderName = "folder ABC";
         final ImapRequest cmd = new UnsubscribeFolderCommand(folderName);
         Assert.assertEquals(cmd.getCommandLine(), UNSUBSCRIBE + "\"" + folderName + "\"\r\n", "Expected result mismatched.");
@@ -82,11 +75,9 @@ public class UnsubscribeFolderCommandTest {
      * Tests getCommandLine method with folder name with other character set encoding.
      * 
      * @throws ImapAsyncClientException will not throw
-     * @throws SearchException will not throw
-     * @throws IOException will not throw
      */
     @Test
-    public void testGetCommandLineWithOtherCharSet() throws IOException, SearchException, ImapAsyncClientException {
+    public void testGetCommandLineWithOtherCharSet() throws ImapAsyncClientException {
         final String folderName = "测试";
         final ImapRequest cmd = new UnsubscribeFolderCommand(folderName);
         Assert.assertEquals(cmd.getCommandLine(), UNSUBSCRIBE + "&bUuL1Q-\r\n", "Expected result mismatched.");

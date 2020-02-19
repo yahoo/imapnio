@@ -75,7 +75,7 @@ abstract class AbstractMessageActionCommand extends ImapRequestAdapter {
      */
     protected AbstractMessageActionCommand(@Nonnull final String op, final boolean isUid, final int start, final int end,
             @Nonnull final String targetFolder) {
-        this(op, isUid, new StringBuilder(String.valueOf(start)).append(ImapClientConstants.COLON).append(String.valueOf(end)).toString(),
+        this(op, isUid, start + ImapClientConstants.COLON + end,
                 targetFolder);
     }
 

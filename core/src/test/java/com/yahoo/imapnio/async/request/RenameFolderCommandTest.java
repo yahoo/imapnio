@@ -1,12 +1,9 @@
 package com.yahoo.imapnio.async.request;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.HashSet;
 import java.util.Set;
-
-import javax.mail.search.SearchException;
 
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
@@ -46,13 +43,11 @@ public class RenameFolderCommandTest {
      * Tests getCommandLine method.
      * 
      * @throws ImapAsyncClientException will not throw
-     * @throws SearchException will not throw
-     * @throws IOException will not throw
      * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
      */
     @Test
-    public void testGetCommandLine() throws IOException, ImapAsyncClientException, SearchException, IllegalArgumentException, IllegalAccessException {
+    public void testGetCommandLine() throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
         final String oldName = "folderABC";
         final String newName = "folderDEF";
         final ImapRequest cmd = new RenameFolderCommand(oldName, newName);
@@ -69,11 +64,9 @@ public class RenameFolderCommandTest {
      * Tests getCommandLine method with folder name containing space.
      *
      * @throws ImapAsyncClientException will not throw
-     * @throws SearchException will not throw
-     * @throws IOException will not throw
      */
     @Test
-    public void testGetCommandLineWithEscapeChar() throws ImapAsyncClientException, SearchException, IOException {
+    public void testGetCommandLineWithEscapeChar() throws ImapAsyncClientException {
         final String oldName = "folder ABC";
         final String newName = "folder DEF";
         final ImapRequest cmd = new RenameFolderCommand(oldName, newName);
@@ -84,11 +77,9 @@ public class RenameFolderCommandTest {
      * Tests getCommandLine method with folder name with other character set encoding.
      *
      * @throws ImapAsyncClientException will not throw
-     * @throws SearchException will not throw
-     * @throws IOException will not throw
      */
     @Test
-    public void testGetCommandLineWithOtherCharSet() throws ImapAsyncClientException, SearchException, IOException {
+    public void testGetCommandLineWithOtherCharSet() throws ImapAsyncClientException {
         final String oldName = "测试";
         final String newName = "folderDEF";
         final ImapRequest cmd = new RenameFolderCommand(oldName, newName);

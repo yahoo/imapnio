@@ -1,12 +1,9 @@
 package com.yahoo.imapnio.async.request;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.HashSet;
 import java.util.Set;
-
-import javax.mail.search.SearchException;
 
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
@@ -45,13 +42,11 @@ public class ListCommandTest {
      * Tests getCommandLine method.
      *
      * @throws ImapAsyncClientException will not throw
-     * @throws SearchException will not throw
-     * @throws IOException will not throw
      * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
      */
     @Test
-    public void testGetCommandLine() throws IOException, ImapAsyncClientException, SearchException, IllegalArgumentException, IllegalAccessException {
+    public void testGetCommandLine() throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
         final ImapRequest cmd = new ListCommand("", "*test*");
         Assert.assertEquals(cmd.getCommandLine(), "LIST \"\" \"*test*\"\r\n", "Expected result mismatched.");
 
@@ -66,14 +61,12 @@ public class ListCommandTest {
      * Tests getCommandLine method.
      *
      * @throws ImapAsyncClientException will not throw
-     * @throws SearchException will not throw
-     * @throws IOException will not throw
      * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
      */
     @Test
     public void testGetCommandLineReferenceExists()
-            throws IOException, ImapAsyncClientException, SearchException, IllegalArgumentException, IllegalAccessException {
+            throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
         final ImapRequest cmd = new ListCommand("~smith/Mail/", "foo.*");
         Assert.assertEquals(cmd.getCommandLine(), "LIST ~smith/Mail/ \"foo.*\"\r\n", "Expected result mismatched.");
 

@@ -57,40 +57,37 @@ public class MessageNumberSetTest {
     /**
      * Tests createMessageNumberSets(int[]) method.
      *
-     * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testCreateMessageNumberSetsFromIntArray() throws ImapAsyncClientException {
+    public void testCreateMessageNumberSetsFromIntArray() {
         final int[] msgs = { 1, 2, 3, 4, 5, 7 };
 
         final MessageNumberSet[] sets = MessageNumberSet.createMessageNumberSets(msgs);
         Assert.assertNotNull(sets, "Should not be null");
-        Assert.assertEquals(sets.length, 2, "lenth mismatched.");
+        Assert.assertEquals(sets.length, 2, "length mismatched.");
         Assert.assertEquals(MessageNumberSet.buildString(sets), "1:5,7", "Expect result mismatched.");
     }
 
     /**
      * Tests createMessageNumberSets(int[]) method.
      *
-     * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testCreateMessageNumberSetsFromLongArray() throws ImapAsyncClientException {
+    public void testCreateMessageNumberSetsFromLongArray() {
         final long[] msgs = { 1, 2, 3, 4, 5, 7, 1 };
 
         final MessageNumberSet[] sets = MessageNumberSet.createMessageNumberSets(msgs);
         Assert.assertNotNull(sets, "Should not be null");
-        Assert.assertEquals(sets.length, 3, "lenth mismatched.");
+        Assert.assertEquals(sets.length, 3, "length mismatched.");
         Assert.assertEquals(MessageNumberSet.buildString(sets), "1:5,7,1", "Expect result mismatched.");
     }
 
     /**
      * Tests createMessageNumberSets(int[]) method.
      *
-     * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testRemovePointDuplicates() throws ImapAsyncClientException {
+    public void testRemovePointDuplicates() {
         final long[] msgs = { 1, 1, 1, 1, 1, 1, 1 };
 
         final MessageNumberSet[] sets = MessageNumberSet.createMessageNumberSets(msgs);
@@ -147,10 +144,9 @@ public class MessageNumberSetTest {
     /**
      * Tests constructor and converting it to string.
      *
-     * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testConstructorLastMessageOnlyFalse() throws ImapAsyncClientException {
+    public void testConstructorLastMessageOnlyFalse() {
         ImapAsyncClientException actual = null;
         try {
             new MessageNumberSet(null);
@@ -179,7 +175,7 @@ public class MessageNumberSetTest {
     public void testEqualsDiffClass() {
         final MessageNumberSet msgSet = new MessageNumberSet(1, 100);
         Assert.assertNotNull(msgSet, "Should not be null");
-        final String u = new String("hello");
+        final String u = "hello";
         Assert.assertFalse(msgSet.equals(u), "Result mismatched.");
     }
 

@@ -78,10 +78,9 @@ public class ImapAsyncCreateSessionResponseTest {
      *
      * @throws IOException will not throw
      * @throws ProtocolException will not throw
-     * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testImapAsyncCreateSessionResponseNoCapability() throws IOException, ProtocolException, ImapAsyncClientException {
+    public void testImapAsyncCreateSessionResponseNoCapability() throws IOException, ProtocolException {
         final IMAPResponse imapResponse = new IMAPResponse("* OK IMAP4rev1 Hello");
 
         final Logger logger = Mockito.mock(Logger.class);

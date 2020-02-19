@@ -139,11 +139,9 @@ public abstract class AbstractSearchCommand extends ImapRequestAdapter {
      * @param args the argument containing the search term
      * @param capa the capability instance to find if it has literal
      * @throws ImapAsyncClientException when both msgsets and searchString are null
-     * @throws IOException when parsing error for generate sequence
-     * @throws SearchException when search term cannot be found
      */
     protected AbstractSearchCommand(final boolean isUid, @Nullable final String msgNumbers, @Nullable final String charset,
-            @Nonnull final Argument args, @Nullable final Capability capa) throws ImapAsyncClientException, SearchException, IOException {
+            @Nonnull final Argument args, @Nullable final Capability capa) throws ImapAsyncClientException {
         // based on [ABNF] above, 1*(SP search-key), cannot have both null
         if (msgNumbers == null && args == null) {
             throw new ImapAsyncClientException(FailureType.INVALID_INPUT);

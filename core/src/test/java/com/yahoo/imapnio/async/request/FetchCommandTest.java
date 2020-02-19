@@ -1,12 +1,9 @@
 package com.yahoo.imapnio.async.request;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.HashSet;
 import java.util.Set;
-
-import javax.mail.search.SearchException;
 
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
@@ -49,14 +46,12 @@ public class FetchCommandTest {
      * Tests getCommandLine method using MessageNumberSet[] and macro.
      *
      * @throws ImapAsyncClientException will not throw
-     * @throws SearchException will not throw
-     * @throws IOException will not throw
      * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
      */
     @Test
     public void GetCommandLineFromConstructorWithMacro()
-            throws IOException, ImapAsyncClientException, SearchException, IllegalArgumentException, IllegalAccessException {
+            throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
 
         final long[] msgs = { 4294967293L, 4294967294L, 4294967295L };
         final MessageNumberSet[] msgsets = MessageNumberSet.createMessageNumberSets(msgs);
@@ -74,14 +69,12 @@ public class FetchCommandTest {
      * Tests getCommandLine method using MessageNumberSet[] and data items.
      *
      * @throws ImapAsyncClientException will not throw
-     * @throws SearchException will not throw
-     * @throws IOException will not throw
      * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
      */
     @Test
     public void testGetCommandLineFromConstructorWithDataItems()
-            throws IOException, ImapAsyncClientException, SearchException, IllegalArgumentException, IllegalAccessException {
+            throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
 
         final int[] msgs = { 1, 2, 3 };
         final MessageNumberSet[] msgsets = MessageNumberSet.createMessageNumberSets(msgs);
@@ -99,14 +92,12 @@ public class FetchCommandTest {
      * Tests getCommandLine method.
      *
      * @throws ImapAsyncClientException will not throw
-     * @throws SearchException will not throw
-     * @throws IOException will not throw
      * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
      */
     @Test
     public void testGetCommandLineWithStartEndConstructor()
-            throws IOException, ImapAsyncClientException, SearchException, IllegalArgumentException, IllegalAccessException {
+            throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
 
         final ImapRequest cmd = new FetchCommand(new MessageNumberSet[] { new MessageNumberSet(1, 10000) }, DATA_ITEMS);
         Assert.assertEquals(cmd.getCommandLine(), "FETCH 1:10000 (FLAGS BODY[HEADER.FIELDS (DATE FROM)])\r\n", "Expected result mismatched.");

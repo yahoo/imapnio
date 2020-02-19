@@ -1,12 +1,9 @@
 package com.yahoo.imapnio.async.request;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.HashSet;
 import java.util.Set;
-
-import javax.mail.search.SearchException;
 
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
@@ -48,14 +45,12 @@ public class UidMoveMessageCommandTest {
      * Tests getCommandLine method.
      *
      * @throws ImapAsyncClientException will not throw
-     * @throws SearchException will not throw
-     * @throws IOException will not throw
      * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
      */
     @Test
     public void testMessageSequenceGetCommandLine()
-            throws IOException, ImapAsyncClientException, SearchException, IllegalArgumentException, IllegalAccessException {
+            throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
         final String folderName = "folderABC";
         final long[] uids = { 4294967293L, 4294967294L, 4294967295L };
         final UIDSet[] msgsets = UIDSet.createUIDSets(uids);
@@ -73,14 +68,12 @@ public class UidMoveMessageCommandTest {
      * Tests getCommandLine method.
      *
      * @throws ImapAsyncClientException will not throw
-     * @throws SearchException will not throw
-     * @throws IOException will not throw
      * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
      */
     @Test
     public void testMessageUidGetCommandLine()
-            throws IOException, ImapAsyncClientException, SearchException, IllegalArgumentException, IllegalAccessException {
+            throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
         final String folderName = "folderABC";
         final ImapRequest cmd = new UidMoveMessageCommand("37850:37852", folderName);
         Assert.assertEquals(cmd.getCommandLine(), "UID MOVE 37850:37852 folderABC\r\n", "Expected result mismatched.");
@@ -96,14 +89,12 @@ public class UidMoveMessageCommandTest {
      * Tests the constructor with @{MessageNumberSet} and getCommandLine method.
      *
      * @throws ImapAsyncClientException will not throw
-     * @throws SearchException will not throw
-     * @throws IOException will not throw
      * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
      */
     @Test
     public void testConstructorMessageNumberSetGetCommandLine()
-            throws IOException, ImapAsyncClientException, SearchException, IllegalArgumentException, IllegalAccessException {
+            throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
         final String folderName = "folderABC";
         final MessageNumberSet[] mset = MessageNumberSet.createMessageNumberSets(new long[] { 37850L, 37851L, 37852L });
         final ImapRequest cmd = new UidMoveMessageCommand(mset, folderName);

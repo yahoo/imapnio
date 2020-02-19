@@ -6,7 +6,7 @@ import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -176,14 +176,12 @@ public class UidSearchCommandTest {
      * Tests getCommandLine method with none-null message sequences set, null SearchTerm.
      *
      * @throws IOException will not throw
-     * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
-     * @throws ImapAsyncClientException will not throw
      * @throws SearchException will not throw
      */
     @Test
     public void testGetCommandLineNullMessageSeqSetsNullSearchTerm()
-            throws IOException, IllegalArgumentException, IllegalAccessException, SearchException, ImapAsyncClientException {
+            throws IOException, IllegalArgumentException, SearchException {
         final MessageNumberSet[] msgSets = null;
         final String charset = null;
         ImapAsyncClientException actualEx = null;
@@ -215,7 +213,7 @@ public class UidSearchCommandTest {
         final SubjectTerm term = new SubjectTerm("ΩΩ"); // have none-ascii characters
 
         final Map<String, List<String>> capas = new HashMap<String, List<String>>();
-        capas.put(ImapClientConstants.LITERAL_PLUS, Arrays.asList(ImapClientConstants.LITERAL_PLUS));
+        capas.put(ImapClientConstants.LITERAL_PLUS, Collections.singletonList(ImapClientConstants.LITERAL_PLUS));
         final ImapRequest cmd = new UidSearchCommand(msgsets, term, new Capability(capas));
         Assert.assertEquals(cmd.getCommandLine(), "UID SEARCH CHARSET UTF-8 1:3 SUBJECT {4+}\r\n����\r\n", "Expected result mismatched.");
 
@@ -233,11 +231,10 @@ public class UidSearchCommandTest {
      * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
      * @throws ImapAsyncClientException will not throw
-     * @throws SearchException will not throw
      */
     @Test
     public void testGetCommandLineWithLiteralPlusCapaEnabled()
-            throws IOException, IllegalArgumentException, IllegalAccessException, SearchException, ImapAsyncClientException {
+            throws IOException, IllegalArgumentException, IllegalAccessException, ImapAsyncClientException {
 
         final Argument args = new Argument();
 
@@ -248,7 +245,7 @@ public class UidSearchCommandTest {
         args.writeBytes(byteLiteral);
 
         final Map<String, List<String>> capas = new HashMap<String, List<String>>();
-        capas.put(ImapClientConstants.LITERAL_PLUS, Arrays.asList(ImapClientConstants.LITERAL_PLUS));
+        capas.put(ImapClientConstants.LITERAL_PLUS, Collections.singletonList(ImapClientConstants.LITERAL_PLUS));
         final ImapRequest cmd = new UidSearchCommand(null, "UTF-8", args, new Capability(capas));
         final ByteArrayOutputStream expectedOutput = new ByteArrayOutputStream();
         final String cmdLine = "UID SEARCH CHARSET UTF-8 {15+}\r\n";
@@ -277,11 +274,10 @@ public class UidSearchCommandTest {
      * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
      * @throws ImapAsyncClientException will not throw
-     * @throws SearchException will not throw
      */
     @Test
     public void testGetCommandLineWithoutLiteralPlusCapaEnabled()
-            throws IOException, IllegalArgumentException, IllegalAccessException, SearchException, ImapAsyncClientException {
+            throws IOException, IllegalArgumentException, IllegalAccessException, ImapAsyncClientException {
 
         final Argument args = new Argument();
 
@@ -320,16 +316,15 @@ public class UidSearchCommandTest {
      * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
      * @throws ImapAsyncClientException will not throw
-     * @throws SearchException will not throw
      */
     @Test
     public void testGetCommandLineNullArgumentNoneNullMessageSequence()
-            throws IOException, IllegalArgumentException, IllegalAccessException, SearchException, ImapAsyncClientException {
+            throws IOException, IllegalArgumentException, IllegalAccessException, ImapAsyncClientException {
 
         final Argument args = null;
         final String msgSeq = "1:*";
         final Map<String, List<String>> capas = new HashMap<String, List<String>>();
-        capas.put(ImapClientConstants.LITERAL_PLUS, Arrays.asList(ImapClientConstants.LITERAL_PLUS));
+        capas.put(ImapClientConstants.LITERAL_PLUS, Collections.singletonList(ImapClientConstants.LITERAL_PLUS));
         final ImapRequest cmd = new UidSearchCommand(msgSeq, null, args, new Capability(capas));
         final ByteArrayOutputStream expectedOutput = new ByteArrayOutputStream();
         final String cmdLine = "UID SEARCH 1:*\r\n";
@@ -356,18 +351,17 @@ public class UidSearchCommandTest {
      * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
      * @throws ImapAsyncClientException will not throw
-     * @throws SearchException will not throw
      */
     @Test
     public void testGetCommandLineNoneNullMessageSequenceNoneNullArgument()
-            throws IOException, IllegalArgumentException, IllegalAccessException, SearchException, ImapAsyncClientException {
+            throws IOException, IllegalArgumentException, IllegalAccessException, ImapAsyncClientException {
 
         final Argument args = new Argument();
         args.writeAtom("ALL");
         args.writeAtom("UID");
         final String msgSeq = "1:*";
         final Map<String, List<String>> capas = new HashMap<String, List<String>>();
-        capas.put(ImapClientConstants.LITERAL_PLUS, Arrays.asList(ImapClientConstants.LITERAL_PLUS));
+        capas.put(ImapClientConstants.LITERAL_PLUS, Collections.singletonList(ImapClientConstants.LITERAL_PLUS));
         final ImapRequest cmd = new UidSearchCommand(msgSeq, null, args, new Capability(capas));
         final ByteArrayOutputStream expectedOutput = new ByteArrayOutputStream();
         final String cmdLine = "UID SEARCH 1:* ALL UID\r\n";

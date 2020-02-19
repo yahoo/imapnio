@@ -4,8 +4,6 @@ import java.nio.charset.StandardCharsets;
 
 import javax.annotation.Nonnull;
 
-import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
-
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 
@@ -40,7 +38,7 @@ public class EnableCommand extends ImapRequestAdapter {
     }
 
     @Override
-    public ByteBuf getCommandLineBytes() throws ImapAsyncClientException {
+    public ByteBuf getCommandLineBytes() {
         final ByteBuf sb = Unpooled.buffer(ENABLE_BUF_LEN);
 
         sb.writeBytes(ENABLE_B);

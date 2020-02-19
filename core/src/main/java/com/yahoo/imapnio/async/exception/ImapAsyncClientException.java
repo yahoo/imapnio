@@ -42,8 +42,8 @@ public class ImapAsyncClientException extends Exception {
         /** Write to imap server failed. */
         WRITE_TO_SERVER_FAILED("Write to imap server failed."),
 
-        /** Failed in closing conneciton. */
-        CLOSING_CONNECTION_FAILED("Failed in closing conneciton"),
+        /** Failed in closing connection. */
+        CLOSING_CONNECTION_FAILED("Failed in closing connection"),
 
         /** Encountering exception during communication to remote. */
         CHANNEL_EXCEPTION("Encountering exception during communication to remote."),

@@ -1,9 +1,6 @@
 package com.yahoo.imapnio.async.client;
 
-import java.io.IOException;
-
 import javax.annotation.Nonnull;
-import javax.mail.search.SearchException;
 
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 import com.yahoo.imapnio.async.request.ImapRequest;
@@ -30,10 +27,8 @@ public interface ImapAsyncSession {
      *
      * @return the future object for this command
      * @throws ImapAsyncClientException on failure
-     * @throws IOException when encountering IO exception
-     * @throws SearchException when a search expression cannot be handled, conformed to RFC3501 standard
      */
-    <T> ImapFuture<ImapAsyncResponse> startCompression() throws ImapAsyncClientException, SearchException, IOException;
+    <T> ImapFuture<ImapAsyncResponse> startCompression() throws ImapAsyncClientException;
 
     /**
      * Turns on or off the debugging.

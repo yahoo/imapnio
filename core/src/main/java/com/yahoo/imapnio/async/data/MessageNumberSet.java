@@ -91,7 +91,7 @@ public final class MessageNumberSet {
 
         /** Only need the last message, aka: * . */
         LAST_MESSAGE_ONLY
-    };
+    }
 
     /** Sequence type. */
     private final SequenceType seqType;
@@ -189,7 +189,7 @@ public final class MessageNumberSet {
             v.add(new MessageNumberSet(start, end));
             i = j;
         }
-        return v.toArray(new MessageNumberSet[v.size()]);
+        return v.toArray(new MessageNumberSet[0]);
     }
 
     /**
@@ -212,7 +212,7 @@ public final class MessageNumberSet {
             v.add(new MessageNumberSet(start, end));
             i = j;
         }
-        return v.toArray(new MessageNumberSet[v.size()]);
+        return v.toArray(new MessageNumberSet[0]);
     }
 
     /**
