@@ -56,7 +56,7 @@ import io.netty.handler.timeout.IdleStateEvent;
 public class ImapAsyncSessionImplTest {
 
     /** Dummy session id. */
-    private static final long SESSION_ID = 123456;
+    private static final Long SESSION_ID = Long.valueOf(123456);
 
     /** Dummy user id. */
     private static final String USER_ID = "Argentinosaurus@long.enough";
