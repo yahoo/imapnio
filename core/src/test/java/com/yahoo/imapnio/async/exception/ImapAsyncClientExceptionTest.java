@@ -43,7 +43,7 @@ public class ImapAsyncClientExceptionTest {
     @Test
     public void testImapAsyncClientExceptionWithSessionIdClientContext() {
         final ImapAsyncClientException.FailureType failureType = ImapAsyncClientException.FailureType.CHANNEL_DISCONNECTED;
-        final Long sessionId = new Long(5);
+        final Long sessionId = 5L;
         final String sessCtx = "T123riceratops123@scar123y.com";
         final ImapAsyncClientException ex = new ImapAsyncClientException(failureType, sessionId, sessCtx);
 

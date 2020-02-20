@@ -250,7 +250,7 @@ public class ImapAsyncClient {
                     // connect action is not done until we receive the first OK response from server, so we CANNOT call it done here
                 } else { // failure case
                     final Throwable cause = future.cause();
-                    FailureType type;
+                    FailureType type = null;
                     if (cause instanceof UnknownHostException) {
                         type = FailureType.UNKNOWN_HOST_EXCEPTION;
                     } else if (cause instanceof ConnectTimeoutException) {

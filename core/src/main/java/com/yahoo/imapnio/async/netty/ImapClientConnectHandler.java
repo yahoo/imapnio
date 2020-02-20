@@ -86,7 +86,7 @@ public class ImapClientConnectHandler extends MessageToMessageDecoder<IMAPRespon
     @Override
     public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) {
         logger.error("[{},{}] Connection failed due to encountering exception:{}.", sessionId, sessionCtx.toString(), cause);
-        FailureType type;
+        FailureType type = null;
         if (cause instanceof UnknownHostException) {
             type = FailureType.UNKNOWN_HOST_EXCEPTION;
         } else if (cause instanceof ConnectTimeoutException) {

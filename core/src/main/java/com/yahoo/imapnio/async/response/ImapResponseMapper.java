@@ -448,7 +448,7 @@ public class ImapResponseMapper {
                 // There *will* be one SEARCH response.
                 if (sr.keyEquals("SEARCH")) {
                     while ((num = sr.readLong()) != -1) {
-                        v.add(Long.valueOf(num));
+                        v.add(num);
                     }
                 }
             }

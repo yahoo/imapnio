@@ -56,7 +56,7 @@ import io.netty.handler.timeout.IdleStateEvent;
 public class ImapAsyncSessionImplTest {
 
     /** Dummy session id. */
-    private static final int SESSION_ID = 123456;
+    private static final long SESSION_ID = 123456;
 
     /** Dummy user id. */
     private static final String USER_ID = "Argentinosaurus@long.enough";
@@ -214,14 +214,14 @@ public class ImapAsyncSessionImplTest {
             final List<Object> logArgs = allArgsCapture.getAllValues();
             Assert.assertNotNull(logArgs, "log messages mismatched.");
             Assert.assertEquals(logArgs.size(), 9, "log messages mismatched.");
-            Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(0), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(2), "a2 CAPABILITY\r\n", "log messages from client mismatched.");
-            Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(3), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(5), "* CAPABILITY IMAP4rev1 SASL-IR AUTH=PLAIN AUTH=XOAUTH2 AUTH=OAUTHBEARER ID MOVE NAMESPACE",
                     "log messages from server mismatched.");
-            Assert.assertEquals(logArgs.get(6), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(6), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(7), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(8), "a2 OK CAPABILITY completed", "Error message mismatched.");
         }
@@ -332,23 +332,23 @@ public class ImapAsyncSessionImplTest {
             final List<Object> logArgs = allArgsCapture.getAllValues();
             Assert.assertNotNull(logArgs, "log messages mismatched.");
             Assert.assertEquals(logArgs.size(), 18, "log messages mismatched.");
-            Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(0), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(2), "a1 AUTHENTICATE XOAUTH2\r\n", "log messages from client mismatched.");
-            Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(3), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(5), "+", "log messages from server mismatched.");
-            Assert.assertEquals(logArgs.get(6), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(6), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(7), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(8), "AUTHENTICATE XOAUTH2 FOR USER:orange", "Error message mismatched.");
-            Assert.assertEquals(logArgs.get(9), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(9), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(10), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(11), "+ eyJzdGF0dXMiOiI0MDAiLCJzY2hlbWVzIjoiQmVhcmVyIiwic2NvcGUiOiJodHRwczovL21haWwuZ29vZ2xlLmNvbS8ifQ==",
                     "Error message mismatched.");
-            Assert.assertEquals(logArgs.get(12), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(12), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(13), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(14), "*\r\n", "log messages from server mismatched.");
-            Assert.assertEquals(logArgs.get(15), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(15), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(16), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(17), "a1 BAD Invalid SASL argument.", "Error message mismatched.");
         }
@@ -436,17 +436,17 @@ public class ImapAsyncSessionImplTest {
             final List<Object> logArgs = allArgsCapture.getAllValues();
             Assert.assertNotNull(logArgs, "log messages mismatched.");
             Assert.assertEquals(logArgs.size(), 12, "log messages mismatched.");
-            Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(0), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(2), "AUTHENTICATE XOAUTH2 FOR USER:orange", "Error message mismatched.");
-            Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(3), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(5), "+ eyJzdGF0dXMiOiI0MDAiLCJzY2hlbWVzIjoiQmVhcmVyIiwic2NvcGUiOiJodHRwczovL21haWwuZ29vZ2xlLmNvbS8ifQ==",
                     "Error message mismatched.");
-            Assert.assertEquals(logArgs.get(6), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(6), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(7), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(8), "*\r\n", "log messages from server mismatched.");
-            Assert.assertEquals(logArgs.get(9), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(9), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(10), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(11), "a1 BAD Invalid SASL argument.", "Error message mismatched.");
         }
@@ -529,16 +529,16 @@ public class ImapAsyncSessionImplTest {
             final List<Object> logArgs = allArgsCapture.getAllValues();
             Assert.assertNotNull(logArgs, "log messages mismatched.");
             Assert.assertEquals(logArgs.size(), 12, "log messages mismatched.");
-            Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(0), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(2), "a1 AUTHENTICATE PLAIN\r\n", "log messages from client mismatched.");
-            Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(3), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(5), "+", "log messages from server mismatched.");
-            Assert.assertEquals(logArgs.get(6), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(6), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(7), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(8), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
-            Assert.assertEquals(logArgs.get(9), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(9), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(10), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(11), "a1 OK AUTHENTICATE completed", "Error message mismatched.");
         }
@@ -582,22 +582,22 @@ public class ImapAsyncSessionImplTest {
             final List<Object> logArgs = allArgsCapture.getAllValues();
             Assert.assertNotNull(logArgs, "log messages mismatched.");
             Assert.assertEquals(logArgs.size(), 18, "log messages mismatched.");
-            Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(0), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(2), "a1 AUTHENTICATE PLAIN\r\n", "log messages from client mismatched.");
-            Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(3), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(5), "+", "log messages from server mismatched.");
-            Assert.assertEquals(logArgs.get(6), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(6), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(7), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(8), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
-            Assert.assertEquals(logArgs.get(9), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(9), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(10), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(11), "a1 OK AUTHENTICATE completed", "Error message mismatched.");
-            Assert.assertEquals(logArgs.get(12), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(12), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(13), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(14), "a2 COMPRESS DEFLATE\r\n", "log messages from client mismatched.");
-            Assert.assertEquals(logArgs.get(15), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(15), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(16), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(17), "a2 OK Success", "log messages from server mismatched.");
         }
@@ -682,16 +682,16 @@ public class ImapAsyncSessionImplTest {
             final List<Object> logArgs = allArgsCapture.getAllValues();
             Assert.assertNotNull(logArgs, "log messages mismatched.");
             Assert.assertEquals(logArgs.size(), 12, "log messages mismatched.");
-            Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(0), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(2), "a1 AUTHENTICATE PLAIN\r\n", "log messages from client mismatched.");
-            Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(3), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(5), "+", "log messages from server mismatched.");
-            Assert.assertEquals(logArgs.get(6), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(6), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(7), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(8), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
-            Assert.assertEquals(logArgs.get(9), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(9), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(10), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(11), "a1 OK AUTHENTICATE completed", "Error message mismatched.");
         }
@@ -737,22 +737,22 @@ public class ImapAsyncSessionImplTest {
             final List<Object> logArgs = allArgsCapture.getAllValues();
             Assert.assertNotNull(logArgs, "log messages mismatched.");
             Assert.assertEquals(logArgs.size(), 18, "log messages mismatched.");
-            Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(0), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(2), "a1 AUTHENTICATE PLAIN\r\n", "log messages from client mismatched.");
-            Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(3), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(5), "+", "log messages from server mismatched.");
-            Assert.assertEquals(logArgs.get(6), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(6), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(7), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(8), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
-            Assert.assertEquals(logArgs.get(9), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(9), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(10), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(11), "a1 OK AUTHENTICATE completed", "Error message mismatched.");
-            Assert.assertEquals(logArgs.get(12), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(12), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(13), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(14), "a2 COMPRESS DEFLATE\r\n", "log messages from client mismatched.");
-            Assert.assertEquals(logArgs.get(15), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(15), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(16), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(17), "a2 OK Success", "log messages from server mismatched.");
         }
@@ -836,16 +836,16 @@ public class ImapAsyncSessionImplTest {
             final List<Object> logArgs = allArgsCapture.getAllValues();
             Assert.assertNotNull(logArgs, "log messages mismatched.");
             Assert.assertEquals(logArgs.size(), 12, "log messages mismatched.");
-            Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(0), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(2), "a1 AUTHENTICATE PLAIN\r\n", "log messages from client mismatched.");
-            Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(3), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(5), "+", "log messages from server mismatched.");
-            Assert.assertEquals(logArgs.get(6), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(6), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(7), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(8), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
-            Assert.assertEquals(logArgs.get(9), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(9), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(10), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(11), "a1 OK AUTHENTICATE completed", "Error message mismatched.");
         }
@@ -889,22 +889,22 @@ public class ImapAsyncSessionImplTest {
             final List<Object> logArgs = allArgsCapture.getAllValues();
             Assert.assertNotNull(logArgs, "log messages mismatched.");
             Assert.assertEquals(logArgs.size(), 18, "log messages mismatched.");
-            Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(0), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(2), "a1 AUTHENTICATE PLAIN\r\n", "log messages from client mismatched.");
-            Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(3), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(5), "+", "log messages from server mismatched.");
-            Assert.assertEquals(logArgs.get(6), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(6), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(7), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(8), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
-            Assert.assertEquals(logArgs.get(9), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(9), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(10), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(11), "a1 OK AUTHENTICATE completed", "Error message mismatched.");
-            Assert.assertEquals(logArgs.get(12), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(12), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(13), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(14), "a2 COMPRESS DEFLATE\r\n", "log messages from client mismatched.");
-            Assert.assertEquals(logArgs.get(15), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(15), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(16), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(17), "a2 NO Success", "log messages from server mismatched.");
         }
@@ -1127,13 +1127,13 @@ public class ImapAsyncSessionImplTest {
         final List<Object> logArgs = allArgsCapture.getAllValues();
         Assert.assertNotNull(logArgs, "log messages mismatched.");
         Assert.assertEquals(logArgs.size(), 9, "log messages mismatched.");
-        Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
+        Assert.assertEquals(logArgs.get(0), SESSION_ID, "log messages mismatched.");
         Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
         Assert.assertEquals(logArgs.get(2), "a1 CAPABILITY\r\n", "log messages from client mismatched.");
-        Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
+        Assert.assertEquals(logArgs.get(3), SESSION_ID, "log messages mismatched.");
         Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
         Assert.assertEquals(logArgs.get(5), "Closing the session via close().", "log messages from client mismatched.");
-        Assert.assertEquals(logArgs.get(6), Long.valueOf(SESSION_ID), "log messages mismatched.");
+        Assert.assertEquals(logArgs.get(6), SESSION_ID, "log messages mismatched.");
         Assert.assertEquals(logArgs.get(7), USER_ID, "log messages mismatched.");
         Assert.assertEquals(logArgs.get(8), "Session is confirmed closed.", "Error message mismatched.");
 
@@ -1212,13 +1212,13 @@ public class ImapAsyncSessionImplTest {
         final List<Object> logArgs = allArgsCapture.getAllValues();
         Assert.assertNotNull(logArgs, "log messages mismatched.");
         Assert.assertEquals(logArgs.size(), 9, "log messages mismatched.");
-        Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
+        Assert.assertEquals(logArgs.get(0), SESSION_ID, "log messages mismatched.");
         Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
         Assert.assertEquals(logArgs.get(2), "a1 CAPABILITY\r\n", "log messages from client mismatched.");
-        Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
+        Assert.assertEquals(logArgs.get(3), SESSION_ID, "log messages mismatched.");
         Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
         Assert.assertEquals(logArgs.get(5), "Session is confirmed closed.", "log messages from client mismatched.");
-        Assert.assertEquals(logArgs.get(6), Long.valueOf(SESSION_ID), "log messages mismatched.");
+        Assert.assertEquals(logArgs.get(6), SESSION_ID, "log messages mismatched.");
         Assert.assertEquals(logArgs.get(7), USER_ID, "log messages mismatched.");
         Assert.assertEquals(logArgs.get(8), "Closing the session via close().", "Error message mismatched.");
 
@@ -1401,22 +1401,22 @@ public class ImapAsyncSessionImplTest {
         final List<Object> logArgs = allArgsCapture.getAllValues();
         Assert.assertNotNull(logArgs, "log messages mismatched.");
         Assert.assertEquals(logArgs.size(), 18, "log messages mismatched.");
-        Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
+        Assert.assertEquals(logArgs.get(0), SESSION_ID, "log messages mismatched.");
         Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
         Assert.assertEquals(logArgs.get(2), "a1 IDLE\r\n", "log messages from client mismatched.");
-        Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
+        Assert.assertEquals(logArgs.get(3), SESSION_ID, "log messages mismatched.");
         Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
         Assert.assertEquals(logArgs.get(5), "+ idling", "log messages from server mismatched.");
-        Assert.assertEquals(logArgs.get(6), Long.valueOf(SESSION_ID), "log messages mismatched.");
+        Assert.assertEquals(logArgs.get(6), SESSION_ID, "log messages mismatched.");
         Assert.assertEquals(logArgs.get(7), USER_ID, "log messages mismatched.");
         Assert.assertEquals(logArgs.get(8), "* 2 EXPUNGE", "Error message mismatched.");
-        Assert.assertEquals(logArgs.get(9), Long.valueOf(SESSION_ID), "log messages mismatched.");
+        Assert.assertEquals(logArgs.get(9), SESSION_ID, "log messages mismatched.");
         Assert.assertEquals(logArgs.get(10), USER_ID, "log messages mismatched.");
         Assert.assertEquals(logArgs.get(11), "* 3 EXISTS", "Error message mismatched.");
-        Assert.assertEquals(logArgs.get(12), Long.valueOf(SESSION_ID), "log messages mismatched.");
+        Assert.assertEquals(logArgs.get(12), SESSION_ID, "log messages mismatched.");
         Assert.assertEquals(logArgs.get(13), USER_ID, "log messages mismatched.");
         Assert.assertEquals(logArgs.get(14), "DONE\r\n", "log messages from client mismatched.");
-        Assert.assertEquals(logArgs.get(15), Long.valueOf(SESSION_ID), "log messages mismatched.");
+        Assert.assertEquals(logArgs.get(15), SESSION_ID, "log messages mismatched.");
         Assert.assertEquals(logArgs.get(16), USER_ID, "log messages mismatched.");
         Assert.assertEquals(logArgs.get(17), "a1 OK IDLE terminated", "log messages from server mismatched.");
     }
@@ -1639,10 +1639,10 @@ public class ImapAsyncSessionImplTest {
             final List<Object> logArgs = allArgsCapture.getAllValues();
             Assert.assertNotNull(logArgs, "log messages mismatched.");
             Assert.assertEquals(logArgs.size(), 6, "log messages mismatched.");
-            Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(0), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(2), "+", "log messages from server mismatched.");
-            Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(3), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(5), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
 
@@ -1738,16 +1738,16 @@ public class ImapAsyncSessionImplTest {
             final List<Object> logArgs = allArgsCapture.getAllValues();
             Assert.assertNotNull(logArgs, "log messages mismatched.");
             Assert.assertEquals(logArgs.size(), 12, "log messages mismatched.");
-            Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(0), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(2), "a1 AUTHENTICATE PLAIN\r\n", "log messages from client mismatched.");
-            Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(3), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(5), "+", "log messages from server mismatched.");
-            Assert.assertEquals(logArgs.get(6), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(6), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(7), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(8), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
-            Assert.assertEquals(logArgs.get(9), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(9), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(10), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(11), "a1 OK AUTHENTICATE completed", "Error message mismatched.");
         }
@@ -1796,22 +1796,22 @@ public class ImapAsyncSessionImplTest {
             final List<Object> logArgs = allArgsCapture.getAllValues();
             Assert.assertNotNull(logArgs, "log messages mismatched.");
             Assert.assertEquals(logArgs.size(), 18, "log messages mismatched.");
-            Assert.assertEquals(logArgs.get(0), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(0), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(2), "a1 AUTHENTICATE PLAIN\r\n", "log messages from client mismatched.");
-            Assert.assertEquals(logArgs.get(3), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(3), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(4), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(5), "+", "log messages from server mismatched.");
-            Assert.assertEquals(logArgs.get(6), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(6), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(7), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(8), "AUTHENTICATE PLAIN FOR USER:orange", "log messages from client mismatched.");
-            Assert.assertEquals(logArgs.get(9), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(9), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(10), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(11), "a1 OK AUTHENTICATE completed", "Error message mismatched.");
-            Assert.assertEquals(logArgs.get(12), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(12), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(13), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(14), "a2 COMPRESS DEFLATE\r\n", "log messages from client mismatched.");
-            Assert.assertEquals(logArgs.get(15), Long.valueOf(SESSION_ID), "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(15), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(16), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(17), "a2 OK Success", "log messages from server mismatched.");
         }
