@@ -30,6 +30,9 @@ public final class AuthXoauth2Command extends AbstractAuthCommand {
     /** Literal for auth==Bearer. */
     private static final String AUTH_BEARER = "auth=Bearer ";
 
+    /** Extra length for string. */
+    private static final int EXTRA_LEN = 10;
+
     /** User name. */
     private String username;
 
@@ -68,13 +71,14 @@ public final class AuthXoauth2Command extends AbstractAuthCommand {
     @Override
     String buildClientResponse() {
         // Xoath2 format: "user=%s\001auth=Bearer %s\001\001";
-        final String sbOauth2 = USER + username + ImapClientConstants.SOH + AUTH_BEARER
-                + token + ImapClientConstants.SOH + ImapClientConstants.SOH;
-        return Base64.encodeBase64String(sbOauth2.getBytes(StandardCharsets.UTF_8));
+        final int len = USER.length() + username.length() + token.length() + EXTRA_LEN;
+        final StringBuilder sbOauth2 = new StringBuilder(len).append(USER).append(username).append(ImapClientConstants.SOH).append(AUTH_BEARER)
+                .append(token).append(ImapClientConstants.SOH).append(ImapClientConstants.SOH);
+        return Base64.encodeBase64String(sbOauth2.toString().getBytes(StandardCharsets.UTF_8));
     }
 
     @Override
     public String getDebugData() {
-        return LOG_PREFIX + username;
+        return new StringBuilder(LOG_PREFIX).append(username).toString();
     }
 }

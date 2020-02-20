@@ -30,6 +30,9 @@ public final class AuthOauthBearerCommand extends AbstractAuthCommand {
     /** Literal for auth==Bearer. */
     private static final String AUTH_BEARER = "auth=Bearer ";
 
+    /** Extra length for port and a bunch of SOH. */
+    private static final int EXTRA_LEN = 50;
+
     /** Comma literal. */
     private static final char COMMA = ',';
 
@@ -83,14 +86,15 @@ public final class AuthOauthBearerCommand extends AbstractAuthCommand {
     @Override
     String buildClientResponse() {
         // String format: n,a=user@example.com,^Ahost=server.example.com^Aport=993^Aauth=Bearer <oauthtoken>^A^A
-        final String sbOauth2 = N_A + emailId + COMMA + ImapClientConstants.SOH
-                + "host=" + hostname + ImapClientConstants.SOH + "port=" + port + ImapClientConstants.SOH
-                + AUTH_BEARER + token + ImapClientConstants.SOH + ImapClientConstants.SOH;
-        return Base64.encodeBase64String(sbOauth2.getBytes(StandardCharsets.US_ASCII));
+        final int len = N_A.length() + emailId.length() + hostname.length() + token.length() + EXTRA_LEN;
+        final StringBuilder sbOauth2 = new StringBuilder(len).append(N_A).append(emailId).append(COMMA).append(ImapClientConstants.SOH);
+        sbOauth2.append("host=").append(hostname).append(ImapClientConstants.SOH).append("port=").append(port).append(ImapClientConstants.SOH);
+        sbOauth2.append(AUTH_BEARER).append(token).append(ImapClientConstants.SOH).append(ImapClientConstants.SOH);
+        return Base64.encodeBase64String(sbOauth2.toString().getBytes(StandardCharsets.US_ASCII));
     }
 
     @Override
     public String getDebugData() {
-        return LOG_PREFIX + emailId;
+        return new StringBuilder(LOG_PREFIX).append(emailId).toString();
     }
 }

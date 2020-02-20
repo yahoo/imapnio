@@ -207,7 +207,7 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
      * @return the new tag that was not used
      */
     private String getNextTag() {
-        return String.valueOf(A) + tagSequence.incrementAndGet();
+        return new StringBuilder().append(A).append(tagSequence.incrementAndGet()).toString();
     }
 
     /**

@@ -72,7 +72,7 @@ public class LoginCommand extends ImapRequestAdapter {
 
     @Override
     public String getDebugData() {
-        return LOG_PREFIX + username;
+        return new StringBuilder(LOG_PREFIX).append(username).toString();
     }
 
     @Override

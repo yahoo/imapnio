@@ -189,7 +189,7 @@ public final class MessageNumberSet {
             v.add(new MessageNumberSet(start, end));
             i = j;
         }
-        return v.toArray(new MessageNumberSet[0]);
+        return v.toArray(new MessageNumberSet[v.size()]);
     }
 
     /**
@@ -212,7 +212,7 @@ public final class MessageNumberSet {
             v.add(new MessageNumberSet(start, end));
             i = j;
         }
-        return v.toArray(new MessageNumberSet[0]);
+        return v.toArray(new MessageNumberSet[v.size()]);
     }
 
     /**
