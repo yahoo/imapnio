@@ -12,7 +12,7 @@ import org.testng.annotations.Test;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 
 /**
- * Unit test for {@code DeleteFolderCommand}.
+ * Unit test for {@link DeleteFolderCommand}.
  */
 public class DeleteFolderCommandTest {
     /** Literal for DELETE. */

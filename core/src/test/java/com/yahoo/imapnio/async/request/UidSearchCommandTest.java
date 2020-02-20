@@ -33,7 +33,7 @@ import com.yahoo.imapnio.async.exception.ImapAsyncClientException.FailureType;
 import io.netty.buffer.ByteBuf;
 
 /**
- * Unit test for {@code UidSearchCommand}.
+ * Unit test for {@link UidSearchCommand}.
  */
 public class UidSearchCommandTest {
 

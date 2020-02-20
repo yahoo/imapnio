@@ -15,7 +15,7 @@ import com.yahoo.imapnio.async.data.QResyncSeqMatchData;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 
 /**
- * Unit test for {@code SelectFolderCommand}.
+ * Unit test for {@link SelectFolderCommand}.
  */
 public class SelectFolderCommandTest {
     /** Literal for SELECT. */

@@ -20,7 +20,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelPipeline;
 
 /**
- * Unit test for {@code ImapAsyncCreateSessionResponse}.
+ * Unit test for {@link ImapAsyncCreateSessionResponse}.
  */
 public class ImapAsyncCreateSessionResponseTest {
 

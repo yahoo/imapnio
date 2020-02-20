@@ -12,7 +12,7 @@ import org.testng.annotations.Test;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 
 /**
- * Unit test for {@code UnsubscribeFolderCommand}.
+ * Unit test for {@link UnsubscribeFolderCommand}.
  */
 public class UnsubscribeFolderCommandTest {
     /** Literal for UNSUBSCRIBE. */

@@ -48,14 +48,14 @@ public abstract class AbstractAuthCommand extends ImapRequestAdapter {
     }
 
     /**
-     * Builds the command (for example, "AUTHENTICATE XOAUTH2") and populate to the given {@code ButBuf} instance.
+     * Builds the command (for example, "AUTHENTICATE XOAUTH2") and populate to the given {@link ByteBuf} instance.
      *
-     * @param buf the @{code ByteBuf} instance to populate to
+     * @param buf the {@link ByteBuf} instance to populate to
      */
     abstract void buildCommand(@Nonnull final ByteBuf buf);
 
     /**
-     * Builds the IR, aka client Initial Response (RFC4959) and populates to the given {@code ButBuf} instance.
+     * Builds the IR, aka client Initial Response (RFC4959) and populates to the given {@link ByteBuf} instance.
      */
     abstract String buildClientResponse();
 

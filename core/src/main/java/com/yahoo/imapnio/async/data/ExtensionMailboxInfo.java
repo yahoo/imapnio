@@ -19,7 +19,7 @@ public class ExtensionMailboxInfo extends MailboxInfo {
     private String mailboxId;
 
     /**
-     * Initializes an instance of @{code ExtensionMailboxInfo} from the server responses for the select or examine command.
+     * Initializes an instance of {@link ExtensionMailboxInfo} from the server responses for the select or examine command.
      *
      * @param resps response array from server
      * @throws ParsingException for errors parsing the responses

@@ -9,7 +9,7 @@ import org.testng.annotations.Test;
 import com.yahoo.imapnio.async.data.IdResult;
 
 /**
- * Unit test for {@code IdResult}.
+ * Unit test for {@link IdResult}.
  */
 public class IdResultTest {
 

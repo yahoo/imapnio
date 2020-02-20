@@ -110,7 +110,7 @@ public class ImapClientRespReader extends DelimiterBasedFrameDecoder {
      */
     private void writeLiteralBufFromLineBuf(@Nonnull final ByteBuf lineBuf) {
         literalBuf.writeBytes(lineBuf);
-        ReferenceCountUtil.release(lineBuf); // Decreases the reference count by {@code 1}
+        ReferenceCountUtil.release(lineBuf); // Decreases the reference count by {@link 1}
     }
 
     /**

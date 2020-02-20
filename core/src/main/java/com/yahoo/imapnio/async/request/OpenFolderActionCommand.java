@@ -30,7 +30,7 @@ abstract class OpenFolderActionCommand extends ImapRequestAdapter {
     private QResyncParameter qResyncParameter;
 
     /**
-     * Initializes a @{code OpenFolderActionCommand}.
+     * Initializes a {@link OpenFolderActionCommand}.
      *
      * @param op command operator
      * @param folderName folder name
@@ -42,7 +42,7 @@ abstract class OpenFolderActionCommand extends ImapRequestAdapter {
     }
 
     /**
-     * Initializes a @{code OpenFolderActionCommand}.
+     * Initializes a {@link OpenFolderActionCommand}.
      *
      * @param op command operator
      * @param folderName folder name to select

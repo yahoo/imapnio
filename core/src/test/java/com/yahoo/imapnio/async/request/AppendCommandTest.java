@@ -21,7 +21,7 @@ import com.yahoo.imapnio.async.exception.ImapAsyncClientException.FailureType;
 import io.netty.buffer.ByteBuf;
 
 /**
- * Unit test for {@code AppendCommand}.
+ * Unit test for {@link AppendCommand}.
  */
 public class AppendCommandTest {
 

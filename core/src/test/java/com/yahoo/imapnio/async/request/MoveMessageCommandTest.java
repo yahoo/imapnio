@@ -14,7 +14,7 @@ import com.yahoo.imapnio.async.data.MessageNumberSet;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 
 /**
- * Unit test for {@code MoveMessageCommand}.
+ * Unit test for {@link MoveMessageCommand}.
  */
 public class MoveMessageCommandTest {
 

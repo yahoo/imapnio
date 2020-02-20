@@ -9,7 +9,7 @@ public class CheckCommand extends AbstractNoArgsCommand {
     private static final String CHECK = "CHECK";
 
     /**
-     * Initializes the @{code CheckCommand}.
+     * Initializes the {@link CheckCommand}.
      */
     public CheckCommand() {
         super(CHECK);

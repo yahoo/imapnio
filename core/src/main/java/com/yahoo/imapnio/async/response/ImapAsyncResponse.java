@@ -12,7 +12,7 @@ public class ImapAsyncResponse {
     private Collection<IMAPResponse> responses;
 
     /**
-     * Initializes an @{code ImapAsyncResponse} object.
+     * Initializes an {@link ImapAsyncResponse} object.
      *
      * @param responses list of response lines
      */

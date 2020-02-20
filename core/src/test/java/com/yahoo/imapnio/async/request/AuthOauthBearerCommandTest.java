@@ -23,7 +23,7 @@ import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 import io.netty.buffer.ByteBuf;
 
 /**
- * Unit test for {@code AuthOauthBearerCommand}.
+ * Unit test for {@link AuthOauthBearerCommand}.
  */
 public class AuthOauthBearerCommandTest {
 

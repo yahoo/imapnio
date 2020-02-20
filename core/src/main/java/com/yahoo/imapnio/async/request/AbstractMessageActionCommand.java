@@ -39,7 +39,7 @@ abstract class AbstractMessageActionCommand extends ImapRequestAdapter {
     private String targetFolder;
 
     /**
-     * Initializes a @{code MessageActionCommand} with the message sequence syntax.
+     * Initializes a {@link AbstractMessageActionCommand} with the message sequence syntax.
      *
      * @param op the command
      * @param isUid true if it is a uid sequence
@@ -52,11 +52,11 @@ abstract class AbstractMessageActionCommand extends ImapRequestAdapter {
     }
 
     /**
-     * Initializes a @{code MessageActionCommand} with the message sequence syntax.
+     * Initializes a {@link AbstractMessageActionCommand} with the message sequence syntax.
      *
      * @param op the command
      * @param isUid true if it is a uid sequence
-     * @param msgsets the set of @{code MessageNumberSet}
+     * @param msgsets the set of {@link MessageNumberSet}
      * @param targetFolder the targetFolder to be stored
      */
     protected AbstractMessageActionCommand(@Nonnull final String op, final boolean isUid, @Nonnull final MessageNumberSet[] msgsets,
@@ -65,7 +65,7 @@ abstract class AbstractMessageActionCommand extends ImapRequestAdapter {
     }
 
     /**
-     * Initializes a @{code MessageActionCommand} with the start and end message sequence.
+     * Initializes a {@link AbstractMessageActionCommand} with the start and end message sequence.
      *
      * @param op the command*
      * @param isUid true if it is a uid sequence
@@ -79,7 +79,7 @@ abstract class AbstractMessageActionCommand extends ImapRequestAdapter {
     }
 
     /**
-     * Initializes a @{code MessageActionCommand} with the msg string directly.
+     * Initializes a {@link AbstractMessageActionCommand} with the msg string directly.
      *
      * @param op the command
      * @param isUid true if it is a uid sequence

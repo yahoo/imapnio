@@ -14,7 +14,7 @@ import com.yahoo.imapnio.async.request.ImapCommandType;
 import com.yahoo.imapnio.async.request.ImapRequest;
 
 /**
- * Unit test for {@code CompressCommand}.
+ * Unit test for {@link CompressCommand}.
  */
 public class CompressCommandTest {
 

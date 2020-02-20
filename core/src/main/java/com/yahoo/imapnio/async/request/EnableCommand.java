@@ -24,7 +24,7 @@ import io.netty.buffer.Unpooled;
 public class EnableCommand extends ImapRequestAdapter {
 
     /**
-     * Initializes a @{code EnableCommand}.
+     * Initializes a {@link EnableCommand}.
      *
      * @param capabilities List of capability to enable
      */

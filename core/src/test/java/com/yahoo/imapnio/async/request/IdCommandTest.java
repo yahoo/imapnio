@@ -15,7 +15,7 @@ import com.sun.mail.imap.protocol.IMAPResponse;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 
 /**
- * Unit test for {@code IdCommand}.
+ * Unit test for {@link IdCommand}.
  */
 public class IdCommandTest {
 

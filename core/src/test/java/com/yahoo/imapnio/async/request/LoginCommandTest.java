@@ -13,7 +13,7 @@ import com.sun.mail.imap.protocol.IMAPResponse;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 
 /**
- * Unit test for {@code LoginCommand}.
+ * Unit test for {@link LoginCommand}.
  */
 public class LoginCommandTest {
 

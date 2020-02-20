@@ -12,7 +12,7 @@ import org.testng.annotations.Test;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 
 /**
- * Unit test for {@code NamespaceCommand}.
+ * Unit test for {@link NamespaceCommand}.
  */
 public class NamespaceCommandTest {
 

@@ -16,7 +16,7 @@ import com.yahoo.imapnio.async.data.MessageNumberSet;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 
 /**
- * Unit test for {@code StoreFlagsCommand}.
+ * Unit test for {@link StoreFlagsCommand}.
  */
 public class StoreFlagsCommandTest {
 

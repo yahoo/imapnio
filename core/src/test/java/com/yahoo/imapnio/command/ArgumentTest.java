@@ -15,7 +15,7 @@ import com.sun.mail.imap.protocol.SearchSequence;
 import com.yahoo.imapnio.command.Argument;
 
 /**
- * Unit test for {@code Argument}.
+ * Unit test for {@link Argument}.
  */
 public class ArgumentTest {
 

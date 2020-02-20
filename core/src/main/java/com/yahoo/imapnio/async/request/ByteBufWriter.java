@@ -58,7 +58,7 @@ final class ByteBufWriter extends Protocol {
     }
 
     /**
-     * Returns a continuation response in order to avoid @{code com.sun.mail.iap.Argument} blocking on literal method to wait for server continuation.
+     * Returns a continuation response in order to avoid {@link com.sun.mail.iap.Argument} blocking on literal method to wait for server continuation.
      */
     @Override
     public Response readResponse() throws IOException, ProtocolException {

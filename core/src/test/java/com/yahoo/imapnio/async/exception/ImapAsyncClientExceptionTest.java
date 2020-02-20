@@ -6,7 +6,7 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 /**
- * Unit test for {@code ImapAsyncClientException}.
+ * Unit test for {@link ImapAsyncClientException}.
  */
 public class ImapAsyncClientExceptionTest {
 

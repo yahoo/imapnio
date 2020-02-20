@@ -43,7 +43,7 @@ import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.GenericFutureListener;
 
 /**
- * Unit test for {@code ImapAsyncClient}.
+ * Unit test for {@link ImapAsyncClient}.
  */
 public class ImapAsyncClientTest {
 

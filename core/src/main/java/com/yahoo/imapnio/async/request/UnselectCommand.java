@@ -9,7 +9,7 @@ public class UnselectCommand extends AbstractNoArgsCommand {
     private static final String UNSELECT = "UNSELECT";
 
     /**
-     * Initializes the @{code UnselectCommand}.
+     * Initializes the {@link UnselectCommand}.
      */
     public UnselectCommand() {
         super(UNSELECT);

@@ -10,7 +10,7 @@ import com.yahoo.imapnio.async.data.MessageNumberSet;
 public class UidFetchCommand extends AbstractFetchCommand {
 
     /**
-     * Initializes a @{code UidFetchCommand} with the @{code MessageNumberSet} array.
+     * Initializes a {@link UidFetchCommand} with the {@link MessageNumberSet} array.
      *
      * @param msgsets the set of message set
      * @param items the data items
@@ -20,7 +20,7 @@ public class UidFetchCommand extends AbstractFetchCommand {
     }
 
     /**
-     * Initializes a @{code UidFetchCommand} with the @{code MessageNumberSet} array.
+     * Initializes a {@link UidFetchCommand} with the {@link MessageNumberSet} array.
      *
      * @param msgsets the set of message set
      * @param macro the macro, for example, ALL
@@ -30,7 +30,7 @@ public class UidFetchCommand extends AbstractFetchCommand {
     }
 
     /**
-     * Initializes a @{code UidFetchCommand} with string form uids and data items.
+     * Initializes a {@link UidFetchCommand} with string form uids and data items.
      *
      * @param uids the UID string following the RFC3501 syntax. For ex:3857529045,3857529047:3857529065
      * @param items the data items
@@ -40,7 +40,7 @@ public class UidFetchCommand extends AbstractFetchCommand {
     }
 
     /**
-     * Initializes a @{code UidFetchCommand} with string form uids and macro.
+     * Initializes a {@link UidFetchCommand} with string form uids and macro.
      *
      * @param uids the UID string following the RFC3501 syntax. For ex:3857529045,3857529047:3857529065
      * @param macro the macro, for example, ALL

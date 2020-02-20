@@ -12,7 +12,7 @@ import org.testng.annotations.Test;
 import com.yahoo.imapnio.async.data.Capability;
 
 /**
- * Unit test for {@code Capability}.
+ * Unit test for {@link Capability}.
  */
 public class CapabilityTest {
 

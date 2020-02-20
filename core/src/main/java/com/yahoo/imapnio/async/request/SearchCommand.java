@@ -18,7 +18,7 @@ import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 public class SearchCommand extends AbstractSearchCommand {
 
     /**
-     * Initializes a @{code SearchCommand} with the MessageNumberSet array, search string and character set name.
+     * Initializes a {@link SearchCommand} with the MessageNumberSet array, search string and character set name.
      *
      * @param msgsets the set of MessageNumberSet
      * @param term the search term

@@ -120,8 +120,8 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
         private final ImapFuture<ImapAsyncResponse> future;
 
         /**
-         * Initializes a newly created {@code ImapCommandJob} object so that it can handle the command responses and determine whether the request is
-         * done.
+         * Initializes a newly created {@link ImapCommandEntry} object so that it can handle the command responses and determine whether the request
+         * is done.
          *
          * @param cmd ImapRequest instance
          * @param future ImapFuture instance

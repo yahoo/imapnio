@@ -11,7 +11,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 
 /**
- * Unit test for {@code ImapArgumentFormatter}.
+ * Unit test for {@link ImapArgumentFormatter}.
  */
 public class ImapArgumentFormatterByteBufTest {
 

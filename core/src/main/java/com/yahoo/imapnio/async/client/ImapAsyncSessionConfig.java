@@ -12,7 +12,7 @@ public final class ImapAsyncSessionConfig {
     public static final int DEFAULT_READ_TIMEOUT_MILLIS = 10000;
 
     /**
-     * Maximum time in milliseconds for opening a connection, this maps to CONNECT_TIMEOUT_MILLIS in @{code ChannelOption}, it will be used when
+     * Maximum time in milliseconds for opening a connection, this maps to CONNECT_TIMEOUT_MILLIS in {@code ChannelOption}, it will be used when
      * establishing a connection.
      */
     private int connectionTimeoutMillis = DEFAULT_CONNECTION_TIMEOUT_MILLIS;

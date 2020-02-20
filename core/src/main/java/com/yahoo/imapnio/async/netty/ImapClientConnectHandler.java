@@ -47,10 +47,10 @@ public class ImapClientConnectHandler extends MessageToMessageDecoder<IMAPRespon
     private Object sessionCtx;
 
     /**
-     * Initializes @{code ImapClientConnectHandler} to process ok greeting after connection.
+     * Initializes {@link ImapClientConnectHandler} to process ok greeting after connection.
      *
      * @param sessionFuture imap session future, should be set to done once ok is received
-     * @param logger the @{code Logger} instance for @{ImapAsyncSessionImpl}
+     * @param logger the {@link Logger} instance for @{ImapAsyncSessionImpl}
      * @param logOpt logging option for the session to be created
      * @param sessionId the session id
      * @param sessionCtx context for the session information, its toString() method will be called to be used for logging and exception getMessage()

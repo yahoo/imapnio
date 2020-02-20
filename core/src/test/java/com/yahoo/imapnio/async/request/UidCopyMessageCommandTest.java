@@ -14,7 +14,7 @@ import com.yahoo.imapnio.async.data.MessageNumberSet;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 
 /**
- * Unit test for {@code UidCopyMessageCommand}.
+ * Unit test for {@link UidCopyMessageCommand}.
  */
 public class UidCopyMessageCommandTest {
     /** Literal for COPY. */

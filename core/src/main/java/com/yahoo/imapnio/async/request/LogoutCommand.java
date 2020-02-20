@@ -9,7 +9,7 @@ public class LogoutCommand extends AbstractNoArgsCommand {
     private static final String LOGOUT = "LOGOUT";
 
     /**
-     * Initializes the @{code LogoutCommand} command.
+     * Initializes the {@link LogoutCommand} command.
      */
     public LogoutCommand() {
         super(LOGOUT);

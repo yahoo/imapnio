@@ -51,7 +51,7 @@ import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.timeout.IdleStateEvent;
 
 /**
- * Unit test for {@code ImapAsyncSessionImpl}.
+ * Unit test for {@link ImapAsyncSessionImpl}.
  */
 public class ImapAsyncSessionImplTest {
 

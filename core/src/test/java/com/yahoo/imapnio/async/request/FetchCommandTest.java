@@ -14,7 +14,7 @@ import com.yahoo.imapnio.async.data.MessageNumberSet;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 
 /**
- * Unit test for {@code FetchCommand}.
+ * Unit test for {@link FetchCommand}.
  */
 public class FetchCommandTest {
 

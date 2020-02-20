@@ -12,7 +12,7 @@ import org.testng.annotations.Test;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 
 /**
- * Unit test for {@code RenameFolderCommand}.
+ * Unit test for {@link RenameFolderCommand}.
  */
 public class RenameFolderCommandTest {
     /** Literal for RENAME. */

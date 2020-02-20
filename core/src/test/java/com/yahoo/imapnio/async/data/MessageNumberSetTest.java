@@ -8,7 +8,7 @@ import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException.FailureType;
 
 /**
- * Unit test for {@code MessageNumberSet}.
+ * Unit test for {@link MessageNumberSet}.
  */
 public class MessageNumberSetTest {
 

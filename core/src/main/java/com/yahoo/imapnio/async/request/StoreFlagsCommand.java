@@ -11,7 +11,7 @@ import com.yahoo.imapnio.async.data.MessageNumberSet;
 public class StoreFlagsCommand extends AbstractStoreFlagsCommand {
 
     /**
-     * Initializes a @{code StoreFlagsCommand} with the MessageNumberSet array, Flags and action.Requests server to return the new value.
+     * Initializes a {@link StoreFlagsCommand} with the MessageNumberSet array, Flags and action.Requests server to return the new value.
      *
      * @param msgsets the set of message set
      * @param flags the flags to be stored
@@ -22,7 +22,7 @@ public class StoreFlagsCommand extends AbstractStoreFlagsCommand {
     }
 
     /**
-     * Initializes a @{code StoreFlagsCommand} with the MessageNumberSet array and flags.
+     * Initializes a {@link StoreFlagsCommand} with the MessageNumberSet array and flags.
      *
      * @param msgsets the set of message set
      * @param flags the flags to be stored
@@ -35,7 +35,7 @@ public class StoreFlagsCommand extends AbstractStoreFlagsCommand {
     }
 
     /**
-     * Initializes a @{code StoreFlagsCommand} with string form message numbers, Flags, action, flag whether to request server to return the new
+     * Initializes a {@link StoreFlagsCommand} with string form message numbers, Flags, action, flag whether to request server to return the new
      * value.
      *
      * @param msgNumbers the message numbers in string format

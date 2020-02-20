@@ -126,7 +126,7 @@ public class ImapAsyncClientException extends Exception {
     }
 
     /**
-     * Initializes a @{code ImapAsyncClientException} with failure type and cause.
+     * Initializes a {@link ImapAsyncClientException} with failure type and cause.
      *
      * @param failureType the reason it fails
      * @param cause the exception underneath

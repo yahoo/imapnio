@@ -33,7 +33,7 @@ import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 
 /**
- * Unit test for {@code ImapClientConnectHandler}.
+ * Unit test for {@link ImapClientConnectHandler}.
  */
 public class ImapClientConnectHandlerTest {
 

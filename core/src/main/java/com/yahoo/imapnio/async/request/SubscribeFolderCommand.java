@@ -11,7 +11,7 @@ public class SubscribeFolderCommand extends AbstractFolderActionCommand {
     private static final String SUBSCRIBE = "SUBSCRIBE";
 
     /**
-     * Initializes a @{code SubscribeCommand}.
+     * Initializes a {@link SubscribeFolderCommand}.
      *
      * @param folderName folder name to SUBSCRIBE
      */

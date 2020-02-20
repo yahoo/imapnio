@@ -22,7 +22,7 @@ import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 
 /**
- * Unit test for {@code ImapClientCommandRespHandler}.
+ * Unit test for {@link ImapClientCommandRespHandler}.
  */
 public class ImapClientCommandRespHandlerTest {
 

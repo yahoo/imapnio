@@ -27,7 +27,7 @@ import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException.FailureType;
 
 /**
- * Unit test for {@code ImapResponseMapper}.
+ * Unit test for {@link ImapResponseMapper}.
  */
 public class ImapResponseMapperTest {
     /** Imap server greeting. */

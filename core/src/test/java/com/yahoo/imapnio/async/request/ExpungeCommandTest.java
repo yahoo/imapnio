@@ -12,7 +12,7 @@ import org.testng.annotations.Test;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 
 /**
- * Unit test for {@code ExpungeCommand}.
+ * Unit test for {@link ExpungeCommand}.
  */
 public class ExpungeCommandTest {
 

@@ -33,7 +33,7 @@ import com.yahoo.imapnio.async.exception.ImapAsyncClientException.FailureType;
 import io.netty.buffer.ByteBuf;
 
 /**
- * Unit test for {@code SearchCommand}.
+ * Unit test for {@link SearchCommand}.
  */
 public class SearchCommandTest {
 

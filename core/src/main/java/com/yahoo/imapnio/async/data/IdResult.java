@@ -14,7 +14,7 @@ public final class IdResult {
     private final Map<String, String> params;
 
     /**
-     * Initializes the @{code IdResult} class.
+     * Initializes the {@link IdResult} class.
      *
      * @param map map of capability name with its values if existing
      */

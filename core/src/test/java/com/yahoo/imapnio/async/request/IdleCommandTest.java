@@ -17,7 +17,7 @@ import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 import io.netty.buffer.ByteBuf;
 
 /**
- * Unit test for {@code IdleCommand}.
+ * Unit test for {@link IdleCommand}.
  */
 public class IdleCommandTest {
 

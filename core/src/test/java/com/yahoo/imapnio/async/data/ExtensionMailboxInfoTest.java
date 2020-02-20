@@ -11,7 +11,7 @@ import com.sun.mail.iap.ProtocolException;
 import com.sun.mail.imap.protocol.IMAPResponse;
 
 /**
- * Unit test for {@code ExtensionMailboxInfo}.
+ * Unit test for {@link ExtensionMailboxInfo}.
  */
 public class ExtensionMailboxInfoTest {
 

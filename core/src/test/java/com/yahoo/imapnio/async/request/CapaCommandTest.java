@@ -13,7 +13,7 @@ import com.sun.mail.imap.protocol.IMAPResponse;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 
 /**
- * Unit test for {@code CapaCommand}.
+ * Unit test for {@link CapaCommand}.
  */
 public class CapaCommandTest {
 

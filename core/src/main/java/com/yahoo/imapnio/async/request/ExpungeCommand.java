@@ -9,7 +9,7 @@ public class ExpungeCommand extends AbstractNoArgsCommand {
     private static final String EXPUNGE = "EXPUNGE";
 
     /**
-     * Initializes the @{code ExpungeCommand}.
+     * Initializes the {@link ExpungeCommand}.
      */
     public ExpungeCommand() {
         super(EXPUNGE);

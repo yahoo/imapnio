@@ -9,7 +9,7 @@ public class CloseCommand extends AbstractNoArgsCommand {
     private static final String CLOSE = "CLOSE";
 
     /**
-     * Initializes the @{code CloseCommand}.
+     * Initializes the {@link CloseCommand}.
      */
     public CloseCommand() {
         super(CLOSE);

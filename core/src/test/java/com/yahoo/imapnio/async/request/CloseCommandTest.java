@@ -12,7 +12,7 @@ import org.testng.annotations.Test;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 
 /**
- * Unit test for {@code CloseCommand}.
+ * Unit test for {@link CloseCommand}.
  */
 public class CloseCommandTest {
 
