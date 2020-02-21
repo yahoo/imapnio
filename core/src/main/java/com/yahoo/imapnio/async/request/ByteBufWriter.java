@@ -32,6 +32,8 @@ final class ByteBufWriter extends Protocol {
     /**
      * Creates a ByteBufWriter object.
      *
+     * @param buf ByteBuf instance
+     * @param isLiteralPlus Flag to indicate whether literal plus is enabled
      * @throws IOException on failure
      */
     ByteBufWriter(@Nonnull final ByteBuf buf, final boolean isLiteralPlus) throws IOException {
@@ -59,6 +61,10 @@ final class ByteBufWriter extends Protocol {
 
     /**
      * Returns a continuation response in order to avoid {@link com.sun.mail.iap.Argument} blocking on literal method to wait for server continuation.
+     *
+     * @return a continuation response
+     * @throws IOException on network failure
+     * @throws ProtocolException on IMAP protocol errors
      */
     @Override
     public Response readResponse() throws IOException, ProtocolException {

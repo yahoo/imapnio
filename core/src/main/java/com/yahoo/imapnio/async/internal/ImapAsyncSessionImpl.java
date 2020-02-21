@@ -108,6 +108,7 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
         @Nonnull
         private final ImapRequest cmd;
 
+        /** The state of command. */
         @Nonnull
         private CommandState state;
 

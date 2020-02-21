@@ -109,6 +109,7 @@ public class ImapAsyncClient {
          * Initializes {@link ImapClientChannelInitializer} with the read time out value.
          *
          * @param imapReadTimeoutValue timeout value for server not responding after write command is sent
+         * @param unit unit of time
          */
         private ImapClientChannelInitializer(final int imapReadTimeoutValue, final TimeUnit unit) {
             this.imapReadTimeoutValue = imapReadTimeoutValue;

@@ -56,6 +56,8 @@ public abstract class AbstractAuthCommand extends ImapRequestAdapter {
 
     /**
      * Builds the IR, aka client Initial Response (RFC4959) and populates to the given {@link ByteBuf} instance.
+     *
+     * @return a string as a client initial response
      */
     abstract String buildClientResponse();
 
