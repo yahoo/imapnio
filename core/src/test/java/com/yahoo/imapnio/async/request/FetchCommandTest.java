@@ -50,7 +50,7 @@ public class FetchCommandTest {
      * @throws IllegalArgumentException will not throw
      */
     @Test
-    public void GetCommandLineFromConstructorWithMacro()
+    public void testGetCommandLineFromConstructorWithMacro()
             throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
 
         final long[] msgs = { 4294967293L, 4294967294L, 4294967295L };

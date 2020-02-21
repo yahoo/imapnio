@@ -12,7 +12,6 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import com.sun.mail.imap.protocol.SearchSequence;
-import com.yahoo.imapnio.command.Argument;
 
 /**
  * Unit test for {@link Argument}.

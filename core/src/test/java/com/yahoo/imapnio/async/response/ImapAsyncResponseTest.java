@@ -9,7 +9,6 @@ import org.testng.annotations.Test;
 
 import com.sun.mail.iap.ProtocolException;
 import com.sun.mail.imap.protocol.IMAPResponse;
-import com.yahoo.imapnio.async.response.ImapAsyncResponse;
 
 /**
  * Unit test for {@link ImapAsyncResponse}.

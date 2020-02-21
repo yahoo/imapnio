@@ -9,8 +9,6 @@ import java.util.Map;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import com.yahoo.imapnio.async.data.Capability;
-
 /**
  * Unit test for {@link Capability}.
  */

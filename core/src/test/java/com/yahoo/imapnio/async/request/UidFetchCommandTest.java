@@ -72,7 +72,7 @@ public class UidFetchCommandTest {
      * @throws IllegalArgumentException will not throw
      */
     @Test
-    public void GetCommandLineFromConstructorWithMacro()
+    public void testGetCommandLineFromConstructorWithMacro()
             throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
 
         final long[] msgs = { 4294967293L, 4294967294L, 4294967295L };
@@ -116,7 +116,7 @@ public class UidFetchCommandTest {
      * @throws IllegalArgumentException will not throw
      */
     @Test
-    public void GetCommandLineFromConstructorWithUidStringAndMacro()
+    public void testGetCommandLineFromConstructorWithUidStringAndMacro()
             throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
 
         final ImapRequest cmd = new UidFetchCommand("1:*", FetchMacro.FAST);
