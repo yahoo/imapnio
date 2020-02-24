@@ -15,8 +15,17 @@ public class ExtensionMailboxInfo extends MailboxInfo {
     /** Literal for MAILBOXID. */
     private static final String MAILBOX_ID = "MAILBOXID";
 
+    /** Literal for CLOSED. */
+    private static final String CLOSED_ID = "CLOSED";
+
     /** Variable to store mailbox Id. */
     private String mailboxId;
+
+    /** Variable to store previously selected mailbox was closed implicitly. */
+    private boolean closed;
+
+    /** Tagged response when the status is OK. */
+    private IMAPResponse taggedResponse;
 
     /**
      * Initializes an instance of @{code ExtensionMailboxInfo} from the server responses for the select or examine command.
@@ -26,6 +35,7 @@ public class ExtensionMailboxInfo extends MailboxInfo {
      */
     public ExtensionMailboxInfo(@Nonnull final IMAPResponse[] resps) throws ParsingException {
         super(resps);
+        closed = false;
         for (int i = 0; i < resps.length; i++) {
             if (resps[i] == null) { // since MailboxInfo nulls it out when finishing parsing an identified response
                 continue;
@@ -49,8 +59,13 @@ public class ExtensionMailboxInfo extends MailboxInfo {
                 if (values != null && values.length >= 1) {
                     mailboxId = values[0];
                     resps[i] = null; // Nulls out this element in array to be consistent with MailboxInfo behavior
-                    break;
                 }
+            } else if (ir.isOK() && key.equals(CLOSED_ID)) { // example * OK [CLOSED]
+                closed = true;
+                resps[i] = null; // Nulls out this element in array to be consistent with MailboxInfo behavior
+            } else if (ir.isTagged() && ir.isOK()) {
+                taggedResponse = ir;
+                resps[i] = null; // Nulls out this element in array to be consistent with MailboxInfo behavior
             }
             ir.reset(); // default back the parsing index
         }
@@ -62,5 +77,20 @@ public class ExtensionMailboxInfo extends MailboxInfo {
     @Nullable
     public String getMailboxId() {
         return mailboxId;
+    }
+
+    /**
+     * @return whether previously selected mailbox closed implicitly.
+     */
+    public boolean isClosed() {
+        return closed;
+    }
+
+    /**
+     * @return tagged response when response is OK.
+     */
+    @Nullable
+    public IMAPResponse getTaggedResponse() {
+        return taggedResponse;
     }
 }

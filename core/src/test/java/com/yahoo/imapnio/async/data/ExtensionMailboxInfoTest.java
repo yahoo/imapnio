@@ -26,20 +26,22 @@ public class ExtensionMailboxInfoTest {
     @Test
     public void testCreateExtensionMailboxInfoSuccess() throws IOException, ProtocolException, ImapAsyncClientException {
 
-        final IMAPResponse[] content = new IMAPResponse[9];
-        content[0] = new IMAPResponse("* 3 EXISTS");
-        content[1] = new IMAPResponse("* 0 RECENT");
-        content[2] = new IMAPResponse("* OK [UIDVALIDITY 1459808247] UIDs valid");
-        content[3] = new IMAPResponse("* OK [UIDNEXT 150400] Predicted next UID");
-        content[4] = new IMAPResponse("* FLAGS (\\Answered \\Deleted \\Draft \\Flagged \\Seen $Forwarded $Junk $NotJunk)");
-        content[5] = new IMAPResponse("* OK [PERMANENTFLAGS ()] No permanent flags permitted");
-        content[6] = new IMAPResponse("* OK [HIGHESTMODSEQ 614]");
-        content[7] = new IMAPResponse("* OK [MAILBOXID (214-mailbox)] Ok");
-        content[8] = new IMAPResponse("002 OK [READ-ONLY] EXAMINE completed; now in selected state");
+        final IMAPResponse[] content = new IMAPResponse[10];
+        content[0] = new IMAPResponse("* OK [CLOSED]");
+        content[1] = new IMAPResponse("* 3 EXISTS");
+        content[2] = new IMAPResponse("* 0 RECENT");
+        content[3] = new IMAPResponse("* OK [UIDVALIDITY 1459808247] UIDs valid");
+        content[4] = new IMAPResponse("* OK [UIDNEXT 150400] Predicted next UID");
+        content[5] = new IMAPResponse("* FLAGS (\\Answered \\Deleted \\Draft \\Flagged \\Seen $Forwarded $Junk $NotJunk)");
+        content[6] = new IMAPResponse("* OK [PERMANENTFLAGS ()] No permanent flags permitted");
+        content[7] = new IMAPResponse("* OK [HIGHESTMODSEQ 614]");
+        content[8] = new IMAPResponse("* OK [MAILBOXID (214-mailbox)] Ok");
+        content[9] = new IMAPResponse("002 OK [READ-ONLY] EXAMINE completed; now in selected state");
         final ExtensionMailboxInfo minfo = new ExtensionMailboxInfo(content);
 
         // verify the result
         Assert.assertNotNull(minfo, "result mismatched.");
+        Assert.assertTrue(minfo.isClosed(), "Closed flag mismatched");
         Assert.assertNotNull(minfo.availableFlags, "availableFlags mismatched.");
         Assert.assertTrue(minfo.availableFlags.contains(Flag.ANSWERED), "availableFlags mismatched.");
         Assert.assertTrue(minfo.availableFlags.contains(Flag.DELETED), "availableFlags mismatched.");
@@ -50,7 +52,10 @@ public class ExtensionMailboxInfoTest {
         Assert.assertEquals(minfo.uidvalidity, 1459808247, "uidvalidity mismatched.");
         Assert.assertEquals(minfo.uidnext, 150400, "uidnext mismatched.");
         Assert.assertEquals(minfo.getMailboxId(), "214-mailbox", "MailboxId mismatched.");
-        Assert.assertNull(content[7], "This element should be nulled out");
+        Assert.assertNull(content[8], "This element should be nulled out");
+        Assert.assertEquals(minfo.getTaggedResponse().toString(), "002 OK [READ-ONLY] EXAMINE completed; now in selected state",
+                "Tagged response mismatched");
+        Assert.assertNull(content[9], "This element should be nulled out");
     }
 
     /**
@@ -77,6 +82,7 @@ public class ExtensionMailboxInfoTest {
 
         // verify the result
         Assert.assertNotNull(minfo, "result mismatched.");
+        Assert.assertFalse(minfo.isClosed(), "Closed flag mismatched");
         Assert.assertNotNull(minfo.availableFlags, "availableFlags mismatched.");
         Assert.assertTrue(minfo.availableFlags.contains(Flag.ANSWERED), "availableFlags mismatched.");
         Assert.assertTrue(minfo.availableFlags.contains(Flag.DELETED), "availableFlags mismatched.");
@@ -89,6 +95,7 @@ public class ExtensionMailboxInfoTest {
         Assert.assertNull(minfo.getMailboxId(), "MailboxId mismatched, should not be set.");
         Assert.assertNotNull(content[7], "This element should not be nulled out");
         Assert.assertEquals(content[7].getRest(), "[MAILBOXABC (2147483647)] Ok", "The index is not reset to the point of the status code.");
+        Assert.assertNotNull(minfo.getTaggedResponse(), "tagged response mismatched");
     }
 
     /**
