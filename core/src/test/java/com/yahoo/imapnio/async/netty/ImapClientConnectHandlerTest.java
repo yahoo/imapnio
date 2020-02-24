@@ -3,6 +3,7 @@ package com.yahoo.imapnio.async.netty;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -27,6 +28,7 @@ import com.yahoo.imapnio.async.exception.ImapAsyncClientException.FailureType;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
+import io.netty.channel.ConnectTimeoutException;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 
@@ -167,6 +169,79 @@ public class ImapClientConnectHandlerTest {
         Assert.assertNotNull(ex, "Expect exception to be thrown.");
         Assert.assertNotNull(ex.getCause(), "Expect cause.");
         Assert.assertEquals(ex.getCause().getClass(), ImapAsyncClientException.class, "Expected result mismatched.");
+    }
+
+    /**
+     * Tests exceptionCaught method with unKnownHostException.
+     *
+     * @throws IllegalAccessException will not throw
+     * @throws IllegalArgumentException will not throw
+     * @throws InterruptedException will not throw
+     * @throws TimeoutException will not throw
+     */
+    @Test
+    public void testExceptionCaughtWithUnKnownHost() throws IllegalArgumentException, IllegalAccessException, InterruptedException, TimeoutException {
+        final ImapFuture<ImapAsyncCreateSessionResponse> imapFuture = new ImapFuture<ImapAsyncCreateSessionResponse>();
+        final Logger logger = Mockito.mock(Logger.class);
+
+        final String sessCtx = "Titanosauria@long.neck";
+        final ImapClientConnectHandler handler = new ImapClientConnectHandler(imapFuture, logger, DebugMode.DEBUG_ON, SESSION_ID, sessCtx);
+
+        final ChannelHandlerContext ctx = Mockito.mock(ChannelHandlerContext.class);
+        final UnknownHostException unknownHostEx = new UnknownHostException("Unknown host");
+        handler.exceptionCaught(ctx, unknownHostEx);
+
+        ExecutionException ex = null;
+        Assert.assertTrue(imapFuture.isDone(), "Future should be done");
+        try {
+            imapFuture.get(5, TimeUnit.MILLISECONDS);
+        } catch (final ExecutionException ee) {
+            ex = ee;
+        }
+        Assert.assertNotNull(ex, "Expect exception to be thrown.");
+        Assert.assertNotNull(ex.getCause(), "Expect cause.");
+        Assert.assertEquals(ex.getCause().getClass(), ImapAsyncClientException.class, "Expected result mismatched.");
+        final ImapAsyncClientException imapEx = (ImapAsyncClientException) ex.getCause();
+        Assert.assertNotNull(imapEx.getCause(), "expect cause");
+        Assert.assertEquals(imapEx.getCause().getClass(), UnknownHostException.class, "Cause should be UnknownHost exception.");
+        Assert.assertEquals(imapEx.getFaiureType(), FailureType.UNKNOWN_HOST_EXCEPTION, "Failure type mismatch");
+    }
+
+    /**
+     * Tests exceptionCaught method with ConnectTimeout exception.
+     *
+     * @throws IllegalAccessException will not throw
+     * @throws IllegalArgumentException will not throw
+     * @throws InterruptedException will not throw
+     * @throws TimeoutException will not throw
+     */
+    @Test
+    public void testExceptionCaughtWithConnectTimeoutException()
+            throws IllegalArgumentException, IllegalAccessException, InterruptedException, TimeoutException {
+        final ImapFuture<ImapAsyncCreateSessionResponse> imapFuture = new ImapFuture<ImapAsyncCreateSessionResponse>();
+        final Logger logger = Mockito.mock(Logger.class);
+
+        final String sessCtx = "Titanosauria@long.neck";
+        final ImapClientConnectHandler handler = new ImapClientConnectHandler(imapFuture, logger, DebugMode.DEBUG_ON, SESSION_ID, sessCtx);
+
+        final ChannelHandlerContext ctx = Mockito.mock(ChannelHandlerContext.class);
+        final ConnectTimeoutException connectTimeoutEx = new ConnectTimeoutException("connection timeout");
+        handler.exceptionCaught(ctx, connectTimeoutEx);
+
+        Assert.assertTrue(imapFuture.isDone(), "Future should be done");
+        ExecutionException ex = null;
+        try {
+            imapFuture.get(5, TimeUnit.MILLISECONDS);
+        } catch (final ExecutionException ee) {
+            ex = ee;
+        }
+        Assert.assertNotNull(ex, "Expect exception to be thrown.");
+        Assert.assertNotNull(ex.getCause(), "Expect cause.");
+        Assert.assertEquals(ex.getCause().getClass(), ImapAsyncClientException.class, "Expected result mismatched.");
+        final ImapAsyncClientException imapEx = (ImapAsyncClientException) ex.getCause();
+        Assert.assertNotNull(imapEx.getCause(), "expect cause");
+        Assert.assertEquals(imapEx.getCause().getClass(), ConnectTimeoutException.class, "Cause should be ConnectTimeout exception.");
+        Assert.assertEquals(imapEx.getFaiureType(), FailureType.CONNECTION_TIMEOUT_EXCEPTION, "Failure type mismatch");
     }
 
     /**
