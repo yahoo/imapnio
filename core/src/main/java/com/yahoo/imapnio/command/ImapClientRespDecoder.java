@@ -1,6 +1,3 @@
-/**
- *
- */
 package com.yahoo.imapnio.command;
 
 import io.netty.handler.codec.MessageToMessageDecoder;

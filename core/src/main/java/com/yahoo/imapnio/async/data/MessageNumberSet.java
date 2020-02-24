@@ -91,7 +91,7 @@ public final class MessageNumberSet {
 
         /** Only need the last message, aka: * . */
         LAST_MESSAGE_ONLY
-    };
+    }
 
     /** Sequence type. */
     private final SequenceType seqType;
@@ -103,7 +103,7 @@ public final class MessageNumberSet {
     private final long end;
 
     /**
-     * Instantiates a {@code MessageNumberSet} with specific numeric start and end. For example, 4:10.
+     * Instantiates a {@link MessageNumberSet} with specific numeric start and end. For example, 4:10.
      *
      * @param start starting message sequence or UID sequence
      * @param end ending message sequence or UID sequence
@@ -113,7 +113,7 @@ public final class MessageNumberSet {
     }
 
     /**
-     * Instantiates a {@code MessageNumberSet} that starts with given start message number and ends with last message.
+     * Instantiates a {@link MessageNumberSet} that starts with given start message number and ends with last message.
      *
      * @param start starting message sequence or UID sequence
      * @param lastMsgFlag flag to denote that it is the last message in mailbox
@@ -138,7 +138,7 @@ public final class MessageNumberSet {
     }
 
     /**
-     * Instantiates a {@code MessageNumberSet} with start value, end value and SequenceType option.
+     * Instantiates a {@link MessageNumberSet} with start value, end value and SequenceType option.
      *
      * @param start starting message sequence or UID sequence
      * @param end ending message sequence or UID sequence

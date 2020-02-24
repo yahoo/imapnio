@@ -14,7 +14,7 @@ public class MoveMessageCommand extends AbstractMessageActionCommand {
     private static final String MOVE = "MOVE";
 
     /**
-     * Initializes a @{code MoveCommand} with the message sequence syntax.
+     * Initializes a {@link MoveMessageCommand} with the message sequence syntax.
      *
      * @param msgsets the set of message set
      * @param targetFolder the targetFolder to be stored
@@ -24,7 +24,7 @@ public class MoveMessageCommand extends AbstractMessageActionCommand {
     }
 
     /**
-     * Initializes a @{code MoveCommand} with the start and end message sequence.
+     * Initializes a {@link MoveMessageCommand} with the start and end message sequence.
      *
      * @param start the starting message sequence
      * @param end the ending message sequence
@@ -35,9 +35,9 @@ public class MoveMessageCommand extends AbstractMessageActionCommand {
     }
 
     /**
-     * Initializes a @{code CopyMessageCommand} with the @{code MessageNumberSet} array.
+     * Initializes a {@link CopyMessageCommand} with the {@link MessageNumberSet} array.
      *
-     * @param msgsets the set of @{code MessageNumberSet}
+     * @param msgsets the set of {@link MessageNumberSet}
      * @param targetFolder the targetFolder to be stored
      */
     public MoveMessageCommand(@Nonnull final MessageNumberSet[] msgsets, @Nonnull final String targetFolder) {

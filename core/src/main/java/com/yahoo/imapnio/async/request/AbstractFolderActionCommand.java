@@ -25,7 +25,7 @@ abstract class AbstractFolderActionCommand extends ImapRequestAdapter {
     private String folderName;
 
     /**
-     * Initializes a @{code FolderActionCommand}.
+     * Initializes a {@link AbstractFolderActionCommand}.
      *
      * @param op command operator
      * @param folderName folder name

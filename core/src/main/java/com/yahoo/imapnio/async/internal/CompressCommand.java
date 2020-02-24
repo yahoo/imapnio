@@ -14,7 +14,7 @@ final class CompressCommand extends AbstractNoArgsCommand {
     private static final String COMPRESS_DEFLATE = "COMPRESS DEFLATE";
 
     /**
-     * Initializes the @{code CompressCommand}. Constructor is only visible to this package so it can only be called by @{code ImapAsyncSessionImpl}.
+     * Initializes the {@link CompressCommand}. Constructor is only visible to this package so it can only be called by {@link ImapAsyncSessionImpl}.
      * 
      * @see "RFC 4978"
      */

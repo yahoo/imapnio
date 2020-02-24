@@ -122,7 +122,6 @@ public class ImapFutureTest {
     /**
      * Tests to verify get method when future is cancelled.
      *
-     * @throws ExecutionException if thread is interrupted
      * @throws InterruptedException if thread fails
      */
     @Test

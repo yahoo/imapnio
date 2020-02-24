@@ -11,7 +11,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 
 /**
- * This class defines imap selecct command request from client.
+ * This class defines imap select command request from client.
  */
 abstract class AbstractQueryFoldersCommand extends ImapRequestAdapter {
 

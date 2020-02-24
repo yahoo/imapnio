@@ -9,10 +9,9 @@ import org.testng.annotations.Test;
 
 import com.sun.mail.iap.ProtocolException;
 import com.sun.mail.imap.protocol.IMAPResponse;
-import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 
 /**
- * Unit test for {@code ExtensionMailboxInfo}.
+ * Unit test for {@link ExtensionMailboxInfo}.
  */
 public class ExtensionMailboxInfoTest {
 
@@ -21,10 +20,9 @@ public class ExtensionMailboxInfoTest {
      *
      * @throws IOException will not throw
      * @throws ProtocolException will not throw
-     * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testCreateExtensionMailboxInfoSuccess() throws IOException, ProtocolException, ImapAsyncClientException {
+    public void testCreateExtensionMailboxInfoSuccess() throws IOException, ProtocolException {
 
         final IMAPResponse[] content = new IMAPResponse[9];
         content[0] = new IMAPResponse("* 3 EXISTS");
@@ -58,10 +56,9 @@ public class ExtensionMailboxInfoTest {
      *
      * @throws IOException will not throw
      * @throws ProtocolException will not throw
-     * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testCreateExtensionMailboxInfoSomeOtherTextCode() throws IOException, ProtocolException, ImapAsyncClientException {
+    public void testCreateExtensionMailboxInfoSomeOtherTextCode() throws IOException, ProtocolException {
 
         final IMAPResponse[] content = new IMAPResponse[9];
         content[0] = new IMAPResponse("* 3 EXISTS");
@@ -96,10 +93,9 @@ public class ExtensionMailboxInfoTest {
      *
      * @throws IOException will not throw
      * @throws ProtocolException will not throw
-     * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testCreateExtensionMailboxInfoLeftBracketNotFound() throws IOException, ProtocolException, ImapAsyncClientException {
+    public void testCreateExtensionMailboxInfoLeftBracketNotFound() throws IOException, ProtocolException {
 
         final IMAPResponse[] content = new IMAPResponse[9];
         content[0] = new IMAPResponse("* 3 EXISTS");
@@ -134,10 +130,9 @@ public class ExtensionMailboxInfoTest {
      *
      * @throws IOException will not throw
      * @throws ProtocolException will not throw
-     * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testCreateExtensionMailboxInfoLeftParaenthesisNotFound() throws IOException, ProtocolException, ImapAsyncClientException {
+    public void testCreateExtensionMailboxInfoLeftParaenthesisNotFound() throws IOException, ProtocolException {
 
         final IMAPResponse[] content = new IMAPResponse[9];
         content[0] = new IMAPResponse("* 3 EXISTS");
@@ -172,10 +167,9 @@ public class ExtensionMailboxInfoTest {
      *
      * @throws IOException will not throw
      * @throws ProtocolException will not throw
-     * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testCreateExtensionMailboxInfoNoValueInParenthsis() throws IOException, ProtocolException, ImapAsyncClientException {
+    public void testCreateExtensionMailboxInfoNoValueInParenthsis() throws IOException, ProtocolException {
 
         final IMAPResponse[] content = new IMAPResponse[9];
         content[0] = new IMAPResponse("* 3 EXISTS");

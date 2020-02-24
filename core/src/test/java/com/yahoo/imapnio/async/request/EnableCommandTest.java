@@ -12,6 +12,9 @@ import org.testng.annotations.Test;
 import com.sun.mail.imap.protocol.IMAPResponse;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 
+/**
+ * Unit test for {@link EnableCommand}.
+ */
 public class EnableCommandTest {
     /** All capabilities to obtain. */
     private static final String[] CAPABILITIES = { "X-ALL-MAIL", "CONDSTORE" };

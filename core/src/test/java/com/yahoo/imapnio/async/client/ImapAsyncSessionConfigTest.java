@@ -4,7 +4,7 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 /**
- * Unit test for {@code ImapAsyncSessionConfig}.
+ * Unit test for {@link ImapAsyncSessionConfig}.
  */
 public class ImapAsyncSessionConfigTest {
 

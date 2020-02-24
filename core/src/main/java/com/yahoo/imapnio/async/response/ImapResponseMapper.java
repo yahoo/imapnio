@@ -49,7 +49,7 @@ public class ImapResponseMapper {
     private ImapResponseParser parser;
 
     /**
-     * Initializes a @{code ImapResponseMapper} object.
+     * Initializes a {@link ImapResponseMapper} object.
      */
     public ImapResponseMapper() {
         parser = new ImapResponseParser();
@@ -272,10 +272,10 @@ public class ImapResponseMapper {
         }
 
         /**
-         * Sets up the mode for the @{code MailboxInfo}.
+         * Sets up the mode for the {@link MailboxInfo}.
          *
          * @param lastResp the tagged response
-         * @param minfo the @{code MailboxInfo} instance
+         * @param minfo the {@link MailboxInfo} instance
          */
         private void setupMailboxInfoAccessMode(@Nonnull final Response lastResp, @Nonnull final MailboxInfo minfo) {
             if (lastResp.isTagged() && lastResp.isOK()) { // command successful
@@ -288,7 +288,7 @@ public class ImapResponseMapper {
         }
 
         /**
-         * Parses the SELECT or EXAMINE responses to a @{code ExtensionMailboxInfo} instance.
+         * Parses the SELECT or EXAMINE responses to a {@link ExtensionMailboxInfo} instance.
          *
          * @param rr the list of responses from SELECT or EXAMINE, this input r array should contain the tagged/final one
          * @return MailboxInfo instance
@@ -306,7 +306,7 @@ public class ImapResponseMapper {
         }
 
         /**
-         * Parses the LIST or LSUB responses to a @{code ListInfo} list. List responses example:
+         * Parses the LIST or LSUB responses to a {@link ListInfo} list. List responses example:
          *
          * <pre>
          * * LIST () "/" INBOX
@@ -344,7 +344,7 @@ public class ImapResponseMapper {
         }
 
         /**
-         * Parses the Status responses to a @{code Status}.
+         * Parses the Status responses to a {@link Status}.
          *
          * @param r the list of responses from Status command, the input responses array should contain the tagged/final one
          * @return Status object constructed based on the r array
@@ -378,15 +378,14 @@ public class ImapResponseMapper {
         }
 
         /**
-         * Parses the ID responses to a @{code IdResult} object.
+         * Parses the ID responses to a {@link IdResult} object.
          *
-         * @param r the list of responses from ID command, the input responses array should contain the tagged/final one
+         * @param ir the list of responses from ID command, the input responses array should contain the tagged/final one
          * @return IdResult object constructed based on the given IMAPResponse array
-         * @throws ParsingException when encountering parsing exception
          * @throws ImapAsyncClientException when input value is not valid
          */
         @Nonnull
-        private IdResult parseToIdResult(@Nonnull final IMAPResponse[] ir) throws ParsingException, ImapAsyncClientException {
+        private IdResult parseToIdResult(@Nonnull final IMAPResponse[] ir) throws ImapAsyncClientException {
             if (ir.length < 1) {
                 throw new ImapAsyncClientException(FailureType.INVALID_INPUT);
             }
@@ -426,7 +425,7 @@ public class ImapResponseMapper {
         }
 
         /**
-         * Parses the responses from UID search command to a @{code SearchResult} object.
+         * Parses the responses from UID search command to a {@link SearchResult} object.
          *
          * @param ir the list of responses from UID search command, the input responses array should contain the tagged/final one
          * @return SearchResult object constructed based on the given IMAPResponse array

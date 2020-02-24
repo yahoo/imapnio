@@ -13,7 +13,7 @@ public class SelectFolderCommand extends OpenFolderActionCommand {
     private static final String SELECT = "SELECT";
 
     /**
-     * Initializes a @{code SelectCommand}.
+     * Initializes a {@link SelectFolderCommand}.
      *
      * @param folderName folder name to select
      */
@@ -22,7 +22,7 @@ public class SelectFolderCommand extends OpenFolderActionCommand {
     }
 
     /**
-     * Initializes a @{code SelectCommand}.
+     * Initializes a {@link SelectFolderCommand}.
      *
      * @param folderName folder name to select
      * @param qResyncParameter qresync parameter

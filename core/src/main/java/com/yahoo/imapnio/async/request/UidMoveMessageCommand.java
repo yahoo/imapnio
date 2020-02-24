@@ -14,7 +14,7 @@ public class UidMoveMessageCommand extends AbstractMessageActionCommand {
     private static final String MOVE = "MOVE";
 
     /**
-     * Initializes a @{code UidMoveMessageCommand} with the message sequence syntax.
+     * Initializes a {@link UidMoveMessageCommand} with the message sequence syntax.
      *
      * @param uidsets the list of UIDSet
      * @param targetFolder the targetFolder to be stored
@@ -24,7 +24,7 @@ public class UidMoveMessageCommand extends AbstractMessageActionCommand {
     }
 
     /**
-     * Initializes a @{code UidMoveMessageCommand} with the message sequence syntax.
+     * Initializes a {@link UidMoveMessageCommand} with the message sequence syntax.
      *
      * @param uids the string representing UID based on RFC3501
      * @param targetFolder the targetFolder to be stored
@@ -34,9 +34,9 @@ public class UidMoveMessageCommand extends AbstractMessageActionCommand {
     }
 
     /**
-     * Initializes a @{code UidMoveMessageCommand} with the @{code MessageNumberSet} array.
+     * Initializes a {@link UidMoveMessageCommand} with the {@link MessageNumberSet} array.
      *
-     * @param msgsets the set of @{code MessageNumberSet}
+     * @param msgsets the set of {@link MessageNumberSet}
      * @param targetFolder the targetFolder to be stored
      */
     public UidMoveMessageCommand(@Nonnull final MessageNumberSet[] msgsets, @Nonnull final String targetFolder) {

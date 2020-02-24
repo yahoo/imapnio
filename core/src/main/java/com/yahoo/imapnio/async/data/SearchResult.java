@@ -14,7 +14,7 @@ public class SearchResult {
     private final List<Long> msgNumbers;
 
     /**
-     * Initializes a {@code SearchResult} object with message number collection.
+     * Initializes a {@link SearchResult} object with message number collection.
      *
      * @param msgNumbers collection of message number from search command result
      */

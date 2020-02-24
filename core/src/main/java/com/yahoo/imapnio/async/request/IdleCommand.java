@@ -33,11 +33,11 @@ public class IdleCommand extends ImapRequestAdapter {
     /** Initial buffer length, enough for the word IDLE or DONE with some room to grow. */
     private static final int LINE_LEN = 20;
 
-    /** ConcurrentLinkedQueue shared from caller and @{code ImapAsyncSession}. */
+    /** ConcurrentLinkedQueue shared from caller and {@code ImapAsyncSession}. */
     private ConcurrentLinkedQueue<IMAPResponse> serverStreamingResponses;
 
     /**
-     * Initializes a @{code IdleCommand}.
+     * Initializes a {@link IdleCommand}.
      *
      * @param serverStreamingResponses server streaming responses will be placed in this parameter
      */

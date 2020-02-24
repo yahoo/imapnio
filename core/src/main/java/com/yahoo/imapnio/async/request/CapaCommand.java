@@ -9,7 +9,7 @@ public class CapaCommand extends AbstractNoArgsCommand {
     private static final String CAPABILITY = "CAPABILITY";
 
     /**
-     * Initializes a {@code CapaCommand}.
+     * Initializes a {@link CapaCommand}.
      */
     public CapaCommand() {
         super(CAPABILITY);

@@ -1,6 +1,5 @@
 package com.yahoo.imapnio.async.request;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
@@ -22,7 +21,7 @@ import com.yahoo.imapnio.async.exception.ImapAsyncClientException.FailureType;
 import io.netty.buffer.ByteBuf;
 
 /**
- * Unit test for {@code AppendCommand}.
+ * Unit test for {@link AppendCommand}.
  */
 public class AppendCommandTest {
 
@@ -60,13 +59,12 @@ public class AppendCommandTest {
     /**
      * Tests getCommandLine method.
      *
-     * @throws IOException will not throw
      * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
      * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testGetCommandLineAndContinuation() throws IOException, IllegalArgumentException, IllegalAccessException, ImapAsyncClientException {
+    public void testGetCommandLineAndContinuation() throws IllegalArgumentException, IllegalAccessException, ImapAsyncClientException {
         final Date internalDate = new Date(1552413335000L);
         final Flags expectedFlags = new Flags();
         expectedFlags.add(Flags.Flag.FLAGGED);
@@ -107,13 +105,12 @@ public class AppendCommandTest {
     /**
      * Tests getCommandLine method.
      *
-     * @throws IOException will not throw
      * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
      * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testLiteralPlus() throws IOException, IllegalArgumentException, IllegalAccessException, ImapAsyncClientException {
+    public void testLiteralPlus() throws IllegalArgumentException, IllegalAccessException, ImapAsyncClientException {
         final Date internalDate = new Date(1552413335000L);
         final Flags expectedFlags = new Flags();
         expectedFlags.add(Flags.Flag.FLAGGED);
@@ -157,13 +154,12 @@ public class AppendCommandTest {
     /**
      * Tests getCommandLine method.
      *
-     * @throws IOException will not throw
      * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
      * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testLiteralMinus() throws IOException, IllegalArgumentException, IllegalAccessException, ImapAsyncClientException {
+    public void testLiteralMinus() throws IllegalArgumentException, IllegalAccessException, ImapAsyncClientException {
         final Date internalDate = new Date(1552413335000L);
         final Flags expectedFlags = new Flags();
         expectedFlags.add(Flags.Flag.FLAGGED);
@@ -207,13 +203,11 @@ public class AppendCommandTest {
     /**
      * Tests getCommandLine method.
      *
-     * @throws IOException will not throw
-     * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
      * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testGetCommandLineNullFlagsNullDate() throws IOException, IllegalArgumentException, IllegalAccessException, ImapAsyncClientException {
+    public void testGetCommandLineNullFlagsNullDate() throws IllegalArgumentException, ImapAsyncClientException {
         final Date internalDate = null;
         final Flags expectedFlags = null;
         final byte[] expectedMsg = TEST_MSG_BYTE;
@@ -241,10 +235,9 @@ public class AppendCommandTest {
     /**
      * Tests getTerminateCommandLine method.
      *
-     * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testGetTerminateCommandLine() throws ImapAsyncClientException {
+    public void testGetTerminateCommandLine() {
         final Date internalDate = new Date(1552413335000L);
         final Flags expectedFlags = new Flags();
         expectedFlags.add(Flags.Flag.FLAGGED);

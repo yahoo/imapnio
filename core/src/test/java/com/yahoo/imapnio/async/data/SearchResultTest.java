@@ -7,7 +7,7 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 /**
- * Unit test for {@code SearchResult}.
+ * Unit test for {@link SearchResult}.
  */
 public class SearchResultTest {
 

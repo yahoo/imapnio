@@ -45,7 +45,7 @@ final class ImapClientConstants {
     static final String LITERAL_PLUS = "LITERAL+";
 
     /** Extra buffer length for command line builder to add. */
-    static final int PAD_LEN = 100;;
+    static final int PAD_LEN = 100;
 
     /**
      * Private constructor to avoid constructing instance of this class.

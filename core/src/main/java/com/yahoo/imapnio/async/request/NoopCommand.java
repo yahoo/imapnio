@@ -9,7 +9,7 @@ public class NoopCommand extends AbstractNoArgsCommand {
     private static final String NOOP = "NOOP";
 
     /**
-     * Initializes the @{code NoopCommand}.
+     * Initializes the {@link NoopCommand}.
      */
     public NoopCommand() {
         super(NOOP);

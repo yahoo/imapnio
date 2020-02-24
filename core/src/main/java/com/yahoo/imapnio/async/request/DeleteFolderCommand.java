@@ -11,7 +11,7 @@ public class DeleteFolderCommand extends AbstractFolderActionCommand {
     private static final String DELETE = "DELETE";
 
     /**
-     * Initializes a @{code DeleteCommand}.
+     * Initializes a {@link DeleteFolderCommand}.
      *
      * @param folderName folder name to delete
      */

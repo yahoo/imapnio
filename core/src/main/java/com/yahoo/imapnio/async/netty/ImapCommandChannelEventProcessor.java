@@ -5,7 +5,7 @@ import com.sun.mail.imap.protocol.IMAPResponse;
 import io.netty.handler.timeout.IdleStateEvent;
 
 /**
- * This class handles the event coming from @{code ImapClientCommandRespHandler}.
+ * This class handles the event coming from {@link ImapClientCommandRespHandler}.
  */
 public interface ImapCommandChannelEventProcessor {
     /**

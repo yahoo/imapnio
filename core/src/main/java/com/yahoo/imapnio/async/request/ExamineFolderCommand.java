@@ -15,7 +15,7 @@ public class ExamineFolderCommand extends OpenFolderActionCommand {
     private static final String EXAMINE = "EXAMINE";
 
     /**
-     * Initializes a @{code ExamineCommand}.
+     * Initializes a {@link ExamineFolderCommand}.
      *
      * @param folderName folder name to examine
      */
@@ -24,7 +24,7 @@ public class ExamineFolderCommand extends OpenFolderActionCommand {
     }
 
     /**
-     * Initializes a @{code ExamineCommand}.
+     * Initializes a {@link ExamineFolderCommand}.
      *
      * @param folderName folder name to examine
      * @param qResyncParameter qresync parameter

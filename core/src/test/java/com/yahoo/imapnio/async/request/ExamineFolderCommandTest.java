@@ -1,12 +1,9 @@
 package com.yahoo.imapnio.async.request;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.HashSet;
 import java.util.Set;
-
-import javax.mail.search.SearchException;
 
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
@@ -18,7 +15,7 @@ import com.yahoo.imapnio.async.data.QResyncSeqMatchData;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 
 /**
- * Unit test for {@code ExamineFolderCommand}.
+ * Unit test for {@link ExamineFolderCommand}.
  */
 public class ExamineFolderCommandTest {
     /** Literal for Examine. */
@@ -49,13 +46,11 @@ public class ExamineFolderCommandTest {
      * Tests getCommandLine method.
      *
      * @throws ImapAsyncClientException will not throw
-     * @throws SearchException will not throw
-     * @throws IOException will not throw
      * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
      */
     @Test
-    public void testGetCommandLine() throws IOException, ImapAsyncClientException, SearchException, IllegalArgumentException, IllegalAccessException {
+    public void testGetCommandLine() throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
         final String folderName = "folderABC";
         final ImapRequest cmd = new ExamineFolderCommand(folderName);
         Assert.assertEquals(cmd.getCommandLine(), EXAMINE + folderName + "\r\n", "Expected result mismatched.");
@@ -103,10 +98,9 @@ public class ExamineFolderCommandTest {
     /**
      * Tests getCommandLine method with QRESYNC parameter.
      * @throws ImapAsyncClientException will not throw
-     * @throws IOException will not throw
      */
     @Test
-    public void testGetCommandLineWithQResyncParam() throws ImapAsyncClientException, IOException {
+    public void testGetCommandLineWithQResyncParam() throws ImapAsyncClientException {
         final String folderName = "测试";
         final long knownUidValidity = 100;
         final long knownModSeq = 4223212;

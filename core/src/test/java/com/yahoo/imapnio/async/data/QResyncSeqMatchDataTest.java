@@ -3,6 +3,9 @@ package com.yahoo.imapnio.async.data;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+/**
+ * Unit test for {@link QResyncSeqMatchData}.
+ */
 public class QResyncSeqMatchDataTest {
     /**
      * Test the get method for known Sequence set.

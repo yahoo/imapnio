@@ -1,12 +1,9 @@
 package com.yahoo.imapnio.async.request;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.HashSet;
 import java.util.Set;
-
-import javax.mail.search.SearchException;
 
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
@@ -17,11 +14,9 @@ import com.yahoo.imapnio.async.data.MessageNumberSet;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 
 /**
- * Unit test for {@code CopyMessageCommand}.
+ * Unit test for {@link CopyMessageCommand}.
  */
 public class CopyMessageCommandTest {
-    /** Literal for COPY. */
-    private static final String COPY = "COPY ";
 
     /** Fields to check for cleanup. */
     private Set<Field> fieldsToCheck;
@@ -48,14 +43,12 @@ public class CopyMessageCommandTest {
      * Tests getCommandLine method.
      *
      * @throws ImapAsyncClientException will not throw
-     * @throws SearchException will not throw
-     * @throws IOException will not throw
      * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
      */
     @Test
     public void testMessageSequenceGetCommandLine()
-            throws IOException, ImapAsyncClientException, SearchException, IllegalArgumentException, IllegalAccessException {
+            throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
         final String folderName = "folderABC";
         final int[] msgs = { 1, 2, 3 };
         final MessageSet[] msgsets = MessageSet.createMessageSets(msgs);
@@ -73,14 +66,12 @@ public class CopyMessageCommandTest {
      * Tests constructor with start and end message sequence and getCommandLine method.
      *
      * @throws ImapAsyncClientException will not throw
-     * @throws SearchException will not throw
-     * @throws IOException will not throw
      * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
      */
     @Test
     public void testConstructorStartEndGetCommandLine()
-            throws IOException, ImapAsyncClientException, SearchException, IllegalArgumentException, IllegalAccessException {
+            throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
         final String folderName = "folderABC";
         final ImapRequest cmd = new CopyMessageCommand(37850, 37852, folderName);
         Assert.assertEquals(cmd.getCommandLine(), "COPY 37850:37852 folderABC\r\n", "Expected result mismatched.");
@@ -96,14 +87,12 @@ public class CopyMessageCommandTest {
      * Tests the constructor with @{MessageNumberSet} and getCommandLine method.
      *
      * @throws ImapAsyncClientException will not throw
-     * @throws SearchException will not throw
-     * @throws IOException will not throw
      * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
      */
     @Test
     public void testConstructorMessageNumberSetGetCommandLine()
-            throws IOException, ImapAsyncClientException, SearchException, IllegalArgumentException, IllegalAccessException {
+            throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
         final String folderName = "folderABC";
         final MessageNumberSet[] mset = MessageNumberSet.createMessageNumberSets(new long[] { 37850L, 37851L, 37852L });
         final ImapRequest cmd = new CopyMessageCommand(mset, folderName);
@@ -120,11 +109,9 @@ public class CopyMessageCommandTest {
      * Tests getCommandLine method with folder name containing space.
      *
      * @throws ImapAsyncClientException will not throw
-     * @throws SearchException will not throw
-     * @throws IOException will not throw
      */
     @Test
-    public void testGetCommandLineWithEscapeChar() throws IOException, ImapAsyncClientException, SearchException {
+    public void testGetCommandLineWithEscapeChar() throws ImapAsyncClientException {
         final String folderName = "folder ABC";
         final ImapRequest cmd = new CopyMessageCommand(37850, 37852, folderName);
         Assert.assertEquals(cmd.getCommandLine(), "COPY 37850:37852 \"folder ABC\"\r\n", "Expected result mismatched.");
@@ -135,11 +122,9 @@ public class CopyMessageCommandTest {
      * Tests getCommandLine method with folder name with other character set encoding.
      *
      * @throws ImapAsyncClientException will not throw
-     * @throws SearchException will not throw
-     * @throws IOException will not throw
      */
     @Test
-    public void testGetCommandLineWithOtherCharSet() throws IOException, ImapAsyncClientException, SearchException {
+    public void testGetCommandLineWithOtherCharSet() throws ImapAsyncClientException {
         final String folderName = "测试";
         final ImapRequest cmd = new CopyMessageCommand(37850, 37852, folderName);
         Assert.assertEquals(cmd.getCommandLine(), "COPY 37850:37852 &bUuL1Q-\r\n", "Expected result mismatched.");

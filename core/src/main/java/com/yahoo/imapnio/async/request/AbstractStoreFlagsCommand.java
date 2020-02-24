@@ -78,7 +78,7 @@ public abstract class AbstractStoreFlagsCommand extends ImapRequestAdapter {
     private final boolean isSilent;
 
     /**
-     * Initializes a @{code AbstractStoreFlagsCommand} with the MessageNumberSet array, flags, action and silent flag whether server should return new
+     * Initializes a {@link AbstractStoreFlagsCommand} with the MessageNumberSet array, flags, action and silent flag whether server should return new
      * values.
      *
      * @param isUid whether to have UID prepended
@@ -93,7 +93,7 @@ public abstract class AbstractStoreFlagsCommand extends ImapRequestAdapter {
     }
 
     /**
-     * Initializes a @{code AbstractStoreFlagsCommand} with string form message numbers (could be sequence sets or UIDs) and all other parameters.
+     * Initializes a {@link AbstractStoreFlagsCommand} with string form message numbers (could be sequence sets or UIDs) and all other parameters.
      *
      * @param isUid whether to have UID prepended
      * @param msgNumbers the message id
