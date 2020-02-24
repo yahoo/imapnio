@@ -1,5 +1,7 @@
 package com.yahoo.imapnio.async.data;
 
+import java.util.ArrayList;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -23,9 +25,6 @@ public class ExtensionMailboxInfo extends MailboxInfo {
 
     /** Variable to store previously selected mailbox was closed implicitly. */
     private boolean closed;
-
-    /** Tagged response when the status is OK. */
-    private IMAPResponse taggedResponse;
 
     /**
      * Initializes an instance of @{code ExtensionMailboxInfo} from the server responses for the select or examine command.
@@ -64,7 +63,10 @@ public class ExtensionMailboxInfo extends MailboxInfo {
                 closed = true;
                 resps[i] = null; // Nulls out this element in array to be consistent with MailboxInfo behavior
             } else if (ir.isTagged() && ir.isOK()) {
-                taggedResponse = ir; // Do not null this out as it is used by ImapResponseMapper.
+                if (responses == null) {
+                    responses = new ArrayList<IMAPResponse>(1);
+                }
+                responses.add(ir); // Do not null this out as it is used by ImapResponseMapper.
             }
             ir.reset(); // default back the parsing index
         }
@@ -85,11 +87,4 @@ public class ExtensionMailboxInfo extends MailboxInfo {
         return closed;
     }
 
-    /**
-     * @return tagged response when response is OK.
-     */
-    @Nullable
-    public IMAPResponse getTaggedResponse() {
-        return taggedResponse;
-    }
 }

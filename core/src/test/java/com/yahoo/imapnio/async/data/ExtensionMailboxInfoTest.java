@@ -53,7 +53,8 @@ public class ExtensionMailboxInfoTest {
         Assert.assertEquals(minfo.uidnext, 150400, "uidnext mismatched.");
         Assert.assertEquals(minfo.getMailboxId(), "214-mailbox", "MailboxId mismatched.");
         Assert.assertNull(content[8], "This element should be nulled out");
-        Assert.assertEquals(minfo.getTaggedResponse().toString(), "002 OK [READ-ONLY] EXAMINE completed; now in selected state",
+        Assert.assertNotNull(minfo.responses, "responses should not be null");
+        Assert.assertEquals(minfo.responses.get(0).toString(), "002 OK [READ-ONLY] EXAMINE completed; now in selected state",
                 "Tagged response mismatched");
         Assert.assertNotNull(content[9], "This element should not be nulled out");
     }
@@ -95,7 +96,7 @@ public class ExtensionMailboxInfoTest {
         Assert.assertNull(minfo.getMailboxId(), "MailboxId mismatched, should not be set.");
         Assert.assertNotNull(content[7], "This element should not be nulled out");
         Assert.assertEquals(content[7].getRest(), "[MAILBOXABC (2147483647)] Ok", "The index is not reset to the point of the status code.");
-        Assert.assertNotNull(minfo.getTaggedResponse(), "tagged response mismatched");
+        Assert.assertNotNull(minfo.responses, "responses should not be null");
     }
 
     /**
