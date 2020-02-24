@@ -21,6 +21,12 @@ public class ImapAsyncClientException extends Exception {
         /** Connection failed with an exception. */
         CONNECTION_FAILED_EXCEPTION("Connection failed with an exception."),
 
+        /** Connection failed with unknown host exception. */
+        UNKNOWN_HOST_EXCEPTION("Connection failed with unknown host exception."),
+
+        /** Connection failed with connection timeout exception. */
+        CONNECTION_TIMEOUT_EXCEPTION("Connection failed with connection timeout exception."),
+
         /** Time-out on server connection. */
         CONNECTION_FAILED_EXCEED_IDLE_MAX("Time-out on server connection."),
 
