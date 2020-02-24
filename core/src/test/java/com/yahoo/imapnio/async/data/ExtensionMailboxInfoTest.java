@@ -55,7 +55,7 @@ public class ExtensionMailboxInfoTest {
         Assert.assertNull(content[8], "This element should be nulled out");
         Assert.assertEquals(minfo.getTaggedResponse().toString(), "002 OK [READ-ONLY] EXAMINE completed; now in selected state",
                 "Tagged response mismatched");
-        Assert.assertNull(content[9], "This element should be nulled out");
+        Assert.assertNotNull(content[9], "This element should not be nulled out");
     }
 
     /**

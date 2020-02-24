@@ -64,8 +64,7 @@ public class ExtensionMailboxInfo extends MailboxInfo {
                 closed = true;
                 resps[i] = null; // Nulls out this element in array to be consistent with MailboxInfo behavior
             } else if (ir.isTagged() && ir.isOK()) {
-                taggedResponse = ir;
-                resps[i] = null; // Nulls out this element in array to be consistent with MailboxInfo behavior
+                taggedResponse = ir; // Do not null this out as it is used by ImapResponseMapper.
             }
             ir.reset(); // default back the parsing index
         }
