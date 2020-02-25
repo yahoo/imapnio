@@ -294,9 +294,7 @@ public class SearchCommandTest {
      * Tests getCommandLine method with null message sequences set, MODSEQ SearchTerm with entry name and entry type.
      *
      * @throws IOException will not throw
-     * @throws IllegalAccessException will not throw
      * @throws IllegalArgumentException will not throw
-     * @throws ImapAsyncClientException will not throw
      * @throws SearchException will not throw
      */
     @Test

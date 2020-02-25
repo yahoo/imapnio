@@ -17,7 +17,7 @@ public class SearchResult {
     private final Long highestModSeq;
 
     /**
-     * Initializes a {@code SearchResult} object with message number collection and modification sequence.
+     * Initializes a {@link SearchResult} object with message number collection and modification sequence.
      *
      * @param msgNumbers collection of message number from search command result
      * @param highestModSeq the highest modification sequence from search command result
