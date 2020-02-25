@@ -4,11 +4,11 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
-import com.sun.mail.imap.protocol.FetchResponse;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import com.sun.mail.iap.ProtocolException;
+import com.sun.mail.imap.protocol.FetchResponse;
 import com.sun.mail.imap.protocol.IMAPResponse;
 
 /**

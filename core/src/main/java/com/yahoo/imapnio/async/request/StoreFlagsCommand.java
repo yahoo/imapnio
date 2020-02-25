@@ -48,7 +48,7 @@ public class StoreFlagsCommand extends AbstractStoreFlagsCommand {
     }
 
     /**
-     * Initializes a @{code StoreFlagsCommand} with the MessageNumberSet array, Flags, action, and unchanged since modification sequence.
+     * Initializes a {@link StoreFlagsCommand} with the MessageNumberSet array, Flags, action, and unchanged since modification sequence.
      * Requests server to return the new value.
      *
      * @param msgsets the set of message set
@@ -62,7 +62,7 @@ public class StoreFlagsCommand extends AbstractStoreFlagsCommand {
     }
 
     /**
-     * Initializes a @{code StoreFlagsCommand} with the MessageNumberSet array, flags, action, flag whether to request server to return the new
+     * Initializes a {@link StoreFlagsCommand} with the MessageNumberSet array, flags, action, flag whether to request server to return the new
      * value, and unchanged since modification sequence.
      *
      * @param msgsets the set of message set
@@ -77,7 +77,7 @@ public class StoreFlagsCommand extends AbstractStoreFlagsCommand {
     }
 
     /**
-     * Initializes a @{code StoreFlagsCommand} with string form message numbers, Flags, action, flag whether to request server to return the new
+     * Initializes a {@link StoreFlagsCommand} with string form message numbers, Flags, action, flag whether to request server to return the new
      * value.
      *
      * @param msgNumbers the message numbers in string format

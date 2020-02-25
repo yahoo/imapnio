@@ -30,7 +30,7 @@ public class FetchCommand extends AbstractFetchCommand {
     }
 
     /**
-     * Initializes a @{code FetchCommand} with the @{code MessageNumberSet} array, fetch items, and changed since the modification sequence.
+     * Initializes a {@link FetchCommand} with the {@code MessageNumberSet} array, fetch items, and changed since the modification sequence.
      *
      * @param msgsets the set of message set
      * @param items the data items
@@ -41,7 +41,7 @@ public class FetchCommand extends AbstractFetchCommand {
     }
 
     /**
-     * Initializes a @{code FetchCommand} with the @{code MessageNumberSet} array, macro, and changed since the modification sequence.
+     * Initializes a {@link FetchCommand} with the {@code MessageNumberSet} array, macro, and changed since the modification sequence.
      *
      * @param msgsets the set of message set
      * @param macro the macro

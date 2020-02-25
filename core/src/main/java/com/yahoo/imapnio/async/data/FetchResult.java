@@ -15,7 +15,7 @@ public class FetchResult {
     private final List<FetchResponse> fetchResponses;
 
     /**
-     * Initializes a {@code FetchResult} object with Fetch responses collection.
+     * Initializes a {@link FetchResult} object with Fetch responses collection.
      *
      * @param fetchResponses collection of Fetch responses from fetch command result
      */

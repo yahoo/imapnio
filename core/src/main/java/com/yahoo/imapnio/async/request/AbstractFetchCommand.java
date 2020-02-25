@@ -103,7 +103,8 @@ public abstract class AbstractFetchCommand extends ImapRequestAdapter {
     private boolean isVanished;
 
     /**
-     * Initializes a {@link FetchCommand} with the flag indicate whether prepending UID, the {@link MessageNumberSet} array and the data items.
+     * Initializes a {@link AbstractFetchCommand} with the flag indicate whether prepending UID, the {@link MessageNumberSet} array and the data
+     * items.
      *
      * @param isUid whether prepending UID
      * @param msgsets the set of message set
@@ -114,7 +115,7 @@ public abstract class AbstractFetchCommand extends ImapRequestAdapter {
     }
 
     /**
-     * Initializes a {@link FetchCommand} with the flag indicate whether prepending UID, the {@link MessageNumberSet} array, and the macro.
+     * Initializes a {@link AbstractFetchCommand} with the flag indicate whether prepending UID, the {@link MessageNumberSet} array, and the macro.
      *
      * @param isUid whether prepending UID
      * @param msgsets the set of message set
@@ -125,7 +126,7 @@ public abstract class AbstractFetchCommand extends ImapRequestAdapter {
     }
 
     /**
-     * Initializes a {@link FetchCommand} with the flag indicate whether prepending UID, the the message numbers string, and the macro.
+     * Initializes a {@link AbstractFetchCommand} with the flag indicate whether prepending UID, the the message numbers string, and the macro.
      *
      * @param isUid whether prepending UID
      * @param msgNumbers the message numbers string
@@ -136,7 +137,7 @@ public abstract class AbstractFetchCommand extends ImapRequestAdapter {
     }
 
     /**
-     * Initializes a {@link FetchCommand} with the flag indicate whether prepending UID, the the message numbers string, and the data items.
+     * Initializes a {@link AbstractFetchCommand} with the flag indicate whether prepending UID, the the message numbers string, and the data items.
      *
      * @param isUid whether prepending UID
      * @param msgNumbers the message numbers string
@@ -147,7 +148,7 @@ public abstract class AbstractFetchCommand extends ImapRequestAdapter {
     }
 
     /**
-     * Initializes a {@link FetchCommand} with the flag indicate whether prepending UID, the {@link MessageNumberSet} array, the data items,
+     * Initializes a {@link AbstractFetchCommand} with the flag indicate whether prepending UID, the {@link MessageNumberSet} array, the data items,
      * changed since the given modification sequence, and the flag to check whether uid fetch with vanished option.
      *
      * @param isUid whether prepending UID
@@ -162,7 +163,7 @@ public abstract class AbstractFetchCommand extends ImapRequestAdapter {
     }
 
     /**
-     * Initializes a {@link FetchCommand} with the flag indicate whether prepending UID, the {@link MessageNumberSet} array, the macro,
+     * Initializes a {@link AbstractFetchCommand} with the flag indicate whether prepending UID, the {@link MessageNumberSet} array, the macro,
      * changed since the given modification sequence, and the flag to check whether uid fetch with vanished option.
      *
      * @param isUid whether prepending UID
@@ -177,7 +178,7 @@ public abstract class AbstractFetchCommand extends ImapRequestAdapter {
     }
 
     /**
-     * Initializes a {@link FetchCommand} with the flag indicate whether prepending UID, the message numbers string, the data items,
+     * Initializes a {@link AbstractFetchCommand} with the flag indicate whether prepending UID, the message numbers string, the data items,
      * changed since the given modification sequence, and the flag to check whether uid fetch with vanished option.
      *
      * @param isUid whether prepending UID
@@ -197,7 +198,7 @@ public abstract class AbstractFetchCommand extends ImapRequestAdapter {
     }
 
     /**
-     * Initializes a {@link FetchCommand} with the flag indicate whether prepending UID, the message numbers string, the macro,
+     * Initializes a {@link AbstractFetchCommand} with the flag indicate whether prepending UID, the message numbers string, the macro,
      * changed since the given modification sequence, and the flag to check whether uid fetch with vanished option.
      *
      * @param isUid whether prepending UID

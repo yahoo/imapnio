@@ -49,7 +49,7 @@ public class UidStoreFlagsCommand extends AbstractStoreFlagsCommand {
     }
 
     /**
-     * Initializes a @{code UidStoreFlagsCommand} with the MessageNumberSet array, Flags and action. Requests server to return the new value.
+     * Initializes a {@link UidStoreFlagsCommand} with the MessageNumberSet array, Flags and action. Requests server to return the new value.
      *
      * @param msgsets the set of message set
      * @param flags the flags to be stored
@@ -62,7 +62,7 @@ public class UidStoreFlagsCommand extends AbstractStoreFlagsCommand {
     }
 
     /**
-     * Initializes a @{code UidStoreFlagsCommand} with the MessageNumberSet array, Flags, action, flag whether to request server to return the new
+     * Initializes a {@link UidStoreFlagsCommand} with the MessageNumberSet array, Flags, action, flag whether to request server to return the new
      * value, and unchanged since the modification sequence.
      *
      * @param msgsets the set of message set
@@ -77,7 +77,7 @@ public class UidStoreFlagsCommand extends AbstractStoreFlagsCommand {
     }
 
     /**
-     * Initializes a @{code UidStoreFlagsCommand} with string form message numbers, Flags, action, flag whether to request server to return the new
+     * Initializes a {@link UidStoreFlagsCommand} with string form message numbers, Flags, action, flag whether to request server to return the new
      * value, and the unchanged since the given modification sequence.
      *
      * @param uids the string representing UID based on RFC3501

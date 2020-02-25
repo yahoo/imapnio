@@ -50,7 +50,7 @@ public class UidFetchCommand extends AbstractFetchCommand {
     }
 
     /**
-     * Initializes a @{code UidFetchCommand} with the @{code MessageNumberSet} array, data items, and changed since the modification sequence.
+     * Initializes a {@link UidFetchCommand} with the {@code MessageNumberSet} array, data items, and changed since the modification sequence.
      *
      * @param msgsets the set of message set
      * @param items the data items
@@ -61,7 +61,7 @@ public class UidFetchCommand extends AbstractFetchCommand {
     }
 
     /**
-     * Initializes a @{code UidFetchCommand} with the @{code MessageNumberSet} array, macro, and changed since the modification sequence.
+     * Initializes a {@link UidFetchCommand} with the {@code MessageNumberSet} array, macro, and changed since the modification sequence.
      *
      * @param msgsets the set of message set
      * @param macro the macro, for example, ALL
@@ -72,7 +72,7 @@ public class UidFetchCommand extends AbstractFetchCommand {
     }
 
     /**
-     * Initializes a @{code UidFetchCommand} with the @{code MessageNumberSet} array, data items, changed since the modification sequence,
+     * Initializes a {@link UidFetchCommand} with the {@code MessageNumberSet} array, data items, changed since the modification sequence,
      * and isVanished flag.
      *
      * @param msgsets the set of message set
@@ -86,7 +86,7 @@ public class UidFetchCommand extends AbstractFetchCommand {
     }
 
     /**
-     * Initializes a @{code UidFetchCommand} with the @{code MessageNumberSet} array, macro, changed since the modification sequence,
+     * Initializes a {@link UidFetchCommand} with the {@code MessageNumberSet} array, macro, changed since the modification sequence,
      * and isVanished flag.
      *
      * @param msgsets the set of message set

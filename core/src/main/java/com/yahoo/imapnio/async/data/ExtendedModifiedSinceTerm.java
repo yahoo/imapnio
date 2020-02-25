@@ -61,7 +61,7 @@ public final class ExtendedModifiedSinceTerm extends SearchTerm {
     private final long modSeq;
 
     /**
-     * Initializes the @{code ExtendedModifiedSinceTerm} class with modification sequence.
+     * Initializes the {@code ExtendedModifiedSinceTerm} class with modification sequence.
      *
      * @param modSeq modification sequence number
      */
@@ -72,7 +72,7 @@ public final class ExtendedModifiedSinceTerm extends SearchTerm {
     }
 
     /**
-     * Initializes the @{code ExtendedModifiedSinceTerm} class with entry name, entry type, and modification sequence.
+     * Initializes the {@code ExtendedModifiedSinceTerm} class with entry name, entry type, and modification sequence.
      *
      * @param entryName name of the metadata item
      * @param entryType type of the metadata item

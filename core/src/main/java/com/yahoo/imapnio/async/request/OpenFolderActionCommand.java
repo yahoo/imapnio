@@ -66,7 +66,7 @@ abstract class OpenFolderActionCommand extends ImapRequestAdapter {
     }
 
     /**
-     * Initializes a @{code FolderActionCommand}.
+     * Initializes a {@link OpenFolderActionCommand}.
      *
      * @param op command operator
      * @param folderName folder name

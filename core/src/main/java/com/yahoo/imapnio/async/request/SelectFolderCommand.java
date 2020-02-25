@@ -32,7 +32,7 @@ public class SelectFolderCommand extends OpenFolderActionCommand {
     }
 
     /**
-     * Initializes a @{code SelectCommand}.
+     * Initializes a {@link SelectFolderCommand}.
      *
      * @param folderName folder name to select
      * @param condStore whether to enable CondStore

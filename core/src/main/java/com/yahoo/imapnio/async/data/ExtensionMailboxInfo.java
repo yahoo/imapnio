@@ -50,7 +50,6 @@ public class ExtensionMailboxInfo extends MailboxInfo {
                 continue;
             }
             key = key.toUpperCase();
-
             if (key.equals(MAILBOX_ID)) { // example when 26 is the mailbox id:"* OK [MAILBOXID (26)] Ok"
                 final String[] values = ir.readSimpleList(); // reading the string, aka as above example, "(26)", within parentheses
                 if (values != null && values.length >= 1) {

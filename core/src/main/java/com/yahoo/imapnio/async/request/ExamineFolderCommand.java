@@ -34,7 +34,7 @@ public class ExamineFolderCommand extends OpenFolderActionCommand {
     }
 
     /**
-     * Initializes a @{code ExamineCommand}.
+     * Initializes a {@link ExamineFolderCommand}.
      *
      * @param folderName folder name to examine
      * @param condStore whether to enable CondStore

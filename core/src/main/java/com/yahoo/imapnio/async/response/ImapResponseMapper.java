@@ -500,7 +500,7 @@ public class ImapResponseMapper {
         }
 
         /**
-         * Parses the responses from Store command and UID Store command to a @{code StoreResult} object.
+         * Parses the responses from Store command and UID Store command to a {@link StoreResult} object.
          *
          * @param ir the list of responses from Store or UID Store command, the input responses array should contain the tagged/final one
          * @param extensionItems the array of extension FetchItem
@@ -541,7 +541,7 @@ public class ImapResponseMapper {
         }
 
         /**
-         * Parses the responses from Fetch command and UID Fetch command to a @{code FetchResult} object.
+         * Parses the responses from Fetch command and UID Fetch command to a {@link FetchResult} object.
          *
          * @param ir the list of responses from Fetch or UID Fetch command, the input responses array should contain the tagged/final one
          * @param extensionItems the array of extension FetchItem
@@ -571,7 +571,7 @@ public class ImapResponseMapper {
         }
 
         /**
-         * This methods converts a response to @{code FetchResponse}.
+         * This methods converts a response to {@code FetchResponse}.
          *
          * @param response ImapResponse to be converted to Fetch response
          * @param extensionItems the array of extension FetchItem
