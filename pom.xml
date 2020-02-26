@@ -19,14 +19,8 @@
 
     <developers>
         <developer>
-            <id>lafa</id>
-            <name>Lafa</name>
-            <email>luis.alves@lafaspot.com</email>
-        </developer>
-        <developer>
-            <id>kraman</id>
-            <name>Kumar Raman</name>
-            <email>kumar.raman@yahoo.com</email>
+            <name>Yahoo Inc.</name>
+            <url>https://github.com/yahoo</url>
         </developer>
     </developers>
 

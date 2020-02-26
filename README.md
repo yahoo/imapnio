@@ -118,7 +118,7 @@ Please refer to the [contributing.md](Contributing.md) for information about how
 
 ## Maintainers
 
-Luis Alves: lafa@verizonmedia.com
+Yahoo Inc.: https://github.com/yahoo
 
 
 ## License

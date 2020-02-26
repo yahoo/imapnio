@@ -20,6 +20,12 @@ abstract class OpenFolderActionCommand extends ImapRequestAdapter {
     /** Byte array for CR and LF, keeping the array local so it cannot be modified by others. */
     private static final byte[] CRLF_B = { '\r', '\n' };
 
+    /** Literal for CONDSTORE. */
+    private static final String SP_CONDSTORE = " (CONDSTORE)";
+
+    /** Byte array for CONDSTORE. */
+    private static final byte[] SP_CONDSTORE_B = SP_CONDSTORE.getBytes(StandardCharsets.US_ASCII);
+
     /** Command operator, for example, "SELECT". */
     private String op;
 
@@ -28,6 +34,9 @@ abstract class OpenFolderActionCommand extends ImapRequestAdapter {
 
     /** Optional QResync parameter. */
     private QResyncParameter qResyncParameter;
+
+    /** Optional CondStore parameter. */
+    private boolean isCondStoreEnabled;
 
     /**
      * Initializes a {@link OpenFolderActionCommand}.
@@ -39,6 +48,7 @@ abstract class OpenFolderActionCommand extends ImapRequestAdapter {
         this.op = op;
         this.folderName = folderName;
         this.qResyncParameter = null;
+        this.isCondStoreEnabled = false;
     }
 
     /**
@@ -52,6 +62,21 @@ abstract class OpenFolderActionCommand extends ImapRequestAdapter {
         this.op = op;
         this.folderName = folderName;
         this.qResyncParameter = qResyncParameter;
+        this.isCondStoreEnabled = false;
+    }
+
+    /**
+     * Initializes a {@link OpenFolderActionCommand}.
+     *
+     * @param op command operator
+     * @param folderName folder name
+     * @param isCondStoreEnabled whether to enable CondStore
+     */
+    protected OpenFolderActionCommand(@Nonnull final String op, @Nonnull final String folderName, final boolean isCondStoreEnabled) {
+        this.op = op;
+        this.folderName = folderName;
+        this.qResyncParameter = null;
+        this.isCondStoreEnabled = isCondStoreEnabled;
     }
 
     @Override
@@ -83,8 +108,11 @@ abstract class OpenFolderActionCommand extends ImapRequestAdapter {
             sb.append("))");
             qResyncParameterSize = sb.length();
         }
+
+        final int condStoreSize = isCondStoreEnabled ? SP_CONDSTORE.length() : 0;
+
         // 2 * base64Folder.length(): assuming every char needs to be escaped, goal is eliminating resizing, and avoid complex length calculation
-        final int len = 2 * base64Folder.length() + ImapClientConstants.PAD_LEN + qResyncParameterSize;
+        final int len = 2 * base64Folder.length() + ImapClientConstants.PAD_LEN + qResyncParameterSize + condStoreSize;
         final ByteBuf byteBuf = Unpooled.buffer(len);
         byteBuf.writeBytes(op.getBytes(StandardCharsets.US_ASCII));
         byteBuf.writeByte(ImapClientConstants.SPACE);
@@ -95,6 +123,10 @@ abstract class OpenFolderActionCommand extends ImapRequestAdapter {
         if (qResyncParameterSize > 0) {
             byteBuf.writeByte(ImapClientConstants.SPACE);
             byteBuf.writeBytes(sb.toString().getBytes(StandardCharsets.US_ASCII));
+        }
+
+        if (isCondStoreEnabled) {
+            byteBuf.writeBytes(SP_CONDSTORE_B);
         }
 
         byteBuf.writeBytes(CRLF_B);

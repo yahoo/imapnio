@@ -130,6 +130,102 @@ public class UidFetchCommandTest {
     }
 
     /**
+     * Tests getCommandLine method using MessageNumberSet[], data items, and changed since the given modification sequence.
+     *
+     * @throws ImapAsyncClientException will not throw
+     * @throws IllegalAccessException will not throw
+     * @throws IllegalArgumentException will not throw
+     */
+    @Test
+    public void testGetCommandLineFromConstructorWithChangedSince() throws ImapAsyncClientException, IllegalArgumentException,
+            IllegalAccessException {
+
+        final long[] msgs = { 1L, 2L, 3L };
+        final MessageNumberSet[] msgsets = MessageNumberSet.createMessageNumberSets(msgs);
+        final ImapRequest cmd = new UidFetchCommand(msgsets, DATA_ITEMS, 1L);
+        Assert.assertEquals(cmd.getCommandLine(), "UID FETCH 1:3 (FLAGS BODY[HEADER.FIELDS (DATE FROM)]) (CHANGEDSINCE 1)\r\n",
+                "getCommandLine() mismatched.");
+
+        cmd.cleanup();
+        // Verify if cleanup happened correctly.
+        for (final Field field : fieldsToCheck) {
+            Assert.assertNull(field.get(cmd), "Cleanup should set " + field.getName() + " as null");
+        }
+    }
+
+    /**
+     * Tests getCommandLine method using MessageNumberSet[], macro, and changed since the given modification sequence.
+     *
+     * @throws ImapAsyncClientException will not throw
+     * @throws IllegalAccessException will not throw
+     * @throws IllegalArgumentException will not throw
+     */
+    @Test
+    public void testGetCommandLineFromConstructorWithMacroChangedSince() throws ImapAsyncClientException, IllegalArgumentException,
+            IllegalAccessException {
+
+        final long[] msgs = { 4294967293L, 4294967294L, 4294967295L };
+        final MessageNumberSet[] msgsets = MessageNumberSet.createMessageNumberSets(msgs);
+        final ImapRequest cmd = new UidFetchCommand(msgsets, FetchMacro.FAST, 1L);
+        Assert.assertEquals(cmd.getCommandLine(), "UID FETCH 4294967293:4294967295 FAST (CHANGEDSINCE 1)\r\n",
+                "getCommandLine() mismatched.");
+
+        cmd.cleanup();
+        // Verify if cleanup happened correctly.
+        for (final Field field : fieldsToCheck) {
+            Assert.assertNull(field.get(cmd), "Cleanup should set " + field.getName() + " as null");
+        }
+    }
+
+    /**
+     * Tests getCommandLine method using MessageNumberSet[], data items, changed since the given modification sequence and vanished flag.
+     *
+     * @throws ImapAsyncClientException will not throw
+     * @throws IllegalAccessException will not throw
+     * @throws IllegalArgumentException will not throw
+     */
+    @Test
+    public void testGetCommandLineFromConstructorWithChangedSinceVanished() throws ImapAsyncClientException, IllegalArgumentException,
+            IllegalAccessException {
+
+        final long[] msgs = { 1L, 2L, 3L };
+        final MessageNumberSet[] msgsets = MessageNumberSet.createMessageNumberSets(msgs);
+        final ImapRequest cmd = new UidFetchCommand(msgsets, DATA_ITEMS, 1L, true);
+        Assert.assertEquals(cmd.getCommandLine(), "UID FETCH 1:3 (FLAGS BODY[HEADER.FIELDS (DATE FROM)]) (CHANGEDSINCE 1 VANISHED)\r\n",
+                "getCommandLine() mismatched.");
+
+        cmd.cleanup();
+        // Verify if cleanup happened correctly.
+        for (final Field field : fieldsToCheck) {
+            Assert.assertNull(field.get(cmd), "Cleanup should set " + field.getName() + " as null");
+        }
+    }
+
+    /**
+     * Tests getCommandLine method using MessageNumberSet[], macro, changed since the given modification sequence and vanished flag.
+     *
+     * @throws ImapAsyncClientException will not throw
+     * @throws IllegalAccessException will not throw
+     * @throws IllegalArgumentException will not throw
+     */
+    @Test
+    public void testGetCommandLineFromConstructorWithMacroChangedSinceVanished() throws ImapAsyncClientException, IllegalArgumentException,
+            IllegalAccessException {
+
+        final long[] msgs = { 4294967293L, 4294967294L, 4294967295L };
+        final MessageNumberSet[] msgsets = MessageNumberSet.createMessageNumberSets(msgs);
+        final ImapRequest cmd = new UidFetchCommand(msgsets, FetchMacro.FAST, 1L, true);
+        Assert.assertEquals(cmd.getCommandLine(), "UID FETCH 4294967293:4294967295 FAST (CHANGEDSINCE 1 VANISHED)\r\n",
+                "getCommandLine() mismatched.");
+
+        cmd.cleanup();
+        // Verify if cleanup happened correctly.
+        for (final Field field : fieldsToCheck) {
+            Assert.assertNull(field.get(cmd), "Cleanup should set " + field.getName() + " as null");
+        }
+    }
+
+    /**
      * Tests getCommandType method.
      */
     @Test

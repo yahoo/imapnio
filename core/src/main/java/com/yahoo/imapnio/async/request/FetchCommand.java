@@ -29,6 +29,28 @@ public class FetchCommand extends AbstractFetchCommand {
         super(false, msgsets, macro);
     }
 
+    /**
+     * Initializes a {@link FetchCommand} with the {@code MessageNumberSet} array, fetch items, and changed since the modification sequence.
+     *
+     * @param msgsets the set of message set
+     * @param items the data items
+     * @param changedSince changed since the given modification sequence
+     */
+    public FetchCommand(@Nonnull final MessageNumberSet[] msgsets, @Nonnull final String items, @Nonnull final Long changedSince) {
+        super(false, msgsets, items, changedSince, false);
+    }
+
+    /**
+     * Initializes a {@link FetchCommand} with the {@code MessageNumberSet} array, macro, and changed since the modification sequence.
+     *
+     * @param msgsets the set of message set
+     * @param macro the macro
+     * @param changedSince changed since the given modification sequence
+     */
+    public FetchCommand(@Nonnull final MessageNumberSet[] msgsets, @Nonnull final FetchMacro macro, @Nonnull final Long changedSince) {
+        super(false, msgsets, macro, changedSince, false);
+    }
+
     @Override
     public ImapRFCSupportedCommandType getCommandType() {
         return ImapRFCSupportedCommandType.FETCH;

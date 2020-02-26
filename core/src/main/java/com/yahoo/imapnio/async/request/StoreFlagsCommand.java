@@ -47,6 +47,50 @@ public class StoreFlagsCommand extends AbstractStoreFlagsCommand {
         super(false, msgNumbers, flags, action, silent);
     }
 
+    /**
+     * Initializes a {@link StoreFlagsCommand} with the MessageNumberSet array, Flags, action, and unchanged since modification sequence.
+     * Requests server to return the new value.
+     *
+     * @param msgsets the set of message set
+     * @param flags the flags to be stored
+     * @param action whether to replace, add or remove the flags
+     * @param unchangedSince unchanged since the given modification sequence
+     */
+    public StoreFlagsCommand(@Nonnull final MessageNumberSet[] msgsets, @Nonnull final Flags flags, @Nonnull final FlagsAction action,
+                             @Nonnull final Long unchangedSince) {
+        super(false, msgsets, flags, action, false, unchangedSince);
+    }
+
+    /**
+     * Initializes a {@link StoreFlagsCommand} with the MessageNumberSet array, flags, action, flag whether to request server to return the new
+     * value, and unchanged since modification sequence.
+     *
+     * @param msgsets the set of message set
+     * @param flags the flags to be stored
+     * @param action whether to replace, add or remove the flags
+     * @param silent true if asking server to respond silently
+     * @param unchangedSince unchanged since the given modification sequence
+     */
+    public StoreFlagsCommand(@Nonnull final MessageNumberSet[] msgsets, @Nonnull final Flags flags, @Nonnull final FlagsAction action,
+                             final boolean silent, @Nonnull final Long unchangedSince) {
+        super(false, msgsets, flags, action, silent, unchangedSince);
+    }
+
+    /**
+     * Initializes a {@link StoreFlagsCommand} with string form message numbers, Flags, action, flag whether to request server to return the new
+     * value.
+     *
+     * @param msgNumbers the message numbers in string format
+     * @param flags the flags to be stored
+     * @param action whether to replace, add or remove the flags
+     * @param silent true if asking server to respond silently; false if requesting server to return the new values
+     * @param unchangedSince unchanged since the given modification sequence
+     */
+    public StoreFlagsCommand(@Nonnull final String msgNumbers, @Nonnull final Flags flags, @Nonnull final FlagsAction action,
+                             final boolean silent, @Nonnull final Long unchangedSince) {
+        super(false, msgNumbers, flags, action, silent, unchangedSince);
+    }
+
     @Override
     public ImapRFCSupportedCommandType getCommandType() {
         return ImapRFCSupportedCommandType.STORE_FLAGS;

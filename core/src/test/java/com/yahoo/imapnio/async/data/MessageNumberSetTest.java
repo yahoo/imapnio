@@ -142,6 +142,103 @@ public class MessageNumberSetTest {
     }
 
     /**
+     * Tests buildMessageNumberSets(String) method with only one number.
+     *
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testBuildMessageNumberSetsWithOneString() throws ImapAsyncClientException {
+        final MessageNumberSet[] expectedMsgSets = { new MessageNumberSet(1, 1) };
+        final String msgSetStr = MessageNumberSet.buildString(expectedMsgSets);
+        final MessageNumberSet[] actualMsgSets = MessageNumberSet.buildMessageNumberSets(msgSetStr);
+        Assert.assertNotNull(actualMsgSets, "buildMessageNumberSets() should not return null.");
+        Assert.assertEquals(actualMsgSets.length, 1, "buildMessageNumberSets() size mismatched.");
+        Assert.assertEquals(actualMsgSets[0], expectedMsgSets[0], "buildMessageNumberSets() mismatched.");
+    }
+
+    /**
+     * Tests buildMessageNumberSets(String) method having both start and end as number.
+     *
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testBuildMessageNumberSetsWithStartEnd() throws ImapAsyncClientException {
+        final MessageNumberSet[] expectedMsgSets = { new MessageNumberSet(1, 100) };
+        final String msgSetStr = MessageNumberSet.buildString(expectedMsgSets);
+        final MessageNumberSet[] actualMsgSets = MessageNumberSet.buildMessageNumberSets(msgSetStr);
+        Assert.assertNotNull(actualMsgSets, "buildMessageNumberSets() should not return null.");
+        Assert.assertEquals(actualMsgSets.length, 1, "buildMessageNumberSets() size mismatched.");
+        Assert.assertEquals(actualMsgSets[0], expectedMsgSets[0], "buildMessageNumberSets() mismatched.");
+    }
+
+    /**
+     * Tests buildMessageNumberSets(String) method having start with a number and end with last.
+     *
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testBuildMessageNumberSetsWithStartEndWithLast() throws ImapAsyncClientException {
+        final MessageNumberSet[] expectedMsgSets = { new MessageNumberSet(1, LastMessage.LAST_MESSAGE) };
+        final String msgSetStr = MessageNumberSet.buildString(expectedMsgSets);
+        final MessageNumberSet[] actualMsgSets = MessageNumberSet.buildMessageNumberSets(msgSetStr);
+        Assert.assertNotNull(actualMsgSets, "buildMessageNumberSets() should not return null.");
+        Assert.assertEquals(actualMsgSets.length, 1, "buildMessageNumberSets() size mismatched.");
+        Assert.assertEquals(actualMsgSets[0], expectedMsgSets[0], "buildMessageNumberSets() mismatched.");
+    }
+
+    /**
+     * Tests buildMessageNumberSets(String) method with last message only.
+     *
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testBuildMessageNumberSetsWithLastMessageOnly() throws ImapAsyncClientException {
+        final MessageNumberSet[] expectedMsgSets = { new MessageNumberSet(LastMessage.LAST_MESSAGE) };
+        final String msgSetStr = MessageNumberSet.buildString(expectedMsgSets);
+        final MessageNumberSet[] actualMsgSets = MessageNumberSet.buildMessageNumberSets(msgSetStr);
+        Assert.assertNotNull(actualMsgSets, "buildMessageNumberSets() should not return null.");
+        Assert.assertEquals(actualMsgSets.length, 1, "buildMessageNumberSets() size mismatched.");
+        Assert.assertEquals(actualMsgSets[0], expectedMsgSets[0], "buildMessageNumberSets() mismatched.");
+    }
+
+    /**
+     * Tests buildMessageNumberSets(String) method with last message only.
+     *
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testBuildMessageNumberSetsWithEndStartWithLast() throws ImapAsyncClientException {
+        final MessageNumberSet[] expectedMsgSets = { new MessageNumberSet(1, LastMessage.LAST_MESSAGE) };
+        final String msgSetStr = "*:1";
+        final MessageNumberSet[] actualMsgSets = MessageNumberSet.buildMessageNumberSets(msgSetStr);
+        Assert.assertNotNull(actualMsgSets, "buildMessageNumberSets() should not return null.");
+        Assert.assertEquals(actualMsgSets.length, 1, "buildMessageNumberSets() size mismatched.");
+        Assert.assertEquals(actualMsgSets[0], expectedMsgSets[0], "buildMessageNumberSets() mismatched.");
+    }
+
+    /**
+     * Tests buildMessageNumberSets(String) method with multiple of message number sets.
+     *
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testBuildMessageNumberSetsWithMultipleMsgNumSets() throws ImapAsyncClientException {
+        final int numMsgs = 4;
+        final MessageNumberSet[] expectedMsgs = new MessageNumberSet[numMsgs];
+        expectedMsgs[0] = new MessageNumberSet(1, 5);
+        expectedMsgs[1] = new MessageNumberSet(1, LastMessage.LAST_MESSAGE);
+        expectedMsgs[2] = new MessageNumberSet(2, 2);
+        expectedMsgs[3] = new MessageNumberSet(LastMessage.LAST_MESSAGE);
+        final String msgSetStr = MessageNumberSet.buildString(expectedMsgs);
+        final MessageNumberSet[] messageNumberSets = MessageNumberSet.buildMessageNumberSets(msgSetStr);
+        Assert.assertNotNull(messageNumberSets, "buildMessageNumberSets() should not return null.");
+        Assert.assertEquals(messageNumberSets.length, numMsgs, "buildMessageNumberSets() size mismatched.");
+        for (int i = 0; i < numMsgs; i++) {
+            Assert.assertEquals(messageNumberSets[i], expectedMsgs[i], "buildMessageNumberSets() mismatched.");
+        }
+    }
+
+    /**
      * Tests constructor and converting it to string.
      *
      */
@@ -218,5 +315,125 @@ public class MessageNumberSetTest {
         Assert.assertEquals(enumList.length, 1, "The enum count mismatched.");
         final LastMessage value = LastMessage.valueOf("LAST_MESSAGE");
         Assert.assertSame(value, LastMessage.LAST_MESSAGE, "Enum does not match.");
+    }
+
+    /**
+     * Tests BuildMessageNumberSets with bad input with three elements in one sequence set.
+     */
+    @Test
+    public void testBuildMessageNumberSetsWithBadInputTwoColonThreeElements() {
+        final String input = "1,2,1:2:3";
+        ImapAsyncClientException ex = null;
+        try {
+            MessageNumberSet.buildMessageNumberSets(input);
+        } catch (final ImapAsyncClientException e) {
+            ex = e;
+        }
+        Assert.assertNotNull(ex, "IMAP Async Client Exception should be thrown.");
+        Assert.assertEquals(ex.getFailureType(), FailureType.INVALID_INPUT, "Wrong fail type was thrown.");
+    }
+
+    /**
+     * Tests BuildMessageNumberSets with bad input with one and two colons in one sequence set.
+     */
+    @Test
+    public void testBuildMessageNumberSetsWithBadInputTwoColonOneElement() {
+        final String input = "1,2,1::";
+        ImapAsyncClientException ex = null;
+        try {
+            MessageNumberSet.buildMessageNumberSets(input);
+        } catch (final ImapAsyncClientException e) {
+            ex = e;
+        }
+        Assert.assertNotNull(ex, "IMAP Async Client Exception should be thrown.");
+        Assert.assertEquals(ex.getFailureType(), FailureType.INVALID_INPUT, "Wrong fail type was thrown.");
+    }
+
+    /**
+     * Tests BuildMessageNumberSets with bad input with only one element and one colon in one sequence set.
+     */
+    @Test
+    public void testBuildMessageNumberSetsWithBadInputOneColonOneElement() {
+        final String input = "1,2,:3";
+        ImapAsyncClientException ex = null;
+        try {
+            MessageNumberSet.buildMessageNumberSets(input);
+        } catch (final ImapAsyncClientException e) {
+            ex = e;
+        }
+        Assert.assertNotNull(ex, "IMAP Async Client Exception should be thrown.");
+        Assert.assertEquals(ex.getFailureType(), FailureType.INVALID_INPUT, "Wrong fail type was thrown.");
+    }
+
+    /**
+     * Tests BuildMessageNumberSets with bad input with extra space.
+     */
+    @Test
+    public void testBuildMessageNumberSetsWithBadInputWithSpaceAfterColon() {
+        final String input = "1,2: 3";
+        ImapAsyncClientException ex = null;
+        try {
+            MessageNumberSet.buildMessageNumberSets(input);
+        } catch (final ImapAsyncClientException e) {
+            ex = e;
+        }
+        Assert.assertNotNull(ex, "IMAP Async Client Exception should be thrown.");
+        Assert.assertEquals(ex.getFailureType(), FailureType.INVALID_INPUT, "Wrong fail type was thrown.");
+    }
+
+    /**
+     * Tests BuildMessageNumberSets with bad input with extra space after number.
+     */
+    @Test
+    public void testBuildMessageNumberSetsWithBadInputWithSpace() {
+        final String input = "1 ,2:3";
+        ImapAsyncClientException ex = null;
+        try {
+            MessageNumberSet.buildMessageNumberSets(input);
+        } catch (final ImapAsyncClientException e) {
+            ex = e;
+        }
+        Assert.assertNotNull(ex, "IMAP Async Client Exception should be thrown.");
+        Assert.assertEquals(ex.getFailureType(), FailureType.INVALID_INPUT, "Wrong fail type was thrown.");
+    }
+
+    /**
+     * Tests BuildMessageNumberSets with bad input with only one element and one colon in one sequence set.
+     */
+    @Test
+    public void testBuildMessageNumberSetsWithBadInputCharacter() {
+        final String input = "1,2,a:3";
+        ImapAsyncClientException ex = null;
+        try {
+            MessageNumberSet.buildMessageNumberSets(input);
+        } catch (final ImapAsyncClientException e) {
+            ex = e;
+        }
+        Assert.assertNotNull(ex, "IMAP Async Client Exception should be thrown.");
+        Assert.assertEquals(ex.getFailureType(), FailureType.INVALID_INPUT, "Wrong fail type was thrown.");
+    }
+
+    /**
+     * Tests BuildMessageNumberSets with null input.
+     *
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testBuildMessageNumberSetsWithNull() throws ImapAsyncClientException {
+        final String input = null;
+        final MessageNumberSet[] mns = MessageNumberSet.buildMessageNumberSets(input);
+        Assert.assertNull(mns, "buildMessageNumberSets() should return null");
+    }
+
+    /**
+     * Tests BuildMessageNumberSets with empty string input.
+     *
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testBuildMessageNumberSetsWithEmptyString() throws ImapAsyncClientException {
+        final String input = "";
+        final MessageNumberSet[] mns = MessageNumberSet.buildMessageNumberSets(input);
+        Assert.assertNull(mns, "buildMessageNumberSets() should return null");
     }
 }

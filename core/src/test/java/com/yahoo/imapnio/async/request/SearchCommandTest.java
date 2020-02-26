@@ -14,7 +14,9 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.mail.Flags;
+import javax.mail.search.BodyTerm;
 import javax.mail.search.FlagTerm;
+import javax.mail.search.OrTerm;
 import javax.mail.search.SearchException;
 import javax.mail.search.SubjectTerm;
 
@@ -25,6 +27,7 @@ import org.testng.annotations.Test;
 import com.sun.mail.iap.Argument;
 import com.sun.mail.iap.Literal;
 import com.yahoo.imapnio.async.data.Capability;
+import com.yahoo.imapnio.async.data.ExtendedModifiedSinceTerm;
 import com.yahoo.imapnio.async.data.MessageNumberSet;
 import com.yahoo.imapnio.async.data.MessageNumberSet.LastMessage;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
@@ -229,6 +232,137 @@ public class SearchCommandTest {
         final FlagTerm messageFlagTerms = null;
         final ImapRequest cmd = new SearchCommand(msgsets, messageFlagTerms, null);
         Assert.assertEquals(cmd.getCommandLine(), "SEARCH 1:4\r\n", "Expected result mismatched.");
+
+        cmd.cleanup();
+        // Verify if cleanup happened correctly.
+        for (final Field field : fieldsToCheck) {
+            Assert.assertNull(field.get(cmd), "Cleanup should set " + field.getName() + " as null");
+        }
+    }
+
+    /**
+     * Tests getCommandLine method with null message sequences set, MODSEQ SearchTerm.
+     *
+     * @throws IOException will not throw
+     * @throws IllegalAccessException will not throw
+     * @throws IllegalArgumentException will not throw
+     * @throws ImapAsyncClientException will not throw
+     * @throws SearchException will not throw
+     */
+    @Test
+    public void testGetCommandLineNonNullModSeq() throws IOException, IllegalArgumentException, IllegalAccessException, SearchException,
+            ImapAsyncClientException {
+        final ExtendedModifiedSinceTerm extendedModifiedSinceTerm = new ExtendedModifiedSinceTerm(1L);
+        final MessageNumberSet[] msgsets = null;
+        final ImapRequest cmd = new SearchCommand(msgsets, extendedModifiedSinceTerm, null);
+        Assert.assertEquals(cmd.getCommandLine(), "SEARCH MODSEQ 1\r\n", "getCommandLine() mismatched.");
+
+        cmd.cleanup();
+        // Verify if cleanup happened correctly.
+        for (final Field field : fieldsToCheck) {
+            Assert.assertNull(field.get(cmd), "Cleanup should set " + field.getName() + " as null");
+        }
+    }
+
+    /**
+     * Tests getCommandLine method with null message sequences set, MODSEQ SearchTerm with entry name and entry type.
+     *
+     * @throws IOException will not throw
+     * @throws IllegalAccessException will not throw
+     * @throws IllegalArgumentException will not throw
+     * @throws ImapAsyncClientException will not throw
+     * @throws SearchException will not throw
+     */
+    @Test
+    public void testGetCommandLineNonNullModSeqWithFlagAnsweredTypeAll() throws IOException, IllegalArgumentException, IllegalAccessException,
+            SearchException, ImapAsyncClientException {
+        final Flags flags = new Flags();
+        flags.add(Flags.Flag.ANSWERED);
+        final ExtendedModifiedSinceTerm extendedModifiedSinceTerm = new ExtendedModifiedSinceTerm(flags, EntryTypeRequest.ALL, 1L);
+        final MessageNumberSet[] msgsets = null;
+        final ImapRequest cmd = new SearchCommand(msgsets, extendedModifiedSinceTerm, null);
+        Assert.assertEquals(cmd.getCommandLine(), "SEARCH MODSEQ \"/flags/\\\\Answered\" ALL 1\r\n", "getCommandLine() mismatched.");
+
+        cmd.cleanup();
+        // Verify if cleanup happened correctly.
+        for (final Field field : fieldsToCheck) {
+            Assert.assertNull(field.get(cmd), "Cleanup should set " + field.getName() + " as null");
+        }
+    }
+
+    /**
+     * Tests getCommandLine method with null message sequences set, MODSEQ SearchTerm with entry name and entry type.
+     *
+     * @throws IOException will not throw
+     * @throws IllegalArgumentException will not throw
+     * @throws IllegalAccessException will not throw
+     * @throws SearchException will not throw
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testGetCommandLineNonNullModSeqWithFlagDeletedTypePriv() throws IOException, IllegalArgumentException, IllegalAccessException,
+            SearchException, ImapAsyncClientException {
+        final Flags flags = new Flags();
+        flags.add(Flags.Flag.DELETED);
+        final ExtendedModifiedSinceTerm extendedModifiedSinceTerm = new ExtendedModifiedSinceTerm(flags, EntryTypeRequest.PRIVATE, 1L);
+        final MessageNumberSet[] msgsets = null;
+        final ImapRequest cmd = new SearchCommand(msgsets, extendedModifiedSinceTerm, null);
+        Assert.assertEquals(cmd.getCommandLine(), "SEARCH MODSEQ \"/flags/\\\\Deleted\" PRIV 1\r\n", "getCommandLine() mismatched.");
+
+        cmd.cleanup();
+        // Verify if cleanup happened correctly.
+        for (final Field field : fieldsToCheck) {
+            Assert.assertNull(field.get(cmd), "Cleanup should set " + field.getName() + " as null");
+        }
+    }
+
+    /**
+     * Tests getCommandLine method with null message sequences set, MODSEQ SearchTerm with entry name and entry type.
+     *
+     * @throws IOException will not throw
+     * @throws IllegalAccessException will not throw
+     * @throws IllegalArgumentException will not throw
+     * @throws ImapAsyncClientException will not throw
+     * @throws SearchException will not throw
+     */
+    @Test
+    public void testGetCommandLineNonNullModSeqWithFlagDraftTypeShared() throws IOException, IllegalArgumentException, IllegalAccessException,
+            SearchException, ImapAsyncClientException {
+        final Flags flags = new Flags();
+        flags.add(Flags.Flag.DRAFT);
+        final ExtendedModifiedSinceTerm extendedModifiedSinceTerm = new ExtendedModifiedSinceTerm(flags, EntryTypeRequest.SHARED, 1L);
+        final MessageNumberSet[] msgsets = null;
+        final ImapRequest cmd = new SearchCommand(msgsets, extendedModifiedSinceTerm, null);
+        Assert.assertEquals(cmd.getCommandLine(), "SEARCH MODSEQ \"/flags/\\\\Draft\" SHARED 1\r\n", "getCommandLine() mismatched.");
+
+        cmd.cleanup();
+        // Verify if cleanup happened correctly.
+        for (final Field field : fieldsToCheck) {
+            Assert.assertNull(field.get(cmd), "Cleanup should set " + field.getName() + " as null");
+        }
+    }
+
+    /**
+     * Tests getCommandLine method with null message sequences set, MODSEQ SearchTerm with entry name and entry type.
+     *
+     * @throws IOException will not throw
+     * @throws IllegalAccessException will not throw
+     * @throws IllegalArgumentException will not throw
+     * @throws ImapAsyncClientException will not throw
+     * @throws SearchException will not throw
+     */
+    @Test
+    public void testGetCommandLineOrNonNullModSeqWithFlagDraftTypeShared() throws IOException, IllegalArgumentException, IllegalAccessException,
+            SearchException, ImapAsyncClientException {
+        final Flags flags = new Flags();
+        flags.add(Flags.Flag.DRAFT);
+        final ExtendedModifiedSinceTerm extendedModifiedSinceTerm = new ExtendedModifiedSinceTerm(flags, EntryTypeRequest.SHARED, 1L);
+        final BodyTerm bodyTerm = new BodyTerm("Text");
+        final OrTerm orTerm = new OrTerm(extendedModifiedSinceTerm, bodyTerm);
+        final MessageNumberSet[] msgsets = null;
+        final ImapRequest cmd = new SearchCommand(msgsets, orTerm, null);
+        Assert.assertEquals(cmd.getCommandLine(), "SEARCH OR MODSEQ \"/flags/\\\\Draft\" SHARED 1 BODY Text\r\n",
+                "getCommandLine() mismatched.");
 
         cmd.cleanup();
         // Verify if cleanup happened correctly.

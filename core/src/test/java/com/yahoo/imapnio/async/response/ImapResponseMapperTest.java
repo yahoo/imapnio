@@ -15,6 +15,8 @@ import org.testng.annotations.Test;
 import com.sun.mail.iap.ProtocolException;
 import com.sun.mail.imap.AppendUID;
 import com.sun.mail.imap.CopyUID;
+import com.sun.mail.imap.protocol.FetchItem;
+import com.sun.mail.imap.protocol.FetchResponse;
 import com.sun.mail.imap.protocol.ID;
 import com.sun.mail.imap.protocol.IMAPResponse;
 import com.sun.mail.imap.protocol.ListInfo;
@@ -24,10 +26,13 @@ import com.yahoo.imapnio.async.data.Capability;
 import com.yahoo.imapnio.async.data.EnableResult;
 import com.yahoo.imapnio.async.data.ExtensionListInfo;
 import com.yahoo.imapnio.async.data.ExtensionMailboxInfo;
+import com.yahoo.imapnio.async.data.FetchResult;
 import com.yahoo.imapnio.async.data.IdResult;
 import com.yahoo.imapnio.async.data.ListInfoList;
 import com.yahoo.imapnio.async.data.ListStatusResult;
+import com.yahoo.imapnio.async.data.MessageNumberSet;
 import com.yahoo.imapnio.async.data.SearchResult;
+import com.yahoo.imapnio.async.data.StoreResult;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException.FailureType;
 
@@ -1013,6 +1018,7 @@ public class ImapResponseMapperTest {
         content.add(new IMAPResponse("* S2TATUS blurdybloop (MESSAGES 232 UIDNEXT 44293)"));
         content.add(new IMAPResponse("* STATUS blurdybloop (UNSEEN 4)"));
         content.add(new IMAPResponse("* STATUS blurdybloop (UIDVALIDITY 999333)"));
+        content.add(new IMAPResponse("* STATUS blurdybloop (HIGHESTMODSEQ 2483)"));
         content.add(new IMAPResponse("A042 OK STATUS completed"));
 
         final Status status = mapper.readValue(content.toArray(new IMAPResponse[0]), Status.class);
@@ -1023,6 +1029,7 @@ public class ImapResponseMapperTest {
         Assert.assertEquals(status.total, 231, "total mismatched.");
         Assert.assertEquals(status.unseen, 4, "unseen mismatched, should take the latter one.");
         Assert.assertEquals(status.uidvalidity, 999333, "uidvalidity mismatched.");
+        Assert.assertEquals(status.highestmodseq, 2483, "highest modseq mismatched.");
     }
 
     /**
@@ -1228,11 +1235,69 @@ public class ImapResponseMapperTest {
         // verify the result
         Assert.assertNotNull(result, "result mismatched.");
         final List<Long> list = result.getMessageNumbers();
-        Assert.assertNotNull(list, "getMessageSequence() mismatched.");
-        Assert.assertEquals(list.size(), 3, "getMessageSequence() mismatched.");
-        Assert.assertEquals(list.get(0), Long.valueOf(150404), "getMessageSequence() mismatched.");
-        Assert.assertEquals(list.get(1), Long.valueOf(150406), "getMessageSequence() mismatched.");
-        Assert.assertEquals(list.get(2), Long.valueOf(150407), "getMessageSequence() mismatched.");
+        Assert.assertNotNull(list, "getMessageNumbers() mismatched.");
+        Assert.assertEquals(list.size(), 3, "getMessageNumbers() mismatched.");
+        Assert.assertEquals(list.get(0), Long.valueOf(150404), "getMessageNumbers() mismatched.");
+        Assert.assertEquals(list.get(1), Long.valueOf(150406), "getMessageNumbers() mismatched.");
+        Assert.assertEquals(list.get(2), Long.valueOf(150407), "getMessageNumbers() mismatched.");
+        Assert.assertNull(result.getHighestModSeq(), "getHighestModSeq() mismatch.");
+    }
+
+    /**
+     * Tests parseSearchResult method successfully with modification sequence.
+     *
+     * @throws IOException will not throw
+     * @throws ProtocolException will not throw
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testParseToSearchResultModSeqOK() throws IOException, ProtocolException, ImapAsyncClientException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final IMAPResponse[] content = new IMAPResponse[2];
+        content[0] = new IMAPResponse("* SEARCH 150404 150406 150407 (MODSEQ 2473)\r\n");
+        content[1] = new IMAPResponse("a3 OK UID SEARCH completed\r\n");
+
+        final SearchResult result = mapper.readValue(content, SearchResult.class);
+
+        // verify the result
+        Assert.assertNotNull(result, "result mismatched.");
+        final List<Long> list = result.getMessageNumbers();
+        final Long modSeq = result.getHighestModSeq();
+        Assert.assertNotNull(list, "getMessageNumbers() mismatched.");
+        Assert.assertEquals(list.size(), 3, "getMessageNumbers() mismatched.");
+        Assert.assertEquals(list.get(0), Long.valueOf(150404), "getMessageNumbers() mismatched.");
+        Assert.assertEquals(list.get(1), Long.valueOf(150406), "getMessageNumbers() mismatched.");
+        Assert.assertEquals(list.get(2), Long.valueOf(150407), "getMessageNumbers() mismatched.");
+        Assert.assertNotNull(modSeq, "getHighestModSeq() should not return null.");
+        Assert.assertEquals(modSeq, Long.valueOf(2473), "getHighestModSeq() mismatched.");
+    }
+
+    /**
+     * Tests parseSearchResult method successfully without correct modification sequence string.
+     *
+     * @throws IOException will not throw
+     * @throws ProtocolException will not throw
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testParseToSearchResultNoModSeqOK() throws IOException, ProtocolException, ImapAsyncClientException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final IMAPResponse[] content = new IMAPResponse[2];
+        content[0] = new IMAPResponse("* SEARCH 150404 150406 150407 (MODSE 2473)\r\n");
+        content[1] = new IMAPResponse("a3 OK UID SEARCH completed\r\n");
+
+        final SearchResult result = mapper.readValue(content, SearchResult.class);
+
+        // verify the result
+        Assert.assertNotNull(result, "result mismatched.");
+        final List<Long> list = result.getMessageNumbers();
+        final Long modSeq = result.getHighestModSeq();
+        Assert.assertNotNull(list, "getMessageNumbers() mismatched.");
+        Assert.assertEquals(list.size(), 3, "getMessageNumbers() mismatched.");
+        Assert.assertEquals(list.get(0), Long.valueOf(150404), "getMessageNumbers() mismatched.");
+        Assert.assertEquals(list.get(1), Long.valueOf(150406), "getMessageNumbers() mismatched.");
+        Assert.assertEquals(list.get(2), Long.valueOf(150407), "getMessageNumbers() mismatched.");
+        Assert.assertNull(modSeq, "getHighestModSeq() should return null.");
     }
 
     /**
@@ -1437,5 +1502,486 @@ public class ImapResponseMapperTest {
         // verify the result
         Assert.assertNotNull(cause, "cause mismatched.");
         Assert.assertEquals(cause.getFailureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
+    }
+    /**
+     * Tests parseStore method successfully.
+     *
+     * @throws IOException will not throw
+     * @throws ProtocolException will not throw
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testParseStoreOK() throws IOException, ProtocolException, ImapAsyncClientException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final IMAPResponse[] content = new IMAPResponse[1];
+        content[0] = new IMAPResponse("A042 OK Store success");
+        final StoreResult storeResult = mapper.readValue(content, StoreResult.class);
+
+        // verify the result
+        Assert.assertNotNull(storeResult, "store result mismatched.");
+        Assert.assertEquals(storeResult.getFetchResponses().size(), 0, "getFetchResponses() mismatched.");
+    }
+
+    /**
+     * Tests parseStore method successfully with CondStore.
+     *
+     * @throws IOException will not throw
+     * @throws ProtocolException will not throw
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testParseStoreOKCondStore() throws IOException, ProtocolException, ImapAsyncClientException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final IMAPResponse[] content = new IMAPResponse[5];
+        content[0] = new IMAPResponse("* OK [HIGHESTMODSEQ 2682");
+        content[1] = new IMAPResponse("* 1 FETCH (FLAGS (\\Seen SEEN) MODSEQ (2529))");
+        content[2] = new IMAPResponse("* 2 FETCH (FLAGS (\\Seen) MODSEQ (2531))");
+        content[3] = new IMAPResponse("* 3 FETCH (FLAGS (\\Seen) MODSEQ (2648))");
+        content[4] = new IMAPResponse("a4 OK [MODIFIED 1] Conditional Store Failed (Success)");
+        final StoreResult storeResult = mapper.readValue(content, StoreResult.class);
+
+        // verify the result
+        Assert.assertNotNull(storeResult, "store result should not be null.");
+        Assert.assertNotNull(storeResult.getHighestModSeq(), "getHighestModSeq() should not return null.");
+        Assert.assertEquals(storeResult.getHighestModSeq(), Long.valueOf(2682), "getHighestModSeq() mismatched.");
+        final List<FetchResponse> irs = storeResult.getFetchResponses();
+        Assert.assertEquals(irs.size(), 3, "getFetchResponses() mismatched.");
+        Assert.assertTrue(irs.get(0) instanceof FetchResponse, "getFetchResponses() mismatched.");
+        Assert.assertTrue(irs.get(1) instanceof FetchResponse, "getFetchResponses() mismatched.");
+        Assert.assertTrue(irs.get(2) instanceof FetchResponse, "getFetchResponses() mismatched.");
+        Assert.assertNotNull(storeResult.getModifiedMsgSets(), "getModifiedMsgsets() should not return null.");
+        Assert.assertEquals(storeResult.getModifiedMsgSets().length, 1, "getModifiedMsgsets() size mismatched");
+        final String msgSets = MessageNumberSet.buildString(storeResult.getModifiedMsgSets());
+        Assert.assertEquals(msgSets, "1", "getModifiedMsgsets() mismatched.");
+    }
+
+    /**
+     * Tests parseStore method successfully with CondStore and wrong modified string.
+     *
+     * @throws IOException will not throw
+     * @throws ProtocolException will not throw
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testParseStoreOKCondStoreWithWrongModified() throws IOException, ProtocolException, ImapAsyncClientException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final IMAPResponse[] content = new IMAPResponse[5];
+        content[0] = new IMAPResponse("* OK [HIGHESTMODSEQ 2682");
+        content[1] = new IMAPResponse("* 1 FETCH (FLAGS (\\Seen SEEN) MODSEQ (2529))");
+        content[2] = new IMAPResponse("* 2 FETCH (FLAGS (\\Seen) MODSEQ (2531))");
+        content[3] = new IMAPResponse("* 3 FETCH (FLAGS (\\Seen) MODSEQ (2648))");
+        content[4] = new IMAPResponse("a4 OK [MODIFIE 1] Conditional Store Failed (Success)");
+        final StoreResult storeResult = mapper.readValue(content, StoreResult.class);
+
+        // verify the result
+        Assert.assertNotNull(storeResult, "store result should not be null.");
+        Assert.assertNotNull(storeResult.getHighestModSeq(), "getHighestModSeq() should not return null.");
+        Assert.assertEquals(storeResult.getHighestModSeq(), Long.valueOf(2682), "getHighestModSeq() mismatched.");
+        final List<FetchResponse> irs = storeResult.getFetchResponses();
+        Assert.assertEquals(irs.size(), 3, "getFetchResponses() mismatched.");
+        Assert.assertTrue(irs.get(0) instanceof FetchResponse, "getFetchResponses() mismatched.");
+        Assert.assertTrue(irs.get(1) instanceof FetchResponse, "getFetchResponses() mismatched.");
+        Assert.assertTrue(irs.get(2) instanceof FetchResponse, "getFetchResponses() mismatched.");
+        Assert.assertNull(storeResult.getModifiedMsgSets(), "getModifiedMsgsets() should return null.");
+    }
+
+    /**
+     * Tests parseStore method successfully with No response and CondStore.
+     *
+     * @throws IOException will not throw
+     * @throws ProtocolException will not throw
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testParseStoreNoCondStore() throws IOException, ProtocolException, ImapAsyncClientException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final IMAPResponse[] content = new IMAPResponse[5];
+        content[0] = new IMAPResponse("* OK [HIGHEST 2682");
+        content[1] = new IMAPResponse("* 1 FETCH (FLAGS (\\Seen SEEN) MODSEQ (2529))");
+        content[2] = new IMAPResponse("* 2 FETCH (FLAGS (\\Seen) MODSEQ (2531))");
+        content[3] = new IMAPResponse("* 3 FETCH (FLAGS (\\Seen) MODSEQ (2648))");
+        content[4] = new IMAPResponse("a4 No [MODIFIED 1] Conditional Store Failed (Success)");
+        final StoreResult storeResult = mapper.readValue(content, StoreResult.class);
+
+        // verify the result
+        Assert.assertNotNull(storeResult, "store result should not be null.");
+        Assert.assertNull(storeResult.getHighestModSeq(), "getHighestModSeq() should return null.");
+        final List<FetchResponse> irs = storeResult.getFetchResponses();
+        Assert.assertEquals(irs.size(), 3, "getFetchResponses() mismatched.");
+        Assert.assertTrue(irs.get(0) instanceof FetchResponse, "getFetchResponses() mismatched.");
+        Assert.assertTrue(irs.get(1) instanceof FetchResponse, "getFetchResponses() mismatched.");
+        Assert.assertTrue(irs.get(2) instanceof FetchResponse, "getFetchResponses() mismatched.");
+        Assert.assertNotNull(storeResult.getModifiedMsgSets(), "getModifiedMsgsets() should not return null.");
+        Assert.assertEquals(storeResult.getModifiedMsgSets().length, 1, "getModifiedMsgsets() size mismatched");
+        final String msgSets = MessageNumberSet.buildString(storeResult.getModifiedMsgSets());
+        Assert.assertEquals(msgSets, "1", "getModifiedMsgsets() mismatched.");
+    }
+
+    /**
+     * Tests parseStore method successfully with multiple modification numbers.
+     *
+     * @throws IOException will not throw
+     * @throws ProtocolException will not throw
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testParseStoreOKCondStoreWithMultipleModified() throws IOException, ProtocolException, ImapAsyncClientException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final IMAPResponse[] content = new IMAPResponse[5];
+        content[0] = new IMAPResponse("* OK [HIGHESTMODSEQ 2682");
+        content[1] = new IMAPResponse("* 1 FETCH (FLAGS (\\Seen SEEN) MODSEQ (2529))");
+        content[2] = new IMAPResponse("* 2 FETCH (FLAGS (\\Seen) MODSEQ (2531))");
+        content[3] = new IMAPResponse("* 3 FETCH (FLAGS (\\Seen) MODSEQ (2648))");
+        content[4] = new IMAPResponse("a4 OK [MODIFIED 1:2,5:4] Conditional Store Failed (Success)");
+        final StoreResult storeResult = mapper.readValue(content, StoreResult.class);
+
+        // verify the result
+        Assert.assertNotNull(storeResult, "store result should not be null.");
+        final List<FetchResponse> irs = storeResult.getFetchResponses();
+        Assert.assertNotNull(storeResult.getHighestModSeq(), "getHighestModSeq() should not return null.");
+        Assert.assertEquals(storeResult.getHighestModSeq(), Long.valueOf(2682), "getHighestModSeq() mismatched.");
+        Assert.assertEquals(irs.size(), 3, "getFetchResponses() mismatched.");
+        Assert.assertNotNull(storeResult.getModifiedMsgSets(), "getModifiedMsgsets() mismatched");
+        Assert.assertEquals(storeResult.getModifiedMsgSets().length, 2, "getModifiedMsgsets() mismatched");
+        final String msgSets = MessageNumberSet.buildString(storeResult.getModifiedMsgSets());
+        Assert.assertEquals(msgSets, "1:2,4:5", "getModifiedMsgsets() mismatched.");
+    }
+
+    /**
+     * Tests parseStore method successfully with vanished response..
+     *
+     * @throws IOException will not throw
+     * @throws ProtocolException will not throw
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testParseStoreOKCondStoreVanished() throws IOException, ProtocolException, ImapAsyncClientException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final IMAPResponse[] content = new IMAPResponse[5];
+        content[0] = new IMAPResponse("* OK [HIGHESTMODSEQ 2682");
+        content[1] = new IMAPResponse("* 1 FETCH (FLAGS (\\Seen SEEN) MODSEQ (2529))");
+        content[2] = new IMAPResponse("* 2 FETCH (FLAGS (\\Seen SEEN) MODSEQ (2600))");
+        content[3] = new IMAPResponse("* VANISHED (EARLIER) 41,43:116,118,120:211,214:540");
+        content[4] = new IMAPResponse("a4 OK [MODIFIED 1,2,3] Conditional Store Failed (Success)");
+        final StoreResult storeResult = mapper.readValue(content, StoreResult.class);
+
+        // verify the result
+        Assert.assertNotNull(storeResult, "store result mismatched.");
+        final List<FetchResponse> irs = storeResult.getFetchResponses();
+        Assert.assertNotNull(storeResult.getHighestModSeq(), "getHighestModSeq() should not return null.");
+        Assert.assertEquals(storeResult.getHighestModSeq(), Long.valueOf(2682), "getHighestModSeq() mismatched.");
+        Assert.assertEquals(irs.size(), 2, "getFetchResponses() mismatched.");
+        Assert.assertNotNull(storeResult.getModifiedMsgSets(), "getModifiedMsgsets() should not return null");
+        Assert.assertEquals(storeResult.getModifiedMsgSets().length, 3, "getModifiedMsgsets() mismatched");
+        final String msgSets = MessageNumberSet.buildString(storeResult.getModifiedMsgSets());
+        Assert.assertEquals(msgSets, "1,2,3", "getModifiedMsgsets() mismatched.");
+    }
+
+    /**
+     * Tests parseStore method with Bad response.
+     *
+     * @throws IOException will not throw
+     * @throws ProtocolException will not throw
+     */
+    @Test
+    public void testParseStoreBad() throws IOException, ProtocolException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final IMAPResponse[] content = { new IMAPResponse("002 BAD") }; // make it bad so it does not update mode
+        ImapAsyncClientException cause = null;
+        try {
+            mapper.readValue(content, StoreResult.class);
+        } catch (final ImapAsyncClientException e) {
+            cause = e;
+        }
+
+        // verify the result
+        Assert.assertNotNull(cause, "cause mismatched.");
+        Assert.assertEquals(cause.getFailureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
+    }
+
+    /**
+     * Tests parseStore method with No response.
+     *
+     * @throws IOException will not throw
+     * @throws ProtocolException will not throw
+     */
+    @Test
+    public void testParseStoreNo() throws IOException, ProtocolException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final IMAPResponse[] content = { new IMAPResponse("002 BAD") }; // make it bad so it does not update mode
+        ImapAsyncClientException cause = null;
+        try {
+            mapper.readValue(content, StoreResult.class);
+        } catch (final ImapAsyncClientException e) {
+            cause = e;
+        }
+
+        // verify the result
+        Assert.assertNotNull(cause, "cause mismatched.");
+        Assert.assertEquals(cause.getFailureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
+    }
+
+    /**
+     * Tests parseStore method with 0 response throw exception.
+     *
+     * @throws ProtocolException will not throw
+     */
+    @Test
+    public void testParseStoreZeroResponse() throws ProtocolException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final IMAPResponse[] content = new IMAPResponse[0];
+        ImapAsyncClientException cause = null;
+        try {
+            mapper.readValue(content, StoreResult.class);
+        } catch (final ImapAsyncClientException e) {
+            cause = e;
+        }
+
+        // verify the result
+        Assert.assertNotNull(cause, "cause mismatched.");
+        Assert.assertEquals(cause.getFailureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
+    }
+
+    /**
+     * Tests parseStore method with invalid fetch response.
+     *
+     * @throws IOException will not throw
+     * @throws ProtocolException will not throw
+     */
+    @Test
+    public void testParseStoreFailParsingFetchResponse() throws IOException, ProtocolException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final IMAPResponse[] content = new IMAPResponse[2];
+        content[0] = new IMAPResponse("* FETCH (FLAG (\\Seen SEEN))");
+        content[1] = new IMAPResponse("* OK");
+        ImapAsyncClientException cause = null;
+        try {
+            mapper.readValue(content, StoreResult.class);
+        } catch (final ImapAsyncClientException e) {
+            cause = e;
+        }
+
+        // verify the result
+        Assert.assertNotNull(cause, "cause mismatched.");
+        Assert.assertEquals(cause.getFailureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
+    }
+
+    /**
+     * Tests parseStore method successfully with NO response.
+     *
+     * @throws IOException will not throw
+     * @throws ProtocolException will not throw
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testParseStoreNoResponseCondStore() throws IOException, ProtocolException, ImapAsyncClientException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final IMAPResponse[] content = { new IMAPResponse("B001 NO [MODIFIED 2] Some of the messages no longer exist.") };
+        final StoreResult storeResult = mapper.readValue(content, StoreResult.class);
+
+        // verify the result
+        Assert.assertNotNull(storeResult, "store result mismatched.");
+        Assert.assertEquals(storeResult.getFetchResponses().size(), 0, "getFetchResponses() mismatched.");
+        Assert.assertNotNull(storeResult.getModifiedMsgSets(), "getModifiedMsgsets() should not return null");
+        Assert.assertEquals(storeResult.getModifiedMsgSets().length, 1, "getModifiedMsgsets() mismatched.");
+        Assert.assertEquals(MessageNumberSet.buildString(storeResult.getModifiedMsgSets()), "2", "getModifiedMsgsets() mismatched.");
+    }
+
+    /**
+     * Tests parseStore method successfully with NO response and space after left bracket.
+     *
+     * @throws IOException will not throw
+     * @throws ProtocolException will not throw
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testParseStoreNoResponseCondStoreWithSpace() throws IOException, ProtocolException, ImapAsyncClientException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final IMAPResponse[] content = { new IMAPResponse("B001 NO [    MODIFIED 2] Some of the messages no longer exist.") };
+        final StoreResult storeResult = mapper.readValue(content, StoreResult.class);
+
+        // verify the result
+        Assert.assertNotNull(storeResult, "store result mismatched.");
+        Assert.assertEquals(storeResult.getFetchResponses().size(), 0, "getFetchResponses() mismatched.");
+        Assert.assertNotNull(storeResult.getModifiedMsgSets(), "getModifiedMsgsets() should not return null");
+        Assert.assertEquals(storeResult.getModifiedMsgSets().length, 1, "getModifiedMsgsets() mismatched.");
+        Assert.assertEquals(MessageNumberSet.buildString(storeResult.getModifiedMsgSets()), "2", "getModifiedMsgsets() mismatched.");
+    }
+
+    /**
+     * Tests parseFetch method successfully.
+     *
+     * @throws IOException will not throw
+     * @throws ProtocolException will not throw
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testParseFetchOK() throws IOException, ProtocolException, ImapAsyncClientException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final IMAPResponse[] content = { new IMAPResponse("A042 OK Fetch success") };
+        final FetchResult fetchResult = mapper.readValue(content, FetchResult.class);
+
+        // verify the result
+        Assert.assertNotNull(fetchResult, "Fetch result mismatched.");
+        Assert.assertEquals(fetchResult.getFetchResponses().size(), 0, "getFetchResponses() mismatched.");
+    }
+
+    /**
+     * Tests parseFetch method successfully.
+     *
+     * @throws IOException will not throw
+     * @throws ProtocolException will not throw
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testParseFetchOKCondStore() throws IOException, ProtocolException, ImapAsyncClientException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final IMAPResponse[] content = new IMAPResponse[4];
+        content[0] = new IMAPResponse("* 1 FETCH (FLAGS (\\Seen SEEN) MODSEQ (2529))");
+        content[1] = new IMAPResponse("* 2 FETCH (FLAGS (\\Seen) MODSEQ (2531))");
+        content[2] = new IMAPResponse("* 3 FETCH (FLAGS (\\Seen) MODSEQ (2648))");
+        content[3] = new IMAPResponse("a4 OK Success");
+        final FetchResult fetchResult = mapper.readValue(content, FetchResult.class);
+        final List<FetchResponse> irs = fetchResult.getFetchResponses();
+
+        // verify the result
+        Assert.assertNotNull(fetchResult, "Fetch result mismatched.");
+        Assert.assertEquals(irs.size(), 3, "getFetchResponses() mismatched.");
+    }
+
+    /**
+     * Tests parseFetch method with not OK response.
+     *
+     * @throws IOException will not throw
+     * @throws ProtocolException will not throw
+     */
+    @Test
+    public void testParseFetchNotOK() throws IOException, ProtocolException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final IMAPResponse[] content = { new IMAPResponse("002 BAD") }; // make it bad so it does not update mode
+        ImapAsyncClientException cause = null;
+        try {
+            mapper.readValue(content, FetchResult.class);
+        } catch (final ImapAsyncClientException e) {
+            cause = e;
+        }
+
+        // verify the result
+        Assert.assertNotNull(cause, "cause mismatched.");
+        Assert.assertEquals(cause.getFailureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
+    }
+
+    /**
+     * Tests parseFetch method with 0 response.
+     *
+     * @throws ProtocolException will not throw
+     */
+    @Test
+    public void testParseFetchZeroResponse() throws ProtocolException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final IMAPResponse[] content = new IMAPResponse[0];
+        ImapAsyncClientException cause = null;
+        try {
+            mapper.readValue(content, FetchResult.class);
+        } catch (final ImapAsyncClientException e) {
+            cause = e;
+        }
+
+        // verify the result
+        Assert.assertNotNull(cause, "cause mismatched.");
+        Assert.assertEquals(cause.getFailureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
+    }
+
+    /**
+     * Tests parseFetch method with invalid fetch response.
+     *
+     * @throws IOException will not throw
+     * @throws ProtocolException will not throw
+     */
+    @Test
+    public void testParseFetchFailParsingFetchResponse() throws IOException, ProtocolException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final IMAPResponse[] content = new IMAPResponse[2];
+        content[0] = new IMAPResponse("* FETCH (FLAG (\\Seen SEEN))");
+        content[1] = new IMAPResponse("* OK");
+        ImapAsyncClientException cause = null;
+        try {
+            mapper.readValue(content, FetchResult.class);
+        } catch (final ImapAsyncClientException e) {
+            cause = e;
+        }
+
+        // verify the result
+        Assert.assertNotNull(cause, "cause mismatched.");
+        Assert.assertEquals(cause.getFailureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
+    }
+
+    /**
+     * Tests parseFetch method successfully.
+     *
+     * @throws IOException will not throw
+     * @throws ProtocolException will not throw
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testParseFetchOKCondStoreExpunge() throws IOException, ProtocolException, ImapAsyncClientException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final IMAPResponse[] content = new IMAPResponse[6];
+        content[0] = new IMAPResponse("* 1 EXPUNGE");
+        content[1] = new IMAPResponse("* 2 FETCH (FLAGS (\\Seen SEEN) MODSEQ (2529))");
+        content[2] = new IMAPResponse("* 3 EXPUNGE");
+        content[3] = new IMAPResponse("* 4 FETCH (FLAGS (\\Seen) MODSEQ (2531))");
+        content[4] = new IMAPResponse("* 5 FETCH (FLAGS (\\Seen) MODSEQ (2648))");
+        content[5] = new IMAPResponse("a4 OK Success");
+        final FetchResult fetchResult = mapper.readValue(content, FetchResult.class);
+        final List<FetchResponse> irs = fetchResult.getFetchResponses();
+
+        // verify the result
+        Assert.assertNotNull(fetchResult, "fetch result mismatched.");
+        Assert.assertEquals(irs.size(), 3, "fetch result mismatched.");
+    }
+
+    /**
+     * Tests parseFetch method successfully.
+     *
+     * @throws IOException will not throw
+     * @throws ProtocolException will not throw
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testParseFetchExtension() throws IOException, ProtocolException, ImapAsyncClientException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final IMAPResponse[] content = new IMAPResponse[2];
+        content[0] = new IMAPResponse("* 1 FETCH (FLAGS (\\Seen SEEN) MODSEQ (2529))");
+        content[1] = new IMAPResponse("a4 OK Success");
+        final FetchResult fetchResult = mapper.readValue(content, FetchResult.class, new FetchItem[0]);
+        final List<FetchResponse> irs = fetchResult.getFetchResponses();
+
+        // verify the result
+        Assert.assertNotNull(fetchResult, "fetch result mismatched.");
+        Assert.assertEquals(irs.size(), 1, "fetch result mismatched.");
+    }
+
+    /**
+     * Tests parse a class that mapper does not support.
+     *
+     * @throws IOException will not throw
+     * @throws ProtocolException will not throw
+     */
+    @Test
+    public void testParseClassUnknownWithFetchExtension() throws IOException, ProtocolException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final IMAPResponse[] content = new IMAPResponse[1];
+        content[0] = new IMAPResponse("002 OK"); // make it bad so it does not update mode
+
+        ImapAsyncClientException cause = null;
+        try {
+            mapper.readValue(content, ID.class, new FetchItem[0]);
+        } catch (final ImapAsyncClientException e) {
+            cause = e;
+        }
+        // verify the result
+        Assert.assertNotNull(cause, "cause mismatched.");
+        Assert.assertEquals(cause.getFailureType(), FailureType.UNKNOWN_PARSE_RESULT_TYPE, "Failure type mismatched.");
     }
 }
