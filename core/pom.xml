@@ -37,10 +37,6 @@
         </dependency>
         <!-- Pure Java dependencies -->
         <dependency>
-            <groupId>com.github.lafa.logfast</groupId>
-            <artifactId>logfast.core</artifactId>
-        </dependency>
-        <dependency>
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>jsr305</artifactId>
         </dependency>
