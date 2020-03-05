@@ -68,7 +68,8 @@ public class AuthOauthBearerCommandTest {
         Assert.assertTrue(cmd.isCommandLineDataSensitive(), "isCommandLineDataSensitive() result mismatched.");
 
         Assert.assertEquals(cmd.getCommandLine(),
-                "AUTHENTICATE OAUTHBEARER bixhPXVzZXJAZXhhbXBsZS5jb20sAWhvc3Q9c2VydmVyLmV4YW1wbGUuY29tAXBvcnQ9OTkzAWF1dGg9QmVhcmVyIHNlbGZkcml2aW5nAQE=\r\n",
+                "AUTHENTICATE OAUTHBEARER bixhPXVzZXJAZXhhbXBsZS5jb20sAWhvc3Q9c2VydmVyLmV4YW1wbGUuY29tAXBvcnQ9OTkzAW"
+                        + "F1dGg9QmVhcmVyIHNlbGZkcml2aW5nAQE=\r\n",
                 "Expected result mismatched.");
         Assert.assertTrue(cmd.isCommandLineDataSensitive(), "isCommandLineDataSensitive() result mismatched.");
         Assert.assertEquals(cmd.getDebugData(), "AUTHENTICATE OAUTHBEARER FOR USER:user@example.com", "Log line mismatched.");

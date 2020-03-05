@@ -3,8 +3,7 @@ package com.yahoo.imapnio.async.request;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.annotation.Nonnull;
-
-import org.apache.avro.reflect.Nullable;
+import javax.annotation.Nullable;
 
 import com.sun.mail.imap.protocol.IMAPResponse;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
