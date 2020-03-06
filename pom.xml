@@ -5,7 +5,7 @@
     <groupId>com.yahoo.imapnio</groupId>
     <artifactId>imapnio</artifactId>
     <packaging>pom</packaging>
-    <version>3.0.14</version>
+    <version>3.0.15</version>
     <name>${project.artifactId}</name>
     <url>https://github.com/yahoo/imapnio</url>
     <description>Parent POM file for imapnio project</description>
@@ -100,11 +100,6 @@
             </dependency>
 
             <!-- Pure Java dependencies -->
-            <dependency>
-                <groupId>com.github.lafa.logfast</groupId>
-                <artifactId>logfast.core</artifactId>
-                <version>1.0.6</version>
-            </dependency>
             <dependency>
                 <groupId>com.google.code.findbugs</groupId>
                 <artifactId>jsr305</artifactId>
