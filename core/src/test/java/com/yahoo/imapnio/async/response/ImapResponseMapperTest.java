@@ -84,7 +84,7 @@ public class ImapResponseMapperTest {
         }
         // verify the result
         Assert.assertNotNull(cause, "cause mismatched.");
-        Assert.assertEquals(cause.getFaiureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
+        Assert.assertEquals(cause.getFailureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
     }
 
     /**
@@ -195,7 +195,7 @@ public class ImapResponseMapperTest {
         }
         // verify the result
         Assert.assertNotNull(cause, "cause mismatched.");
-        Assert.assertEquals(cause.getFaiureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
+        Assert.assertEquals(cause.getFailureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
 
     }
 
@@ -239,7 +239,7 @@ public class ImapResponseMapperTest {
         }
         // verify the result
         Assert.assertNotNull(cause, "cause mismatched.");
-        Assert.assertEquals(cause.getFaiureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
+        Assert.assertEquals(cause.getFailureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
     }
 
     /**
@@ -261,7 +261,7 @@ public class ImapResponseMapperTest {
         }
         // verify the result
         Assert.assertNotNull(cause, "cause mismatched.");
-        Assert.assertEquals(cause.getFaiureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
+        Assert.assertEquals(cause.getFailureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
 
     }
 
@@ -284,7 +284,7 @@ public class ImapResponseMapperTest {
         }
         // verify the result
         Assert.assertNotNull(cause, "cause mismatched.");
-        Assert.assertEquals(cause.getFaiureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
+        Assert.assertEquals(cause.getFailureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
     }
 
     /**
@@ -306,7 +306,7 @@ public class ImapResponseMapperTest {
         }
         // verify the result
         Assert.assertNotNull(cause, "cause mismatched.");
-        Assert.assertEquals(cause.getFaiureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
+        Assert.assertEquals(cause.getFailureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
 
     }
 
@@ -469,7 +469,7 @@ public class ImapResponseMapperTest {
         }
         // verify the result
         Assert.assertNotNull(cause, "cause mismatched.");
-        Assert.assertEquals(cause.getFaiureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
+        Assert.assertEquals(cause.getFailureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
     }
 
     /**
@@ -602,7 +602,7 @@ public class ImapResponseMapperTest {
         }
         // verify the result
         Assert.assertNotNull(cause, "cause mismatched.");
-        Assert.assertEquals(cause.getFaiureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
+        Assert.assertEquals(cause.getFailureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
 
     }
 
@@ -641,7 +641,7 @@ public class ImapResponseMapperTest {
         }
         // verify the result
         Assert.assertNotNull(cause, "cause mismatched.");
-        Assert.assertEquals(cause.getFaiureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
+        Assert.assertEquals(cause.getFailureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
     }
 
     /**
@@ -661,7 +661,7 @@ public class ImapResponseMapperTest {
         }
         // verify the result
         Assert.assertNotNull(cause, "cause mismatched.");
-        Assert.assertEquals(cause.getFaiureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
+        Assert.assertEquals(cause.getFailureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
     }
 
     /**
@@ -681,7 +681,7 @@ public class ImapResponseMapperTest {
         }
         // verify the result
         Assert.assertNotNull(cause, "cause mismatched.");
-        Assert.assertEquals(cause.getFaiureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
+        Assert.assertEquals(cause.getFailureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
     }
 
     /**
@@ -704,7 +704,7 @@ public class ImapResponseMapperTest {
         }
         // verify the result
         Assert.assertNotNull(cause, "cause mismatched.");
-        Assert.assertEquals(cause.getFaiureType(), FailureType.UNKNOWN_PARSE_RESULT_TYPE, "Failure type mismatched.");
+        Assert.assertEquals(cause.getFailureType(), FailureType.UNKNOWN_PARSE_RESULT_TYPE, "Failure type mismatched.");
     }
 
     /**
@@ -728,7 +728,7 @@ public class ImapResponseMapperTest {
         }
         // verify the result
         Assert.assertNotNull(cause, "cause mismatched.");
-        Assert.assertEquals(cause.getFaiureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
+        Assert.assertEquals(cause.getFailureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
     }
 
     /**
@@ -753,7 +753,7 @@ public class ImapResponseMapperTest {
         }
         // verify the result
         Assert.assertNotNull(cause, "cause mismatched.");
-        Assert.assertEquals(cause.getFaiureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
+        Assert.assertEquals(cause.getFailureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
     }
 
     /**
@@ -800,7 +800,7 @@ public class ImapResponseMapperTest {
         }
         // verify the result
         Assert.assertNotNull(cause, "cause mismatched.");
-        Assert.assertEquals(cause.getFaiureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
+        Assert.assertEquals(cause.getFailureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
     }
 
     /**
@@ -824,7 +824,7 @@ public class ImapResponseMapperTest {
         }
         // verify the result
         Assert.assertNotNull(cause, "cause mismatched.");
-        Assert.assertEquals(cause.getFaiureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
+        Assert.assertEquals(cause.getFailureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
     }
 
     /**
@@ -893,7 +893,7 @@ public class ImapResponseMapperTest {
         }
         // verify the result
         Assert.assertNotNull(cause, "cause mismatched.");
-        Assert.assertEquals(cause.getFaiureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
+        Assert.assertEquals(cause.getFailureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
     }
 
     /**
@@ -918,7 +918,7 @@ public class ImapResponseMapperTest {
         }
         // verify the result
         Assert.assertNotNull(cause, "cause mismatched.");
-        Assert.assertEquals(cause.getFaiureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
+        Assert.assertEquals(cause.getFailureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
     }
 
     /**
@@ -943,7 +943,7 @@ public class ImapResponseMapperTest {
         }
         // verify the result
         Assert.assertNotNull(cause, "cause mismatched.");
-        Assert.assertEquals(cause.getFaiureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
+        Assert.assertEquals(cause.getFailureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
     }
 
     /**
@@ -1037,7 +1037,7 @@ public class ImapResponseMapperTest {
         }
         // verify the result
         Assert.assertNotNull(actual, "ImapAsyncClientException should occur.");
-        Assert.assertEquals(actual.getFaiureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
+        Assert.assertEquals(actual.getFailureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
     }
 
     /**
@@ -1060,6 +1060,6 @@ public class ImapResponseMapperTest {
         }
         // verify the result
         Assert.assertNotNull(actual, "ImapAsyncClientException should occur.");
-        Assert.assertEquals(actual.getFaiureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
+        Assert.assertEquals(actual.getFailureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
     }
 }

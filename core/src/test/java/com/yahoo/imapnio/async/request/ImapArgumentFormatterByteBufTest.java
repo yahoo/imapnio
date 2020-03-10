@@ -81,7 +81,7 @@ public class ImapArgumentFormatterByteBufTest {
                 actual = e;
             }
             Assert.assertNotNull(actual, "Should throw exception");
-            Assert.assertEquals(actual.getFaiureType(), ImapAsyncClientException.FailureType.INVALID_INPUT, "Should throw exception");
+            Assert.assertEquals(actual.getFailureType(), ImapAsyncClientException.FailureType.INVALID_INPUT, "Should throw exception");
         }
     }
 

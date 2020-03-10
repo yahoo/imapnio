@@ -18,7 +18,7 @@ public class ImapAsyncClientExceptionTest {
         final ImapAsyncClientException.FailureType failureType = ImapAsyncClientException.FailureType.CHANNEL_DISCONNECTED;
         final ImapAsyncClientException resp = new ImapAsyncClientException(failureType);
 
-        Assert.assertEquals(resp.getFaiureType(), failureType, "result mismatched.");
+        Assert.assertEquals(resp.getFailureType(), failureType, "result mismatched.");
         Assert.assertNull(resp.getCause(), "cause of exception mismatched.");
         Assert.assertEquals(resp.getMessage(), "failureType=" + failureType.name(), "result mismatched.");
     }
@@ -32,7 +32,7 @@ public class ImapAsyncClientExceptionTest {
         final IOException cause = new IOException("Failure in IO!");
         final ImapAsyncClientException ex = new ImapAsyncClientException(failureType, cause);
 
-        Assert.assertEquals(ex.getFaiureType(), failureType, "result mismatched.");
+        Assert.assertEquals(ex.getFailureType(), failureType, "result mismatched.");
         Assert.assertEquals(ex.getMessage(), "failureType=CHANNEL_DISCONNECTED", "result mismatched.");
         Assert.assertEquals(ex.getCause(), cause, "cause of exception mismatched.");
     }
@@ -47,7 +47,7 @@ public class ImapAsyncClientExceptionTest {
         final String sessCtx = "T123riceratops123@scar123y.com";
         final ImapAsyncClientException ex = new ImapAsyncClientException(failureType, sessionId, sessCtx);
 
-        Assert.assertEquals(ex.getFaiureType(), failureType, "result mismatched.");
+        Assert.assertEquals(ex.getFailureType(), failureType, "result mismatched.");
         Assert.assertNull(ex.getCause(), "cause of exception mismatched.");
         Assert.assertEquals(ex.getMessage(), "failureType=CHANNEL_DISCONNECTED,sId=5,uId=T123riceratops123@scar123y.com", "result mismatched.");
     }
