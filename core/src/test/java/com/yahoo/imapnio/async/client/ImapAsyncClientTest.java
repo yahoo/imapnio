@@ -642,7 +642,7 @@ public class ImapAsyncClientTest {
             Assert.assertNotNull(exception.getCause(), "Cause should not be null");
             Assert.assertEquals(exception.getCause().getClass(), UnknownHostException.class, "Cause should be unknown host exception");
             Assert.assertSame(exception.getCause(), nettyConnectFuture.cause(), "Cause should be same object");
-            Assert.assertEquals(((ImapAsyncClientException) exception).getFaiureType(), FailureType.UNKNOWN_HOST_EXCEPTION,
+            Assert.assertEquals(((ImapAsyncClientException) exception).getFailureType(), FailureType.UNKNOWN_HOST_EXCEPTION,
                     "Exception type should be UNKNOWN_HOST_EXCEPTION");
         }
     }
@@ -727,7 +727,7 @@ public class ImapAsyncClientTest {
             Assert.assertNotNull(exception.getCause(), "Cause should not be null");
             Assert.assertEquals(exception.getCause().getClass(), ConnectTimeoutException.class, "Cause should be connection timeout exception");
             Assert.assertSame(exception.getCause(), nettyConnectFuture.cause(), "Cause should be same object");
-            Assert.assertEquals(((ImapAsyncClientException) exception).getFaiureType(), FailureType.CONNECTION_TIMEOUT_EXCEPTION,
+            Assert.assertEquals(((ImapAsyncClientException) exception).getFailureType(), FailureType.CONNECTION_TIMEOUT_EXCEPTION,
                     "Exception type should be CONNECTION_TIMEOUT_EXCEPTION");
         }
     }

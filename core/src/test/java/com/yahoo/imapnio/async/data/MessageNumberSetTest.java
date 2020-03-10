@@ -154,7 +154,7 @@ public class MessageNumberSetTest {
             actual = e;
         }
         Assert.assertNotNull(actual, "Exception should be thrown");
-        Assert.assertEquals(actual.getFaiureType(), FailureType.INVALID_INPUT, "Result mismatched.");
+        Assert.assertEquals(actual.getFailureType(), FailureType.INVALID_INPUT, "Result mismatched.");
     }
 
     /**

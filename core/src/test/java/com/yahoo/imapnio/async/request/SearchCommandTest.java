@@ -256,7 +256,7 @@ public class SearchCommandTest {
             actualEx = ex;
         }
         Assert.assertNotNull(actualEx, "Expecting exception to be thrown");
-        Assert.assertEquals(actualEx.getFaiureType(), FailureType.INVALID_INPUT, "Incorrect failure type.");
+        Assert.assertEquals(actualEx.getFailureType(), FailureType.INVALID_INPUT, "Incorrect failure type.");
     }
 
     /**
@@ -277,7 +277,7 @@ public class SearchCommandTest {
             actualEx = ex;
         }
         Assert.assertNotNull(actualEx, "Expecting exception to be thrown");
-        Assert.assertEquals(actualEx.getFaiureType(), FailureType.INVALID_INPUT, "Incorrect failure type.");
+        Assert.assertEquals(actualEx.getFailureType(), FailureType.INVALID_INPUT, "Incorrect failure type.");
     }
 
     /**

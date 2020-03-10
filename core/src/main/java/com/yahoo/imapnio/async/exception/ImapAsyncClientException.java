@@ -144,7 +144,7 @@ public class ImapAsyncClientException extends Exception {
     /**
      * @return the failure type
      */
-    public FailureType getFaiureType() {
+    public FailureType getFailureType() {
         return failureType;
     }
 
