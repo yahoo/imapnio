@@ -199,7 +199,7 @@ public class ImapClientConnectHandlerTest {
         final ImapAsyncClientException imapEx = (ImapAsyncClientException) ex.getCause();
         Assert.assertNotNull(imapEx.getCause(), "expect cause");
         Assert.assertEquals(imapEx.getCause().getClass(), UnknownHostException.class, "Cause should be UnknownHost exception.");
-        Assert.assertEquals(imapEx.getFaiureType(), FailureType.UNKNOWN_HOST_EXCEPTION, "Failure type mismatch");
+        Assert.assertEquals(imapEx.getFailureType(), FailureType.UNKNOWN_HOST_EXCEPTION, "Failure type mismatch");
     }
 
     /**
@@ -235,7 +235,7 @@ public class ImapClientConnectHandlerTest {
         final ImapAsyncClientException imapEx = (ImapAsyncClientException) ex.getCause();
         Assert.assertNotNull(imapEx.getCause(), "expect cause");
         Assert.assertEquals(imapEx.getCause().getClass(), ConnectTimeoutException.class, "Cause should be ConnectTimeout exception.");
-        Assert.assertEquals(imapEx.getFaiureType(), FailureType.CONNECTION_TIMEOUT_EXCEPTION, "Failure type mismatch");
+        Assert.assertEquals(imapEx.getFailureType(), FailureType.CONNECTION_TIMEOUT_EXCEPTION, "Failure type mismatch");
     }
 
     /**
@@ -273,7 +273,7 @@ public class ImapClientConnectHandlerTest {
         Assert.assertNotNull(cause, "Expect cause.");
         Assert.assertEquals(cause.getClass(), ImapAsyncClientException.class, "Expected result mismatched.");
         final ImapAsyncClientException aEx = (ImapAsyncClientException) cause;
-        Assert.assertEquals(aEx.getFaiureType(), FailureType.CONNECTION_FAILED_EXCEED_IDLE_MAX, "Failure type mismatched");
+        Assert.assertEquals(aEx.getFailureType(), FailureType.CONNECTION_FAILED_EXCEED_IDLE_MAX, "Failure type mismatched");
 
         // call channelInactive, should not encounter npe
         handler.channelInactive(ctx);

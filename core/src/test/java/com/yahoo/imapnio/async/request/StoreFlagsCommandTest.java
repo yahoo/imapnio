@@ -247,7 +247,7 @@ public class StoreFlagsCommandTest {
             ex = imapAsyncEx;
         }
         Assert.assertNotNull(ex, "Expect exception to be thrown.");
-        Assert.assertEquals(ex.getFaiureType(), ImapAsyncClientException.FailureType.OPERATION_NOT_SUPPORTED_FOR_COMMAND,
+        Assert.assertEquals(ex.getFailureType(), ImapAsyncClientException.FailureType.OPERATION_NOT_SUPPORTED_FOR_COMMAND,
                 "Expected result mismatched.");
     }
 
@@ -268,7 +268,7 @@ public class StoreFlagsCommandTest {
             ex = imapAsyncEx;
         }
         Assert.assertNotNull(ex, "Expect exception to be thrown.");
-        Assert.assertEquals(ex.getFaiureType(), ImapAsyncClientException.FailureType.OPERATION_NOT_SUPPORTED_FOR_COMMAND,
+        Assert.assertEquals(ex.getFailureType(), ImapAsyncClientException.FailureType.OPERATION_NOT_SUPPORTED_FOR_COMMAND,
                 "Expected result mismatched.");
     }
 

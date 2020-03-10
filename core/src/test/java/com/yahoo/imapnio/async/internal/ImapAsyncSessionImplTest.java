@@ -963,7 +963,7 @@ public class ImapAsyncSessionImplTest {
         Assert.assertNotNull(cause, "Expect ExecutionException.getCause() to be present.");
         Assert.assertEquals(cause.getClass(), ImapAsyncClientException.class, "Expected result mismatched.");
         final ImapAsyncClientException asynEx = (ImapAsyncClientException) cause;
-        Assert.assertEquals(asynEx.getFaiureType(), FailureType.CHANNEL_TIMEOUT, "Failure type mismatched.");
+        Assert.assertEquals(asynEx.getFailureType(), FailureType.CHANNEL_TIMEOUT, "Failure type mismatched.");
     }
 
     /**
@@ -1087,7 +1087,7 @@ public class ImapAsyncSessionImplTest {
             Assert.assertNotNull(cause, "Expect cause.");
             Assert.assertEquals(cause.getClass(), ImapAsyncClientException.class, "Expected result mismatched.");
             final ImapAsyncClientException asynEx = (ImapAsyncClientException) cause;
-            Assert.assertEquals(asynEx.getFaiureType(), FailureType.CHANNEL_EXCEPTION, "Failure type mismatched.");
+            Assert.assertEquals(asynEx.getFailureType(), FailureType.CHANNEL_EXCEPTION, "Failure type mismatched.");
         }
 
         // since write to server failed, session.close() would be called by requestDoneWithException(), verify that operationComplete listener is
@@ -1144,7 +1144,7 @@ public class ImapAsyncSessionImplTest {
         Assert.assertEquals(errArgs.get(2).getClass(), ImapAsyncClientException.class, "class mismatched.");
         final ImapAsyncClientException e = (ImapAsyncClientException) errCapture.getAllValues().get(2);
         Assert.assertNotNull(e, "Log error for exception is missing");
-        Assert.assertEquals(e.getFaiureType(), FailureType.CHANNEL_EXCEPTION, "Class mismatched.");
+        Assert.assertEquals(e.getFailureType(), FailureType.CHANNEL_EXCEPTION, "Class mismatched.");
 
         // calling setDebugMode() on a closed session, should not throw NPE
         aSession.setDebugMode(DebugMode.DEBUG_ON);
@@ -1201,7 +1201,7 @@ public class ImapAsyncSessionImplTest {
         Assert.assertNotNull(cause, "Expect cause.");
         Assert.assertEquals(cause.getClass(), ImapAsyncClientException.class, "Expected result mismatched.");
         final ImapAsyncClientException asynEx = (ImapAsyncClientException) cause;
-        Assert.assertEquals(asynEx.getFaiureType(), FailureType.CHANNEL_DISCONNECTED, "Failure type mismatched.");
+        Assert.assertEquals(asynEx.getFailureType(), FailureType.CHANNEL_DISCONNECTED, "Failure type mismatched.");
 
         // verify logging messages
         final ArgumentCaptor<Object> allArgsCapture = ArgumentCaptor.forClass(Object.class);
@@ -1229,7 +1229,7 @@ public class ImapAsyncSessionImplTest {
         Assert.assertEquals(errArgs.get(2).getClass(), ImapAsyncClientException.class, "class mismatched.");
         final ImapAsyncClientException e = (ImapAsyncClientException) errCapture.getAllValues().get(2);
         Assert.assertNotNull(e, "Log error for exception is missing");
-        Assert.assertEquals(e.getFaiureType(), FailureType.CHANNEL_DISCONNECTED, "Class mismatched.");
+        Assert.assertEquals(e.getFailureType(), FailureType.CHANNEL_DISCONNECTED, "Class mismatched.");
     }
 
     /**
@@ -1286,7 +1286,7 @@ public class ImapAsyncSessionImplTest {
         Assert.assertNotNull(cause, "Expect cause.");
         Assert.assertEquals(cause.getClass(), ImapAsyncClientException.class, "Expected result mismatched.");
         final ImapAsyncClientException asynEx = (ImapAsyncClientException) cause;
-        Assert.assertEquals(asynEx.getFaiureType(), FailureType.CHANNEL_DISCONNECTED, "Failure type mismatched.");
+        Assert.assertEquals(asynEx.getFailureType(), FailureType.CHANNEL_DISCONNECTED, "Failure type mismatched.");
         // verify logging messages
         final ArgumentCaptor<Object> logCapture = ArgumentCaptor.forClass(Object.class);
         Mockito.verify(logger, Mockito.times(0)).debug(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), logCapture.capture());
@@ -1301,7 +1301,7 @@ public class ImapAsyncSessionImplTest {
         Assert.assertEquals(errArgs.get(2).getClass(), ImapAsyncClientException.class, "class mismatched.");
         final ImapAsyncClientException e = (ImapAsyncClientException) errCapture.getAllValues().get(2);
         Assert.assertNotNull(e, "Log error for exception is missing");
-        Assert.assertEquals(e.getFaiureType(), FailureType.CHANNEL_DISCONNECTED, "Class mismatched.");
+        Assert.assertEquals(e.getFailureType(), FailureType.CHANNEL_DISCONNECTED, "Class mismatched.");
     }
 
     /**
@@ -1390,7 +1390,7 @@ public class ImapAsyncSessionImplTest {
         }
 
         Assert.assertNotNull(ex, "Expect exception to be thrown.");
-        Assert.assertEquals(ex.getFaiureType(), FailureType.COMMAND_NOT_ALLOWED, "FailureType mismatched.");
+        Assert.assertEquals(ex.getFailureType(), FailureType.COMMAND_NOT_ALLOWED, "FailureType mismatched.");
 
         // verify logging messages
         final ArgumentCaptor<Object> allArgsCapture = ArgumentCaptor.forClass(Object.class);
@@ -1455,7 +1455,7 @@ public class ImapAsyncSessionImplTest {
             ex = asyncEx;
         }
         Assert.assertNotNull(ex, "Exception should occur.");
-        Assert.assertEquals(ex.getFaiureType(), FailureType.COMMAND_NOT_ALLOWED, "Failure type mismatched.");
+        Assert.assertEquals(ex.getFailureType(), FailureType.COMMAND_NOT_ALLOWED, "Failure type mismatched.");
         Mockito.verify(logger, Mockito.times(1)).debug(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
     }
 
@@ -1494,7 +1494,7 @@ public class ImapAsyncSessionImplTest {
             ex = asyncEx;
         }
         Assert.assertNotNull(ex, "Exception should occur.");
-        Assert.assertEquals(ex.getFaiureType(), FailureType.OPERATION_PROHIBITED_ON_CLOSED_CHANNEL, "Failure type mismatched.");
+        Assert.assertEquals(ex.getFailureType(), FailureType.OPERATION_PROHIBITED_ON_CLOSED_CHANNEL, "Failure type mismatched.");
 
         Mockito.verify(writePromise, Mockito.times(0)).addListener(Mockito.any(ImapAsyncSessionImpl.class));
         Mockito.verify(channel, Mockito.times(0)).writeAndFlush(Mockito.anyString(), Mockito.isA(ChannelPromise.class));
@@ -1557,7 +1557,7 @@ public class ImapAsyncSessionImplTest {
         Assert.assertNotNull(actual, "Exception should occur.");
         Assert.assertEquals(actual.getClass(), ImapAsyncClientException.class, "Class type mismatched.");
         final ImapAsyncClientException asyncClientEx = (ImapAsyncClientException) actual;
-        Assert.assertEquals(asyncClientEx.getFaiureType(), FailureType.CLOSING_CONNECTION_FAILED, "Failure type mismatched.");
+        Assert.assertEquals(asyncClientEx.getFailureType(), FailureType.CLOSING_CONNECTION_FAILED, "Failure type mismatched.");
     }
 
     /**
@@ -1628,7 +1628,7 @@ public class ImapAsyncSessionImplTest {
             Assert.assertNotNull(cause, "Expect ExecutionException.getCause() to be present.");
             Assert.assertEquals(cause.getClass(), ImapAsyncClientException.class, "Expected result mismatched.");
             final ImapAsyncClientException asynEx = (ImapAsyncClientException) cause;
-            Assert.assertEquals(asynEx.getFaiureType(), FailureType.CHANNEL_EXCEPTION, "Failure type mismatched.");
+            Assert.assertEquals(asynEx.getFailureType(), FailureType.CHANNEL_EXCEPTION, "Failure type mismatched.");
 
             // verify logging messages
             final ArgumentCaptor<Object> allArgsCapture = ArgumentCaptor.forClass(Object.class);
@@ -1653,7 +1653,7 @@ public class ImapAsyncSessionImplTest {
             Assert.assertEquals(errArgs.get(2).getClass(), ImapAsyncClientException.class, "class mismatched.");
             final ImapAsyncClientException e = (ImapAsyncClientException) errCapture.getAllValues().get(2);
             Assert.assertNotNull(e, "Log error for exception is missing");
-            Assert.assertEquals(e.getFaiureType(), FailureType.CHANNEL_EXCEPTION, "Class mismatched.");
+            Assert.assertEquals(e.getFailureType(), FailureType.CHANNEL_EXCEPTION, "Class mismatched.");
 
             // no more responses in the queue, calling handleResponse should return right away without any indexOutOfBound
             aSession.handleChannelResponse(serverResp1);
@@ -1785,7 +1785,7 @@ public class ImapAsyncSessionImplTest {
             Assert.assertNotNull(cause, "Expect ExecutionException.getCause() to be present.");
             Assert.assertEquals(cause.getClass(), ImapAsyncClientException.class, "Expected result mismatched.");
             final ImapAsyncClientException asynEx = (ImapAsyncClientException) cause;
-            Assert.assertEquals(asynEx.getFaiureType(), FailureType.OPERATION_PROHIBITED_ON_CLOSED_CHANNEL, "Failure type mismatched.");
+            Assert.assertEquals(asynEx.getFailureType(), FailureType.OPERATION_PROHIBITED_ON_CLOSED_CHANNEL, "Failure type mismatched.");
 
             // verify logging messages
             final ArgumentCaptor<Object> allArgsCapture = ArgumentCaptor.forClass(Object.class);
