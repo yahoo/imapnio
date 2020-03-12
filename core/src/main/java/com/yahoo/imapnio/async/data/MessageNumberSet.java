@@ -79,12 +79,23 @@ public final class MessageNumberSet {
     }
 
     /**
+     * Enum for external use to denote last message in the set.
+     */
+    public enum ToMessage {
+        /** Last message to take. */
+        TO_MESSAGE
+    }
+
+    /**
      * Message sequence type. Whether an ending message is an absolute number or last message, or just last message.
      */
     private enum SequenceType {
 
         /** Sequence range ends with an absolute message sequence number, for example: 3:10. */
-        ABSOLUTE_END,
+        ABSOLUTE_RANGE,
+
+        /** Starts with the first message and has an absolute end, for example: *:10. */
+        FIRST_MESSAGE_ABSOLUTE_END,
 
         /** Ends with the last message in the mailbox, for example: 3:* . */
         LAST_MESSAGE_END,
@@ -109,7 +120,7 @@ public final class MessageNumberSet {
      * @param end ending message sequence or UID sequence
      */
     public MessageNumberSet(final long start, final long end) {
-        this(start, end, SequenceType.ABSOLUTE_END);
+        this(start, end, SequenceType.ABSOLUTE_RANGE);
     }
 
     /**
@@ -120,6 +131,16 @@ public final class MessageNumberSet {
      */
     public MessageNumberSet(final long start, @Nonnull final LastMessage lastMsgFlag) {
         this(start, start, SequenceType.LAST_MESSAGE_END);
+    }
+
+    /**
+     * Instantiates a {@link MessageNumberSet} that ends with given end starts with the first message.
+     *
+     * @param end last message sequence or UID sequence
+     * @param toMsgFlag flag to denote that it is the last message in mailbox
+     */
+    public MessageNumberSet(final long end, @Nonnull final ToMessage toMsgFlag) {
+        this(end, end, SequenceType.FIRST_MESSAGE_ABSOLUTE_END);
     }
 
     /**
@@ -242,6 +263,8 @@ public final class MessageNumberSet {
                 s.append('*');
             } else if (elem.seqType == SequenceType.LAST_MESSAGE_END) {
                 s.append(start).append(':').append('*');
+            } else if (elem.seqType == SequenceType.FIRST_MESSAGE_ABSOLUTE_END) {
+                s.append('*').append(':').append(end);
             } else if (end > start) {
                 s.append(start).append(':').append(end);
             } else { // end == start means only one element

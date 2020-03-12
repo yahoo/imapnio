@@ -33,6 +33,16 @@ public class MessageNumberSetTest {
     }
 
     /**
+     * Tests constructor where ends with specific message and starts with the first message and converting it to string.
+     */
+    @Test
+    public void testConstructorWithEndStartWithFirst() {
+        final MessageNumberSet msgSet = new MessageNumberSet(100, MessageNumberSet.ToMessage.TO_MESSAGE);
+        Assert.assertNotNull(msgSet, "Should not be null");
+        Assert.assertEquals(MessageNumberSet.buildString(new MessageNumberSet[] { msgSet }), "*:100", "Result mismatched.");
+    }
+
+    /**
      * Tests constructor where it has only one message and converting it to string.
      */
     @Test
