@@ -126,13 +126,15 @@ public class MessageNumberSetTest {
      */
     @Test
     public void testBuildString() throws ImapAsyncClientException {
-        final MessageNumberSet[] sets = new MessageNumberSet[3];
+        final MessageNumberSet[] sets = new MessageNumberSet[5];
 
         sets[0] = new MessageNumberSet(LastMessage.LAST_MESSAGE);
         sets[1] = new MessageNumberSet(1, 5);
         sets[2] = new MessageNumberSet(3, 3);
+        sets[3] = new MessageNumberSet(10, LastMessage.LAST_MESSAGE);
+        sets[4] = new MessageNumberSet(15, MessageNumberSet.ToMessage.TO_MESSAGE);
         Assert.assertNotNull(sets, "Should not be null");
-        Assert.assertEquals(MessageNumberSet.buildString(sets), "*,1:5,3", "Result mismatched.");
+        Assert.assertEquals(MessageNumberSet.buildString(sets), "*,1:5,3,10:*,*:15", "Result mismatched.");
     }
 
     /**
