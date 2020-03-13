@@ -69,7 +69,34 @@ public class ArgumentTest {
         final Argument args = new Argument();
         args.append(searchSeq.generateSequence(term, MimeUtility.javaCharset(charset)));
 
-        args.writeAtom(msgIds);
+        args.addLiteral(msgIds);
+
+        final String searchStr = args.toString();
+        Assert.assertEquals(searchStr, "SUBJECT {4+}\r\nￎﾩￎﾩ 1:5", "result mismatched.");
+    }
+
+    /**
+     * Tests constructor and toString() method with null character set.
+     *
+     * @throws IOException will not throw
+     * @throws SearchException will not throw
+     */
+    @Test
+    public void testConstructorAddStringAndToStringNoneNullCharset() throws SearchException, IOException {
+
+        final SearchSequence searchSeq = new SearchSequence();
+        // message id
+        final String msgIds = "1:5";
+
+        // charset
+        final String charset = "UTF-8";
+
+        // SearchTerm
+        final SubjectTerm term = new SubjectTerm("ΩΩ");
+        final Argument args = new Argument();
+        args.append(searchSeq.generateSequence(term, MimeUtility.javaCharset(charset)));
+
+        args.addString(msgIds);
 
         final String searchStr = args.toString();
         Assert.assertEquals(searchStr, "SUBJECT {4+}\r\nￎﾩￎﾩ 1:5", "result mismatched.");

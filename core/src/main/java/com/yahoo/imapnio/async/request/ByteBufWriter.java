@@ -43,23 +43,6 @@ final class ByteBufWriter extends Protocol {
     }
 
     /**
-     * Never used but must be implemented.
-     *
-     * @param host IMAP server host
-     * @param port IMAP server port
-     * @param props properties
-     * @param prefix prefix to prepend property keys
-     * @param isSSL is this an SSL connection
-     * @param logger logger
-     * @throws IOException on network failure
-     * @throws ProtocolException on IMAP protocol errors
-     */
-    private ByteBufWriter(final String host, final int port, final Properties props, final String prefix, final boolean isSSL,
-            final MailLogger logger) throws IOException, ProtocolException {
-        super(host, port, props, prefix, isSSL, logger);
-    }
-
-    /**
      * Returns a continuation response in order to avoid {@link com.sun.mail.iap.Argument} blocking on literal method to wait for server continuation.
      *
      * @return a continuation response
