@@ -120,19 +120,25 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
         @Nonnull
         private final ImapFuture<ImapAsyncResponse> future;
 
+        /** The tag for this command. */
+        @Nonnull
+        private final String tag;
+
         /**
          * Initializes a newly created {@link ImapCommandEntry} object so that it can handle the command responses and determine whether the request
          * is done.
          *
          * @param cmd ImapRequest instance
          * @param future ImapFuture instance
+         * @param tag the tag associated with this command
          */
-        ImapCommandEntry(@Nonnull final ImapRequest cmd, @Nonnull final ImapFuture<ImapAsyncResponse> future) {
+        ImapCommandEntry(@Nonnull final ImapRequest cmd, @Nonnull final ImapFuture<ImapAsyncResponse> future, @Nonnull final String tag) {
             this.cmd = cmd;
             this.state = CommandState.REQUEST_IN_PREPARATION;
             this.responses = (cmd.getStreamingResponsesQueue() != null) ? cmd.getStreamingResponsesQueue()
                     : new ConcurrentLinkedQueue<IMAPResponse>();
             this.future = future;
+            this.tag = tag;
         }
 
         /**
@@ -170,6 +176,13 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
          */
         public ImapRequest getRequest() {
             return cmd;
+        }
+
+        /**
+         * @return the tag for this imap command
+         */
+        public String getTag() {
+            return tag;
         }
     }
 
@@ -235,10 +248,11 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
         }
 
         final ImapFuture<ImapAsyncResponse> cmdFuture = new ImapFuture<ImapAsyncResponse>();
-        requestsQueue.add(new ImapCommandEntry(command, cmdFuture));
+        final String tag = getNextTag();
+        requestsQueue.add(new ImapCommandEntry(command, cmdFuture, tag));
 
         final ByteBuf buf = Unpooled.buffer();
-        final String tag = getNextTag();
+
         buf.writeBytes(tag.getBytes(StandardCharsets.US_ASCII));
         buf.writeByte(SPACE);
         buf.writeBytes(command.getCommandLineBytes());
@@ -368,7 +382,6 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
 
     @Override
     public void handleChannelException(@Nonnull final Throwable cause) {
-        final String userId = null;
         requestDoneWithException(new ImapAsyncClientException(FailureType.CHANNEL_EXCEPTION, cause, sessionId, sessionCtx));
     }
 
@@ -416,7 +429,8 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
             }
             return;
 
-        } else if (serverResponse.isTagged()) {
+        } else if (serverResponse.isTagged() && curEntry.getTag().equals(serverResponse.getTag())) {
+            // If this is a matching command completion response, we are done
             try {
                 curEntry.setState(ImapCommandEntry.CommandState.RESPONSES_DONE);
                 if (currentCmd instanceof CompressCommand && serverResponse.isOK()) {
