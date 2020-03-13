@@ -11,7 +11,6 @@ import com.sun.mail.iap.Protocol;
 import com.sun.mail.iap.ProtocolException;
 import com.sun.mail.iap.Response;
 import com.sun.mail.imap.protocol.IMAPResponse;
-import com.sun.mail.util.MailLogger;
 
 import io.netty.buffer.ByteBuf;
 

@@ -6,8 +6,6 @@ import java.io.OutputStream;
 import java.util.Properties;
 
 import com.sun.mail.iap.Protocol;
-import com.sun.mail.iap.ProtocolException;
-import com.sun.mail.util.MailLogger;
 
 /**
  * Class used to serialize IMAP commands. kraman
