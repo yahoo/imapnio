@@ -93,8 +93,8 @@ public class ImapAsyncSessionImplTest {
      * @throws InterruptedException will not throw
      */
     @Test
-    public void testExecuteAuthCapaAndFlushHandleResponseCloseSessionAllSuccess() throws ImapAsyncClientException, IOException, ProtocolException,
-            InterruptedException, ExecutionException, TimeoutException {
+    public void testExecuteAuthCapaAndFlushHandleResponseCloseSessionAllSuccess()
+            throws ImapAsyncClientException, IOException, ProtocolException, InterruptedException, ExecutionException, TimeoutException {
 
         final Channel channel = Mockito.mock(Channel.class);
         final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
@@ -174,6 +174,15 @@ public class ImapAsyncSessionImplTest {
             final IMAPResponse serverResp1 = new IMAPResponse(
                     "* CAPABILITY IMAP4rev1 SASL-IR AUTH=PLAIN AUTH=XOAUTH2 AUTH=OAUTHBEARER ID MOVE NAMESPACE");
             aSession.handleChannelResponse(serverResp1);
+
+            final IMAPResponse serverRespJunk = new IMAPResponse("@@@@@* some junk MOVE NAMESPACE");
+            aSession.handleChannelResponse(serverRespJunk);
+            Assert.assertFalse(future.isDone(), "isDone() should be false.");
+
+            final IMAPResponse anotherTaggedResp = new IMAPResponse("a1 OK but not the tag u sent!");
+            aSession.handleChannelResponse(anotherTaggedResp);
+            Assert.assertFalse(future.isDone(), "isDone() should be false.");
+
             final IMAPResponse serverResp2 = new IMAPResponse("a2 OK CAPABILITY completed");
             aSession.handleChannelResponse(serverResp2);
 
@@ -182,7 +191,7 @@ public class ImapAsyncSessionImplTest {
             final ImapAsyncResponse asyncResp = future.get(FUTURE_GET_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
 
             final Collection<IMAPResponse> lines = asyncResp.getResponseLines();
-            Assert.assertEquals(lines.size(), 2, "responses count mismatched.");
+            Assert.assertEquals(lines.size(), 4, "responses count mismatched.");
             final Iterator<IMAPResponse> it = lines.iterator();
             final IMAPResponse capaResp = it.next();
             Assert.assertNotNull(capaResp, "Result mismatched.");
@@ -201,19 +210,29 @@ public class ImapAsyncSessionImplTest {
             Assert.assertEquals(authValues.get(1), "XOAUTH2", "One Auth value missed");
             Assert.assertEquals(authValues.get(2), "OAUTHBEARER", "One Auth value missed");
 
+            // first is junk response
+            final IMAPResponse resp1 = it.next();
+            Assert.assertNotNull(resp1, "Result mismatched.");
+            Assert.assertEquals(resp1, serverRespJunk, "response mismatched.");
+
+            // 2nd is a tagged response but tag does not match a2
+            final IMAPResponse resp2 = it.next();
+            Assert.assertNotNull(resp2, "Result mismatched.");
+            Assert.assertEquals(resp2, anotherTaggedResp, "response mismatched.");
+
             final IMAPResponse endingResp = it.next();
             Assert.assertNotNull(endingResp, "Result mismatched.");
             Assert.assertTrue(endingResp.isOK(), "Response.isOK() mismatched.");
             Assert.assertEquals(endingResp.getTag(), "a2", "tag mismatched.");
             // verify logging messages
             final ArgumentCaptor<Object> allArgsCapture = ArgumentCaptor.forClass(Object.class);
-            Mockito.verify(logger, Mockito.times(3)).debug(Mockito.anyString(), allArgsCapture.capture(), allArgsCapture.capture(),
+            Mockito.verify(logger, Mockito.times(5)).debug(Mockito.anyString(), allArgsCapture.capture(), allArgsCapture.capture(),
                     allArgsCapture.capture());
 
-            // since it is vargs, 3 calls with 3 parameters all accumulate to one list
+            // since it is vargs, 5 calls with 3 parameters all accumulate to one list
             final List<Object> logArgs = allArgsCapture.getAllValues();
             Assert.assertNotNull(logArgs, "log messages mismatched.");
-            Assert.assertEquals(logArgs.size(), 9, "log messages mismatched.");
+            Assert.assertEquals(logArgs.size(), 15, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(0), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(1), USER_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(2), "a2 CAPABILITY\r\n", "log messages from client mismatched.");
@@ -223,7 +242,13 @@ public class ImapAsyncSessionImplTest {
                     "log messages from server mismatched.");
             Assert.assertEquals(logArgs.get(6), SESSION_ID, "log messages mismatched.");
             Assert.assertEquals(logArgs.get(7), USER_ID, "log messages mismatched.");
-            Assert.assertEquals(logArgs.get(8), "a2 OK CAPABILITY completed", "Error message mismatched.");
+            Assert.assertEquals(logArgs.get(8), "@@@@@* some junk MOVE NAMESPACE", "Error message mismatched.");
+            Assert.assertEquals(logArgs.get(9), SESSION_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(10), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(11), "a1 OK but not the tag u sent!", "Error message mismatched.");
+            Assert.assertEquals(logArgs.get(12), SESSION_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(13), USER_ID, "log messages mismatched.");
+            Assert.assertEquals(logArgs.get(14), "a2 OK CAPABILITY completed", "Error message mismatched.");
         }
 
         // perform close session
@@ -252,8 +277,8 @@ public class ImapAsyncSessionImplTest {
      * @throws InterruptedException will not throw
      */
     @Test
-    public void testExecuteAuthXoauth2InvalidTokenNoSASLIR() throws ImapAsyncClientException, IOException, ProtocolException, InterruptedException,
-            ExecutionException, TimeoutException {
+    public void testExecuteAuthXoauth2InvalidTokenNoSASLIR()
+            throws ImapAsyncClientException, IOException, ProtocolException, InterruptedException, ExecutionException, TimeoutException {
 
         final Channel channel = Mockito.mock(Channel.class);
         final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
@@ -365,8 +390,8 @@ public class ImapAsyncSessionImplTest {
      * @throws InterruptedException will not throw
      */
     @Test
-    public void testExecuteAuthXoauth2InvalidTokenSASLIREnabled() throws ImapAsyncClientException, IOException, ProtocolException,
-            InterruptedException, ExecutionException, TimeoutException {
+    public void testExecuteAuthXoauth2InvalidTokenSASLIREnabled()
+            throws ImapAsyncClientException, IOException, ProtocolException, InterruptedException, ExecutionException, TimeoutException {
 
         final Channel channel = Mockito.mock(Channel.class);
         final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
@@ -463,8 +488,8 @@ public class ImapAsyncSessionImplTest {
      * @throws InterruptedException will not throw
      */
     @Test
-    public void testExecuteAuthCompressHandleResponseNoSslHandler() throws ImapAsyncClientException, IOException, ProtocolException,
-            InterruptedException, ExecutionException, TimeoutException {
+    public void testExecuteAuthCompressHandleResponseNoSslHandler()
+            throws ImapAsyncClientException, IOException, ProtocolException, InterruptedException, ExecutionException, TimeoutException {
 
         final Channel channel = Mockito.mock(Channel.class);
         final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
@@ -614,8 +639,8 @@ public class ImapAsyncSessionImplTest {
      * @throws InterruptedException will not throw
      */
     @Test
-    public void testExecuteAuthCompressHandleResponseWithSslHandler() throws ImapAsyncClientException, IOException, ProtocolException,
-            InterruptedException, ExecutionException, TimeoutException {
+    public void testExecuteAuthCompressHandleResponseWithSslHandler()
+            throws ImapAsyncClientException, IOException, ProtocolException, InterruptedException, ExecutionException, TimeoutException {
 
         final Channel channel = Mockito.mock(Channel.class);
         final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
@@ -769,8 +794,8 @@ public class ImapAsyncSessionImplTest {
      * @throws InterruptedException will not throw
      */
     @Test
-    public void testExecuteAuthCompressFailedHandleResponse() throws ImapAsyncClientException, IOException, ProtocolException, InterruptedException,
-            ExecutionException, TimeoutException {
+    public void testExecuteAuthCompressFailedHandleResponse()
+            throws ImapAsyncClientException, IOException, ProtocolException, InterruptedException, ExecutionException, TimeoutException {
 
         final Channel channel = Mockito.mock(Channel.class);
         final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
@@ -918,8 +943,7 @@ public class ImapAsyncSessionImplTest {
      * @throws InterruptedException will not throw
      */
     @Test
-    public void testHandleIdleEventQueueNotEmptyAndCommandSentToServer() throws ImapAsyncClientException,
-            InterruptedException, TimeoutException {
+    public void testHandleIdleEventQueueNotEmptyAndCommandSentToServer() throws ImapAsyncClientException, InterruptedException, TimeoutException {
 
         final Channel channel = Mockito.mock(Channel.class);
         final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
@@ -1038,8 +1062,8 @@ public class ImapAsyncSessionImplTest {
      * @throws InterruptedException will not throw
      */
     @Test
-    public void testExecuteAndFlushToServerFailedCloseSessionFailed() throws ImapAsyncClientException,
-            InterruptedException, ExecutionException, TimeoutException {
+    public void testExecuteAndFlushToServerFailedCloseSessionFailed()
+            throws ImapAsyncClientException, InterruptedException, ExecutionException, TimeoutException {
 
         final Channel channel = Mockito.mock(Channel.class);
         final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
@@ -1159,8 +1183,8 @@ public class ImapAsyncSessionImplTest {
      * @throws IllegalArgumentException will not throw
      */
     @Test
-    public void testExecuteChannelCloseBeforeServerResponseArrived() throws ImapAsyncClientException,
-            InterruptedException, TimeoutException, IllegalArgumentException {
+    public void testExecuteChannelCloseBeforeServerResponseArrived()
+            throws ImapAsyncClientException, InterruptedException, TimeoutException, IllegalArgumentException {
 
         final Channel channel = Mockito.mock(Channel.class);
         final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
@@ -1242,8 +1266,8 @@ public class ImapAsyncSessionImplTest {
      * @throws IllegalArgumentException will not throw
      */
     @Test
-    public void testExecuteChannelCloseBeforeServerResponseArrivedLogLevelInfo() throws ImapAsyncClientException,
-            InterruptedException, TimeoutException, IllegalArgumentException {
+    public void testExecuteChannelCloseBeforeServerResponseArrivedLogLevelInfo()
+            throws ImapAsyncClientException, InterruptedException, TimeoutException, IllegalArgumentException {
 
         final Channel channel = Mockito.mock(Channel.class);
         final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
@@ -1315,8 +1339,8 @@ public class ImapAsyncSessionImplTest {
      * @throws InterruptedException will not throw
      */
     @Test
-    public void testExecuteIdleHandleResponseFlushCompleteTerminateSuccess() throws ImapAsyncClientException, IOException, ProtocolException,
-            InterruptedException, ExecutionException, TimeoutException {
+    public void testExecuteIdleHandleResponseFlushCompleteTerminateSuccess()
+            throws ImapAsyncClientException, IOException, ProtocolException, InterruptedException, ExecutionException, TimeoutException {
 
         final Channel channel = Mockito.mock(Channel.class);
         final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
@@ -1467,8 +1491,7 @@ public class ImapAsyncSessionImplTest {
      * @throws InterruptedException will not throw
      */
     @Test
-    public void testExecuteFailedChannelInactiveAndCloseChannel()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void testExecuteFailedChannelInactiveAndCloseChannel() throws InterruptedException, ExecutionException, TimeoutException {
 
         final Channel channel = Mockito.mock(Channel.class);
         final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
@@ -1518,8 +1541,7 @@ public class ImapAsyncSessionImplTest {
      * @throws InterruptedException will not throw
      */
     @Test
-    public void testCloseSessionOperationCompleteFutureIsUnsuccessful() throws
-            InterruptedException, TimeoutException {
+    public void testCloseSessionOperationCompleteFutureIsUnsuccessful() throws InterruptedException, TimeoutException {
 
         final Channel channel = Mockito.mock(Channel.class);
         final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
@@ -1570,8 +1592,8 @@ public class ImapAsyncSessionImplTest {
      * @throws InterruptedException will not throw
      */
     @Test
-    public void testExecuteAuthHandleResponseChannelInactive() throws ImapAsyncClientException, IOException, ProtocolException, InterruptedException,
-            TimeoutException {
+    public void testExecuteAuthHandleResponseChannelInactive()
+            throws ImapAsyncClientException, IOException, ProtocolException, InterruptedException, TimeoutException {
 
         final Channel channel = Mockito.mock(Channel.class);
         final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
@@ -1672,8 +1694,8 @@ public class ImapAsyncSessionImplTest {
      * @throws InterruptedException will not throw
      */
     @Test
-    public void testExecuteAuthCompressHandleResponseChannelIsClosed() throws ImapAsyncClientException, IOException, ProtocolException,
-            InterruptedException, ExecutionException, TimeoutException {
+    public void testExecuteAuthCompressHandleResponseChannelIsClosed()
+            throws ImapAsyncClientException, IOException, ProtocolException, InterruptedException, ExecutionException, TimeoutException {
 
         final Channel channel = Mockito.mock(Channel.class);
         final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
