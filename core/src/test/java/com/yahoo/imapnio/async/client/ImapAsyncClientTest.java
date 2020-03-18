@@ -5,6 +5,10 @@ import java.net.SocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -12,7 +16,10 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
 
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -406,6 +413,21 @@ public class ImapAsyncClientTest {
     }
 
     /**
+     * @return SSLContext instance
+     * @throws KeyStoreException will not throw
+     * @throws NoSuchAlgorithmException will not throw
+     * @throws KeyManagementException will not throw
+     */
+    private SSLContext buildSSLContext() throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
+        final SSLContext sslContext = SSLContext.getInstance("TLS");
+        final TrustManagerFactory tmf = TrustManagerFactory.getInstance("X509");
+        tmf.init((KeyStore) null);
+        final TrustManager[] tm = new TrustManager[] { tmf.getTrustManagers()[0] };
+        sslContext.init(null, tm, null);
+        return sslContext;
+    }
+
+    /**
      * Tests createSession method when successful with class level debug on and session level debug off.
      *
      * @throws SSLException will not throw
@@ -440,8 +462,9 @@ public class ImapAsyncClientTest {
         final URI serverUri = new URI(SERVER_URI_STR);
 
         final String sessCtx = "someUserId";
+
         final Future<ImapAsyncCreateSessionResponse> future = aclient.createSession(serverUri, config, localAddress, sniNames, DebugMode.DEBUG_ON,
-                sessCtx);
+                sessCtx, buildSSLContext());
 
         // verify session creation
         Assert.assertNotNull(future, "Future for ImapAsyncSession should not be null.");
