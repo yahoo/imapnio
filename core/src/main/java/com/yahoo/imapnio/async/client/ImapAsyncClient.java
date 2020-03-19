@@ -13,6 +13,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.net.ssl.SNIHostName;
 import javax.net.ssl.SNIServerName;
+import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLParameters;
@@ -41,6 +42,8 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
+import io.netty.handler.ssl.ClientAuth;
+import io.netty.handler.ssl.JdkSslContext;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslHandler;
@@ -92,9 +95,6 @@ public class ImapAsyncClient {
     /** Event loop group that will serve all channels for IMAP client. */
     private final EventLoopGroup group;
 
-    /** The SSL context. */
-    private final SslContext sslContext;
-
     /**
      * This class initialized the pipeline with the right handlers.
      */
@@ -145,10 +145,8 @@ public class ImapAsyncClient {
      * @param bootstrap a {@link Bootstrap} instance that makes it easy to bootstrap a {@link Channel} to use for clients
      * @param group an @{link EventLoopGroup} instance allowing registering {@link Channel}s for processing later selection during the event loop
      * @param logger Logger instance
-     * @throws SSLException when encountering an error to create a SslContext for this client
      */
-    ImapAsyncClient(@Nonnull final Bootstrap bootstrap, @Nonnull final EventLoopGroup group, @Nonnull final Logger logger) throws SSLException {
-        this.sslContext = SslContextBuilder.forClient().build();
+    ImapAsyncClient(@Nonnull final Bootstrap bootstrap, @Nonnull final EventLoopGroup group, @Nonnull final Logger logger) {
         this.logger = logger;
         this.bootstrap = bootstrap;
         this.group = group;
@@ -168,7 +166,7 @@ public class ImapAsyncClient {
      */
     public Future<ImapAsyncCreateSessionResponse> createSession(@Nonnull final URI serverUri, @Nonnull final ImapAsyncSessionConfig config,
             @Nullable final InetSocketAddress localAddress, @Nullable final List<String> sniNames, @Nonnull final DebugMode logOpt) {
-        return createSession(serverUri, config, localAddress, sniNames, logOpt, NA_CLIENT_CONTEXT);
+        return createSession(serverUri, config, localAddress, sniNames, logOpt, NA_CLIENT_CONTEXT, null);
     }
 
     /**
@@ -185,6 +183,24 @@ public class ImapAsyncClient {
     public Future<ImapAsyncCreateSessionResponse> createSession(@Nonnull final URI serverUri, @Nonnull final ImapAsyncSessionConfig config,
             @Nullable final InetSocketAddress localAddress, @Nullable final List<String> sniNames, @Nonnull final DebugMode logOpt,
             @Nonnull final Object sessionCtx) {
+        return createSession(serverUri, config, localAddress, sniNames, logOpt, sessionCtx, null);
+    }
+
+    /**
+     * Connects to the remote server asynchronously and returns a future for the ImapSession if connection is established.
+     **
+     * @param serverUri IMAP server URI
+     * @param config configuration to be used for this session/connection
+     * @param localAddress the local network interface to us
+     * @param sniNames Server Name Indication names list
+     * @param logOpt session logging option for the session to be created
+     * @param sessionCtx context associated with the session created. Its toString() will be called upon displaying exception or debug logging
+     * @param jdkSslContext a pre-configured {@link SSLContext} which uses JDK's SSL/TLS implementation
+     * @return the ChannelFuture object
+     */
+    public Future<ImapAsyncCreateSessionResponse> createSession(@Nonnull final URI serverUri, @Nonnull final ImapAsyncSessionConfig config,
+            @Nullable final InetSocketAddress localAddress, @Nullable final List<String> sniNames, @Nonnull final DebugMode logOpt,
+            @Nonnull final Object sessionCtx, @Nullable final SSLContext jdkSslContext) {
 
         final boolean isSessionDebugOn = (logOpt == DebugMode.DEBUG_ON);
         // ------------------------------------------------------------
@@ -224,6 +240,17 @@ public class ImapAsyncClient {
                     final boolean isSSL = serverUri.getScheme().toLowerCase().equals(IMAPS);
 
                     if (isSSL) {
+                        SslContext sslContext;
+                        try {
+                            // if callers want to use their predefined SSLContext, we need to wrap it with JdkSslContext
+                            sslContext = (jdkSslContext == null) ? SslContextBuilder.forClient().build()
+                                    : new JdkSslContext(jdkSslContext, true, ClientAuth.NONE);
+                        } catch (final SSLException e) {
+                            final ImapAsyncClientException ex = new ImapAsyncClientException(FailureType.CONNECTION_SSL_EXCEPTION, e);
+                            sessionFuture.done(ex);
+                            logger.error(CONNECT_RESULT_REC, "NA", sessionCtx.toString(), "failure", serverUri.toASCIIString(), sniNames, ex);
+                            return;
+                        }
                         final List<SNIServerName> serverNames = new ArrayList<SNIServerName>();
                         if (null != sniNames && !sniNames.isEmpty()) { // SNI support
                             for (final String sni : sniNames) {
@@ -231,6 +258,7 @@ public class ImapAsyncClient {
                             }
                             final SSLParameters params = new SSLParameters();
                             params.setServerNames(serverNames);
+
                             final SSLEngine engine = sslContext.newEngine(ch.alloc());
                             engine.setSSLParameters(params);
                             pipeline.addFirst(SSL_HANDLER, new SslHandler(engine)); // in/outbound
