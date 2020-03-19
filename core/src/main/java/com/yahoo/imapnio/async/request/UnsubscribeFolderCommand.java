@@ -20,7 +20,7 @@ public class UnsubscribeFolderCommand extends AbstractFolderActionCommand {
     }
 
     @Override
-    public ImapCommandType getCommandType() {
-        return ImapCommandType.UNSUBSCRIBE;
+    public ImapRFCSupportedCommandType getCommandType() {
+        return ImapRFCSupportedCommandType.UNSUBSCRIBE;
     }
 }

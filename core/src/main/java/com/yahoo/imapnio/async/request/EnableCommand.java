@@ -54,8 +54,8 @@ public class EnableCommand extends ImapRequestAdapter {
     }
 
     @Override
-    public ImapCommandType getCommandType() {
-        return ImapCommandType.ENABLE;
+    public ImapRFCSupportedCommandType getCommandType() {
+        return ImapRFCSupportedCommandType.ENABLE;
     }
 
     /** Byte array for CR and LF, keeping the array local so it cannot be modified by others. */

@@ -16,7 +16,7 @@ public class UnselectCommand extends AbstractNoArgsCommand {
     }
 
     @Override
-    public ImapCommandType getCommandType() {
-        return ImapCommandType.UNSELECT;
+    public ImapRFCSupportedCommandType getCommandType() {
+        return ImapRFCSupportedCommandType.UNSELECT;
     }
 }

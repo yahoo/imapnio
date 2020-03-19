@@ -1,7 +1,7 @@
 package com.yahoo.imapnio.async.internal;
 
 import com.yahoo.imapnio.async.request.AbstractNoArgsCommand;
-import com.yahoo.imapnio.async.request.ImapCommandType;
+import com.yahoo.imapnio.async.request.ImapRFCSupportedCommandType;
 
 /**
  * This class defines imap Compress request from client.
@@ -23,7 +23,7 @@ final class CompressCommand extends AbstractNoArgsCommand {
     }
 
     @Override
-    public ImapCommandType getCommandType() {
-        return ImapCommandType.COMPRESS;
+    public ImapRFCSupportedCommandType getCommandType() {
+        return ImapRFCSupportedCommandType.COMPRESS;
     }
 }

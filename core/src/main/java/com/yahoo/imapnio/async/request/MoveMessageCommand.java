@@ -45,7 +45,7 @@ public class MoveMessageCommand extends AbstractMessageActionCommand {
     }
 
     @Override
-    public ImapCommandType getCommandType() {
-        return ImapCommandType.MOVE_MESSAGE;
+    public ImapRFCSupportedCommandType getCommandType() {
+        return ImapRFCSupportedCommandType.MOVE_MESSAGE;
     }
 }

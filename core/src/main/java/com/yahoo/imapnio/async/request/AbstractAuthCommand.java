@@ -121,7 +121,7 @@ public abstract class AbstractAuthCommand extends ImapRequestAdapter {
     }
 
     @Override
-    public ImapCommandType getCommandType() {
-        return ImapCommandType.AUTHENTICATE;
+    public ImapRFCSupportedCommandType getCommandType() {
+        return ImapRFCSupportedCommandType.AUTHENTICATE;
     }
 }

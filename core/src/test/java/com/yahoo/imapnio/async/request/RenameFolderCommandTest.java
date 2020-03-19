@@ -92,6 +92,6 @@ public class RenameFolderCommandTest {
     @Test
     public void testGetCommandType() {
         final ImapRequest cmd = new RenameFolderCommand("oldName", "newName");
-        Assert.assertSame(cmd.getCommandType(), ImapCommandType.RENAME_FOLDER);
+        Assert.assertSame(cmd.getCommandType(), ImapRFCSupportedCommandType.RENAME_FOLDER);
     }
 }

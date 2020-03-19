@@ -62,6 +62,6 @@ public class UnselectCommandTest {
     @Test
     public void testGetCommandType() {
         final ImapRequest cmd = new UnselectCommand();
-        Assert.assertSame(cmd.getCommandType(), ImapCommandType.UNSELECT);
+        Assert.assertSame(cmd.getCommandType(), ImapRFCSupportedCommandType.UNSELECT);
     }
 }

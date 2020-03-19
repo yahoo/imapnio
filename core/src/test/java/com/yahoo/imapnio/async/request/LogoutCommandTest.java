@@ -62,6 +62,6 @@ public class LogoutCommandTest {
     @Test
     public void testGetCommandType() {
         final ImapRequest cmd = new LogoutCommand();
-        Assert.assertSame(cmd.getCommandType(), ImapCommandType.LOGOUT);
+        Assert.assertSame(cmd.getCommandType(), ImapRFCSupportedCommandType.LOGOUT);
     }
 }

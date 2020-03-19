@@ -113,6 +113,6 @@ public class UidCopyMessageCommandTest {
     @Test
     public void testGetCommandType() {
         final ImapRequest cmd = new UidCopyMessageCommand("37850:37852", "savedFolder");
-        Assert.assertSame(cmd.getCommandType(), ImapCommandType.UID_COPY_MESSAGE);
+        Assert.assertSame(cmd.getCommandType(), ImapRFCSupportedCommandType.UID_COPY_MESSAGE);
     }
 }

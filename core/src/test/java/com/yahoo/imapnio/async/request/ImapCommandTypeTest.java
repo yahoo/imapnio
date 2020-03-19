@@ -13,9 +13,22 @@ public class ImapCommandTypeTest {
      */
     @Test
     public void testCommandTypeEnum() {
-        final ImapCommandType[] enumList = ImapCommandType.values();
-        Assert.assertEquals(enumList.length, 36, "The enum count mismatched.");
-        final ImapCommandType uidFetch = ImapCommandType.valueOf("UID_FETCH");
-        Assert.assertSame(uidFetch, ImapCommandType.UID_FETCH, "Enum does not match.");
+        final ImapTestCommandType[] enumList = ImapTestCommandType.values();
+        Assert.assertEquals(enumList.length, 1, "The enum count mismatched.");
+        final ImapTestCommandType testType = ImapTestCommandType.valueOf("TEST");
+        Assert.assertSame(testType, ImapTestCommandType.TEST, "Enum does not match.");
+    }
+
+    /**
+     * Test imap command type.
+     */
+    enum ImapTestCommandType implements ImapCommandType {
+        /** test command. */
+        TEST;
+
+        @Override
+        public String getType() {
+            return this.name();
+        }
     }
 }

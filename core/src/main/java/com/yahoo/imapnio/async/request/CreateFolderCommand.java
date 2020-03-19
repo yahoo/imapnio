@@ -20,7 +20,7 @@ public class CreateFolderCommand extends AbstractFolderActionCommand {
     }
 
     @Override
-    public ImapCommandType getCommandType() {
-        return ImapCommandType.CREATE_FOLDER;
+    public ImapRFCSupportedCommandType getCommandType() {
+        return ImapRFCSupportedCommandType.CREATE_FOLDER;
     }
 }

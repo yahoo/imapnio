@@ -49,7 +49,7 @@ public class UidStoreFlagsCommand extends AbstractStoreFlagsCommand {
     }
 
     @Override
-    public ImapCommandType getCommandType() {
-        return ImapCommandType.UID_STORE_FLAGS;
+    public ImapRFCSupportedCommandType getCommandType() {
+        return ImapRFCSupportedCommandType.UID_STORE_FLAGS;
     }
 }

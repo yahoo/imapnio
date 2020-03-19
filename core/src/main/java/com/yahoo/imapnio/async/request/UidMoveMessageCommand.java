@@ -44,7 +44,7 @@ public class UidMoveMessageCommand extends AbstractMessageActionCommand {
     }
 
     @Override
-    public ImapCommandType getCommandType() {
-        return ImapCommandType.UID_MOVE_MESSAGE;
+    public ImapRFCSupportedCommandType getCommandType() {
+        return ImapRFCSupportedCommandType.UID_MOVE_MESSAGE;
     }
 }

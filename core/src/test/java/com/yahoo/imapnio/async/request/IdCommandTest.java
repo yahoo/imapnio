@@ -135,6 +135,6 @@ public class IdCommandTest {
     @Test
     public void testGetCommandType() {
         final ImapRequest cmd = new IdCommand(null);
-        Assert.assertSame(cmd.getCommandType(), ImapCommandType.ID);
+        Assert.assertSame(cmd.getCommandType(), ImapRFCSupportedCommandType.ID);
     }
 }

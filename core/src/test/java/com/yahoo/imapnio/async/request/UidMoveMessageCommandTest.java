@@ -113,6 +113,6 @@ public class UidMoveMessageCommandTest {
     @Test
     public void testGetCommandType() {
         final ImapRequest cmd = new UidMoveMessageCommand("37850:37852", "targetFolder");
-        Assert.assertSame(cmd.getCommandType(), ImapCommandType.UID_MOVE_MESSAGE);
+        Assert.assertSame(cmd.getCommandType(), ImapRFCSupportedCommandType.UID_MOVE_MESSAGE);
     }
 }

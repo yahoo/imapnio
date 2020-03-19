@@ -184,7 +184,7 @@ public class AppendCommand implements ImapRequest {
     }
 
     @Override
-    public ImapCommandType getCommandType() {
-        return ImapCommandType.APPEND_MESSAGE;
+    public ImapRFCSupportedCommandType getCommandType() {
+        return ImapRFCSupportedCommandType.APPEND_MESSAGE;
     }
 }
