@@ -5,7 +5,7 @@
     <groupId>com.yahoo.imapnio</groupId>
     <artifactId>imapnio</artifactId>
     <packaging>pom</packaging>
-    <version>4.0.1</version>
+    <version>4.0.2</version>
     <name>${project.artifactId}</name>
     <url>https://github.com/yahoo/imapnio</url>
     <description>Parent POM file for imapnio project</description>
@@ -74,7 +74,7 @@
         <maven-checkstyle-plugin.version>2.13</maven-checkstyle-plugin.version>
         <jersey.version>2.18</jersey.version>
         <jackson.version>2.5.3</jackson.version>
-        <jacoco-maven-plugin.version>0.7.5.201505241946</jacoco-maven-plugin.version>
+        <jacoco-maven-plugin.version>0.8.5</jacoco-maven-plugin.version>
         <testTimeLimitInSeconds>0</testTimeLimitInSeconds>
         <main.basedir>${project.basedir}</main.basedir>
     </properties>
