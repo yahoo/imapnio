@@ -127,6 +127,6 @@ public class LSubCommandTest {
     @Test
     public void testGetCommandType() {
         final ImapRequest cmd = new LSubCommand("", "*test*");
-        Assert.assertSame(cmd.getCommandType(), ImapCommandType.LSUB);
+        Assert.assertSame(cmd.getCommandType(), ImapCommandRFCSupportedType.LSUB);
     }
 }

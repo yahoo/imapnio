@@ -35,6 +35,6 @@ public class ExamineFolderCommand extends OpenFolderActionCommand {
 
     @Override
     public ImapCommandType getCommandType() {
-        return ImapCommandType.EXAMINE_FOLDER;
+        return ImapCommandRFCSupportedType.EXAMINE_FOLDER;
     }
 }

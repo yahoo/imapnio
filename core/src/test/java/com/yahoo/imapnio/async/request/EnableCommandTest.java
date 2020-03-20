@@ -109,7 +109,7 @@ public class EnableCommandTest {
     @Test
     public void testGetCommandType() {
         final ImapRequest cmd = new EnableCommand(CAPABILITIES);
-        Assert.assertSame(cmd.getCommandType(), ImapCommandType.ENABLE);
+        Assert.assertSame(cmd.getCommandType(), ImapCommandRFCSupportedType.ENABLE);
     }
 }
 

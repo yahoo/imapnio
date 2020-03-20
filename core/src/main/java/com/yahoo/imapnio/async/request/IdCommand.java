@@ -77,6 +77,6 @@ public class IdCommand extends ImapRequestAdapter {
 
     @Override
     public ImapCommandType getCommandType() {
-        return ImapCommandType.ID;
+        return ImapCommandRFCSupportedType.ID;
     }
 }

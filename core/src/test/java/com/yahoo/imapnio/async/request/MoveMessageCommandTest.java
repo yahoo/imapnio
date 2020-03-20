@@ -136,6 +136,6 @@ public class MoveMessageCommandTest {
     @Test
     public void testGetCommandType() {
         final ImapRequest cmd = new MoveMessageCommand(37850, 37852, "targetFolder");
-        Assert.assertSame(cmd.getCommandType(), ImapCommandType.MOVE_MESSAGE);
+        Assert.assertSame(cmd.getCommandType(), ImapCommandRFCSupportedType.MOVE_MESSAGE);
     }
 }

@@ -17,6 +17,6 @@ public class CheckCommand extends AbstractNoArgsCommand {
 
     @Override
     public ImapCommandType getCommandType() {
-        return ImapCommandType.CHECK;
+        return ImapCommandRFCSupportedType.CHECK;
     }
 }

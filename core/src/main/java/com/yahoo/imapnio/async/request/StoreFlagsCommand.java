@@ -49,6 +49,6 @@ public class StoreFlagsCommand extends AbstractStoreFlagsCommand {
 
     @Override
     public ImapCommandType getCommandType() {
-        return ImapCommandType.STORE_FLAGS;
+        return ImapCommandRFCSupportedType.STORE_FLAGS;
     }
 }

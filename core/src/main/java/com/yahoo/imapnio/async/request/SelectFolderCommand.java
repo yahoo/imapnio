@@ -33,6 +33,6 @@ public class SelectFolderCommand extends OpenFolderActionCommand {
 
     @Override
     public ImapCommandType getCommandType() {
-        return ImapCommandType.SELECT_FOLDER;
+        return ImapCommandRFCSupportedType.SELECT_FOLDER;
     }
 }

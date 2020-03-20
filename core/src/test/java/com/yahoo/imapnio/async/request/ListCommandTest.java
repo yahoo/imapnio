@@ -127,6 +127,6 @@ public class ListCommandTest {
     @Test
     public void testGetCommandType() {
         final ImapRequest cmd = new ListCommand("", "*test*");
-        Assert.assertSame(cmd.getCommandType(), ImapCommandType.LIST);
+        Assert.assertSame(cmd.getCommandType(), ImapCommandRFCSupportedType.LIST);
     }
 }

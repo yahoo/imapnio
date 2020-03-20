@@ -109,6 +109,6 @@ public class CapaCommandTest {
     @Test
     public void testGetCommandType() {
         final ImapRequest cmd = new CapaCommand();
-        Assert.assertSame(cmd.getCommandType(), ImapCommandType.CAPABILITY);
+        Assert.assertSame(cmd.getCommandType(), ImapCommandRFCSupportedType.CAPABILITY);
     }
 }

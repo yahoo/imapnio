@@ -63,6 +63,6 @@ public class SearchCommand extends AbstractSearchCommand {
 
     @Override
     public ImapCommandType getCommandType() {
-        return ImapCommandType.SEARCH;
+        return ImapCommandRFCSupportedType.SEARCH;
     }
 }

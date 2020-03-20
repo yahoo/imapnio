@@ -62,6 +62,6 @@ public class NamespaceCommandTest {
     @Test
     public void testGetCommandType() {
         final ImapRequest cmd = new NamespaceCommand();
-        Assert.assertSame(cmd.getCommandType(), ImapCommandType.NAMESPACE);
+        Assert.assertSame(cmd.getCommandType(), ImapCommandRFCSupportedType.NAMESPACE);
     }
 }

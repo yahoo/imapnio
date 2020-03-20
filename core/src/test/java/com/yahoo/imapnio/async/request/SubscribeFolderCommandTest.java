@@ -89,6 +89,6 @@ public class SubscribeFolderCommandTest {
     @Test
     public void testGetCommandType() {
         final ImapRequest cmd = new SubscribeFolderCommand("vacation");
-        Assert.assertSame(cmd.getCommandType(), ImapCommandType.SUBSCRIBE);
+        Assert.assertSame(cmd.getCommandType(), ImapCommandRFCSupportedType.SUBSCRIBE);
     }
 }

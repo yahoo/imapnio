@@ -64,6 +64,6 @@ public class CheckCommandTest {
     @Test
     public void testGetCommandType() {
         final ImapRequest cmd = new CheckCommand();
-        Assert.assertSame(cmd.getCommandType(), ImapCommandType.CHECK);
+        Assert.assertSame(cmd.getCommandType(), ImapCommandRFCSupportedType.CHECK);
     }
 }

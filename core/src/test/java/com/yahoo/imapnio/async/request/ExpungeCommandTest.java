@@ -62,6 +62,6 @@ public class ExpungeCommandTest {
     @Test
     public void testGetCommandType() {
         final ImapRequest cmd = new ExpungeCommand();
-        Assert.assertSame(cmd.getCommandType(), ImapCommandType.EXPUNGE);
+        Assert.assertSame(cmd.getCommandType(), ImapCommandRFCSupportedType.EXPUNGE);
     }
 }

@@ -62,6 +62,6 @@ public class NoopCommandTest {
     @Test
     public void testGetCommandType() {
         final ImapRequest cmd = new NoopCommand();
-        Assert.assertSame(cmd.getCommandType(), ImapCommandType.NOOP);
+        Assert.assertSame(cmd.getCommandType(), ImapCommandRFCSupportedType.NOOP);
     }
 }

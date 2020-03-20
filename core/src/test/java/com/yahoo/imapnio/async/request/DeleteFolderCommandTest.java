@@ -89,6 +89,6 @@ public class DeleteFolderCommandTest {
     @Test
     public void testGetCommandType() {
         final ImapRequest cmd = new DeleteFolderCommand("folderToBeDeleted");
-        Assert.assertSame(cmd.getCommandType(), ImapCommandType.DELETE_FOLDER);
+        Assert.assertSame(cmd.getCommandType(), ImapCommandRFCSupportedType.DELETE_FOLDER);
     }
 }

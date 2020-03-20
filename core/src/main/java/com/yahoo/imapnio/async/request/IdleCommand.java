@@ -88,6 +88,6 @@ public class IdleCommand extends ImapRequestAdapter {
 
     @Override
     public ImapCommandType getCommandType() {
-        return ImapCommandType.IDLE;
+        return ImapCommandRFCSupportedType.IDLE;
     }
 }

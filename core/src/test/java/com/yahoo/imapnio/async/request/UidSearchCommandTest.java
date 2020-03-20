@@ -420,6 +420,6 @@ public class UidSearchCommandTest {
     public void testGetCommandType() throws ImapAsyncClientException, SearchException, IOException {
         final Capability capa = null;
         final ImapRequest cmd = new UidSearchCommand(new MessageNumberSet[] { new MessageNumberSet(1, LastMessage.LAST_MESSAGE) }, null, capa);
-        Assert.assertSame(cmd.getCommandType(), ImapCommandType.UID_SEARCH);
+        Assert.assertSame(cmd.getCommandType(), ImapCommandRFCSupportedType.UID_SEARCH);
     }
 }

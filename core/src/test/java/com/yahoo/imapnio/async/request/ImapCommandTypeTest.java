@@ -4,7 +4,7 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 /**
- * Unit test for {@link ImapCommandType}.
+ * Unit test for {@link ImapCommandRFCSupportedType}.
  */
 public class ImapCommandTypeTest {
 
@@ -13,9 +13,9 @@ public class ImapCommandTypeTest {
      */
     @Test
     public void testCommandTypeEnum() {
-        final ImapCommandType[] enumList = ImapCommandType.values();
+        final ImapCommandRFCSupportedType[] enumList = ImapCommandRFCSupportedType.values();
         Assert.assertEquals(enumList.length, 36, "The enum count mismatched.");
-        final ImapCommandType uidFetch = ImapCommandType.valueOf("UID_FETCH");
-        Assert.assertSame(uidFetch, ImapCommandType.UID_FETCH, "Enum does not match.");
+        final ImapCommandRFCSupportedType uidFetch = ImapCommandRFCSupportedType.valueOf("UID_FETCH");
+        Assert.assertSame(uidFetch, ImapCommandRFCSupportedType.UID_FETCH, "Enum does not match.");
     }
 }

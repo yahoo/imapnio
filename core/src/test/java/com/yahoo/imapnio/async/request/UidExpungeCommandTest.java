@@ -134,6 +134,6 @@ public class UidExpungeCommandTest {
     @Test
     public void testGetCommandType() {
         final ImapRequest cmd = new UidExpungeCommand("43:44,99");
-        Assert.assertSame(cmd.getCommandType(), ImapCommandType.UID_EXPUNGE);
+        Assert.assertSame(cmd.getCommandType(), ImapCommandRFCSupportedType.UID_EXPUNGE);
     }
 }

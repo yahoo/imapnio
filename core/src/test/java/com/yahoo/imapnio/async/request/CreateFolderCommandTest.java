@@ -89,6 +89,6 @@ public class CreateFolderCommandTest {
     @Test
     public void testGetCommandType() {
         final ImapRequest cmd = new CreateFolderCommand("folderToBeCreated");
-        Assert.assertSame(cmd.getCommandType(), ImapCommandType.CREATE_FOLDER);
+        Assert.assertSame(cmd.getCommandType(), ImapCommandRFCSupportedType.CREATE_FOLDER);
     }
 }

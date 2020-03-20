@@ -17,6 +17,6 @@ public class CloseCommand extends AbstractNoArgsCommand {
 
     @Override
     public ImapCommandType getCommandType() {
-        return ImapCommandType.CLOSE;
+        return ImapCommandRFCSupportedType.CLOSE;
     }
 }

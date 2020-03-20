@@ -268,7 +268,7 @@ public class AppendCommandTest {
         final byte[] expectedMsg = TEST_MSG_BYTE;
 
         final ImapRequest cmd = new AppendCommand("Inbox", expectedFlags, internalDate, expectedMsg);
-        Assert.assertSame(cmd.getCommandType(), ImapCommandType.APPEND_MESSAGE);
+        Assert.assertSame(cmd.getCommandType(), ImapCommandRFCSupportedType.APPEND_MESSAGE);
     }
 
     /**

@@ -62,6 +62,6 @@ public class CloseCommandTest {
     @Test
     public void testGetCommandType() {
         final ImapRequest cmd = new CloseCommand();
-        Assert.assertSame(cmd.getCommandType(), ImapCommandType.CLOSE);
+        Assert.assertSame(cmd.getCommandType(), ImapCommandRFCSupportedType.CLOSE);
     }
 }

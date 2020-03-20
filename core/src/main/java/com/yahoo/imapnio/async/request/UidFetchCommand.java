@@ -51,6 +51,6 @@ public class UidFetchCommand extends AbstractFetchCommand {
 
     @Override
     public ImapCommandType getCommandType() {
-        return ImapCommandType.UID_FETCH;
+        return ImapCommandRFCSupportedType.UID_FETCH;
     }
 }

@@ -132,6 +132,6 @@ public class StatusCommandTest {
     @Test
     public void testGetCommandType() {
         final ImapRequest cmd = new StatusCommand("inbox", ALL_ITEMS);
-        Assert.assertSame(cmd.getCommandType(), ImapCommandType.STATUS);
+        Assert.assertSame(cmd.getCommandType(), ImapCommandRFCSupportedType.STATUS);
     }
 }

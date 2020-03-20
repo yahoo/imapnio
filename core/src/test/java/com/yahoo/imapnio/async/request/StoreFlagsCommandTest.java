@@ -281,7 +281,7 @@ public class StoreFlagsCommandTest {
         flags.add(Flags.Flag.SEEN);
         flags.add(Flags.Flag.DELETED);
         final ImapRequest cmd = new StoreFlagsCommand(new MessageNumberSet[] { new MessageNumberSet(1, 10000) }, flags, FlagsAction.ADD);
-        Assert.assertSame(cmd.getCommandType(), ImapCommandType.STORE_FLAGS);
+        Assert.assertSame(cmd.getCommandType(), ImapCommandRFCSupportedType.STORE_FLAGS);
     }
 
     /**

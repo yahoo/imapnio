@@ -137,7 +137,7 @@ public class UidFetchCommandTest {
         final long[] msgs = { 1L, 2L, 3L };
         final MessageNumberSet[] msgsets = MessageNumberSet.createMessageNumberSets(msgs);
         final ImapRequest cmd = new UidFetchCommand(msgsets, DATA_ITEMS);
-        Assert.assertSame(cmd.getCommandType(), ImapCommandType.UID_FETCH);
+        Assert.assertSame(cmd.getCommandType(), ImapCommandRFCSupportedType.UID_FETCH);
     }
 
     /**

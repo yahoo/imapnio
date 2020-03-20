@@ -17,6 +17,6 @@ public class ExpungeCommand extends AbstractNoArgsCommand {
 
     @Override
     public ImapCommandType getCommandType() {
-        return ImapCommandType.EXPUNGE;
+        return ImapCommandRFCSupportedType.EXPUNGE;
     }
 }

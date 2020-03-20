@@ -89,6 +89,6 @@ public class UnsubscribeFolderCommandTest {
     @Test
     public void testGetCommandType() {
         final ImapRequest cmd = new UnsubscribeFolderCommand("testFolder");
-        Assert.assertSame(cmd.getCommandType(), ImapCommandType.UNSUBSCRIBE);
+        Assert.assertSame(cmd.getCommandType(), ImapCommandRFCSupportedType.UNSUBSCRIBE);
     }
 }

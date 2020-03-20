@@ -136,6 +136,6 @@ public class CopyMessageCommandTest {
     @Test
     public void testGetCommandType() {
         final ImapRequest cmd = new CopyMessageCommand(37850, 37852, "targetFolder");
-        Assert.assertSame(cmd.getCommandType(), ImapCommandType.COPY_MESSAGE);
+        Assert.assertSame(cmd.getCommandType(), ImapCommandRFCSupportedType.COPY_MESSAGE);
     }
 }

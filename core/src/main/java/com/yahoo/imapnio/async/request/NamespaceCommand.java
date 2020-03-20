@@ -17,6 +17,6 @@ public class NamespaceCommand extends AbstractNoArgsCommand {
 
     @Override
     public ImapCommandType getCommandType() {
-        return ImapCommandType.NAMESPACE;
+        return ImapCommandRFCSupportedType.NAMESPACE;
     }
 }

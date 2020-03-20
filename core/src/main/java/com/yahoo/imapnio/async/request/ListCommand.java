@@ -22,6 +22,6 @@ public class ListCommand extends AbstractQueryFoldersCommand {
 
     @Override
     public ImapCommandType getCommandType() {
-        return ImapCommandType.LIST;
+        return ImapCommandRFCSupportedType.LIST;
     }
 }

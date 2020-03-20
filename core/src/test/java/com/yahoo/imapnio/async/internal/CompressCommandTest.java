@@ -10,7 +10,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
-import com.yahoo.imapnio.async.request.ImapCommandType;
+import com.yahoo.imapnio.async.request.ImapCommandRFCSupportedType;
 import com.yahoo.imapnio.async.request.ImapRequest;
 
 /**
@@ -64,6 +64,6 @@ public class CompressCommandTest {
     @Test
     public void testGetCommandType() {
         final ImapRequest cmd = new CompressCommand();
-        Assert.assertSame(cmd.getCommandType(), ImapCommandType.COMPRESS);
+        Assert.assertSame(cmd.getCommandType(), ImapCommandRFCSupportedType.COMPRESS);
     }
 }

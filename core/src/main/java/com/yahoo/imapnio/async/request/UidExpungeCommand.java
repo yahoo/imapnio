@@ -71,6 +71,6 @@ public class UidExpungeCommand extends ImapRequestAdapter {
 
     @Override
     public ImapCommandType getCommandType() {
-        return ImapCommandType.UID_EXPUNGE;
+        return ImapCommandRFCSupportedType.UID_EXPUNGE;
     }
 }

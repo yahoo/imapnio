@@ -45,6 +45,6 @@ public class UidCopyMessageCommand extends AbstractMessageActionCommand {
 
     @Override
     public ImapCommandType getCommandType() {
-        return ImapCommandType.UID_COPY_MESSAGE;
+        return ImapCommandRFCSupportedType.UID_COPY_MESSAGE;
     }
 }

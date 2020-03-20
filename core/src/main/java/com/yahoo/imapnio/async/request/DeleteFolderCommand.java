@@ -21,6 +21,6 @@ public class DeleteFolderCommand extends AbstractFolderActionCommand {
 
     @Override
     public ImapCommandType getCommandType() {
-        return ImapCommandType.DELETE_FOLDER;
+        return ImapCommandRFCSupportedType.DELETE_FOLDER;
     }
 }
