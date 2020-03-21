@@ -225,6 +225,6 @@ public class UidStoreFlagsCommandTest {
         flags.add(Flags.Flag.SEEN);
         flags.add(Flags.Flag.DELETED);
         final ImapRequest cmd = new UidStoreFlagsCommand(new MessageNumberSet[] { new MessageNumberSet(1, 10000) }, flags, FlagsAction.ADD);
-        Assert.assertSame(cmd.getCommandType(), ImapCommandType.UID_STORE_FLAGS);
+        Assert.assertSame(cmd.getCommandType(), ImapRFCSupportedCommandType.UID_STORE_FLAGS);
     }
 }

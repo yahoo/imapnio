@@ -81,7 +81,7 @@ public class StatusCommand extends ImapRequestAdapter {
     }
 
     @Override
-    public ImapCommandType getCommandType() {
-        return ImapCommandType.STATUS;
+    public ImapRFCSupportedCommandType getCommandType() {
+        return ImapRFCSupportedCommandType.STATUS;
     }
 }

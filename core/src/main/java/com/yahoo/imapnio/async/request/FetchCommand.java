@@ -30,7 +30,7 @@ public class FetchCommand extends AbstractFetchCommand {
     }
 
     @Override
-    public ImapCommandType getCommandType() {
-        return ImapCommandType.FETCH;
+    public ImapRFCSupportedCommandType getCommandType() {
+        return ImapRFCSupportedCommandType.FETCH;
     }
 }

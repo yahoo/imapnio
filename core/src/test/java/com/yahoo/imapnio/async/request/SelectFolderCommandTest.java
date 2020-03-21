@@ -92,7 +92,7 @@ public class SelectFolderCommandTest {
     @Test
     public void testGetCommandType() {
         final ImapRequest cmd = new SelectFolderCommand("inbox");
-        Assert.assertSame(cmd.getCommandType(), ImapCommandType.SELECT_FOLDER);
+        Assert.assertSame(cmd.getCommandType(), ImapRFCSupportedCommandType.SELECT_FOLDER);
     }
 
     /**

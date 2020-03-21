@@ -162,6 +162,6 @@ public class FetchCommandTest {
     @Test
     public void testGetCommandType() {
         final ImapRequest cmd = new FetchCommand(new MessageNumberSet[] { new MessageNumberSet(1, 10000) }, DATA_ITEMS);
-        Assert.assertSame(cmd.getCommandType(), ImapCommandType.FETCH);
+        Assert.assertSame(cmd.getCommandType(), ImapRFCSupportedCommandType.FETCH);
     }
 }

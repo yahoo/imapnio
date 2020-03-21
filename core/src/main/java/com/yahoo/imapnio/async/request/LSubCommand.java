@@ -21,7 +21,7 @@ public class LSubCommand extends AbstractQueryFoldersCommand {
     }
 
     @Override
-    public ImapCommandType getCommandType() {
-        return ImapCommandType.LSUB;
+    public ImapRFCSupportedCommandType getCommandType() {
+        return ImapRFCSupportedCommandType.LSUB;
     }
 }

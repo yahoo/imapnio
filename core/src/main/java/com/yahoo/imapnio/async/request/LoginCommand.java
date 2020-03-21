@@ -76,7 +76,7 @@ public class LoginCommand extends ImapRequestAdapter {
     }
 
     @Override
-    public ImapCommandType getCommandType() {
-        return ImapCommandType.LOGIN;
+    public ImapRFCSupportedCommandType getCommandType() {
+        return ImapRFCSupportedCommandType.LOGIN;
     }
 }

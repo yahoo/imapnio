@@ -199,6 +199,6 @@ public class AuthOauthBearerCommandTest {
         final Map<String, List<String>> capas = new HashMap<String, List<String>>();
         capas.put(ImapClientConstants.SASL_IR, Collections.singletonList(ImapClientConstants.SASL_IR));
         final ImapRequest cmd = new AuthOauthBearerCommand(emailId, hostname, port, token, new Capability(capas));
-        Assert.assertSame(cmd.getCommandType(), ImapCommandType.AUTHENTICATE);
+        Assert.assertSame(cmd.getCommandType(), ImapRFCSupportedCommandType.AUTHENTICATE);
     }
 }

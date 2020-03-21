@@ -135,6 +135,6 @@ public class LoginCommandTest {
     @Test
     public void testGetCommandType() {
         final ImapRequest cmd = new LoginCommand("neighbor", "hood");
-        Assert.assertSame(cmd.getCommandType(), ImapCommandType.LOGIN);
+        Assert.assertSame(cmd.getCommandType(), ImapRFCSupportedCommandType.LOGIN);
     }
 }

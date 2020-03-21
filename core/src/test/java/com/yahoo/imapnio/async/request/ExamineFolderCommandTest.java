@@ -92,7 +92,7 @@ public class ExamineFolderCommandTest {
     @Test
     public void testGetCommandType() {
         final ImapRequest cmd = new ExamineFolderCommand("testFolder");
-        Assert.assertSame(cmd.getCommandType(), ImapCommandType.EXAMINE_FOLDER);
+        Assert.assertSame(cmd.getCommandType(), ImapRFCSupportedCommandType.EXAMINE_FOLDER);
     }
 
     /**

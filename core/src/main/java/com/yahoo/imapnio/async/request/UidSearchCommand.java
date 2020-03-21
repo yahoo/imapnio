@@ -62,7 +62,7 @@ public class UidSearchCommand extends AbstractSearchCommand {
     }
 
     @Override
-    public ImapCommandType getCommandType() {
-        return ImapCommandType.UID_SEARCH;
+    public ImapRFCSupportedCommandType getCommandType() {
+        return ImapRFCSupportedCommandType.UID_SEARCH;
     }
 }

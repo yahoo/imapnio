@@ -45,7 +45,7 @@ public class CopyMessageCommand extends AbstractMessageActionCommand {
     }
 
     @Override
-    public ImapCommandType getCommandType() {
-        return ImapCommandType.COPY_MESSAGE;
+    public ImapRFCSupportedCommandType getCommandType() {
+        return ImapRFCSupportedCommandType.COPY_MESSAGE;
     }
 }

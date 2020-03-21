@@ -113,6 +113,6 @@ public class IdleCommandTest {
     public void testGetCommandType() {
         final ConcurrentLinkedQueue<IMAPResponse> serverStreamingResponses = new ConcurrentLinkedQueue<IMAPResponse>();
         final ImapRequest cmd = new IdleCommand(serverStreamingResponses);
-        Assert.assertSame(cmd.getCommandType(), ImapCommandType.IDLE);
+        Assert.assertSame(cmd.getCommandType(), ImapRFCSupportedCommandType.IDLE);
     }
 }
