@@ -41,7 +41,7 @@ public interface ImapRequest {
      * @return IMAP command type
      */
     @Nullable
-    ImapRFCSupportedCommandType getCommandType();
+    ImapCommandType getCommandType();
 
     /**
      * @return log data appropriate for the command
