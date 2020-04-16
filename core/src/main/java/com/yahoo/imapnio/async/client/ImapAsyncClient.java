@@ -259,7 +259,7 @@ public class ImapAsyncClient {
                             final SSLParameters params = new SSLParameters();
                             params.setServerNames(serverNames);
 
-                            final SSLEngine engine = sslContext.newEngine(ch.alloc());
+                            final SSLEngine engine = sslContext.newEngine(ch.alloc(), serverUri.getHost(), serverUri.getPort());
                             engine.setSSLParameters(params);
                             pipeline.addFirst(SSL_HANDLER, new SslHandler(engine)); // in/outbound
                         } else {
