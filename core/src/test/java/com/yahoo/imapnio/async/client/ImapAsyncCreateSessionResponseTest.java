@@ -1,11 +1,13 @@
 package com.yahoo.imapnio.async.client;
 
 import java.io.IOException;
+import java.time.Clock;
 import java.util.List;
 
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.testng.Assert;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import com.sun.mail.iap.ProtocolException;
@@ -27,6 +29,18 @@ public class ImapAsyncCreateSessionResponseTest {
     /** Dummy session id. */
     private static final int SESSION_ID = 123456;
 
+    /** Clock instance. */
+    private Clock clock;
+
+    /**
+     * Sets up instances for before method.
+     */
+    @BeforeMethod
+    public void beforeMethod() {
+        clock = Mockito.mock(Clock.class);
+        Mockito.when(clock.millis()).thenReturn(1L);
+    }
+
     /**
      * Tests ImapAsyncResponse constructor and getters.
      *
@@ -45,7 +59,7 @@ public class ImapAsyncCreateSessionResponseTest {
 
         final String sessCtx = "Sauroposeidon@tallerthan.tree";
 
-        final ImapAsyncSession session = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline, sessCtx);
+        final ImapAsyncSession session = new ImapAsyncSessionImpl(clock, channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline, sessCtx);
 
         final ImapAsyncCreateSessionResponse respOut = new ImapAsyncCreateSessionResponse(session, imapResponse);
 
@@ -89,7 +103,7 @@ public class ImapAsyncCreateSessionResponseTest {
 
         final String sessCtx = "Sauroposeidon@tallerthan.tree";
 
-        final ImapAsyncSession session = new ImapAsyncSessionImpl(channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline, sessCtx);
+        final ImapAsyncSession session = new ImapAsyncSessionImpl(clock, channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline, sessCtx);
         final ImapAsyncCreateSessionResponse respOut = new ImapAsyncCreateSessionResponse(session, imapResponse);
         Assert.assertEquals(respOut.getSession(), session, "getSession() result mismatched.");
         final IMAPResponse greeting = respOut.getServerGreeting();

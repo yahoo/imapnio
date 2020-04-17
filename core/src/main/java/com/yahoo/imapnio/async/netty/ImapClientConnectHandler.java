@@ -1,6 +1,7 @@
 package com.yahoo.imapnio.async.netty;
 
 import java.net.UnknownHostException;
+import java.time.Clock;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -42,26 +43,30 @@ public class ImapClientConnectHandler extends MessageToMessageDecoder<IMAPRespon
     /** Session Id. */
     private long sessionId;
 
+    /** Clock instance. */
+    private Clock clock;
+
     /** Context for session information, its toString() method will be called to be used for logging and exception getMessage(). */
-    @Nonnull
     private Object sessionCtx;
 
     /**
      * Initializes {@link ImapClientConnectHandler} to process ok greeting after connection.
      *
+     * @param clock The Clock instance
      * @param sessionFuture imap session future, should be set to done once ok is received
      * @param logger the {@link Logger} instance for @{ImapAsyncSessionImpl}
      * @param logOpt logging option for the session to be created
      * @param sessionId the session id
      * @param sessionCtx context for the session information, its toString() method will be called to be used for logging and exception getMessage()
      */
-    public ImapClientConnectHandler(@Nonnull final ImapFuture<ImapAsyncCreateSessionResponse> sessionFuture, @Nonnull final Logger logger,
-            @Nonnull final DebugMode logOpt, final long sessionId, @Nonnull final Object sessionCtx) {
+    public ImapClientConnectHandler(@Nonnull final Clock clock, @Nonnull final ImapFuture<ImapAsyncCreateSessionResponse> sessionFuture,
+            @Nonnull final Logger logger, @Nonnull final DebugMode logOpt, final long sessionId, @Nonnull final Object sessionCtx) {
         this.sessionCreatedFuture = sessionFuture;
         this.logger = logger;
         this.logOpt = logOpt;
         this.sessionId = sessionId;
         this.sessionCtx = sessionCtx;
+        this.clock = clock;
     }
 
     @Override
@@ -72,7 +77,7 @@ public class ImapClientConnectHandler extends MessageToMessageDecoder<IMAPRespon
 
         if (serverResponse.isOK()) { // we can call it successful only when response is ok
             // add the command response handler
-            final ImapAsyncSessionImpl session = new ImapAsyncSessionImpl(ctx.channel(), logger, logOpt, sessionId, pipeline, sessionCtx);
+            final ImapAsyncSessionImpl session = new ImapAsyncSessionImpl(clock, ctx.channel(), logger, logOpt, sessionId, pipeline, sessionCtx);
             final ImapAsyncCreateSessionResponse response = new ImapAsyncCreateSessionResponse(session, serverResponse);
             sessionCreatedFuture.done(response);
 
@@ -126,6 +131,7 @@ public class ImapClientConnectHandler extends MessageToMessageDecoder<IMAPRespon
         sessionCreatedFuture = null;
         logger = null;
         logOpt = null;
+        clock = null;
         sessionCtx = null;
     }
 }

@@ -9,6 +9,7 @@ import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.time.Clock;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -25,6 +26,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.testng.Assert;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import com.yahoo.imapnio.async.client.ImapAsyncClient.ImapClientChannelInitializer;
@@ -60,6 +62,23 @@ public class ImapAsyncClientTest {
     /** Server URI without SSL protocol. */
     private static final String NO_SSL_SERVER_URI_STR = "imap://one.two.three.com:993";
 
+    /** Time sequence for the clock tick in milliseconds. */
+    private static final Long[] TIME_SEQUENCE = { 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L, 10L, 11L, 12L, 13L, 14L, 15L, 16L, 17L, 18L, 19L, 20L, 21L, 22L,
+            23L, 24L, 25L, 26L, 27L, 28L, 29L, 30L, 31L, 32L, 33L, 34L, 35L, 36L, 37L, 38L, 39L, 40L, 41L, 42L, 43L, 44L, 45L, 46L, 47L, 48L, 49L,
+            50L, 51L, 52L, 53L, 54L, 55L, 56L, 57L, 58L, 59L, 60L };
+
+    /** Clock instance. */
+    private Clock clock;
+
+    /**
+     * Sets up instance before each test method.
+     */
+    @BeforeMethod
+    public void beforeMethod() {
+        clock = Mockito.mock(Clock.class);
+        Mockito.when(clock.millis()).thenReturn(1L, TIME_SEQUENCE);
+    }
+
     /**
      * Tests createSession method when successful.
      *
@@ -83,7 +102,7 @@ public class ImapAsyncClientTest {
         final Logger logger = Mockito.mock(Logger.class);
         Mockito.when(logger.isTraceEnabled()).thenReturn(true);
 
-        final ImapAsyncClient aclient = new ImapAsyncClient(bootstrap, group, logger);
+        final ImapAsyncClient aclient = new ImapAsyncClient(clock, bootstrap, group, logger);
 
         final ImapAsyncSessionConfig config = new ImapAsyncSessionConfig();
         config.setConnectionTimeoutMillis(5000);
@@ -175,7 +194,7 @@ public class ImapAsyncClientTest {
         final Logger logger = Mockito.mock(Logger.class);
         Mockito.when(logger.isTraceEnabled()).thenReturn(true);
 
-        final ImapAsyncClient aclient = new ImapAsyncClient(bootstrap, group, logger);
+        final ImapAsyncClient aclient = new ImapAsyncClient(clock, bootstrap, group, logger);
 
         final ImapAsyncSessionConfig config = new ImapAsyncSessionConfig();
         config.setConnectionTimeoutMillis(5000);
@@ -264,7 +283,7 @@ public class ImapAsyncClientTest {
         Mockito.when(logger.isTraceEnabled()).thenReturn(false);
         Mockito.when(logger.isDebugEnabled()).thenReturn(true);
 
-        final ImapAsyncClient aclient = new ImapAsyncClient(bootstrap, group, logger);
+        final ImapAsyncClient aclient = new ImapAsyncClient(clock, bootstrap, group, logger);
 
         final ImapAsyncSessionConfig config = new ImapAsyncSessionConfig();
         config.setConnectionTimeoutMillis(5000);
@@ -352,7 +371,7 @@ public class ImapAsyncClientTest {
         final Logger logger = Mockito.mock(Logger.class);
         Mockito.when(logger.isDebugEnabled()).thenReturn(true);
 
-        final ImapAsyncClient aclient = new ImapAsyncClient(bootstrap, group, logger);
+        final ImapAsyncClient aclient = new ImapAsyncClient(clock, bootstrap, group, logger);
 
         final ImapAsyncSessionConfig config = new ImapAsyncSessionConfig();
         config.setConnectionTimeoutMillis(5000);
@@ -450,7 +469,7 @@ public class ImapAsyncClientTest {
         final Logger logger = Mockito.mock(Logger.class);
         Mockito.when(logger.isDebugEnabled()).thenReturn(true);
 
-        final ImapAsyncClient aclient = new ImapAsyncClient(bootstrap, group, logger);
+        final ImapAsyncClient aclient = new ImapAsyncClient(clock, bootstrap, group, logger);
 
         final ImapAsyncSessionConfig config = new ImapAsyncSessionConfig();
         config.setConnectionTimeoutMillis(5000);
@@ -540,7 +559,7 @@ public class ImapAsyncClientTest {
         final Logger logger = Mockito.mock(Logger.class);
         Mockito.when(logger.isDebugEnabled()).thenReturn(true);
 
-        final ImapAsyncClient aclient = new ImapAsyncClient(bootstrap, group, logger);
+        final ImapAsyncClient aclient = new ImapAsyncClient(clock, bootstrap, group, logger);
 
         final ImapAsyncSessionConfig config = new ImapAsyncSessionConfig();
         config.setConnectionTimeoutMillis(5000);
@@ -609,7 +628,7 @@ public class ImapAsyncClientTest {
         final Logger logger = Mockito.mock(Logger.class);
         Mockito.when(logger.isDebugEnabled()).thenReturn(true);
 
-        final ImapAsyncClient aclient = new ImapAsyncClient(bootstrap, group, logger);
+        final ImapAsyncClient aclient = new ImapAsyncClient(clock, bootstrap, group, logger);
 
         final ImapAsyncSessionConfig config = new ImapAsyncSessionConfig();
         config.setConnectionTimeoutMillis(5000);
@@ -694,7 +713,7 @@ public class ImapAsyncClientTest {
         final Logger logger = Mockito.mock(Logger.class);
         Mockito.when(logger.isDebugEnabled()).thenReturn(true);
 
-        final ImapAsyncClient aclient = new ImapAsyncClient(bootstrap, group, logger);
+        final ImapAsyncClient aclient = new ImapAsyncClient(clock, bootstrap, group, logger);
 
         final ImapAsyncSessionConfig config = new ImapAsyncSessionConfig();
         config.setConnectionTimeoutMillis(5000);

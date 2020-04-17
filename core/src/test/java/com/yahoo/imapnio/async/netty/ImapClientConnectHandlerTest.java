@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.net.UnknownHostException;
+import java.time.Clock;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -16,6 +17,7 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import com.sun.mail.iap.ProtocolException;
@@ -43,6 +45,14 @@ public class ImapClientConnectHandlerTest {
     /** Fields to check for cleanup. */
     private Set<Field> fieldsToCheck;
 
+    /** Time sequence for the clock tick in milliseconds. */
+    private static final Long[] TIME_SEQUENCE = { 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L, 10L, 11L, 12L, 13L, 14L, 15L, 16L, 17L, 18L, 19L, 20L, 21L, 22L,
+            23L, 24L, 25L, 26L, 27L, 28L, 29L, 30L, 31L, 32L, 33L, 34L, 35L, 36L, 37L, 38L, 39L, 40L, 41L, 42L, 43L, 44L, 45L, 46L, 47L, 48L, 49L,
+            50L, 51L, 52L, 53L, 54L, 55L, 56L, 57L, 58L, 59L, 60L };
+
+    /** Clock instance. */
+    private Clock clock;
+
     /**
      * Setup reflection.
      */
@@ -61,6 +71,15 @@ public class ImapClientConnectHandlerTest {
     }
 
     /**
+     * Sets up instance before each test method.
+     */
+    @BeforeMethod
+    public void beforeMethod() {
+        clock = Mockito.mock(Clock.class);
+        Mockito.when(clock.millis()).thenReturn(1L, TIME_SEQUENCE);
+    }
+
+    /**
      * Tests decode method when successful.
      *
      * @throws IllegalArgumentException will not throw
@@ -71,13 +90,13 @@ public class ImapClientConnectHandlerTest {
      * @throws TimeoutException will not throw
      */
     @Test
-    public void testDecodeConnectSuccess() throws IllegalArgumentException, IOException, ProtocolException,
-            InterruptedException, ExecutionException, TimeoutException {
+    public void testDecodeConnectSuccess()
+            throws IllegalArgumentException, IOException, ProtocolException, InterruptedException, ExecutionException, TimeoutException {
         final ImapFuture<ImapAsyncCreateSessionResponse> imapFuture = new ImapFuture<ImapAsyncCreateSessionResponse>();
         final Logger logger = Mockito.mock(Logger.class);
 
         final String sessCtx = "Titanosauria@long.neck";
-        final ImapClientConnectHandler handler = new ImapClientConnectHandler(imapFuture, logger, DebugMode.DEBUG_ON, SESSION_ID, sessCtx);
+        final ImapClientConnectHandler handler = new ImapClientConnectHandler(clock, imapFuture, logger, DebugMode.DEBUG_ON, SESSION_ID, sessCtx);
 
         final ChannelHandlerContext ctx = Mockito.mock(ChannelHandlerContext.class);
         final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
@@ -103,13 +122,12 @@ public class ImapClientConnectHandlerTest {
      * @throws TimeoutException will not throw
      */
     @Test
-    public void testDecodeConnectFailed() throws IllegalArgumentException, IOException, ProtocolException,
-            InterruptedException, TimeoutException {
+    public void testDecodeConnectFailed() throws IllegalArgumentException, IOException, ProtocolException, InterruptedException, TimeoutException {
         final ImapFuture<ImapAsyncCreateSessionResponse> imapFuture = new ImapFuture<ImapAsyncCreateSessionResponse>();
         final Logger logger = Mockito.mock(Logger.class);
 
         final String sessCtx = "Titanosauria@long.neck";
-        final ImapClientConnectHandler handler = new ImapClientConnectHandler(imapFuture, logger, DebugMode.DEBUG_ON, SESSION_ID, sessCtx);
+        final ImapClientConnectHandler handler = new ImapClientConnectHandler(clock, imapFuture, logger, DebugMode.DEBUG_ON, SESSION_ID, sessCtx);
 
         final ChannelHandlerContext ctx = Mockito.mock(ChannelHandlerContext.class);
         final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
@@ -149,7 +167,7 @@ public class ImapClientConnectHandlerTest {
         final Logger logger = Mockito.mock(Logger.class);
 
         final String sessCtx = "Titanosauria@long.neck";
-        final ImapClientConnectHandler handler = new ImapClientConnectHandler(imapFuture, logger, DebugMode.DEBUG_ON, SESSION_ID, sessCtx);
+        final ImapClientConnectHandler handler = new ImapClientConnectHandler(clock, imapFuture, logger, DebugMode.DEBUG_ON, SESSION_ID, sessCtx);
 
         final ChannelHandlerContext ctx = Mockito.mock(ChannelHandlerContext.class);
         final TimeoutException timeoutEx = new TimeoutException("too late, my friend");
@@ -180,7 +198,7 @@ public class ImapClientConnectHandlerTest {
         final Logger logger = Mockito.mock(Logger.class);
 
         final String sessCtx = "Titanosauria@long.neck";
-        final ImapClientConnectHandler handler = new ImapClientConnectHandler(imapFuture, logger, DebugMode.DEBUG_ON, SESSION_ID, sessCtx);
+        final ImapClientConnectHandler handler = new ImapClientConnectHandler(clock, imapFuture, logger, DebugMode.DEBUG_ON, SESSION_ID, sessCtx);
 
         final ChannelHandlerContext ctx = Mockito.mock(ChannelHandlerContext.class);
         final UnknownHostException unknownHostEx = new UnknownHostException("Unknown host");
@@ -210,13 +228,12 @@ public class ImapClientConnectHandlerTest {
      * @throws TimeoutException will not throw
      */
     @Test
-    public void testExceptionCaughtWithConnectTimeoutException()
-            throws IllegalArgumentException, InterruptedException, TimeoutException {
+    public void testExceptionCaughtWithConnectTimeoutException() throws IllegalArgumentException, InterruptedException, TimeoutException {
         final ImapFuture<ImapAsyncCreateSessionResponse> imapFuture = new ImapFuture<ImapAsyncCreateSessionResponse>();
         final Logger logger = Mockito.mock(Logger.class);
 
         final String sessCtx = "Titanosauria@long.neck";
-        final ImapClientConnectHandler handler = new ImapClientConnectHandler(imapFuture, logger, DebugMode.DEBUG_ON, SESSION_ID, sessCtx);
+        final ImapClientConnectHandler handler = new ImapClientConnectHandler(clock, imapFuture, logger, DebugMode.DEBUG_ON, SESSION_ID, sessCtx);
 
         final ChannelHandlerContext ctx = Mockito.mock(ChannelHandlerContext.class);
         final ConnectTimeoutException connectTimeoutEx = new ConnectTimeoutException("connection timeout");
@@ -246,13 +263,12 @@ public class ImapClientConnectHandlerTest {
      * @throws TimeoutException will not throw
      */
     @Test
-    public void testUserEventTriggeredIdleStateEventReadIdle()
-            throws IllegalArgumentException, InterruptedException, TimeoutException {
+    public void testUserEventTriggeredIdleStateEventReadIdle() throws IllegalArgumentException, InterruptedException, TimeoutException {
         final ImapFuture<ImapAsyncCreateSessionResponse> imapFuture = new ImapFuture<ImapAsyncCreateSessionResponse>();
         final Logger logger = Mockito.mock(Logger.class);
 
         final String sessCtx = "Titanosauria@long.neck";
-        final ImapClientConnectHandler handler = new ImapClientConnectHandler(imapFuture, logger, DebugMode.DEBUG_ON, SESSION_ID, sessCtx);
+        final ImapClientConnectHandler handler = new ImapClientConnectHandler(clock, imapFuture, logger, DebugMode.DEBUG_ON, SESSION_ID, sessCtx);
 
         final ChannelHandlerContext ctx = Mockito.mock(ChannelHandlerContext.class);
         final IdleStateEvent idleEvent = Mockito.mock(IdleStateEvent.class);
@@ -290,7 +306,7 @@ public class ImapClientConnectHandlerTest {
         final Logger logger = Mockito.mock(Logger.class);
 
         final String sessCtx = "Titanosauria@long.neck";
-        final ImapClientConnectHandler handler = new ImapClientConnectHandler(imapFuture, logger, DebugMode.DEBUG_ON, SESSION_ID, sessCtx);
+        final ImapClientConnectHandler handler = new ImapClientConnectHandler(clock, imapFuture, logger, DebugMode.DEBUG_ON, SESSION_ID, sessCtx);
 
         final ChannelHandlerContext ctx = Mockito.mock(ChannelHandlerContext.class);
         final IdleStateEvent idleEvent = Mockito.mock(IdleStateEvent.class);
@@ -310,7 +326,7 @@ public class ImapClientConnectHandlerTest {
         final Logger logger = Mockito.mock(Logger.class);
 
         final String sessCtx = "Titanosauria@long.neck";
-        final ImapClientConnectHandler handler = new ImapClientConnectHandler(imapFuture, logger, DebugMode.DEBUG_ON, SESSION_ID, sessCtx);
+        final ImapClientConnectHandler handler = new ImapClientConnectHandler(clock, imapFuture, logger, DebugMode.DEBUG_ON, SESSION_ID, sessCtx);
 
         final ChannelHandlerContext ctx = Mockito.mock(ChannelHandlerContext.class);
         final String otherEvent = "king is coming!!!";
@@ -332,7 +348,7 @@ public class ImapClientConnectHandlerTest {
         final Logger logger = Mockito.mock(Logger.class);
 
         final String sessCtx = "Titanosauria@long.neck";
-        final ImapClientConnectHandler handler = new ImapClientConnectHandler(imapFuture, logger, DebugMode.DEBUG_ON, SESSION_ID, sessCtx);
+        final ImapClientConnectHandler handler = new ImapClientConnectHandler(clock, imapFuture, logger, DebugMode.DEBUG_ON, SESSION_ID, sessCtx);
 
         final ChannelHandlerContext ctx = Mockito.mock(ChannelHandlerContext.class);
         handler.channelInactive(ctx);
