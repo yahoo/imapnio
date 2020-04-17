@@ -3,6 +3,7 @@ package com.yahoo.imapnio.async.client;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
+import java.time.Clock;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
@@ -82,6 +83,10 @@ public class ImapAsyncClient {
     /** Client context not available. */
     private static final String NA_CLIENT_CONTEXT = "NA";
 
+    /** Clock instance. */
+    @Nonnull
+    private final Clock clock;
+
     /** logger for sending error, warning, info, debug to the log file. */
     @Nonnull
     private final Logger logger;
@@ -136,17 +141,20 @@ public class ImapAsyncClient {
      * @throws SSLException when encountering an error to create a SslContext for this client
      */
     public ImapAsyncClient(final int numOfThreads) throws SSLException {
-        this(new Bootstrap(), new NioEventLoopGroup(numOfThreads), LoggerFactory.getLogger(ImapAsyncClient.class));
+        this(Clock.systemUTC(), new Bootstrap(), new NioEventLoopGroup(numOfThreads), LoggerFactory.getLogger(ImapAsyncClient.class));
     }
 
     /**
      * Constructs a NIO based IMAP client.
      *
+     * @param clock Clock instance
      * @param bootstrap a {@link Bootstrap} instance that makes it easy to bootstrap a {@link Channel} to use for clients
      * @param group an @{link EventLoopGroup} instance allowing registering {@link Channel}s for processing later selection during the event loop
      * @param logger Logger instance
      */
-    ImapAsyncClient(@Nonnull final Bootstrap bootstrap, @Nonnull final EventLoopGroup group, @Nonnull final Logger logger) {
+    ImapAsyncClient(@Nonnull final Clock clock, @Nonnull final Bootstrap bootstrap, @Nonnull final EventLoopGroup group,
+            @Nonnull final Logger logger) {
+        this.clock = clock;
         this.logger = logger;
         this.bootstrap = bootstrap;
         this.group = group;
@@ -270,7 +278,7 @@ public class ImapAsyncClient {
 
                     final long sessionId = sessionCount.incrementAndGet();
                     sessionCount.compareAndSet(Long.MAX_VALUE - 1, 1); // roll back to 1 if reaching the max
-                    pipeline.addLast(ImapClientConnectHandler.HANDLER_NAME, new ImapClientConnectHandler(sessionFuture,
+                    pipeline.addLast(ImapClientConnectHandler.HANDLER_NAME, new ImapClientConnectHandler(clock, sessionFuture,
                             LoggerFactory.getLogger(ImapAsyncSessionImpl.class), logOpt, sessionId, sessionCtx));
 
                     if (logger.isTraceEnabled() || isSessionDebugOn) {
