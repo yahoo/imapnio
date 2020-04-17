@@ -1752,7 +1752,7 @@ public class ImapResponseMapperTest {
     public void testParseStoreFailParsingFetchResponse() throws IOException, ProtocolException {
         final ImapResponseMapper mapper = new ImapResponseMapper();
         final IMAPResponse[] content = new IMAPResponse[2];
-        content[0] = new IMAPResponse("* FETCH (FLAG (\\Seen SEEN))");
+        content[0] = new IMAPResponse("* FETCH abc (FLAG (\\Seen SEEN))");
         content[1] = new IMAPResponse("* OK");
         ImapAsyncClientException cause = null;
         try {
@@ -1902,7 +1902,7 @@ public class ImapResponseMapperTest {
     public void testParseFetchFailParsingFetchResponse() throws IOException, ProtocolException {
         final ImapResponseMapper mapper = new ImapResponseMapper();
         final IMAPResponse[] content = new IMAPResponse[2];
-        content[0] = new IMAPResponse("* FETCH (FLAG (\\Seen SEEN))");
+        content[0] = new IMAPResponse("* FETCH abc (FLAG (\\Seen SEEN))");
         content[1] = new IMAPResponse("* OK");
         ImapAsyncClientException cause = null;
         try {
