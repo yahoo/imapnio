@@ -46,6 +46,9 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
     /** Label for command type, used in exception message. */
     private static final String CMD_TYPE = ",cmdType:";
 
+    /** Label for command type, used in exception message. */
+    private static final String CMD_TAG = ",cmdTag:";
+
     /** Error record for the session, first {} is sessionId, 2nd user information. */
     private static final String SESSION_LOG_REC = "[{},{}] {}";
 
@@ -209,6 +212,15 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
         public long getRequestSentTime() {
             return requestSentTime;
         }
+
+        /**
+         * Populates the entry information to the given StringBuilder.
+         *
+         * @param sb StringBuilder instance to output the entry information
+         */
+        public void debugInfo(@Nonnull final StringBuilder sb) {
+            sb.append(CMD_TAG).append(tag).append(CMD_TYPE).append(getRequest().getCommandType()).append(CMD_SENT).append(getRequestSentTime());
+        }
     }
 
     /**
@@ -361,8 +373,15 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
         if (isDebugEnabled()) {
             logger.debug(SESSION_LOG_REC, sessionId, getUserInfo(), "Session is confirmed closed.");
         }
+
+        final StringBuilder sb = new StringBuilder(getUserInfo());
+        final ImapCommandEntry curEntry = getFirstEntry();
+        if (curEntry != null) {
+            curEntry.debugInfo(sb);
+        }
+
         // set the future done if there is any
-        requestDoneWithException(new ImapAsyncClientException(FailureType.CHANNEL_DISCONNECTED, sessionId, sessionCtx));
+        requestDoneWithException(new ImapAsyncClientException(FailureType.CHANNEL_DISCONNECTED, sessionId, sb.toString()));
     }
 
     /**
@@ -411,7 +430,12 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
 
     @Override
     public void handleChannelException(@Nonnull final Throwable cause) {
-        requestDoneWithException(new ImapAsyncClientException(FailureType.CHANNEL_EXCEPTION, cause, sessionId, sessionCtx));
+        final StringBuilder sb = new StringBuilder(getUserInfo());
+        final ImapCommandEntry curEntry = getFirstEntry();
+        if (curEntry != null) {
+            curEntry.debugInfo(sb);
+        }
+        requestDoneWithException(new ImapAsyncClientException(FailureType.CHANNEL_EXCEPTION, cause, sessionId, sb.toString()));
     }
 
     @Override
@@ -423,8 +447,9 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
         }
 
         // error out for any other commands sent but server is not responding
-        final StringBuilder sb = new StringBuilder().append(getUserInfo()).append(CMD_TYPE).append(curEntry.getRequest().getCommandType())
-                .append(CMD_SENT).append(curEntry.getRequestSentTime());
+        final StringBuilder sb = new StringBuilder(getUserInfo());
+        curEntry.debugInfo(sb);
+
         requestDoneWithException(new ImapAsyncClientException(FailureType.CHANNEL_TIMEOUT, sessionId, sb.toString()));
     }
 

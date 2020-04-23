@@ -1008,7 +1008,8 @@ public class ImapAsyncSessionImplTest {
         final ImapAsyncClientException asynEx = (ImapAsyncClientException) cause;
         Assert.assertEquals(asynEx.getFailureType(), FailureType.CHANNEL_TIMEOUT, "Failure type mismatched.");
         Assert.assertEquals(asynEx.getMessage(),
-                "failureType=CHANNEL_TIMEOUT,sId=123456,uId=Argentinosaurus@long.enough,cmdType:CAPABILITY,cmdSent:1", "Error message mismatched.");
+                "failureType=CHANNEL_TIMEOUT,sId=123456,uId=Argentinosaurus@long.enough,cmdTag:a1,cmdType:CAPABILITY,cmdSent:1",
+                "Error message mismatched.");
     }
 
     /**
@@ -1133,6 +1134,9 @@ public class ImapAsyncSessionImplTest {
             Assert.assertEquals(cause.getClass(), ImapAsyncClientException.class, "Expected result mismatched.");
             final ImapAsyncClientException asynEx = (ImapAsyncClientException) cause;
             Assert.assertEquals(asynEx.getFailureType(), FailureType.CHANNEL_EXCEPTION, "Failure type mismatched.");
+            Assert.assertEquals(asynEx.getMessage(),
+                    "failureType=CHANNEL_EXCEPTION,sId=123456,uId=Argentinosaurus@long.enough,cmdTag:a1,cmdType:CAPABILITY,cmdSent:1",
+                    "Error message mismatched.");
         }
 
         // since write to server failed, session.close() would be called by requestDoneWithException(), verify that operationComplete listener is
@@ -1246,6 +1250,9 @@ public class ImapAsyncSessionImplTest {
         Assert.assertEquals(cause.getClass(), ImapAsyncClientException.class, "Expected result mismatched.");
         final ImapAsyncClientException asynEx = (ImapAsyncClientException) cause;
         Assert.assertEquals(asynEx.getFailureType(), FailureType.CHANNEL_DISCONNECTED, "Failure type mismatched.");
+        Assert.assertEquals(asynEx.getMessage(),
+                "failureType=CHANNEL_DISCONNECTED,sId=123456,uId=Argentinosaurus@long.enough,cmdTag:a1,cmdType:CAPABILITY,cmdSent:0",
+                "Error message mismatched.");
 
         // verify logging messages
         final ArgumentCaptor<Object> allArgsCapture = ArgumentCaptor.forClass(Object.class);
