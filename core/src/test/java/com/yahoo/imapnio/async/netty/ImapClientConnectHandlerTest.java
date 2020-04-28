@@ -28,6 +28,7 @@ import com.yahoo.imapnio.async.client.ImapFuture;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException.FailureType;
 
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.ConnectTimeoutException;
@@ -113,7 +114,7 @@ public class ImapClientConnectHandlerTest {
     }
 
     /**
-     * Tests decode method when successful.
+     * Tests decode method when we did not get OK greeting.
      *
      * @throws IllegalArgumentException will not throw
      * @throws ProtocolException will not throw
@@ -132,6 +133,9 @@ public class ImapClientConnectHandlerTest {
         final ChannelHandlerContext ctx = Mockito.mock(ChannelHandlerContext.class);
         final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
         Mockito.when(ctx.pipeline()).thenReturn(pipeline);
+        final Channel channel = Mockito.mock(Channel.class);
+        Mockito.when(channel.isActive()).thenReturn(true);
+        Mockito.when(ctx.channel()).thenReturn(channel);
 
         final String msg = "* BAD [CAPABILITY IMAP4rev1 SASL-IR AUTH=PLAIN] IMAP4rev1 Hello";
         final IMAPResponse resp = new IMAPResponse(msg);
@@ -152,6 +156,8 @@ public class ImapClientConnectHandlerTest {
         Assert.assertNotNull(ex, "Expect exception to be thrown.");
         Assert.assertNotNull(ex.getCause(), "Expect cause.");
         Assert.assertEquals(ex.getCause().getClass(), ImapAsyncClientException.class, "Expected result mismatched.");
+        Mockito.verify(ctx, Mockito.times(1)).close();
+        Mockito.verify(channel, Mockito.times(1)).isActive();
     }
 
     /**
@@ -170,6 +176,10 @@ public class ImapClientConnectHandlerTest {
         final ImapClientConnectHandler handler = new ImapClientConnectHandler(clock, imapFuture, logger, DebugMode.DEBUG_ON, SESSION_ID, sessCtx);
 
         final ChannelHandlerContext ctx = Mockito.mock(ChannelHandlerContext.class);
+        final Channel channel = Mockito.mock(Channel.class);
+        Mockito.when(channel.isActive()).thenReturn(true);
+        Mockito.when(ctx.channel()).thenReturn(channel);
+
         final TimeoutException timeoutEx = new TimeoutException("too late, my friend");
         handler.exceptionCaught(ctx, timeoutEx);
 
@@ -183,6 +193,45 @@ public class ImapClientConnectHandlerTest {
         Assert.assertNotNull(ex, "Expect exception to be thrown.");
         Assert.assertNotNull(ex.getCause(), "Expect cause.");
         Assert.assertEquals(ex.getCause().getClass(), ImapAsyncClientException.class, "Expected result mismatched.");
+        Mockito.verify(ctx, Mockito.times(1)).close();
+        Mockito.verify(channel, Mockito.times(1)).isActive();
+    }
+
+    /**
+     * Tests exceptionCaught method.
+     *
+     * @throws IllegalArgumentException will not throw
+     * @throws InterruptedException will not throw
+     * @throws TimeoutException will not throw
+     */
+    @Test
+    public void testExceptionCaughtChannelWasClosedAlready() throws IllegalArgumentException, InterruptedException, TimeoutException {
+        final ImapFuture<ImapAsyncCreateSessionResponse> imapFuture = new ImapFuture<ImapAsyncCreateSessionResponse>();
+        final Logger logger = Mockito.mock(Logger.class);
+
+        final String sessCtx = "Titanosauria@long.neck";
+        final ImapClientConnectHandler handler = new ImapClientConnectHandler(clock, imapFuture, logger, DebugMode.DEBUG_ON, SESSION_ID, sessCtx);
+
+        final ChannelHandlerContext ctx = Mockito.mock(ChannelHandlerContext.class);
+        final Channel channel = Mockito.mock(Channel.class);
+        Mockito.when(channel.isActive()).thenReturn(false); // return false to reflect channel closed
+        Mockito.when(ctx.channel()).thenReturn(channel);
+
+        final TimeoutException timeoutEx = new TimeoutException("too late, my friend");
+        handler.exceptionCaught(ctx, timeoutEx);
+
+        Assert.assertTrue(imapFuture.isDone(), "Future should be done");
+        ExecutionException ex = null;
+        try {
+            imapFuture.get(5, TimeUnit.MILLISECONDS);
+        } catch (final ExecutionException ee) {
+            ex = ee;
+        }
+        Assert.assertNotNull(ex, "Expect exception to be thrown.");
+        Assert.assertNotNull(ex.getCause(), "Expect cause.");
+        Assert.assertEquals(ex.getCause().getClass(), ImapAsyncClientException.class, "Expected result mismatched.");
+        Mockito.verify(ctx, Mockito.times(0)).close(); // should not close since channel is already closed
+        Mockito.verify(channel, Mockito.times(1)).isActive();
     }
 
     /**
@@ -201,6 +250,9 @@ public class ImapClientConnectHandlerTest {
         final ImapClientConnectHandler handler = new ImapClientConnectHandler(clock, imapFuture, logger, DebugMode.DEBUG_ON, SESSION_ID, sessCtx);
 
         final ChannelHandlerContext ctx = Mockito.mock(ChannelHandlerContext.class);
+        final Channel channel = Mockito.mock(Channel.class);
+        Mockito.when(channel.isActive()).thenReturn(true);
+        Mockito.when(ctx.channel()).thenReturn(channel);
         final UnknownHostException unknownHostEx = new UnknownHostException("Unknown host");
         handler.exceptionCaught(ctx, unknownHostEx);
 
@@ -218,6 +270,8 @@ public class ImapClientConnectHandlerTest {
         Assert.assertNotNull(imapEx.getCause(), "expect cause");
         Assert.assertEquals(imapEx.getCause().getClass(), UnknownHostException.class, "Cause should be UnknownHost exception.");
         Assert.assertEquals(imapEx.getFailureType(), FailureType.UNKNOWN_HOST_EXCEPTION, "Failure type mismatch");
+        Mockito.verify(ctx, Mockito.times(1)).close();
+        Mockito.verify(channel, Mockito.times(1)).isActive();
     }
 
     /**
@@ -236,6 +290,9 @@ public class ImapClientConnectHandlerTest {
         final ImapClientConnectHandler handler = new ImapClientConnectHandler(clock, imapFuture, logger, DebugMode.DEBUG_ON, SESSION_ID, sessCtx);
 
         final ChannelHandlerContext ctx = Mockito.mock(ChannelHandlerContext.class);
+        final Channel channel = Mockito.mock(Channel.class);
+        Mockito.when(channel.isActive()).thenReturn(true);
+        Mockito.when(ctx.channel()).thenReturn(channel);
         final ConnectTimeoutException connectTimeoutEx = new ConnectTimeoutException("connection timeout");
         handler.exceptionCaught(ctx, connectTimeoutEx);
 
@@ -253,6 +310,8 @@ public class ImapClientConnectHandlerTest {
         Assert.assertNotNull(imapEx.getCause(), "expect cause");
         Assert.assertEquals(imapEx.getCause().getClass(), ConnectTimeoutException.class, "Cause should be ConnectTimeout exception.");
         Assert.assertEquals(imapEx.getFailureType(), FailureType.CONNECTION_TIMEOUT_EXCEPTION, "Failure type mismatch");
+        Mockito.verify(ctx, Mockito.times(1)).close();
+        Mockito.verify(channel, Mockito.times(1)).isActive();
     }
 
     /**
@@ -271,6 +330,9 @@ public class ImapClientConnectHandlerTest {
         final ImapClientConnectHandler handler = new ImapClientConnectHandler(clock, imapFuture, logger, DebugMode.DEBUG_ON, SESSION_ID, sessCtx);
 
         final ChannelHandlerContext ctx = Mockito.mock(ChannelHandlerContext.class);
+        final Channel channel = Mockito.mock(Channel.class);
+        Mockito.when(channel.isActive()).thenReturn(true);
+        Mockito.when(ctx.channel()).thenReturn(channel);
         final IdleStateEvent idleEvent = Mockito.mock(IdleStateEvent.class);
         Mockito.when(idleEvent.state()).thenReturn(IdleState.READER_IDLE);
         handler.userEventTriggered(ctx, idleEvent);
@@ -290,6 +352,8 @@ public class ImapClientConnectHandlerTest {
         Assert.assertEquals(cause.getClass(), ImapAsyncClientException.class, "Expected result mismatched.");
         final ImapAsyncClientException aEx = (ImapAsyncClientException) cause;
         Assert.assertEquals(aEx.getFailureType(), FailureType.CONNECTION_FAILED_EXCEED_IDLE_MAX, "Failure type mismatched");
+        Mockito.verify(ctx, Mockito.times(1)).close();
+        Mockito.verify(channel, Mockito.times(1)).isActive();
 
         // call channelInactive, should not encounter npe
         handler.channelInactive(ctx);
