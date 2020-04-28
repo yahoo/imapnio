@@ -69,6 +69,18 @@ public class ImapClientConnectHandler extends MessageToMessageDecoder<IMAPRespon
         this.clock = clock;
     }
 
+    /**
+     * Closes the connection.
+     *
+     * @param ctx the ChannelHandlerContext
+     */
+    private void close(final ChannelHandlerContext ctx) {
+        if (ctx.channel().isActive()) {
+            // closing the channel if server is still active
+            ctx.close();
+        }
+    }
+
     @Override
     public void decode(final ChannelHandlerContext ctx, final IMAPResponse serverResponse, final List<Object> out) {
         final ChannelPipeline pipeline = ctx.pipeline();
@@ -84,6 +96,7 @@ public class ImapClientConnectHandler extends MessageToMessageDecoder<IMAPRespon
         } else {
             logger.error("[{},{}] Server response without OK:{}", sessionId, sessionCtx.toString(), serverResponse.toString());
             sessionCreatedFuture.done(new ImapAsyncClientException(FailureType.CONNECTION_FAILED_WITHOUT_OK_RESPONSE));
+            close(ctx); // closing the channel if we r not getting a ok greeting
         }
         cleanup();
     }
@@ -100,6 +113,7 @@ public class ImapClientConnectHandler extends MessageToMessageDecoder<IMAPRespon
             type = FailureType.CONNECTION_FAILED_EXCEPTION;
         }
         sessionCreatedFuture.done(new ImapAsyncClientException(type, cause));
+        close(ctx); // closing the connection
     }
 
     @Override
@@ -110,7 +124,7 @@ public class ImapClientConnectHandler extends MessageToMessageDecoder<IMAPRespon
                 logger.error("[{},{}] Connection failed due to taking longer than configured allowed time.", sessionId, sessionCtx.toString());
                 sessionCreatedFuture.done(new ImapAsyncClientException(FailureType.CONNECTION_FAILED_EXCEED_IDLE_MAX));
                 // closing the channel if server is not responding with OK response for max read timeout limit
-                ctx.close();
+                close(ctx);
             }
         }
     }

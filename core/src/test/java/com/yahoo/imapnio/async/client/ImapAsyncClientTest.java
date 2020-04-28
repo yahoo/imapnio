@@ -618,6 +618,7 @@ public class ImapAsyncClientTest {
         final ChannelFuture nettyConnectFuture = Mockito.mock(ChannelFuture.class);
         Mockito.when(nettyConnectFuture.isSuccess()).thenReturn(false);
         final Channel nettyChannel = Mockito.mock(Channel.class);
+        Mockito.when(nettyChannel.isActive()).thenReturn(false);
         final ChannelPipeline nettyPipeline = Mockito.mock(ChannelPipeline.class);
         Mockito.when(nettyChannel.pipeline()).thenReturn(nettyPipeline);
         Mockito.when(nettyConnectFuture.channel()).thenReturn(nettyChannel);
@@ -687,6 +688,9 @@ public class ImapAsyncClientTest {
             Assert.assertEquals(((ImapAsyncClientException) exception).getFailureType(), FailureType.UNKNOWN_HOST_EXCEPTION,
                     "Exception type should be UNKNOWN_HOST_EXCEPTION");
         }
+
+        Mockito.verify(nettyChannel, Mockito.times(1)).isActive();
+        Mockito.verify(nettyChannel, Mockito.times(0)).close(); // since channel is not active
     }
 
     /**
@@ -705,6 +709,7 @@ public class ImapAsyncClientTest {
         final Channel nettyChannel = Mockito.mock(Channel.class);
         final ChannelPipeline nettyPipeline = Mockito.mock(ChannelPipeline.class);
         Mockito.when(nettyChannel.pipeline()).thenReturn(nettyPipeline);
+        Mockito.when(nettyChannel.isActive()).thenReturn(true);
         Mockito.when(nettyConnectFuture.channel()).thenReturn(nettyChannel);
         Mockito.when(nettyConnectFuture.cause()).thenReturn(new ConnectTimeoutException("connection timed out"));
         Mockito.when(bootstrap.connect(Mockito.anyString(), Mockito.anyInt())).thenReturn(nettyConnectFuture);
@@ -772,6 +777,95 @@ public class ImapAsyncClientTest {
             Assert.assertEquals(((ImapAsyncClientException) exception).getFailureType(), FailureType.CONNECTION_TIMEOUT_EXCEPTION,
                     "Exception type should be CONNECTION_TIMEOUT_EXCEPTION");
         }
+        Mockito.verify(nettyChannel, Mockito.times(1)).isActive();
+        Mockito.verify(nettyChannel, Mockito.times(1)).close();
+    }
+
+    /**
+     * Tests createSession method with ConnectTimeout exception.
+     *
+     * @throws SSLException will not throw
+     * @throws URISyntaxException will not throw
+     * @throws Exception when calling operationComplete() at GenericFutureListener
+     */
+    @Test
+    public void testCreateSessionConnectionTimeoutFailedChannelIsNull() throws SSLException, URISyntaxException, Exception {
+
+        final Bootstrap bootstrap = Mockito.mock(Bootstrap.class);
+        final ChannelFuture nettyConnectFuture = Mockito.mock(ChannelFuture.class);
+        Mockito.when(nettyConnectFuture.isSuccess()).thenReturn(false);
+
+        final ChannelPipeline nettyPipeline = Mockito.mock(ChannelPipeline.class);
+
+        Mockito.when(nettyConnectFuture.cause()).thenReturn(new ConnectTimeoutException("connection timed out"));
+        Mockito.when(bootstrap.connect(Mockito.anyString(), Mockito.anyInt())).thenReturn(nettyConnectFuture);
+
+        final EventLoopGroup group = Mockito.mock(EventLoopGroup.class);
+        final Logger logger = Mockito.mock(Logger.class);
+        Mockito.when(logger.isDebugEnabled()).thenReturn(true);
+
+        final ImapAsyncClient aclient = new ImapAsyncClient(clock, bootstrap, group, logger);
+
+        final ImapAsyncSessionConfig config = new ImapAsyncSessionConfig();
+        config.setConnectionTimeoutMillis(5000);
+        config.setReadTimeoutMillis(6000);
+        final List<String> sniNames = null;
+
+        // test create session
+        final InetSocketAddress localAddress = null;
+        final URI serverUri = new URI(SERVER_URI_STR);
+        final Future<ImapAsyncCreateSessionResponse> future = aclient.createSession(serverUri, config, localAddress, sniNames, DebugMode.DEBUG_OFF);
+
+        // verify session creation
+        Assert.assertNotNull(future, "Future for ImapAsyncSession should not be null.");
+
+        final ArgumentCaptor<ImapClientChannelInitializer> initializerCaptor = ArgumentCaptor.forClass(ImapClientChannelInitializer.class);
+        Mockito.verify(bootstrap, Mockito.times(1)).handler(initializerCaptor.capture());
+        Assert.assertEquals(initializerCaptor.getAllValues().size(), 1, "Unexpected count of ImapClientChannelInitializer.");
+        final ImapClientChannelInitializer initializer = initializerCaptor.getAllValues().get(0);
+
+        // should not call this connect
+        Mockito.verify(bootstrap, Mockito.times(0)).connect(Mockito.any(SocketAddress.class), Mockito.any(SocketAddress.class));
+        // should call following connect
+        Mockito.verify(bootstrap, Mockito.times(1)).connect(Mockito.anyString(), Mockito.anyInt());
+        final ArgumentCaptor<GenericFutureListener> listenerCaptor = ArgumentCaptor.forClass(GenericFutureListener.class);
+        Mockito.verify(nettyConnectFuture, Mockito.times(1)).addListener(listenerCaptor.capture());
+        Assert.assertEquals(listenerCaptor.getAllValues().size(), 1, "Unexpected count of ImapClientChannelInitializer.");
+
+        // verify GenericFutureListener.operationComplete()
+        final GenericFutureListener listener = listenerCaptor.getAllValues().get(0);
+        listener.operationComplete(nettyConnectFuture);
+        final ArgumentCaptor<ChannelHandler> handlerCaptorFirst = ArgumentCaptor.forClass(ChannelHandler.class);
+        Mockito.verify(nettyPipeline, Mockito.times(0)).addFirst(Mockito.anyString(), handlerCaptorFirst.capture());
+        Assert.assertEquals(handlerCaptorFirst.getAllValues().size(), 0, "number of handlers mismatched.");
+
+        final ArgumentCaptor<ChannelHandler> handlerCaptorLast = ArgumentCaptor.forClass(ChannelHandler.class);
+        Mockito.verify(nettyPipeline, Mockito.times(0)).addLast(Mockito.anyString(), handlerCaptorLast.capture());
+        Assert.assertEquals(handlerCaptorLast.getAllValues().size(), 0, "Unexpected count of ChannelHandler added.");
+        // verify logging messages
+        Mockito.verify(logger, Mockito.times(1)).error(Mockito.eq("[{},{}] connect operationComplete. result={}, imapServerUri={}, sniNames={}"),
+                Mockito.eq("NA"), Mockito.eq("NA"), Mockito.eq("failure"), Mockito.eq("imaps://one.two.three.com:993"), Mockito.eq(null),
+                Mockito.isA(ImapAsyncClientException.class));
+
+        Assert.assertTrue(future.isDone(), "Future should be done.");
+        ImapAsyncClientException actual = null;
+        try {
+            future.get(5, TimeUnit.MILLISECONDS);
+            Assert.fail("Should throw connect timeout exception");
+        } catch (final ExecutionException | InterruptedException ex) {
+            Assert.assertNotNull(ex, "Expect exception to be thrown.");
+            Assert.assertNotNull(ex.getCause(), "Expect cause.");
+            Assert.assertEquals(ex.getClass(), ExecutionException.class, "Class type mismatch.");
+            final Exception exception = (Exception) ex.getCause();
+            Assert.assertEquals(exception.getClass(), ImapAsyncClientException.class, "exception type mismatch." + ex);
+            actual = (ImapAsyncClientException) exception;
+        }
+
+        Assert.assertNotNull(actual.getCause(), "Cause should not be null");
+        Assert.assertEquals(actual.getCause().getClass(), ConnectTimeoutException.class, "Cause should be connection timeout exception");
+        Assert.assertSame(actual.getCause(), nettyConnectFuture.cause(), "Cause should be same object");
+        Assert.assertEquals(actual.getFailureType(), FailureType.CONNECTION_TIMEOUT_EXCEPTION,
+                "Exception type should be CONNECTION_TIMEOUT_EXCEPTION");
     }
 
 }

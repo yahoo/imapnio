@@ -257,6 +257,7 @@ public class ImapAsyncClient {
                             final ImapAsyncClientException ex = new ImapAsyncClientException(FailureType.CONNECTION_SSL_EXCEPTION, e);
                             sessionFuture.done(ex);
                             logger.error(CONNECT_RESULT_REC, "NA", sessionCtx.toString(), "failure", serverUri.toASCIIString(), sniNames, ex);
+                            closeChannel(ch);
                             return;
                         }
                         final List<SNIServerName> serverNames = new ArrayList<SNIServerName>();
@@ -298,11 +299,23 @@ public class ImapAsyncClient {
                     final ImapAsyncClientException ex = new ImapAsyncClientException(type, cause);
                     sessionFuture.done(ex);
                     logger.error(CONNECT_RESULT_REC, "NA", sessionCtx.toString(), "failure", serverUri.toASCIIString(), sniNames, ex);
+                    closeChannel(nettyConnectFuture.channel());
                 }
             }
         });
 
         return sessionFuture;
+    }
+
+    /**
+     * Closes channel.
+     *
+     * @param channel the channel
+     */
+    private void closeChannel(@Nullable final Channel channel) {
+        if (channel != null && channel.isActive()) {
+            channel.close();
+        }
     }
 
     /**
