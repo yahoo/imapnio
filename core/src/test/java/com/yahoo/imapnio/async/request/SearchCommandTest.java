@@ -245,8 +245,7 @@ public class SearchCommandTest {
      * @throws SearchException will not throw
      */
     @Test
-    public void testGetCommandLineNullMessageSeqSetsNullSearchTerm()
-            throws IOException, IllegalArgumentException, SearchException {
+    public void testGetCommandLineNullMessageSeqSetsNullSearchTerm() throws IOException, IllegalArgumentException, SearchException {
         final MessageNumberSet[] msgSets = null;
         final String charset = null;
         ImapAsyncClientException actualEx = null;
@@ -265,8 +264,7 @@ public class SearchCommandTest {
      * @throws IllegalArgumentException will not throw
      */
     @Test
-    public void testGetCommandLineNullMessageSeqSetsNullArgument()
-            throws IllegalArgumentException {
+    public void testGetCommandLineNullMessageSeqSetsNullArgument() throws IllegalArgumentException {
         final String msgSeqs = null;
         ImapAsyncClientException actualEx = null;
         final Argument args = null;
@@ -301,7 +299,8 @@ public class SearchCommandTest {
         capas.put(ImapClientConstants.LITERAL_PLUS, Collections.singletonList(ImapClientConstants.LITERAL_PLUS));
 
         final ImapRequest cmd = new SearchCommand(msgsets, term, new Capability(capas));
-        Assert.assertEquals(cmd.getCommandLine(), "SEARCH CHARSET UTF-8 1:3 SUBJECT {4+}\r\n����\r\n", "Expected result mismatched.");
+        final String expectedStr = "SEARCH CHARSET UTF-8 1:3 SUBJECT {4+}\r\nΩΩ\r\n";
+        Assert.assertEquals(cmd.getCommandLineBytes().toString(StandardCharsets.UTF_8), expectedStr, "Expected result mismatched.");
 
         cmd.cleanup();
         // Verify if cleanup happened correctly.

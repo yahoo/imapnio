@@ -215,7 +215,8 @@ public class UidSearchCommandTest {
         final Map<String, List<String>> capas = new HashMap<String, List<String>>();
         capas.put(ImapClientConstants.LITERAL_PLUS, Collections.singletonList(ImapClientConstants.LITERAL_PLUS));
         final ImapRequest cmd = new UidSearchCommand(msgsets, term, new Capability(capas));
-        Assert.assertEquals(cmd.getCommandLine(), "UID SEARCH CHARSET UTF-8 1:3 SUBJECT {4+}\r\n����\r\n", "Expected result mismatched.");
+        final String expectedStr = "UID SEARCH CHARSET UTF-8 1:3 SUBJECT {4+}\r\nΩΩ\r\n";
+        Assert.assertEquals(cmd.getCommandLineBytes().toString(StandardCharsets.UTF_8), expectedStr, "Expected result mismatched.");
 
         cmd.cleanup();
         // Verify if cleanup happened correctly.
