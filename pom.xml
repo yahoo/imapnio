@@ -5,7 +5,7 @@
     <groupId>com.yahoo.imapnio</groupId>
     <artifactId>imapnio</artifactId>
     <packaging>pom</packaging>
-    <version>4.2.4</version>
+    <version>4.2.5</version>
     <name>${project.artifactId}</name>
     <url>https://github.com/yahoo/imapnio</url>
     <description>Parent POM file for imapnio project</description>
@@ -108,7 +108,7 @@
             <dependency>
                 <groupId>io.netty</groupId>
                 <artifactId>netty-handler</artifactId>
-                <version>4.1.5.Final</version>
+                <version>4.1.48.Final</version>
             </dependency>
             <dependency>
                 <groupId>com.sun.mail</groupId>
