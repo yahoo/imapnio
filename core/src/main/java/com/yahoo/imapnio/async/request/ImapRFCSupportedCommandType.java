@@ -36,6 +36,8 @@ public enum ImapRFCSupportedCommandType implements ImapCommandType {
     IDLE,
     /** List command. */
     LIST,
+    /** List command. */
+    LIST_STATUS,
     /** Login command. */
     LOGIN,
     /** Logout command. */

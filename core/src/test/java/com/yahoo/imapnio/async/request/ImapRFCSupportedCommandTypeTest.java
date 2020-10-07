@@ -14,7 +14,7 @@ public class ImapRFCSupportedCommandTypeTest {
     @Test
     public void testCommandTypeEnum() {
         final ImapRFCSupportedCommandType[] enumList = ImapRFCSupportedCommandType.values();
-        Assert.assertEquals(enumList.length, 36, "The enum count mismatched.");
+        Assert.assertEquals(enumList.length, 37, "The enum count mismatched.");
         final ImapRFCSupportedCommandType uidFetch = ImapRFCSupportedCommandType.valueOf("UID_FETCH");
         Assert.assertSame(uidFetch, ImapRFCSupportedCommandType.UID_FETCH, "Enum does not match.");
     }

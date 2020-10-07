@@ -21,9 +21,11 @@ import com.sun.mail.imap.protocol.MailboxInfo;
 import com.sun.mail.imap.protocol.Status;
 import com.sun.mail.imap.protocol.UIDSet;
 import com.yahoo.imapnio.async.data.Capability;
+import com.yahoo.imapnio.async.data.ExtensionListInfo;
 import com.yahoo.imapnio.async.data.ExtensionMailboxInfo;
 import com.yahoo.imapnio.async.data.IdResult;
 import com.yahoo.imapnio.async.data.ListInfoList;
+import com.yahoo.imapnio.async.data.ListStatusResult;
 import com.yahoo.imapnio.async.data.SearchResult;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException.FailureType;
@@ -95,6 +97,9 @@ public class ImapResponseMapper {
         }
         if (valueType == SearchResult.class) {
             return (T) parser.parseToSearchResult(content);
+        }
+        if (valueType == ListStatusResult.class) {
+            return (T) parser.parseToListStatusResult(content);
         }
         throw new ImapAsyncClientException(FailureType.UNKNOWN_PARSE_RESULT_TYPE);
     }
@@ -375,6 +380,44 @@ public class ImapResponseMapper {
                 throw new ImapAsyncClientException(FailureType.INVALID_INPUT); // when r length is 0 or no Status response
             }
             return status;
+        }
+
+        /**
+         * Parses the LIST-STATUS command responses to a ListStatusResult object. See RFC 5819 for details. For each selectable mailbox matching the
+         * list pattern and selection options, the server MUST return an untagged LIST response followed by an untagged STATUS response containing the
+         * information requested in the STATUS return option. If an attempted STATUS for a listed mailbox fails because the mailbox can't be selected
+         * , the STATUS response MUST NOT be returned and the LIST response MUST include the \NoSelect attribute.
+         *
+         * @param r the list of responses from Status command, the input responses array should contain the tagged/final one
+         * @return Status object constructed based on the r array
+         * @throws ParsingException when encountering parsing exception
+         * @throws ImapAsyncClientException when input value is not valid
+         */
+        @Nonnull
+        private ListStatusResult parseToListStatusResult(@Nonnull final IMAPResponse[] r) throws ParsingException, ImapAsyncClientException {
+            if (r.length < 1) {
+                throw new ImapAsyncClientException(FailureType.INVALID_INPUT);
+            }
+            final Response taggedResponse = r[r.length - 1];
+            if (!taggedResponse.isOK()) {
+                throw new ImapAsyncClientException(FailureType.INVALID_INPUT);
+            }
+            // command successful reaching here
+            final List<ExtensionListInfo> v = new ArrayList<ExtensionListInfo>();
+            final Map<String, Status> m = new HashMap<String, Status>();
+
+            for (int i = 0; i < r.length; i++) {
+                final IMAPResponse ir = r[i];
+
+                if (ir.keyEquals("LIST")) {
+                    v.add(new ExtensionListInfo(ir));
+                } else if (ir.keyEquals("STATUS")) {
+                    final Status status = new Status(ir);
+                    m.put(status.mbox, status);
+                }
+            }
+
+            return new ListStatusResult(v, m);
         }
 
         /**

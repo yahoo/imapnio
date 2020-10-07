@@ -3,6 +3,7 @@ package com.yahoo.imapnio.async.response;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.mail.Flags.Flag;
 import javax.mail.Folder;
@@ -19,9 +20,11 @@ import com.sun.mail.imap.protocol.ListInfo;
 import com.sun.mail.imap.protocol.MailboxInfo;
 import com.sun.mail.imap.protocol.Status;
 import com.yahoo.imapnio.async.data.Capability;
+import com.yahoo.imapnio.async.data.ExtensionListInfo;
 import com.yahoo.imapnio.async.data.ExtensionMailboxInfo;
 import com.yahoo.imapnio.async.data.IdResult;
 import com.yahoo.imapnio.async.data.ListInfoList;
+import com.yahoo.imapnio.async.data.ListStatusResult;
 import com.yahoo.imapnio.async.data.SearchResult;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException.FailureType;
@@ -642,6 +645,243 @@ public class ImapResponseMapperTest {
         // verify the result
         Assert.assertNotNull(cause, "cause mismatched.");
         Assert.assertEquals(cause.getFailureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
+    }
+
+    /**
+     * Tests parseListStatus method successfully.
+     *
+     * @throws IOException will not throw
+     * @throws ProtocolException will not throw
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testParseListStatusSuccess() throws IOException, ProtocolException, ImapAsyncClientException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final List<IMAPResponse> content = new ArrayList<>();
+        final List<ExtensionListInfo> expectedLinfo = new ArrayList<>();
+        final List<Status> expectedStatuses = new ArrayList<>();
+
+        // 0
+        final String lresp0 = "* LIST (\\HasNoChildren) \"/\" \"INBOX\"";
+        content.add(new IMAPResponse(lresp0));
+        // add some non-relevant responses
+        content.add(new IMAPResponse("* 115140 EXPUNGE\r\n"));
+        content.add(new IMAPResponse("* 115141 EXPUNGE\r\n"));
+        final String sresp0 = "* STATUS \"INBOX\" (HIGHESTMODSEQ 82676 MESSAGES 774 UIDNEXT 913 UIDVALIDITY 1 UNSEEN 769)";
+        popluateContentAndBuildStatus(lresp0, sresp0, content, expectedLinfo, expectedStatuses);
+
+        // 1
+        content.add(new IMAPResponse("* 115142 EXPUNGE\r\n"));
+        final String lresp1 = "* LIST (\\HasChildren \\NonExistent) \"/\" \"[Zmail]\"";
+        content.add(new IMAPResponse(lresp1));
+        content.add(new IMAPResponse("* 115143 EXPUNGE\r\n"));
+        popluateContentAndBuildStatus(lresp1, null, content, expectedLinfo, expectedStatuses); // status is null
+
+        // 2
+        final String lresp2 = "* LIST (\\HasNoChildren) \"/\" \"[Zmail]/All Mail\"";
+        content.add(new IMAPResponse(lresp2));
+        final String sresp2 = "* STATUS \"[Zmail]/All Mail\" (HIGHESTMODSEQ 82676 MESSAGES 777 UIDNEXT 1109 UIDVALIDITY 12 UNSEEN 770)";
+        popluateContentAndBuildStatus(lresp2, sresp2, content, expectedLinfo, expectedStatuses);
+
+        // 3
+        final String lresp3 = "* LIST (\\HasNoChildren) \"/\" \"[Zmail]/Drafts\"";
+        content.add(new IMAPResponse(lresp3));
+        final String sresp3 = "* STATUS \"[Zmail]/Drafts\" (HIGHESTMODSEQ 82676 MESSAGES 1 UIDNEXT 98 UIDVALIDITY 6 UNSEEN 0)";
+        popluateContentAndBuildStatus(lresp3, sresp3, content, expectedLinfo, expectedStatuses);
+
+        // 4
+        final String lresp4 = "* LIST (\\HasNoChildren) \"/\" \"[Zmail]/Important\"";
+        content.add(new IMAPResponse(lresp4));
+        final String sresp4 = "* STATUS \"[Zmail]/Important\" (HIGHESTMODSEQ 82676 MESSAGES 1 UIDNEXT 118 UIDVALIDITY 9 UNSEEN 0)";
+        popluateContentAndBuildStatus(lresp4, sresp4, content, expectedLinfo, expectedStatuses);
+
+        // 5
+        final String lresp5 = "* LIST (\\HasNoChildren) \"/\" \"[Zmail]/Sent Mail\"";
+        content.add(new IMAPResponse(lresp5));
+        final String sresp5 = "* STATUS \"[Zmail]/Sent Mail\" (HIGHESTMODSEQ 82676 MESSAGES 0 UIDNEXT 88 UIDVALIDITY 5 UNSEEN 0)";
+        popluateContentAndBuildStatus(lresp5, sresp5, content, expectedLinfo, expectedStatuses);
+
+        // 6
+        final String lresp6 = "* LIST (\\HasNoChildren) \"/\" \"[Zmail]/Spam\"";
+        content.add(new IMAPResponse(lresp6));
+        final String sresp6 = "* STATUS \"[Zmail]/Spam\" (HIGHESTMODSEQ 82676 MESSAGES 1 UIDNEXT 101 UIDVALIDITY 3 UNSEEN 1)";
+        popluateContentAndBuildStatus(lresp6, sresp6, content, expectedLinfo, expectedStatuses);
+
+        // 7
+        final String lresp7 = "* LIST (\\HasNoChildren) \"/\" \"[Zmail]/Starred\"";
+        content.add(new IMAPResponse(lresp7));
+        final String sresp7 = "* STATUS \"[Zmail]/Starred\" (HIGHESTMODSEQ 82676 MESSAGES 0 UIDNEXT 9 UIDVALIDITY 4 UNSEEN 0)";
+        popluateContentAndBuildStatus(lresp7, sresp7, content, expectedLinfo, expectedStatuses);
+
+        // 8
+        final String lresp8 = "* LIST (\\HasNoChildren) \"/\" \"[Zmail]/Trash\"";
+        content.add(new IMAPResponse(lresp8));
+        final String sresp8 = "* STATUS \"[Zmail]/Trash\" (HIGHESTMODSEQ 82676 MESSAGES 1 UIDNEXT 137 UIDVALIDITY 2 UNSEEN 0)";
+        popluateContentAndBuildStatus(lresp8, sresp8, content, expectedLinfo, expectedStatuses);
+
+        // 9
+        final String lresp9 = "* LIST (\\HasChildren) \"/\" \"parent_folder\"";
+        content.add(new IMAPResponse(lresp9));
+        final String sresp9 = "* STATUS \"parent_folder\" (HIGHESTMODSEQ 82676 MESSAGES 0 UIDNEXT 1 UIDVALIDITY 15 UNSEEN 0)";
+        popluateContentAndBuildStatus(lresp9, sresp9, content, expectedLinfo, expectedStatuses);
+
+        // 10
+        final String lresp10 = "* LIST (\\HasNoChildren) \"/\" \"parent_folder/child_folder\"";
+        content.add(new IMAPResponse(lresp10));
+        final String sresp10 = "* STATUS \"parent_folder/child_folder\" (HIGHESTMODSEQ 82676 MESSAGES 1 UIDNEXT 2 UIDVALIDITY 16 UNSEEN 0)";
+        popluateContentAndBuildStatus(lresp10, sresp10, content, expectedLinfo, expectedStatuses);
+
+        // 11
+        final String lresp11 = "* LIST (\\HasChildren \\NonExistent) \"/\" \"abc_folder\"";
+        content.add(new IMAPResponse(lresp11));
+        content.add(new IMAPResponse("* 115143 EXPUNGE\r\n"));
+        popluateContentAndBuildStatus(lresp11, null, content, expectedLinfo, expectedStatuses); // status is null
+
+        content.add(new IMAPResponse("a3 OK Success"));
+
+        final ListStatusResult ll = mapper.readValue(content.toArray(new IMAPResponse[0]), ListStatusResult.class);
+
+        // verify the result
+        final List<ExtensionListInfo> infos = ll.getListInfos();
+        Assert.assertNotNull(infos, "result mismatched.");
+        Assert.assertEquals(infos.size(), 12, "ListInfo count mismatched.");
+        final Map<String, Status> statuses = ll.getStatuses();
+
+        for (int i = 0; i < infos.size(); i++) {
+            final ExtensionListInfo info = infos.get(i);
+            final ExtensionListInfo expectedInfo = expectedLinfo.get(i);
+            final Status expectedStatus = expectedStatuses.get(i);
+
+            Assert.assertNotNull(info, "ListStatus should not be null.");
+
+            // verify ListInfo
+            Assert.assertNotNull(info, "ListInfo should not be null.");
+            Assert.assertEquals(info.getAvailableExtendedAttributes(), expectedInfo.getAvailableExtendedAttributes(), "Data mismatched.");
+
+            Assert.assertEquals(info.hasInferiors, expectedInfo.hasInferiors, "hasInferiors mismatched.");
+            Assert.assertEquals(info.name, expectedInfo.name, "ListInfo name mismatched.");
+            Assert.assertEquals(info.attrs.length, expectedInfo.attrs.length, "ListInfo attrs size mismatched.");
+            for (int j = 0; j < expectedInfo.attrs.length; j++) {
+                Assert.assertEquals(info.attrs[j], expectedInfo.attrs[j], "info.attrs[j] mismatched.");
+            }
+            final Status st = statuses.get(info.name);
+
+            // Verify Status
+            if (expectedStatus == null) { // if expecting no status for this folder
+                Assert.assertNull(st, "Expected Status mismatched.");
+                continue;
+            }
+            Assert.assertEquals(st.mbox, expectedStatus.mbox, "Status.mbox mismatched.");
+            Assert.assertEquals(info.name, st.mbox, "ListInfo and Status mismatched. ");
+            Assert.assertEquals(st.highestmodseq, expectedStatus.highestmodseq, "highestmodseq mismatched.");
+            Assert.assertEquals(st.total, expectedStatus.total, "total mismatched.");
+            Assert.assertEquals(st.recent, expectedStatus.recent, "recent mismatched.");
+            Assert.assertEquals(st.uidnext, expectedStatus.uidnext, "highestmodseq mismatched.");
+            Assert.assertEquals(st.uidvalidity, expectedStatus.uidvalidity, "highestmodseq mismatched.");
+            Assert.assertEquals(st.unseen, expectedStatus.unseen, "highestmodseq mismatched.");
+            Assert.assertEquals(st.items, expectedStatus.items, "items mismatched.");
+            if (expectedStatus.items != null) {
+                Assert.assertEquals(st.items.size(), expectedStatus.items.size(), "items mismatched.");
+                for (final String itemName : expectedStatus.items.keySet()) {
+                    Assert.assertEquals(st.items.get(itemName), expectedStatus.items.get(itemName), "Item value mismatched.");
+                }
+            }
+        }
+    }
+
+    /**
+     * Builds the Status for expected Status and populate given Content for input.
+     *
+     * @param listResp List response in string format
+     * @param statusResp Status response in string format
+     * @param content IMAPResponse list
+     * @param expectedInfo expected ListInfo list
+     * @param expectedSt expected Status list
+     * @return
+     * @throws ProtocolException will not throw
+     * @throws IOException will not throw
+     */
+    private void popluateContentAndBuildStatus(final String listResp, final String statusResp, final List<IMAPResponse> content,
+            final List<ExtensionListInfo> expectedInfo, final List<Status> expectedSt) throws IOException, ProtocolException {
+
+        expectedInfo.add(new ExtensionListInfo(new IMAPResponse(listResp)));
+        if (statusResp != null) {
+            content.add(new IMAPResponse(statusResp));
+            expectedSt.add(new Status(new IMAPResponse(statusResp)));
+        } else {
+            expectedSt.add(null);
+        }
+    }
+
+    /**
+     * Tests parseListInfos method when response array length is 0.
+     *
+     * @throws ProtocolException will not throw
+     */
+    @Test
+    public void testParseListStausEmptyResponses() throws ProtocolException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final List<IMAPResponse> content = new ArrayList<>();
+        ImapAsyncClientException cause = null;
+        try {
+            mapper.readValue(content.toArray(new IMAPResponse[0]), ListStatusResult.class);
+        } catch (final ImapAsyncClientException e) {
+            cause = e;
+        }
+        // verify the result
+        Assert.assertNotNull(cause, "cause mismatched.");
+        Assert.assertEquals(cause.getFailureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
+    }
+
+    /**
+     * Tests parseListInfos method when final response is not OK.
+     *
+     * @throws IOException will not throw
+     * @throws ProtocolException will not throw
+     */
+    @Test
+    public void testParseListStatusNoOK() throws IOException, ProtocolException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final List<IMAPResponse> content = new ArrayList<>();
+        final List<String> names = new ArrayList<>();
+        buildListInfoIMAPResponse(content, names, "* LIST (\\Archive \\HasNoChildren) \"/\"", "\"Archive\"");
+        buildListInfoIMAPResponse(content, names, "* LIST (\\Junk \\HasNoChildren) \"/\"", "\"Bulk Mail\"");
+        buildListInfoIMAPResponse(content, names, "* LIST (\\Drafts \\HasNoChildren) \"/\"", "\"Draft\"");
+        buildListInfoIMAPResponse(content, names, "* LIST (\\HasNoChildren) \"/\"", "\"Inbox\"");
+        buildListInfoIMAPResponse(content, names, "* LIST (\\Sent \\HasNoChildren) \"/\"", "\"Sent\"");
+        buildListInfoIMAPResponse(content, names, "* LIST (\\Trash \\HasNoChildren) \"/\"", "\"Trash\"");
+        buildListInfoIMAPResponse(content, names, "* LIST (\\HasChildren) \"/\"", "\"test1\"");
+        buildListInfoIMAPResponse(content, names, "* LIST (\\HasNoChildren) \"/\"", "\"test1/test1_1\"");
+        content.add(new IMAPResponse("a3 BAD LIST completed"));
+
+        ImapAsyncClientException cause = null;
+        try {
+            mapper.readValue(content.toArray(new IMAPResponse[0]), ListStatusResult.class);
+        } catch (final ImapAsyncClientException e) {
+            cause = e;
+        }
+        // verify the result
+        Assert.assertNotNull(cause, "cause mismatched.");
+        Assert.assertEquals(cause.getFailureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
+
+    }
+
+    /**
+     * Tests parseListStatus method when final response is not OK.
+     *
+     * @throws IOException will not throw
+     * @throws ProtocolException will not throw
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testParseListStatusOnlyOKResponse() throws IOException, ProtocolException, ImapAsyncClientException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final List<IMAPResponse> rr = new ArrayList<>();
+        rr.add(new IMAPResponse("a3 OK LIST completed"));
+        final ListStatusResult infos = mapper.readValue(rr.toArray(new IMAPResponse[0]), ListStatusResult.class);
+
+        // verify the result
+        Assert.assertNotNull(infos, "result mismatched.");
     }
 
     /**
