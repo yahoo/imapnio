@@ -1141,24 +1141,21 @@ public class ImapResponseMapperTest {
      *
      * @throws IOException will not throw
      * @throws ProtocolException will not throw
+     * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testParseToIdResultNameAbsent() throws IOException, ProtocolException {
+    public void testParseToIdResultNameAbsent() throws IOException, ProtocolException, ImapAsyncClientException {
         final ImapResponseMapper mapper = new ImapResponseMapper();
         final IMAPResponse[] content = new IMAPResponse[2];
+        // sun java mail library 1.5.5 has bug fix in readStringList() to return 0 length array instead of 1 length with a null element
+
         content[0] = new IMAPResponse("* ID () \n");
         content[1] = new IMAPResponse("a042 OK ID command completed");
 
         // verify the result
-        ImapAsyncClientException cause = null;
-        try {
-            mapper.readValue(content, IdResult.class);
-        } catch (final ImapAsyncClientException e) {
-            cause = e;
-        }
+        final IdResult id = mapper.readValue(content, IdResult.class);
         // verify the result
-        Assert.assertNotNull(cause, "cause mismatched.");
-        Assert.assertEquals(cause.getFailureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
+        Assert.assertNotNull(id, "result mismatched.");
     }
 
     /**

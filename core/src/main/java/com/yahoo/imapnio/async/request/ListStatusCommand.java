@@ -50,19 +50,31 @@ public class ListStatusCommand extends ImapRequestAdapter {
     private static final byte[] LIST_SP_B = LIST_SP.getBytes(StandardCharsets.US_ASCII);
 
     /** RETURN literal and Left Parenthesis. */
-    private static final String SP_RETURN_STATUS_LP = " RETURN (STATUS (";
+    private static final String SP_RETURN_LP = " RETURN (";
 
     /** Byte array for above. */
-    private static final byte[] SP_RETURN_STATUS_LP_B = SP_RETURN_STATUS_LP.getBytes(StandardCharsets.US_ASCII);
+    private static final byte[] SP_RETURN_LP_B = SP_RETURN_LP.getBytes(StandardCharsets.US_ASCII);
+
+    /** RETURN literal and Left Parenthesis. */
+    private static final String SP_STATUS_LP = "STATUS (";
+
+    /** Byte array for above. */
+    private static final byte[] SP_STATUS_LP_B = SP_STATUS_LP.getBytes(StandardCharsets.US_ASCII);
 
     /** Always enclose with double quotes of each pattern. */
     private static final boolean FORCE_DOUBLE_QUOTES = true;
+
+    /** An empty String array to indicate no other returned option required. */
+    private static final String[] NO_OTHER_RETURNED_OPTIONS = {};
 
     /** Reference name. */
     private String ref;
 
     /** Multiple mailbox patterns, this is supported in RFC5258. */
     private String[] multiPatterns;
+
+    /** Other returned options. */
+    private String[] otherReturnOptions;
 
     /** Status data item names. */
     private String[] items;
@@ -77,8 +89,23 @@ public class ListStatusCommand extends ImapRequestAdapter {
      */
     public ListStatusCommand(@Nonnull final String ref, @Nonnull final String[] multiPatterns, @Nonnull final String[] items)
             throws ImapAsyncClientException {
+        this(ref, multiPatterns, NO_OTHER_RETURNED_OPTIONS, items);
+    }
+
+    /**
+     * Initializes a {@link ListStatusCommand} with ref, multi-mailbox, other returned options and list of status items.
+     *
+     * @param ref the reference string
+     * @param multiPatterns list of pattern specified in RFC5258, LIST-EXTEND capability. For ex, INBOX or Sent/%
+     * @param otherReturnOptions allow callers to pass other return options, beside STATUS
+     * @param items list of items for status to be returned.
+     * @throws ImapAsyncClientException if given input is invalid
+     */
+    public ListStatusCommand(@Nonnull final String ref, @Nonnull final String[] multiPatterns, @Nonnull final String[] otherReturnOptions,
+            @Nonnull final String[] items) throws ImapAsyncClientException {
         this.ref = ref;
         this.multiPatterns = multiPatterns;
+        this.otherReturnOptions = otherReturnOptions;
         this.items = items;
         if (multiPatterns.length == 0 || items.length == 0) {
             throw new ImapAsyncClientException(ImapAsyncClientException.FailureType.INVALID_INPUT);
@@ -89,6 +116,7 @@ public class ListStatusCommand extends ImapRequestAdapter {
     public void cleanup() {
         this.ref = null;
         this.multiPatterns = null;
+        this.otherReturnOptions = null;
         this.items = null;
     }
 
@@ -125,9 +153,17 @@ public class ListStatusCommand extends ImapRequestAdapter {
         }
         bytebuf.writeByte(ImapClientConstants.R_PAREN);
 
-        // status-option
-        bytebuf.writeBytes(SP_RETURN_STATUS_LP_B); // " RETURN (STATUS ("
+        // return keyword
+        bytebuf.writeBytes(SP_RETURN_LP_B); // " RETURN ("
 
+        // other returned options than STATUS
+        for (int i = 0; i < otherReturnOptions.length; i++) {
+            formatter.formatArgument(otherReturnOptions[i], bytebuf, false);
+            bytebuf.writeByte(ImapClientConstants.SPACE);
+        }
+
+        // status option
+        bytebuf.writeBytes(SP_STATUS_LP_B); // "STATUS ("
         for (int i = 0; i < items.length; i++) {
             formatter.formatArgument(items[i], bytebuf, false);
 

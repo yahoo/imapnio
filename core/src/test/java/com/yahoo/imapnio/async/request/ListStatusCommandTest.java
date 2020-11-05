@@ -49,15 +49,31 @@ public class ListStatusCommandTest {
     public void testGetCommandLineOnePattern1() throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
         final String[] someItems = { "UIDVALIDITY", "UIDNEXT", "MESSAGES", "HIGHESTMODSEQ", "UNSEEN", "RECENT", "MAILBOXID" };
         final String[] patterns = { "*" };
-        final ImapRequest cmd = new ListStatusCommand("", patterns, someItems);
-        Assert.assertEquals(cmd.getCommandLine(),
-                "LIST \"\" (\"*\") RETURN (STATUS (UIDVALIDITY UIDNEXT MESSAGES HIGHESTMODSEQ UNSEEN RECENT MAILBOXID))\r\n",
-                "Expected result mismatched.");
+        {
+            final ImapRequest cmd = new ListStatusCommand("", patterns, someItems);
+            Assert.assertEquals(cmd.getCommandLine(),
+                    "LIST \"\" (\"*\") RETURN (STATUS (UIDVALIDITY UIDNEXT MESSAGES HIGHESTMODSEQ UNSEEN RECENT MAILBOXID))\r\n",
+                    "Expected result mismatched.");
 
-        cmd.cleanup();
-        // Verify if cleanup happened correctly.
-        for (final Field field : fieldsToCheck) {
-            Assert.assertNull(field.get(cmd), "Cleanup should set " + field.getName() + " as null");
+            cmd.cleanup();
+            // Verify if cleanup happened correctly.
+            for (final Field field : fieldsToCheck) {
+                Assert.assertNull(field.get(cmd), "Cleanup should set " + field.getName() + " as null");
+            }
+        }
+        // test with other options
+        {
+            final String[] otherOpts = { "SPECIAL-USE", "CHILDREN" };
+            final ImapRequest cmd = new ListStatusCommand("", patterns, otherOpts, someItems);
+            Assert.assertEquals(cmd.getCommandLine(),
+                    "LIST \"\" (\"*\") RETURN (SPECIAL-USE CHILDREN STATUS (UIDVALIDITY UIDNEXT MESSAGES HIGHESTMODSEQ UNSEEN RECENT MAILBOXID))\r\n",
+                    "Expected result mismatched.");
+
+            cmd.cleanup();
+            // Verify if cleanup happened correctly.
+            for (final Field field : fieldsToCheck) {
+                Assert.assertNull(field.get(cmd), "Cleanup should set " + field.getName() + " as null");
+            }
         }
     }
 
@@ -72,13 +88,28 @@ public class ListStatusCommandTest {
     public void testGetCommandLineOnePatternEscapeChars() throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
         final String[] someItems = { "UIDVALIDITY", "UIDNEXT" };
         final String[] patterns = { "&iber " };
-        final ImapRequest cmd = new ListStatusCommand("", patterns, someItems);
-        Assert.assertEquals(cmd.getCommandLine(), "LIST \"\" (\"&-iber \") RETURN (STATUS (UIDVALIDITY UIDNEXT))\r\n", "Expected result mismatched.");
+        {
+            final ImapRequest cmd = new ListStatusCommand("", patterns, someItems);
+            Assert.assertEquals(cmd.getCommandLine(), "LIST \"\" (\"&-iber \") RETURN (STATUS (UIDVALIDITY UIDNEXT))\r\n",
+                    "Expected result mismatched.");
 
-        cmd.cleanup();
-        // Verify if cleanup happened correctly.
-        for (final Field field : fieldsToCheck) {
-            Assert.assertNull(field.get(cmd), "Cleanup should set " + field.getName() + " as null");
+            cmd.cleanup();
+            // Verify if cleanup happened correctly.
+            for (final Field field : fieldsToCheck) {
+                Assert.assertNull(field.get(cmd), "Cleanup should set " + field.getName() + " as null");
+            }
+        }
+        {
+            final String[] otherOpts = { "SPECIAL-USE" };
+            final ImapRequest cmd = new ListStatusCommand("", patterns, otherOpts, someItems);
+            Assert.assertEquals(cmd.getCommandLine(), "LIST \"\" (\"&-iber \") RETURN (SPECIAL-USE STATUS (UIDVALIDITY UIDNEXT))\r\n",
+                    "Expected result mismatched.");
+
+            cmd.cleanup();
+            // Verify if cleanup happened correctly.
+            for (final Field field : fieldsToCheck) {
+                Assert.assertNull(field.get(cmd), "Cleanup should set " + field.getName() + " as null");
+            }
         }
     }
 
@@ -93,15 +124,30 @@ public class ListStatusCommandTest {
     public void testGetCommandLineMultiPatterns() throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
         final String[] someItems = { "UIDVALIDITY", "UIDNEXT", "MESSAGES", "HIGHESTMODSEQ", "UNSEEN", "RECENT" };
         final String[] patterns = { "INBOX", "Drafts", "Sent/%" };
-        final ImapRequest cmd = new ListStatusCommand("", patterns, someItems);
-        Assert.assertEquals(cmd.getCommandLine(),
-                "LIST \"\" (\"INBOX\" \"Drafts\" \"Sent/%\") RETURN (STATUS (UIDVALIDITY UIDNEXT MESSAGES HIGHESTMODSEQ UNSEEN RECENT))\r\n",
-                "Expected result mismatched.");
+        {
+            final ImapRequest cmd = new ListStatusCommand("", patterns, someItems);
+            Assert.assertEquals(cmd.getCommandLine(),
+                    "LIST \"\" (\"INBOX\" \"Drafts\" \"Sent/%\") RETURN (STATUS (UIDVALIDITY UIDNEXT MESSAGES HIGHESTMODSEQ UNSEEN RECENT))\r\n",
+                    "Expected result mismatched.");
 
-        cmd.cleanup();
-        // Verify if cleanup happened correctly.
-        for (final Field field : fieldsToCheck) {
-            Assert.assertNull(field.get(cmd), "Cleanup should set " + field.getName() + " as null");
+            cmd.cleanup();
+            // Verify if cleanup happened correctly.
+            for (final Field field : fieldsToCheck) {
+                Assert.assertNull(field.get(cmd), "Cleanup should set " + field.getName() + " as null");
+            }
+        }
+        {
+            // lower cases
+            final String[] otherOpts = { "SPECIAL-UsE", "children" };
+            final ImapRequest cmd = new ListStatusCommand("", patterns, otherOpts, someItems);
+            Assert.assertEquals(cmd.getCommandLine(), "LIST \"\" (\"INBOX\" \"Drafts\" \"Sent/%\") RETURN (SPECIAL-UsE children STATUS "
+                    + "(UIDVALIDITY UIDNEXT MESSAGES HIGHESTMODSEQ UNSEEN RECENT))\r\n", "Expected result mismatched.");
+
+            cmd.cleanup();
+            // Verify if cleanup happened correctly.
+            for (final Field field : fieldsToCheck) {
+                Assert.assertNull(field.get(cmd), "Cleanup should set " + field.getName() + " as null");
+            }
         }
     }
 
@@ -116,15 +162,28 @@ public class ListStatusCommandTest {
     public void testGetCommandLineMultiPatternsEscapeChars() throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
         final String[] someItems = { "UIDVALIDITY", "UIDNEXT", "MESSAGES", "HIGHESTMODSEQ", "UNSEEN", "RECENT" };
         final String[] patterns = { "*", "&iber ", "Drafts", "Sent/%" };
-        final ImapRequest cmd = new ListStatusCommand("", patterns, someItems);
-        Assert.assertEquals(cmd.getCommandLine(),
-                "LIST \"\" (\"*\" \"&-iber \" \"Drafts\" \"Sent/%\") RETURN (STATUS (UIDVALIDITY UIDNEXT MESSAGES HIGHESTMODSEQ UNSEEN RECENT))\r\n",
-                "Expected result mismatched.");
+        {
+            final ImapRequest cmd = new ListStatusCommand("", patterns, someItems);
+            Assert.assertEquals(cmd.getCommandLine(), "LIST \"\" (\"*\" \"&-iber \" \"Drafts\" \"Sent/%\") RETURN (STATUS "
+                    + "(UIDVALIDITY UIDNEXT MESSAGES HIGHESTMODSEQ UNSEEN RECENT))\r\n", "Expected result mismatched.");
 
-        cmd.cleanup();
-        // Verify if cleanup happened correctly.
-        for (final Field field : fieldsToCheck) {
-            Assert.assertNull(field.get(cmd), "Cleanup should set " + field.getName() + " as null");
+            cmd.cleanup();
+            // Verify if cleanup happened correctly.
+            for (final Field field : fieldsToCheck) {
+                Assert.assertNull(field.get(cmd), "Cleanup should set " + field.getName() + " as null");
+            }
+        }
+        {
+            final String[] otherOpts = { "SPECIAL-USE" };
+            final ImapRequest cmd = new ListStatusCommand("", patterns, otherOpts, someItems);
+            Assert.assertEquals(cmd.getCommandLine(), "LIST \"\" (\"*\" \"&-iber \" \"Drafts\" \"Sent/%\") RETURN (SPECIAL-USE STATUS "
+                    + "(UIDVALIDITY UIDNEXT MESSAGES HIGHESTMODSEQ UNSEEN RECENT))\r\n", "Expected result mismatched.");
+
+            cmd.cleanup();
+            // Verify if cleanup happened correctly.
+            for (final Field field : fieldsToCheck) {
+                Assert.assertNull(field.get(cmd), "Cleanup should set " + field.getName() + " as null");
+            }
         }
     }
 
@@ -139,15 +198,29 @@ public class ListStatusCommandTest {
     public void testGetCommandLineMultiPatternsNoneAsciiChars() throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
         final String[] someItems = { "UIDVALIDITY", "UIDNEXT", "MESSAGES", "HIGHESTMODSEQ", "UNSEEN", "RECENT" };
         final String[] patterns = { "ΩΩ", "Sent/%" };
-        final ImapRequest cmd = new ListStatusCommand("", patterns, someItems);
-        Assert.assertEquals(cmd.getCommandLine(),
-                "LIST \"\" (\"&A6kDqQ-\" \"Sent/%\") RETURN (STATUS (UIDVALIDITY UIDNEXT MESSAGES HIGHESTMODSEQ UNSEEN RECENT))\r\n",
-                "Expected result mismatched.");
+        {
+            final ImapRequest cmd = new ListStatusCommand("", patterns, someItems);
+            Assert.assertEquals(cmd.getCommandLine(),
+                    "LIST \"\" (\"&A6kDqQ-\" \"Sent/%\") RETURN (STATUS (UIDVALIDITY UIDNEXT MESSAGES HIGHESTMODSEQ UNSEEN RECENT))\r\n",
+                    "Expected result mismatched.");
 
-        cmd.cleanup();
-        // Verify if cleanup happened correctly.
-        for (final Field field : fieldsToCheck) {
-            Assert.assertNull(field.get(cmd), "Cleanup should set " + field.getName() + " as null");
+            cmd.cleanup();
+            // Verify if cleanup happened correctly.
+            for (final Field field : fieldsToCheck) {
+                Assert.assertNull(field.get(cmd), "Cleanup should set " + field.getName() + " as null");
+            }
+        }
+        {
+            final String[] otherOpts = { "SUBSCRIBED", "SPECIAL-USE", "CHILDREN" };
+            final ImapRequest cmd = new ListStatusCommand("", patterns, otherOpts, someItems);
+            Assert.assertEquals(cmd.getCommandLine(), "LIST \"\" (\"&A6kDqQ-\" \"Sent/%\") RETURN (SUBSCRIBED SPECIAL-USE CHILDREN STATUS "
+                    + "(UIDVALIDITY UIDNEXT MESSAGES HIGHESTMODSEQ UNSEEN RECENT))\r\n", "Expected result mismatched.");
+
+            cmd.cleanup();
+            // Verify if cleanup happened correctly.
+            for (final Field field : fieldsToCheck) {
+                Assert.assertNull(field.get(cmd), "Cleanup should set " + field.getName() + " as null");
+            }
         }
     }
 
