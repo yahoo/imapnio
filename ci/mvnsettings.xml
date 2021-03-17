@@ -1,9 +1,9 @@
 <settings>
     <servers>
         <server>
-            <id>bintray-imapnio-repo</id>
-            <username>${env.BINTRAY_USER}</username>
-            <password>${env.BINTRAY_API_KEY}</password>
+            <id>ossrh</id>
+            <username>${env.OSSRH_USER}</username>
+            <password>${env.OSSRH_TOKEN}</password>
         </server>
     </servers>
 </settings>
