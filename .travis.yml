@@ -4,8 +4,8 @@ branches:
   - stable
 language: java
 jdk:
-- oraclejdk8
-dist: trusty
+- openjdk14
+dist: focal
 before_install:
 install:
 - mvn clean install -Dgpg.skip=true
