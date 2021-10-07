@@ -3,9 +3,11 @@ package com.yahoo.imapnio.async.response;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -21,6 +23,7 @@ import com.sun.mail.imap.protocol.MailboxInfo;
 import com.sun.mail.imap.protocol.Status;
 import com.sun.mail.imap.protocol.UIDSet;
 import com.yahoo.imapnio.async.data.Capability;
+import com.yahoo.imapnio.async.data.EnableResult;
 import com.yahoo.imapnio.async.data.ExtensionListInfo;
 import com.yahoo.imapnio.async.data.ExtensionMailboxInfo;
 import com.yahoo.imapnio.async.data.IdResult;
@@ -100,6 +103,9 @@ public class ImapResponseMapper {
         }
         if (valueType == ListStatusResult.class) {
             return (T) parser.parseToListStatusResult(content);
+        }
+        if (valueType == EnableResult.class) {
+            return (T) parser.parseToEnableResult(content);
         }
         throw new ImapAsyncClientException(FailureType.UNKNOWN_PARSE_RESULT_TYPE);
     }
@@ -465,6 +471,39 @@ public class ImapResponseMapper {
             }
 
             return new IdResult(Collections.unmodifiableMap(serverParams));
+        }
+
+        /**
+         * Parses the Enable responses to a {@link EnableResult} object.
+         *
+         * @param ir the list of responses from ENABLE command, the input responses array should contain the tagged/final one
+         * @return EnableResult object constructed based on the given IMAPResponse array
+         * @throws ImapAsyncClientException when input value is not valid
+         */
+        @Nonnull
+        private EnableResult parseToEnableResult(@Nonnull final IMAPResponse[] ir) throws ImapAsyncClientException {
+            if (ir.length < 1) {
+                throw new ImapAsyncClientException(FailureType.INVALID_INPUT);
+            }
+            final Response taggedResponse = ir[ir.length - 1];
+            if (!taggedResponse.isOK()) {
+                throw new ImapAsyncClientException(FailureType.INVALID_INPUT);
+            }
+
+            final Set<String> enabledCapabilities = new HashSet<String>();
+            for (final IMAPResponse resp : ir) {
+                if (resp.isTagged()) {
+                    continue;
+                }
+                if (resp.keyEquals("ENABLED")) {
+                    String s;
+                    while ((s = resp.readAtom()) != null && s.length() != 0) {
+                        enabledCapabilities.add(s.toUpperCase());
+                    }
+                }
+            }
+
+            return new EnableResult(enabledCapabilities);
         }
 
         /**
