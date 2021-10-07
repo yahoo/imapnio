@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.mail.Flags.Flag;
 import javax.mail.Folder;
@@ -20,6 +21,7 @@ import com.sun.mail.imap.protocol.ListInfo;
 import com.sun.mail.imap.protocol.MailboxInfo;
 import com.sun.mail.imap.protocol.Status;
 import com.yahoo.imapnio.async.data.Capability;
+import com.yahoo.imapnio.async.data.EnableResult;
 import com.yahoo.imapnio.async.data.ExtensionListInfo;
 import com.yahoo.imapnio.async.data.ExtensionMailboxInfo;
 import com.yahoo.imapnio.async.data.IdResult;
@@ -1298,5 +1300,142 @@ public class ImapResponseMapperTest {
         // verify the result
         Assert.assertNotNull(actual, "ImapAsyncClientException should occur.");
         Assert.assertEquals(actual.getFailureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
+    }
+
+    /**
+     * Tests parseToEnableResult method successfully.
+     *
+     * @throws IOException will not throw
+     * @throws ProtocolException will not throw
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testParseToEnableResult() throws IOException, ProtocolException, ImapAsyncClientException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final List<IMAPResponse> content = new ArrayList<>();
+        content.add(new IMAPResponse("* some junks\r\n"));
+        content.add(new IMAPResponse("* ENABLED CONDSTORE QRSYNC\r\n"));
+        content.add(new IMAPResponse("a3 OK ENABLE completed\r\n"));
+        final EnableResult enableResult = mapper.readValue(content.toArray(new IMAPResponse[0]), EnableResult.class);
+
+        // verify the result
+        Assert.assertNotNull(enableResult, "result should never return null.");
+        final Set<String> capas = enableResult.getEnabledCapabilities();
+        Assert.assertEquals(capas.size(), 2, "capability missed.");
+        Assert.assertTrue(capas.contains("CONDSTORE"), "One capability missed.");
+        Assert.assertTrue(capas.contains("QRSYNC"), "One capability missed.");
+    }
+
+    /**
+     * Tests parseToEnableResult method with response contains length zero line.
+     *
+     * @throws IOException will not throw
+     * @throws ProtocolException will not throw
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testParseToEnableResultLengthZero() throws IOException, ProtocolException, ImapAsyncClientException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final List<IMAPResponse> content = new ArrayList<>();
+        content.add(new IMAPResponse("* some junks\r\n"));
+        content.add(new IMAPResponse("* ENABLED CONDSTORE QRSYNC\r\n"));
+        content.add(new IMAPResponse(""));
+        content.add(new IMAPResponse("a3 OK ENABLE completed\r\n"));
+        final EnableResult enableResult = mapper.readValue(content.toArray(new IMAPResponse[0]), EnableResult.class);
+
+        // verify the result
+        Assert.assertNotNull(enableResult, "result should never return null.");
+        final Set<String> capas = enableResult.getEnabledCapabilities();
+        Assert.assertEquals(capas.size(), 2, "capability missed.");
+        Assert.assertTrue(capas.contains("CONDSTORE"), "One capability missed.");
+        Assert.assertTrue(capas.contains("QRSYNC"), "One capability missed.");
+    }
+
+    /**
+     * Tests parseToEnableResult method with response contains only * ENABLED but no capability.
+     *
+     * @throws IOException will not throw
+     * @throws ProtocolException will not throw
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testParseToEnableResultNoCapa() throws IOException, ProtocolException, ImapAsyncClientException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final List<IMAPResponse> content = new ArrayList<>();
+        content.add(new IMAPResponse("* ENABLED\r\n"));
+        content.add(new IMAPResponse("a3 OK ENABLE completed\r\n"));
+        final EnableResult enableResult = mapper.readValue(content.toArray(new IMAPResponse[0]), EnableResult.class);
+
+        // verify the result
+        Assert.assertNotNull(enableResult, "result should never return null.");
+        final Set<String> capas = enableResult.getEnabledCapabilities();
+        Assert.assertEquals(capas.size(), 0, "capability missed.");
+    }
+
+    /**
+     * Tests parseToEnableResult method when server does not enable all the capability.
+     *
+     * @throws IOException will not throw
+     * @throws ProtocolException will not throw
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testParseToEnableResultNotEnabled() throws IOException, ProtocolException, ImapAsyncClientException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final List<IMAPResponse> content = new ArrayList<>();
+        content.add(new IMAPResponse("a3 OK ENABLE completed\r\n"));
+        final EnableResult enableResult = mapper.readValue(content.toArray(new IMAPResponse[0]), EnableResult.class);
+
+        // verify the result
+        Assert.assertNotNull(enableResult, "result should never return null.");
+        final Set<String> capas = enableResult.getEnabledCapabilities();
+        Assert.assertEquals(capas.size(), 0, "capability missed.");
+    }
+
+    /**
+     * Tests parseToEnableResult method when server returns with no response contents.
+     *
+     * @throws IOException will not throw
+     * @throws ProtocolException will not throw
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testParseToEnableResultNoContent() throws IOException, ProtocolException, ImapAsyncClientException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final List<IMAPResponse> content = new ArrayList<>();
+        ImapAsyncClientException cause = null;
+        try {
+            mapper.readValue(content.toArray(new IMAPResponse[0]), EnableResult.class);
+        } catch (final ImapAsyncClientException e) {
+            cause = e;
+        }
+        // verify the result
+        Assert.assertNotNull(cause, "cause mismatched.");
+        Assert.assertEquals(cause.getFailureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
+    }
+
+    /**
+     * Tests parseToEnableResult method when server returns with not OK response.
+     *
+     * @throws IOException will not throw
+     * @throws ProtocolException will not throw
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testParseToEnableResultNotOK() throws IOException, ProtocolException, ImapAsyncClientException {
+        final ImapResponseMapper mapper = new ImapResponseMapper();
+        final List<IMAPResponse> content = new ArrayList<>();
+        content.add(new IMAPResponse("* some junks\r\n"));
+        content.add(new IMAPResponse("* ENABLED CONDSTORE QRSYNC\r\n"));
+        content.add(new IMAPResponse("a3 BAD ENABLE fail\r\n"));
+        ImapAsyncClientException cause = null;
+        try {
+            mapper.readValue(content.toArray(new IMAPResponse[0]), EnableResult.class);
+        } catch (final ImapAsyncClientException e) {
+            cause = e;
+        }
+        // verify the result
+        Assert.assertNotNull(cause, "cause mismatched.");
+        Assert.assertEquals(cause.getFailureType(), FailureType.INVALID_INPUT, "Failure type mismatched.");
     }
 }
