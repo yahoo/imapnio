@@ -12,6 +12,8 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
@@ -139,6 +141,348 @@ public class ImapFutureTest {
         Assert.assertNotNull(ex, "Expect exception to be thrown.");
         Assert.assertNotNull(ex.getCause(), "Expect cause.");
         Assert.assertEquals(ex.getCause().getClass(), CancellationException.class, "Expected result mismatched.");
+    }
+
+    /**
+     * Tests to verify error callback is not called when the future is cancelled.
+     */
+    @Test
+    public void testFutureErrorCallbackUponCancelled() {
+        final AtomicBoolean called = new AtomicBoolean(false);
+        final ImapFuture<ImapAsyncResponse> imapFuture = new ImapFuture<ImapAsyncResponse>();
+        imapFuture.setExceptionCallback(new Consumer<Exception>() {
+            @Override
+            public void accept(final Exception e) {
+                called.set(true);
+            }
+        });
+        imapFuture.cancel(true);
+
+        Assert.assertFalse(called.get(), "Callback should not be run");
+    }
+
+    /**
+     * Tests to verify error callback is not called when the future is done.
+     */
+    @Test
+    public void testFutureErrorCallbackUponDone() {
+        final AtomicBoolean called = new AtomicBoolean(false);
+        final ImapFuture<Boolean> imapFuture = new ImapFuture<Boolean>();
+        imapFuture.setExceptionCallback(new Consumer<Exception>() {
+            @Override
+            public void accept(final Exception e) {
+                called.set(true);
+            }
+        });
+        imapFuture.done(false);
+
+        Assert.assertFalse(called.get(), "Callback should not be run");
+    }
+
+    /**
+     * Tests to verify error callback is called when the future fails.
+     */
+    @Test
+    public void testFutureErrorCallbackUponException() {
+        final AtomicBoolean called = new AtomicBoolean(false);
+        final ImapFuture<Boolean> imapFuture = new ImapFuture<Boolean>();
+        imapFuture.setExceptionCallback(new Consumer<Exception>() {
+            @Override
+            public void accept(final Exception e) {
+                called.set(true);
+            }
+        });
+        imapFuture.done(new RuntimeException());
+
+        Assert.assertTrue(called.get(), "Callback should be run");
+    }
+
+    /**
+     * Tests to verify done callback is not called when the future is cancelled.
+     */
+    @Test
+    public void testFutureDoneCallbackUponCancelled() {
+        final AtomicBoolean called = new AtomicBoolean(false);
+        final ImapFuture<ImapAsyncResponse> imapFuture = new ImapFuture<ImapAsyncResponse>();
+        imapFuture.setDoneCallback(new Consumer<ImapAsyncResponse>() {
+            @Override
+            public void accept(final ImapAsyncResponse imapAsyncResponse) {
+                called.set(true);
+            }
+        });
+        imapFuture.cancel(true);
+
+        Assert.assertFalse(called.get(), "Callback should not be run");
+    }
+
+    /**
+     * Tests to verify done callback is called when the future is done.
+     */
+    @Test
+    public void testFutureDoneCallbackUponDone() {
+        final AtomicBoolean called = new AtomicBoolean(false);
+        final ImapFuture<Boolean> imapFuture = new ImapFuture<Boolean>();
+        imapFuture.setDoneCallback(new Consumer<Boolean>() {
+            @Override
+            public void accept(final Boolean r) {
+                called.set(true);
+            }
+        });
+        imapFuture.done(false);
+
+        Assert.assertTrue(called.get(), "Callback should be run");
+    }
+
+    /**
+     * Tests to verify done callback is not called when the future fails.
+     */
+    @Test
+    public void testFutureDoneCallbackUponException() {
+        final AtomicBoolean called = new AtomicBoolean(false);
+        final ImapFuture<Boolean> imapFuture = new ImapFuture<Boolean>();
+        imapFuture.setDoneCallback(new Consumer<Boolean>() {
+            @Override
+            public void accept(final Boolean r) {
+                called.set(true);
+            }
+        });
+        imapFuture.done(new RuntimeException());
+
+        Assert.assertFalse(called.get(), "Callback should not be run");
+    }
+
+    /**
+     * Tests to verify cancel callback is called when the future is cancelled.
+     */
+    @Test
+    public void testFutureCancelCallbackUponCancelled() {
+        final AtomicBoolean called = new AtomicBoolean(false);
+        final ImapFuture<ImapAsyncResponse> imapFuture = new ImapFuture<ImapAsyncResponse>();
+        imapFuture.setCanceledCallback(new Runnable() {
+            @Override
+            public void run() {
+                called.set(true);
+            }
+        });
+        imapFuture.cancel(true);
+
+        Assert.assertTrue(called.get(), "Callback should be run");
+    }
+
+    /**
+     * Tests to verify cancel callback is not called when the future is done.
+     */
+    @Test
+    public void testFutureCancelCallbackUponDone() {
+        final AtomicBoolean called = new AtomicBoolean(false);
+        final ImapFuture<Boolean> imapFuture = new ImapFuture<Boolean>();
+        imapFuture.setCanceledCallback(new Runnable() {
+            @Override
+            public void run() {
+                called.set(true);
+            }
+        });
+        imapFuture.done(false);
+
+        Assert.assertFalse(called.get(), "Callback should not be run");
+    }
+
+    /**
+     * Tests to verify cancel callback is not called when the future fails.
+     */
+    @Test
+    public void testFutureCancelCallbackUponException() {
+        final AtomicBoolean called = new AtomicBoolean(false);
+        final ImapFuture<Boolean> imapFuture = new ImapFuture<Boolean>();
+        imapFuture.setCanceledCallback(new Runnable() {
+            @Override
+            public void run() {
+                called.set(true);
+            }
+        });
+        imapFuture.done(new RuntimeException());
+
+        Assert.assertFalse(called.get(), "Callback should not be run");
+    }
+
+    /**
+     * Tests to verify error callback is not called when the future is cancelled.
+     *
+     * The future execution is already finished when the callback is registered.
+     */
+    @Test
+    public void testFutureErrorCallbackUponCancelledWhenFinished() {
+        final AtomicBoolean called = new AtomicBoolean(false);
+        final ImapFuture<ImapAsyncResponse> imapFuture = new ImapFuture<ImapAsyncResponse>();
+        imapFuture.cancel(true);
+        imapFuture.setExceptionCallback(new Consumer<Exception>() {
+            @Override
+            public void accept(final Exception e) {
+                called.set(true);
+            }
+        });
+
+        Assert.assertFalse(called.get(), "Callback should not be run");
+    }
+
+    /**
+     * Tests to verify error callback is not called when the future is done.
+     *
+     * The future execution is already finished when the callback is registered.
+     */
+    @Test
+    public void testFutureErrorCallbackUponDoneWhenFinished() {
+        final AtomicBoolean called = new AtomicBoolean(false);
+        final ImapFuture<Boolean> imapFuture = new ImapFuture<Boolean>();
+        imapFuture.done(false);
+        imapFuture.setExceptionCallback(new Consumer<Exception>() {
+            @Override
+            public void accept(final Exception e) {
+                called.set(true);
+            }
+        });
+
+        Assert.assertFalse(called.get(), "Callback should not be run");
+    }
+
+    /**
+     * Tests to verify error callback is called when the future fails.
+     *
+     * The future execution is already finished when the callback is registered.
+     */
+    @Test
+    public void testFutureErrorCallbackUponExceptionWhenFinished() {
+        final AtomicBoolean called = new AtomicBoolean(false);
+        final ImapFuture<Boolean> imapFuture = new ImapFuture<Boolean>();
+        imapFuture.done(new RuntimeException());
+        imapFuture.setExceptionCallback(new Consumer<Exception>() {
+            @Override
+            public void accept(final Exception e) {
+                called.set(true);
+            }
+        });
+
+        Assert.assertTrue(called.get(), "Callback should be run");
+    }
+
+    /**
+     * Tests to verify done callback is not called when the future is cancelled.
+     *
+     * The future execution is already finished when the callback is registered.
+     */
+    @Test
+    public void testFutureDoneCallbackUponCancelledWhenFinished() {
+        final AtomicBoolean called = new AtomicBoolean(false);
+        final ImapFuture<ImapAsyncResponse> imapFuture = new ImapFuture<ImapAsyncResponse>();
+        imapFuture.cancel(true);
+        imapFuture.setDoneCallback(new Consumer<ImapAsyncResponse>() {
+            @Override
+            public void accept(final ImapAsyncResponse imapAsyncResponse) {
+                called.set(true);
+            }
+        });
+
+        Assert.assertFalse(called.get(), "Callback should not be run");
+    }
+
+    /**
+     * Tests to verify done callback is called when the future is done.
+     *
+     * The future execution is already finished when the callback is registered.
+     */
+    @Test
+    public void testFutureDoneCallbackUponDoneWhenFinished() {
+        final AtomicBoolean called = new AtomicBoolean(false);
+        final ImapFuture<Boolean> imapFuture = new ImapFuture<Boolean>();
+        imapFuture.done(false);
+        imapFuture.setDoneCallback(new Consumer<Boolean>() {
+            @Override
+            public void accept(final Boolean r) {
+                called.set(true);
+            }
+        });
+
+        Assert.assertTrue(called.get(), "Callback should be run");
+    }
+
+    /**
+     * Tests to verify done callback is not called when the future fails.
+     *
+     * The future execution is already finished when the callback is registered.
+     */
+    @Test
+    public void testFutureDoneCallbackUponExceptionWhenFinished() {
+        final AtomicBoolean called = new AtomicBoolean(false);
+        final ImapFuture<Boolean> imapFuture = new ImapFuture<Boolean>();
+        imapFuture.done(new RuntimeException());
+        imapFuture.setDoneCallback(new Consumer<Boolean>() {
+            @Override
+            public void accept(final Boolean r) {
+                called.set(true);
+            }
+        });
+
+        Assert.assertFalse(called.get(), "Callback should not be run");
+    }
+
+    /**
+     * Tests to verify cancel callback is called when the future is cancelled.
+     *
+     * The future execution is already finished when the callback is registered.
+     */
+    @Test
+    public void testFutureCancelCallbackUponCancelledWhenFinished() {
+        final AtomicBoolean called = new AtomicBoolean(false);
+        final ImapFuture<ImapAsyncResponse> imapFuture = new ImapFuture<ImapAsyncResponse>();
+        imapFuture.cancel(true);
+        imapFuture.setCanceledCallback(new Runnable() {
+            @Override
+            public void run() {
+                called.set(true);
+            }
+        });
+
+        Assert.assertTrue(called.get(), "Callback should be run");
+    }
+
+    /**
+     * Tests to verify cancel callback is not called when the future is done.
+     *
+     * The future execution is already finished when the callback is registered.
+     */
+    @Test
+    public void testFutureCancelCallbackUponDoneWhenFinished() {
+        final AtomicBoolean called = new AtomicBoolean(false);
+        final ImapFuture<Boolean> imapFuture = new ImapFuture<Boolean>();
+        imapFuture.done(false);
+        imapFuture.setCanceledCallback(new Runnable() {
+            @Override
+            public void run() {
+                called.set(true);
+            }
+        });
+
+        Assert.assertFalse(called.get(), "Callback should not be run");
+    }
+
+    /**
+     * Tests to verify cancel callback is not called when the future fails.
+     *
+     * The future execution is already finished when the callback is registered.
+     */
+    @Test
+    public void testFutureCancelCallbackUponExceptionWhenFinished() {
+        final AtomicBoolean called = new AtomicBoolean(false);
+        final ImapFuture<Boolean> imapFuture = new ImapFuture<Boolean>();
+        imapFuture.done(new RuntimeException());
+        imapFuture.setCanceledCallback(new Runnable() {
+            @Override
+            public void run() {
+                called.set(true);
+            }
+        });
+
+        Assert.assertFalse(called.get(), "Callback should not be run");
     }
 
     /**
