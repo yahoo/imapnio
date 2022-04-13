@@ -121,4 +121,16 @@ public class SelectFolderCommandTest {
         cmd = new SelectFolderCommand(folderName, qResyncParameter);
         Assert.assertEquals(cmd.getCommandLine(), SELECT + "&bUuL1Q- (QRESYNC (100 4223212 1:200 (1 1:10)))\r\n", "Expected result mismatched.");
     }
+
+    /**
+     * Tests getCommandLine method with CONDSTORE enabled.
+     *
+     * @throws ImapAsyncClientException will not throw
+     */
+    @Test
+    public void testGetCommandLineWithCondStore() throws ImapAsyncClientException {
+        final String folderName = "测试";
+        ImapRequest cmd = new SelectFolderCommand(folderName, true);
+        Assert.assertEquals(cmd.getCommandLine(), SELECT + "&bUuL1Q- (CONDSTORE)\r\n", "getCommandLine() mismatched.");
+    }
 }

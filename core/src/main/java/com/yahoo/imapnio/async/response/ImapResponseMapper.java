@@ -1,5 +1,6 @@
 package com.yahoo.imapnio.async.response;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -14,9 +15,12 @@ import javax.annotation.Nullable;
 import javax.mail.Folder;
 
 import com.sun.mail.iap.ParsingException;
+import com.sun.mail.iap.ProtocolException;
 import com.sun.mail.iap.Response;
 import com.sun.mail.imap.AppendUID;
 import com.sun.mail.imap.CopyUID;
+import com.sun.mail.imap.protocol.FetchItem;
+import com.sun.mail.imap.protocol.FetchResponse;
 import com.sun.mail.imap.protocol.IMAPResponse;
 import com.sun.mail.imap.protocol.ListInfo;
 import com.sun.mail.imap.protocol.MailboxInfo;
@@ -26,10 +30,13 @@ import com.yahoo.imapnio.async.data.Capability;
 import com.yahoo.imapnio.async.data.EnableResult;
 import com.yahoo.imapnio.async.data.ExtensionListInfo;
 import com.yahoo.imapnio.async.data.ExtensionMailboxInfo;
+import com.yahoo.imapnio.async.data.FetchResult;
 import com.yahoo.imapnio.async.data.IdResult;
 import com.yahoo.imapnio.async.data.ListInfoList;
 import com.yahoo.imapnio.async.data.ListStatusResult;
+import com.yahoo.imapnio.async.data.MessageNumberSet;
 import com.yahoo.imapnio.async.data.SearchResult;
+import com.yahoo.imapnio.async.data.StoreResult;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException.FailureType;
 
@@ -41,6 +48,18 @@ public class ImapResponseMapper {
     /** APPENDUID keyword. */
     private static final String APPENDUID = "APPENDUID";
 
+    /** HIGHESTMODSEQ keyword. */
+    private static final String HIGHESTMODSEQ = "HIGHESTMODSEQ";
+
+    /** MODIFIED keyword. */
+    private static final String MODIFIED = "MODIFIED";
+
+    /** MODSEQ keyword. */
+    private static final String MODSEQ = "MODSEQ";
+
+    /** FETCH keyword. */
+    private static final String FETCH = "FETCH";
+
     /** EQUAL sign. */
     private static final String EQUAL = "=";
 
@@ -49,6 +68,9 @@ public class ImapResponseMapper {
 
     /** ] char. */
     private static final char R_BRACKET = ']';
+
+    /** ( char. */
+    private static final char L_PAREN = '(';
 
     /** Inner class instance parser. */
     private ImapResponseParser parser;
@@ -67,8 +89,8 @@ public class ImapResponseMapper {
      * @param content list of IMAPResponse obtained from server.
      * @param valueType class name that this api will convert to.
      * @return the serialized object
-     * @throws ParsingException if underlying input contains invalid content of type for the returned type
      * @throws ImapAsyncClientException when target class to covert to is not supported
+     * @throws ParsingException if underlying input contains invalid content of type for the returned type
      */
     @SuppressWarnings("unchecked")
     @Nonnull
@@ -107,6 +129,33 @@ public class ImapResponseMapper {
         if (valueType == EnableResult.class) {
             return (T) parser.parseToEnableResult(content);
         }
+        if (valueType == FetchResult.class) {
+            return (T) parser.parseToFetchResult(content, new FetchItem[0]);
+        }
+        if (valueType == StoreResult.class) {
+            return (T) parser.parseToStoreResult(content);
+        }
+
+        throw new ImapAsyncClientException(FailureType.UNKNOWN_PARSE_RESULT_TYPE);
+    }
+
+    /**
+     * Method to deserialize IMAPResponse content from given IMAPResponse content String.
+     *
+     * @param <T> the object to serialize to
+     * @param content list of IMAPResponse obtained from server.
+     * @param valueType class name that this api will convert to.
+     * @param extensionItems the array of extension FetchItem
+     * @return the serialized object
+     * @throws ImapAsyncClientException when target class to covert to is not supported
+     */
+    @Nonnull
+    public <T> T readValue(@Nonnull final IMAPResponse[] content, @Nonnull final Class<T> valueType, @Nonnull final FetchItem[] extensionItems)
+            throws ImapAsyncClientException {
+        if (valueType == FetchResult.class) {
+            return (T) parser.parseToFetchResult(content, extensionItems);
+        }
+
         throw new ImapAsyncClientException(FailureType.UNKNOWN_PARSE_RESULT_TYPE);
     }
 
@@ -524,6 +573,8 @@ public class ImapResponseMapper {
             }
             final List<Long> v = new ArrayList<Long>(); // will always return a non-null array
 
+            Long modSeq = null;
+
             // Grab all SEARCH responses
             long num;
             for (final IMAPResponse sr : ir) {
@@ -532,10 +583,95 @@ public class ImapResponseMapper {
                     while ((num = sr.readLong()) != -1) {
                         v.add(Long.valueOf(num));
                     }
+                    if (sr.readByte() == L_PAREN) {
+                        final String s = sr.readAtom();
+                        if (MODSEQ.equals(s)) {
+                            modSeq = sr.readLong();
+                        }
+                    }
                 }
             }
 
-            return new SearchResult(v);
+            return new SearchResult(v, modSeq);
+        }
+
+        /**
+         * Parses the responses from Store command and UID Store command to a {@link StoreResult} object.
+         *
+         * @param ir the list of responses from Store or UID Store command, the input responses array should contain the tagged/final one
+         * @return StoreResult object constructed based on the given IMAPResponse array,
+         * @throws ImapAsyncClientException when tagged response is bad or given response length is 0 or fail to parse Fetch Response
+         */
+        @Nonnull
+        private StoreResult parseToStoreResult(@Nonnull final IMAPResponse[] ir)
+                throws ImapAsyncClientException {
+            if (ir.length < 1) {
+                throw new ImapAsyncClientException(FailureType.INVALID_INPUT);
+            }
+            final Response taggedResponse = ir[ir.length - 1];
+            taggedResponse.skipSpaces();
+            MessageNumberSet[] modifiedMsgsets = null; // only one response will contain modified numbers
+            if (!taggedResponse.isBAD() && taggedResponse.readByte() == (byte) L_BRACKET && MODIFIED.equals(taggedResponse.readAtom())) {
+                // ex: d105 OK [MODIFIED 7,9] Conditional STORE failed
+                modifiedMsgsets = MessageNumberSet.buildMessageNumberSets(taggedResponse.readAtom());
+            } else if (!taggedResponse.isOK()) {
+                throw new ImapAsyncClientException(FailureType.INVALID_INPUT);
+            }
+
+            final List<FetchResponse> fetchResponses = new ArrayList<>(); // will always return a non-null array
+
+            Long highestModSeq = null;
+
+            for (final IMAPResponse sr: ir) {
+                sr.skipSpaces();
+                if (sr.keyEquals(FETCH)) {
+                    try {
+                        fetchResponses.add(new FetchResponse(sr));
+                    } catch (final IOException | ProtocolException e) {
+                        throw new ImapAsyncClientException(FailureType.INVALID_INPUT);
+                    }
+                } else if (sr.readByte() == (byte) L_BRACKET) { // HIGHESTMODSEQ or MODIFIED
+                    final String responseCode = sr.readAtom();
+                    if (HIGHESTMODSEQ.equals(responseCode)) {
+                        highestModSeq = sr.readLong();
+                    }
+                }
+            }
+
+            return new StoreResult(highestModSeq, fetchResponses, modifiedMsgsets);
+        }
+
+        /**
+         * Parses the responses from Fetch command and UID Fetch command to a {@link FetchResult} object.
+         *
+         * @param ir the list of responses from Fetch or UID Fetch command, the input responses array should contain the tagged/final one
+         * @param extensionItems the array of extension FetchItem
+         * @return FetchResult object constructed based on the given IMAPResponse array,
+         * @throws ImapAsyncClientException when tagged response is not OK or given response length is 0 or fail to parse Fetch Response
+         */
+        @Nonnull
+        private FetchResult parseToFetchResult(@Nonnull final IMAPResponse[] ir, @Nonnull final FetchItem[] extensionItems)
+                throws ImapAsyncClientException {
+            if (ir.length < 1) {
+                throw new ImapAsyncClientException(FailureType.INVALID_INPUT);
+            }
+            final Response taggedResponse = ir[ir.length - 1];
+            if (!taggedResponse.isOK()) {
+                throw new ImapAsyncClientException(FailureType.INVALID_INPUT);
+            }
+            final List<FetchResponse> fetchResponses = new ArrayList<>(); // will always return a non-null array
+
+            for (final IMAPResponse sr: ir) {
+                if (sr.keyEquals(FETCH)) {
+                    try {
+                        fetchResponses.add(new FetchResponse(sr, extensionItems));
+                    } catch (final IOException | ProtocolException e) {
+                        throw new ImapAsyncClientException(FailureType.INVALID_INPUT);
+                    }
+                }
+            }
+
+            return new FetchResult(fetchResponses);
         }
     }
 }

@@ -15,8 +15,14 @@ public class ExtensionMailboxInfo extends MailboxInfo {
     /** Literal for MAILBOXID. */
     private static final String MAILBOX_ID = "MAILBOXID";
 
+    /** Literal for NOMODSEQ. */
+    private static final String NOMODSEQ = "NOMODSEQ";
+
     /** Variable to store mailbox Id. */
     private String mailboxId;
+
+    /** Variable to indicate whether a server doesn't support the persistent storage of mod-sequencese after enabling CONDSTORE command. */
+    private boolean isNoModSeq;
 
     /**
      * Initializes an instance of {@link ExtensionMailboxInfo} from the server responses for the select or examine command.
@@ -43,16 +49,26 @@ public class ExtensionMailboxInfo extends MailboxInfo {
                 ir.reset();
                 continue;
             }
+            boolean handled = true;
             key = key.toUpperCase();
             if (key.equals(MAILBOX_ID)) { // example when 26 is the mailbox id:"* OK [MAILBOXID (26)] Ok"
                 final String[] values = ir.readSimpleList(); // reading the string, aka as above example, "(26)", within parentheses
                 if (values != null && values.length >= 1) {
                     mailboxId = values[0];
-                    resps[i] = null; // Nulls out this element in array to be consistent with MailboxInfo behavior
-                    break;
+                } else {
+                    handled = false;
                 }
+            } else if (key.equals(NOMODSEQ)) { // example: * OK [NOMODSEQ] Sorry, this mailbox format doesn't support modsequences
+                isNoModSeq = true;
+            } else {
+                handled = false;
             }
-            ir.reset(); // default back the parsing index
+
+            if (handled) {
+                resps[i] = null; // Nulls out this element in array to be consistent with MailboxInfo behavior
+            } else {
+                ir.reset(); // default back the parsing index
+            }
         }
     }
 
@@ -62,5 +78,12 @@ public class ExtensionMailboxInfo extends MailboxInfo {
     @Nullable
     public String getMailboxId() {
         return mailboxId;
+    }
+
+    /**
+     * @return isNoModSeq, true if the server return NOMODSEQ response.
+     */
+    public boolean isNoModSeq() {
+        return isNoModSeq;
     }
 }

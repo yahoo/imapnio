@@ -257,4 +257,51 @@ public final class MessageNumberSet {
         }
         return s.toString();
     }
+
+    /**
+     * Converts an IMAP RFC3501 sequence-set syntax into an array of MessageNumberSet.
+     *
+     * @param msgNumbers the message numbers string
+     * @return the array of MessageNumberSet
+     * @throws ImapAsyncClientException will not throw
+     */
+    public static MessageNumberSet[] buildMessageNumberSets(@Nullable final String msgNumbers) throws ImapAsyncClientException {
+        if (msgNumbers == null || msgNumbers.isEmpty()) {
+            return null;
+        }
+
+        final String[] msgSetStrs = msgNumbers.split(",");
+        final MessageNumberSet[] msgSets = new MessageNumberSet[msgSetStrs.length];
+
+        int i = 0; // msgset index
+        try {
+            for (final String element : msgSetStrs) {
+                if (element.contains(":")) {
+                    final String[] elements = element.split(":");
+                    if (elements.length != 2) {
+                        throw new ImapAsyncClientException(ImapAsyncClientException.FailureType.INVALID_INPUT);
+                    }
+                    if (elements[1].equals("*")) { // Ex: 1:*
+                        msgSets[i] = new MessageNumberSet(Long.parseLong(elements[0]), LastMessage.LAST_MESSAGE);
+                    } else if (elements[0].equals("*")) { // Ex: *:1
+                        msgSets[i] = new MessageNumberSet(Long.parseLong(elements[1]), LastMessage.LAST_MESSAGE);
+                    } else { // Ex: 1:2
+                        msgSets[i] = new MessageNumberSet(Long.parseLong(elements[0]), Long.parseLong(elements[1]));
+                    }
+                } else {
+                    if (element.equals("*")) { // Ex: *
+                        msgSets[i] = new MessageNumberSet(LastMessage.LAST_MESSAGE);
+                    } else { // Ex: 1
+                        final long num = Long.parseLong(element);
+                        msgSets[i] = new MessageNumberSet(num, num);
+                    }
+                }
+                i++;
+            }
+        } catch (final NumberFormatException ex) {
+            throw new ImapAsyncClientException(ImapAsyncClientException.FailureType.INVALID_INPUT);
+        }
+
+        return msgSets;
+    }
 }

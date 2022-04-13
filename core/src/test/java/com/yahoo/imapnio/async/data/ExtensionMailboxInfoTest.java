@@ -48,6 +48,7 @@ public class ExtensionMailboxInfoTest {
         Assert.assertEquals(minfo.uidvalidity, 1459808247, "uidvalidity mismatched.");
         Assert.assertEquals(minfo.uidnext, 150400, "uidnext mismatched.");
         Assert.assertEquals(minfo.getMailboxId(), "214-mailbox", "MailboxId mismatched.");
+        Assert.assertFalse(minfo.isNoModSeq(), "isNoModSeq() mismatched.");
         Assert.assertNull(content[7], "This element should be nulled out");
     }
 
@@ -197,5 +198,43 @@ public class ExtensionMailboxInfoTest {
         Assert.assertNull(minfo.getMailboxId(), "MailboxId mismatched since format not correct.");
         Assert.assertNotNull(content[7], "This element should not be nulled out");
         Assert.assertEquals(content[7].getRest(), "[MAILBOXID ()] Ok", "The index is not reset to the point of the status code.");
+    }
+
+    /**
+     * Tests calling constructor with no mod seq successfully.
+     *
+     * @throws IOException will not throw
+     * @throws ProtocolException will not throw
+     */
+    @Test
+    public void testCreateExtensionMailboxInfoSuccessNoModSequence() throws IOException, ProtocolException {
+
+        final IMAPResponse[] content = new IMAPResponse[9];
+        content[0] = new IMAPResponse("* 3 EXISTS");
+        content[1] = new IMAPResponse("* 0 RECENT");
+        content[2] = new IMAPResponse("* OK [UIDVALIDITY 1459808247] UIDs valid");
+        content[3] = new IMAPResponse("* OK [UIDNEXT 150400] Predicted next UID");
+        content[4] = new IMAPResponse("* FLAGS (\\Answered \\Deleted \\Draft \\Flagged \\Seen $Forwarded $Junk $NotJunk)");
+        content[5] = new IMAPResponse("* OK [PERMANENTFLAGS ()] No permanent flags permitted");
+        content[6] = new IMAPResponse("* OK [MAILBOXID (214-mailbox)] Ok");
+        content[7] = new IMAPResponse("* OK [NOMODSEQ] Sorry, this mailbox format doesn't support modsequences");
+        content[8] = new IMAPResponse("002 OK [READ-ONLY] EXAMINE completed; now in selected state");
+        final ExtensionMailboxInfo minfo = new ExtensionMailboxInfo(content);
+
+        // verify the result
+        Assert.assertNotNull(minfo, "result mismatched.");
+        Assert.assertNotNull(minfo.availableFlags, "availableFlags mismatched.");
+        Assert.assertTrue(minfo.availableFlags.contains(Flag.ANSWERED), "availableFlags mismatched.");
+        Assert.assertTrue(minfo.availableFlags.contains(Flag.DELETED), "availableFlags mismatched.");
+        Assert.assertTrue(minfo.availableFlags.contains(Flag.DRAFT), "availableFlags mismatched.");
+        Assert.assertTrue(minfo.availableFlags.contains(Flag.FLAGGED), "availableFlags mismatched.");
+        Assert.assertTrue(minfo.availableFlags.contains(Flag.SEEN), "availableFlags mismatched.");
+        Assert.assertEquals(minfo.highestmodseq, -1, "highestmodseq mismatched.");
+        Assert.assertEquals(minfo.uidvalidity, 1459808247, "uidvalidity mismatched.");
+        Assert.assertEquals(minfo.uidnext, 150400, "uidnext mismatched.");
+        Assert.assertEquals(minfo.getMailboxId(), "214-mailbox", "MailboxId mismatched.");
+        Assert.assertTrue(minfo.isNoModSeq(), "isNoModSeq() mismatched.");
+        Assert.assertNull(content[6], "This element should be nulled out");
+        Assert.assertNull(content[7], "This element should be nulled out");
     }
 }

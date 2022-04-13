@@ -215,4 +215,36 @@ public class ImapArgumentFormatterTest {
         Assert.assertNotNull(s, "buildFlagString() should not return null.");
         Assert.assertEquals(s, "(userflag1 userflag2)", "result mismatched.");
     }
+
+    /**
+     * Tests buildEntryFlagName with all flags.
+     */
+    @Test
+    public void testBuildEntryFlagName() {
+        final String[] expectedFlags = new String[] {"\\Answered", "\\Deleted", "\\Draft", "\\Flagged", "\\Recent", "\\Seen"};
+        final Flags flags = new Flags();
+        flags.add(Flags.Flag.ANSWERED);
+        flags.add(Flags.Flag.DELETED);
+        flags.add(Flags.Flag.DRAFT);
+        flags.add(Flags.Flag.FLAGGED);
+        flags.add(Flags.Flag.RECENT);
+        flags.add(Flags.Flag.SEEN);
+        flags.add("userflag1");
+        final ImapArgumentFormatter writer = new ImapArgumentFormatter();
+        final Flags.Flag[] systemFlags = flags.getSystemFlags();
+        for (int i = 0; i < systemFlags.length; i++) {
+            final Flags singleSystemFlag = new Flags();
+            singleSystemFlag.add(systemFlags[i]);
+            final String systemEntryName = writer.buildEntryFlagName(singleSystemFlag);
+            Assert.assertEquals(systemEntryName, "\"/flags/\\" + expectedFlags[i] + "\"", "buildEntryFlagName() mismatched.");
+        }
+
+        final String[] userFlags = flags.getUserFlags();
+        final Flags singleUserFlag = new Flags();
+        singleUserFlag.add(userFlags[0]);
+        final String userEntryName = writer.buildEntryFlagName(singleUserFlag);
+
+        Assert.assertEquals(userFlags.length, 1, "result mismatched");
+        Assert.assertEquals(userEntryName, "\"/flags/userflag1\"", "buildEntryFlagName() mismatched");
+    }
 }
