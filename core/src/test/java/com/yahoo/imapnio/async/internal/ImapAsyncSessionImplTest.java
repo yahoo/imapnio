@@ -3,6 +3,7 @@ package com.yahoo.imapnio.async.internal;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.util.Collection;
 import java.util.Collections;
@@ -17,6 +18,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.apache.commons.codec.binary.Base64;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
@@ -39,6 +41,7 @@ import com.yahoo.imapnio.async.request.AuthPlainCommand;
 import com.yahoo.imapnio.async.request.AuthXoauth2Command;
 import com.yahoo.imapnio.async.request.CapaCommand;
 import com.yahoo.imapnio.async.request.IdleCommand;
+import com.yahoo.imapnio.async.request.ImapRFCSupportedCommandType;
 import com.yahoo.imapnio.async.request.ImapRequest;
 import com.yahoo.imapnio.async.response.ImapAsyncResponse;
 import com.yahoo.imapnio.async.response.ImapResponseMapper;
@@ -169,6 +172,18 @@ public class ImapAsyncSessionImplTest {
             Assert.assertNotNull(endingResp, "Result mismatched.");
             Assert.assertTrue(endingResp.isOK(), "Response.isOK() mismatched.");
             Assert.assertEquals(endingResp.getTag(), "a1", "tag mismatched.");
+
+            final String clientResponse = Base64.encodeBase64String("\0orange\0juicy".getBytes(StandardCharsets.UTF_8));
+            final int clientResponseLength = clientResponse.getBytes(StandardCharsets.US_ASCII).length
+                    + "\r\n".getBytes(StandardCharsets.US_ASCII).length;
+            Assert.assertEquals(asyncResp.getCommandType(), ImapRFCSupportedCommandType.AUTHENTICATE, "command type mismatched.");
+            Assert.assertEquals(asyncResp.getRequestTotalBytes(),
+                    "a1 AUTHENTICATE PLAIN\r\n".getBytes(StandardCharsets.US_ASCII).length + clientResponseLength,
+                    "request bytes mismatched.");
+            Assert.assertEquals(asyncResp.getResponseTotalBytes(),
+                    "+\r\n".getBytes(StandardCharsets.US_ASCII).length
+                            + "a1 OK AUTHENTICATE completed\r\n".getBytes(StandardCharsets.US_ASCII).length,
+                    "response bytes mismatched.");
             // verify no log messages
             Mockito.verify(logger, Mockito.times(0)).debug(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
         }
@@ -190,19 +205,22 @@ public class ImapAsyncSessionImplTest {
             aSession.operationComplete(capaWritePromise);
 
             // handle server response
-            final IMAPResponse serverResp1 = new IMAPResponse(
-                    "* CAPABILITY IMAP4rev1 SASL-IR AUTH=PLAIN AUTH=XOAUTH2 AUTH=OAUTHBEARER ID MOVE NAMESPACE");
+            final String serverResp1String = "* CAPABILITY IMAP4rev1 SASL-IR AUTH=PLAIN AUTH=XOAUTH2 AUTH=OAUTHBEARER ID MOVE NAMESPACE";
+            final IMAPResponse serverResp1 = new IMAPResponse(serverResp1String);
             aSession.handleChannelResponse(serverResp1);
 
-            final IMAPResponse serverRespJunk = new IMAPResponse("@@@@@* some junk MOVE NAMESPACE");
+            final String serverRespJunkString = "@@@@@* some junk MOVE NAMESPACE";
+            final IMAPResponse serverRespJunk = new IMAPResponse(serverRespJunkString);
             aSession.handleChannelResponse(serverRespJunk);
             Assert.assertFalse(future.isDone(), "isDone() should be false.");
 
-            final IMAPResponse anotherTaggedResp = new IMAPResponse("a1 OK but not the tag u sent!");
+            final String anotherTaggedRespString = "a1 OK but not the tag u sent!";
+            final IMAPResponse anotherTaggedResp = new IMAPResponse(anotherTaggedRespString);
             aSession.handleChannelResponse(anotherTaggedResp);
             Assert.assertFalse(future.isDone(), "isDone() should be false.");
 
-            final IMAPResponse serverResp2 = new IMAPResponse("a2 OK CAPABILITY completed");
+            final String serverResp2String = "a2 OK CAPABILITY completed";
+            final IMAPResponse serverResp2 = new IMAPResponse(serverResp2String);
             aSession.handleChannelResponse(serverResp2);
 
             // verify that future should be done now
@@ -243,6 +261,17 @@ public class ImapAsyncSessionImplTest {
             Assert.assertNotNull(endingResp, "Result mismatched.");
             Assert.assertTrue(endingResp.isOK(), "Response.isOK() mismatched.");
             Assert.assertEquals(endingResp.getTag(), "a2", "tag mismatched.");
+
+            Assert.assertEquals(asyncResp.getCommandType(), ImapRFCSupportedCommandType.CAPABILITY, "command type mismatched.");
+            Assert.assertEquals(asyncResp.getRequestTotalBytes(), "a2 CAPABILITY\r\n".getBytes(StandardCharsets.US_ASCII).length,
+                    "request bytes mismatched.");
+            Assert.assertEquals(asyncResp.getResponseTotalBytes(),
+                    (serverResp1String + "\r\n").getBytes(StandardCharsets.US_ASCII).length
+                            + (serverRespJunkString + "\r\n").getBytes(StandardCharsets.US_ASCII).length
+                            + (anotherTaggedRespString + "\r\n").getBytes(StandardCharsets.US_ASCII).length
+                            + (serverResp2String + "\r\n").getBytes(StandardCharsets.US_ASCII).length,
+                    "response bytes mismatched.");
+
             // verify logging messages
             final ArgumentCaptor<Object> allArgsCapture = ArgumentCaptor.forClass(Object.class);
             Mockito.verify(logger, Mockito.times(5)).debug(Mockito.anyString(), allArgsCapture.capture(), allArgsCapture.capture(),
@@ -367,6 +396,23 @@ public class ImapAsyncSessionImplTest {
             Assert.assertTrue(endingResp.isBAD(), "Response.isOK() mismatched.");
             Assert.assertEquals(endingResp.getTag(), "a1", "tag mismatched.");
 
+            final StringBuilder sbOauth2 = new StringBuilder().append("user=").append("orange").append(0x01).append("auth=Bearer").append("someToken")
+                    .append(0x01).append(0x01);
+            final String clientResponse = Base64.encodeBase64String(sbOauth2.toString().getBytes(StandardCharsets.UTF_8));
+            final int clientResponseLength = clientResponse.getBytes(StandardCharsets.US_ASCII).length
+                    + "\r\n".getBytes(StandardCharsets.US_ASCII).length;
+            Assert.assertEquals(asyncResp.getCommandType(), ImapRFCSupportedCommandType.AUTHENTICATE, "command type mismatched.");
+            Assert.assertEquals(asyncResp.getRequestTotalBytes(),
+                    "a1 AUTHENTICATE XOAUTH2\r\n".getBytes(StandardCharsets.US_ASCII).length + clientResponseLength
+                            + "*\r\n".getBytes(StandardCharsets.US_ASCII).length,
+                    "request bytes mismatched.");
+            Assert.assertEquals(asyncResp.getResponseTotalBytes(),
+                    "+\r\n".getBytes(StandardCharsets.US_ASCII).length
+                            + "+ eyJzdGF0dXMiOiI0MDAiLCJzY2hlbWVzIjoiQmVhcmVyIiwic2NvcGUiOiJodHRwczovL21haWwuZ29vZ2xlLmNvbS8ifQ==\r\n"
+                                    .getBytes(StandardCharsets.US_ASCII).length
+                            + "a1 BAD Invalid SASL argument.\r\n".getBytes(StandardCharsets.US_ASCII).length,
+                    "response bytes mismatched.");
+
             // verify logging messages
             final ArgumentCaptor<Object> allArgsCapture = ArgumentCaptor.forClass(Object.class);
             Mockito.verify(logger, Mockito.times(6)).debug(Mockito.anyString(), allArgsCapture.capture(), allArgsCapture.capture(),
@@ -471,6 +517,22 @@ public class ImapAsyncSessionImplTest {
             Assert.assertTrue(endingResp.isBAD(), "Response.isOK() mismatched.");
             Assert.assertEquals(endingResp.getTag(), "a1", "tag mismatched.");
 
+            final StringBuilder sbOauth2 = new StringBuilder().append("user=").append("orange").append(0x01).append("auth=Bearer").append("someToken")
+                    .append(0x01).append(0x01);
+            final String clientResponse = Base64.encodeBase64String(sbOauth2.toString().getBytes(StandardCharsets.UTF_8));
+            Assert.assertEquals(asyncResp.getCommandType(), ImapRFCSupportedCommandType.AUTHENTICATE, "command type mismatched.");
+            Assert.assertEquals(
+                    asyncResp.getRequestTotalBytes(),
+                    "*\r\n".getBytes(StandardCharsets.US_ASCII).length + "a1 AUTHENTICATE XOAUTH2 ".getBytes(StandardCharsets.US_ASCII).length
+                            + clientResponse.getBytes(StandardCharsets.US_ASCII).length
+                            + "\r\n".getBytes(StandardCharsets.US_ASCII).length,
+                    "request bytes mismatched.");
+            Assert.assertEquals(asyncResp.getResponseTotalBytes(),
+                    "+ eyJzdGF0dXMiOiI0MDAiLCJzY2hlbWVzIjoiQmVhcmVyIiwic2NvcGUiOiJodHRwczovL21haWwuZ29vZ2xlLmNvbS8ifQ==\r\n"
+                            .getBytes(StandardCharsets.US_ASCII).length
+                            + "a1 BAD Invalid SASL argument.\r\n".getBytes(StandardCharsets.US_ASCII).length,
+                    "response bytes mismatched.");
+
             // verify logging messages
             final ArgumentCaptor<Object> allArgsCapture = ArgumentCaptor.forClass(Object.class);
             Mockito.verify(logger, Mockito.times(4)).debug(Mockito.anyString(), allArgsCapture.capture(), allArgsCapture.capture(),
@@ -525,7 +587,6 @@ public class ImapAsyncSessionImplTest {
         Mockito.when(logger.isTraceEnabled()).thenReturn(true);
 
         // construct, class level debug is enabled, session level debug is disabled
-
         final String sessionCtx = USER_ID;
         final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(clock, channel, logger, DebugMode.DEBUG_OFF, SESSION_ID, pipeline, sessionCtx);
 
@@ -563,6 +624,17 @@ public class ImapAsyncSessionImplTest {
             Assert.assertNotNull(endingResp, "Result mismatched.");
             Assert.assertTrue(endingResp.isOK(), "Response.isOK() mismatched.");
             Assert.assertEquals(endingResp.getTag(), "a1", "tag mismatched.");
+
+            final String clientResponse = Base64.encodeBase64String("\0orange\0juicy".getBytes(StandardCharsets.UTF_8));
+            final int clientResponseLength = clientResponse.getBytes(StandardCharsets.US_ASCII).length
+                    + "\r\n".getBytes(StandardCharsets.US_ASCII).length;
+            Assert.assertEquals(asyncResp.getCommandType(), ImapRFCSupportedCommandType.AUTHENTICATE, "command type mismatched.");
+            Assert.assertEquals(asyncResp.getRequestTotalBytes(),
+                    "a1 AUTHENTICATE PLAIN\r\n".getBytes(StandardCharsets.US_ASCII).length + clientResponseLength, "request bytes mismatched.");
+            Assert.assertEquals(asyncResp.getResponseTotalBytes(),
+                    "+\r\n".getBytes(StandardCharsets.US_ASCII).length
+                            + "a1 OK AUTHENTICATE completed\r\n".getBytes(StandardCharsets.US_ASCII).length,
+                    "response bytes mismatched.");
 
             // verify logging messages
             final ArgumentCaptor<Object> allArgsCapture = ArgumentCaptor.forClass(Object.class);
@@ -616,6 +688,12 @@ public class ImapAsyncSessionImplTest {
             Assert.assertFalse(compressResp.isContinuation(), "Response.isContinuation() mismatched.");
             Assert.assertTrue(compressResp.isOK(), "Response.isOK() mismatched.");
             Assert.assertEquals(compressResp.getTag(), "a2", "tag mismatched.");
+
+            Assert.assertEquals(asyncResp.getCommandType(), ImapRFCSupportedCommandType.COMPRESS, "command type mismatched.");
+            Assert.assertEquals(asyncResp.getRequestTotalBytes(), "a2 COMPRESS DEFLATE\r\n".getBytes(StandardCharsets.US_ASCII).length,
+                    "request bytes mismatched.");
+            Assert.assertEquals(asyncResp.getResponseTotalBytes(), "a2 OK Success\r\n".getBytes(StandardCharsets.US_ASCII).length,
+                    "response bytes mismatched.");
 
             // verify logging messages
             final ArgumentCaptor<Object> allArgsCapture = ArgumentCaptor.forClass(Object.class);
@@ -678,7 +756,6 @@ public class ImapAsyncSessionImplTest {
         Mockito.when(logger.isDebugEnabled()).thenReturn(true);
 
         // construct, turn on session level debugging by having logger.isDebugEnabled() true and session level debug on
-
         final String sessionCtx = USER_ID;
         final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(clock, channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline, sessionCtx);
 
@@ -716,6 +793,17 @@ public class ImapAsyncSessionImplTest {
             Assert.assertNotNull(endingResp, "Result mismatched.");
             Assert.assertTrue(endingResp.isOK(), "Response.isOK() mismatched.");
             Assert.assertEquals(endingResp.getTag(), "a1", "tag mismatched.");
+
+            final String clientResponse = Base64.encodeBase64String("\0orange\0juicy".getBytes(StandardCharsets.UTF_8));
+            final int clientResponseLength = clientResponse.getBytes(StandardCharsets.US_ASCII).length
+                    + "\r\n".getBytes(StandardCharsets.US_ASCII).length;
+            Assert.assertEquals(asyncResp.getCommandType(), ImapRFCSupportedCommandType.AUTHENTICATE, "command type mismatched.");
+            Assert.assertEquals(asyncResp.getRequestTotalBytes(),
+                    "a1 AUTHENTICATE PLAIN\r\n".getBytes(StandardCharsets.US_ASCII).length + clientResponseLength, "request bytes mismatched.");
+            Assert.assertEquals(asyncResp.getResponseTotalBytes(),
+                    "+\r\n".getBytes(StandardCharsets.US_ASCII).length
+                            + "a1 OK AUTHENTICATE completed\r\n".getBytes(StandardCharsets.US_ASCII).length,
+                    "response bytes mismatched.");
 
             // verify logging messages
             final ArgumentCaptor<Object> allArgsCapture = ArgumentCaptor.forClass(Object.class);
@@ -771,6 +859,12 @@ public class ImapAsyncSessionImplTest {
             Assert.assertFalse(compressResp.isContinuation(), "Response.isContinuation() mismatched.");
             Assert.assertTrue(compressResp.isOK(), "Response.isOK() mismatched.");
             Assert.assertEquals(compressResp.getTag(), "a2", "tag mismatched.");
+
+            Assert.assertEquals(asyncResp.getCommandType(), ImapRFCSupportedCommandType.COMPRESS, "command type mismatched.");
+            Assert.assertEquals(asyncResp.getRequestTotalBytes(), "a2 COMPRESS DEFLATE\r\n".getBytes(StandardCharsets.US_ASCII).length,
+                    "request bytes mismatched.");
+            Assert.assertEquals(asyncResp.getResponseTotalBytes(), "a2 OK Success\r\n".getBytes(StandardCharsets.US_ASCII).length,
+                    "response bytes mismatched.");
 
             // verify logging messages
             final ArgumentCaptor<Object> allArgsCapture = ArgumentCaptor.forClass(Object.class);
@@ -831,7 +925,6 @@ public class ImapAsyncSessionImplTest {
         Mockito.when(logger.isDebugEnabled()).thenReturn(true);
 
         // construct, turn on session level debugging by having logger.isDebugEnabled() true and session level debug on
-
         final String sessionCtx = USER_ID;
         final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(clock, channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline, sessionCtx);
 
@@ -870,6 +963,17 @@ public class ImapAsyncSessionImplTest {
             Assert.assertNotNull(endingResp, "Result mismatched.");
             Assert.assertTrue(endingResp.isOK(), "Response.isOK() mismatched.");
             Assert.assertEquals(endingResp.getTag(), "a1", "tag mismatched.");
+
+            final String clientResponse = Base64.encodeBase64String("\0orange\0juicy".getBytes(StandardCharsets.UTF_8));
+            final int clientResponseLength = clientResponse.getBytes(StandardCharsets.US_ASCII).length
+                    + "\r\n".getBytes(StandardCharsets.US_ASCII).length;
+            Assert.assertEquals(asyncResp.getCommandType(), ImapRFCSupportedCommandType.AUTHENTICATE, "command type mismatched.");
+            Assert.assertEquals(asyncResp.getRequestTotalBytes(),
+                    "a1 AUTHENTICATE PLAIN\r\n".getBytes(StandardCharsets.US_ASCII).length + clientResponseLength, "request bytes mismatched.");
+            Assert.assertEquals(asyncResp.getResponseTotalBytes(),
+                    "+\r\n".getBytes(StandardCharsets.US_ASCII).length
+                            + "a1 OK AUTHENTICATE completed\r\n".getBytes(StandardCharsets.US_ASCII).length,
+                    "response bytes mismatched.");
 
             // verify logging messages
             final ArgumentCaptor<Object> allArgsCapture = ArgumentCaptor.forClass(Object.class);
@@ -924,6 +1028,12 @@ public class ImapAsyncSessionImplTest {
             Assert.assertFalse(compressResp.isOK(), "Response.isOK() mismatched.");
             Assert.assertEquals(compressResp.getTag(), "a2", "tag mismatched.");
 
+            Assert.assertEquals(asyncResp.getCommandType(), ImapRFCSupportedCommandType.COMPRESS, "command type mismatched.");
+            Assert.assertEquals(asyncResp.getRequestTotalBytes(), "a2 COMPRESS DEFLATE\r\n".getBytes(StandardCharsets.US_ASCII).length,
+                    "request bytes mismatched.");
+            Assert.assertEquals(asyncResp.getResponseTotalBytes(), "a2 OK Success\r\n".getBytes(StandardCharsets.US_ASCII).length,
+                    "response bytes mismatched.");
+
             // verify logging messages
             final ArgumentCaptor<Object> allArgsCapture = ArgumentCaptor.forClass(Object.class);
             Mockito.verify(logger, Mockito.times(6)).debug(Mockito.anyString(), allArgsCapture.capture(), allArgsCapture.capture(),
@@ -975,7 +1085,6 @@ public class ImapAsyncSessionImplTest {
         Mockito.when(logger.isDebugEnabled()).thenReturn(true);
 
         // construct, turn on session level debugging by having logger.isDebugEnabled() true and session level debug on
-
         final String sessionCtx = USER_ID;
         final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(clock, channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline, sessionCtx);
 
@@ -1031,7 +1140,6 @@ public class ImapAsyncSessionImplTest {
         Mockito.when(logger.isDebugEnabled()).thenReturn(true);
 
         // construct, turn on session level debugging by having logger.isDebugEnabled() true and session level debug on
-
         final String sessionCtx = USER_ID;
         final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(clock, channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline, sessionCtx);
 
@@ -1066,7 +1174,6 @@ public class ImapAsyncSessionImplTest {
         Mockito.when(logger.isDebugEnabled()).thenReturn(true);
 
         // construct
-
         final String sessionCtx = USER_ID;
         final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(clock, channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline, sessionCtx);
 
@@ -1100,7 +1207,6 @@ public class ImapAsyncSessionImplTest {
         Mockito.when(logger.isDebugEnabled()).thenReturn(true);
 
         // construct
-
         final String sessionCtx = USER_ID;
         final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(clock, channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline, sessionCtx);
 
@@ -1221,7 +1327,6 @@ public class ImapAsyncSessionImplTest {
         Mockito.when(logger.isDebugEnabled()).thenReturn(true);
 
         // construct, class level logging is off, session level logging is on
-
         final String sessionCtx = USER_ID;
         final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(clock, channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline, sessionCtx);
 
@@ -1309,7 +1414,6 @@ public class ImapAsyncSessionImplTest {
         Mockito.when(logger.isDebugEnabled()).thenReturn(false);
 
         // construct, class level logging is off, session level logging is on
-
         final String sessionCtx = USER_ID;
         final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(clock, channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline, sessionCtx);
 
@@ -1370,7 +1474,6 @@ public class ImapAsyncSessionImplTest {
         Mockito.when(logger.isDebugEnabled()).thenReturn(true);
 
         // construct
-
         final String sessionCtx = USER_ID;
         final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(clock, channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline, sessionCtx);
 
@@ -1421,6 +1524,14 @@ public class ImapAsyncSessionImplTest {
         Assert.assertNotNull(endingResp, "Result mismatched.");
         Assert.assertTrue(endingResp.isOK(), "Response.isOK() mismatched.");
         Assert.assertEquals(endingResp.getTag(), "a1", "tag mismatched.");
+
+        Assert.assertEquals(asyncResp.getCommandType(), ImapRFCSupportedCommandType.IDLE, "command type mismatched.");
+        Assert.assertEquals(asyncResp.getRequestTotalBytes(), "a1 IDLE\r\n".getBytes(StandardCharsets.US_ASCII).length, "request bytes mismatched.");
+        Assert.assertEquals(asyncResp.getResponseTotalBytes(),
+                "+ idling\r\n".getBytes(StandardCharsets.US_ASCII).length + "* 2 EXPUNGE\r\n".getBytes(StandardCharsets.US_ASCII).length
+                        + "* 3 EXISTS\r\n".getBytes(StandardCharsets.US_ASCII).length
+                        + "a1 OK IDLE terminated\r\n".getBytes(StandardCharsets.US_ASCII).length,
+                "response bytes mismatched.");
 
         // queue is empty now, calling terminateCommand again
         ImapAsyncClientException ex = null;
@@ -1522,7 +1633,6 @@ public class ImapAsyncSessionImplTest {
         Mockito.when(logger.isDebugEnabled()).thenReturn(true);
 
         // constructor, class level debug is off, but session level is on
-
         final String sessionCtx = USER_ID;
         final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(clock, channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline, sessionCtx);
         final ImapRequest cmd = new CapaCommand();
@@ -1571,7 +1681,6 @@ public class ImapAsyncSessionImplTest {
         Mockito.when(logger.isDebugEnabled()).thenReturn(false);
 
         // construct, both class level and session level debugging are off
-
         final String sessionCtx = USER_ID;
         final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(clock, channel, logger, DebugMode.DEBUG_OFF, SESSION_ID, pipeline, sessionCtx);
 
@@ -1729,7 +1838,6 @@ public class ImapAsyncSessionImplTest {
         Mockito.when(logger.isTraceEnabled()).thenReturn(true);
 
         // construct, class level debug is enabled, session level debug is disabled
-
         final String sessionCtx = USER_ID;
         final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(clock, channel, logger, DebugMode.DEBUG_OFF, SESSION_ID, pipeline, sessionCtx);
 
@@ -1767,6 +1875,17 @@ public class ImapAsyncSessionImplTest {
             Assert.assertNotNull(endingResp, "Result mismatched.");
             Assert.assertTrue(endingResp.isOK(), "Response.isOK() mismatched.");
             Assert.assertEquals(endingResp.getTag(), "a1", "tag mismatched.");
+
+            final String clientResponse = Base64.encodeBase64String("\0orange\0juicy".getBytes(StandardCharsets.UTF_8));
+            final int clientResponseLength = clientResponse.getBytes(StandardCharsets.US_ASCII).length
+                    + "\r\n".getBytes(StandardCharsets.US_ASCII).length;
+            Assert.assertEquals(asyncResp.getCommandType(), ImapRFCSupportedCommandType.AUTHENTICATE, "command type mismatched.");
+            Assert.assertEquals(asyncResp.getRequestTotalBytes(),
+                    "a1 AUTHENTICATE PLAIN\r\n".getBytes(StandardCharsets.US_ASCII).length + clientResponseLength, "request bytes mismatched.");
+            Assert.assertEquals(asyncResp.getResponseTotalBytes(),
+                    "+\r\n".getBytes(StandardCharsets.US_ASCII).length
+                            + "a1 OK AUTHENTICATE completed\r\n".getBytes(StandardCharsets.US_ASCII).length,
+                    "response bytes mismatched.");
 
             // verify logging messages
             final ArgumentCaptor<Object> allArgsCapture = ArgumentCaptor.forClass(Object.class);
@@ -1866,7 +1985,6 @@ public class ImapAsyncSessionImplTest {
      */
     @Test
     public void testDebugModeEnum() {
-
         final DebugMode[] enumList = DebugMode.values();
         Assert.assertEquals(enumList.length, 2, "The enum count mismatched.");
         final DebugMode value = DebugMode.valueOf("DEBUG_OFF");
