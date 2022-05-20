@@ -121,7 +121,8 @@ Please refer to the [contributing.md](Contributing.md) for information about how
 
 ## Maintainers
 
-Luis Alves: lafa@verizonmedia.com
+Fan Su : fsu@yahooinc.com
+Vikram Nagulakonda : nvikram@yahooinc.com
 
 
 ## License
