@@ -42,7 +42,7 @@ Then, update your project's pom.xml file dependencies, as follows:
   <dependency>
       <groupId>com.yahoo.imapnio</groupId>
       <artifactId>imapnio.core</artifactId>
-      <version>4.3.8</version>
+      <version>5.0.0</version>
   </dependency>
 ```
 Finally, import the relevant classes and use this library according to the usage section below.
@@ -60,7 +60,7 @@ The following code examples demonstrate basic functionality relate to connecting
 ### Create a client
 ```java
   // Create a ImapAsyncClient instance with number of threads to handle the server requests
-  final int numOfThreadsServed = 5;
+  final int numOfThreads = 5;
   final ImapAsyncClient imapClient = new ImapAsyncClient(numOfThreads);
 ```
 ### Establish a session with an IMAP server
@@ -98,7 +98,7 @@ Following example shows how to read ImapAsyncResponse which wraps the content se
 ```java
   if (capaCmdFuture.isDone()) {
 	System.out.println("Capability command is done.");
-	final ImapAsyncResponse resp = future.get(5, TimeUnit.MILLISECONDS);
+	final ImapAsyncResponse resp = capaCmdFuture.get(5, TimeUnit.MILLISECONDS);
 	final ImapResponseMapper mapper = new ImapResponseMapper();
 	final Capability capa = mapper.readValue(resp.getResponseLines().toArray(new IMAPResponse[0]), Capability.class);
 	final List<String> values = capa.getCapability("AUTH");
@@ -110,6 +110,9 @@ Following example shows how to read ImapAsyncResponse which wraps the content se
 This release, 2.0.x, is a major release.  Changes are:
 - It supports non-blocking IO functionality through providing callers with java.util.concurrent.Future object.
 - Listener-based non-blocking IO capability will not be supported in this release.
+
+This release, 5.0.x, is a major release.  Changes are:
+- It supports request and response bytes counting per command
 
 ## Contribute
 

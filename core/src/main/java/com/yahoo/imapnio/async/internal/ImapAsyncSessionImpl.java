@@ -64,6 +64,9 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
     /** Space character. */
     static final char SPACE = ' ';
 
+    /** Space character length in bytes. */
+    static final int SPACE_LENGTH = 1;
+
     /** Tag prefix. */
     private static final char A = 'a';
 
@@ -140,6 +143,12 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
         /** Time when request is sent to server. */
         private long requestSentTime;
 
+        /** Number of bytes in request. */
+        private int requestTotalBytes;
+
+        /** Number of bytes in response. */
+        private int responseTotalBytes;
+
         /**
          * Initializes a newly created {@link ImapCommandEntry} object so that it can handle the command responses and determine whether the request
          * is done.
@@ -147,8 +156,10 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
          * @param cmd ImapRequest instance
          * @param future ImapFuture instance
          * @param tag the tag associated with this command
+         * @param requestTotalBytes request total bytes
          */
-        ImapCommandEntry(@Nonnull final ImapRequest cmd, @Nonnull final ImapFuture<ImapAsyncResponse> future, @Nonnull final String tag) {
+        ImapCommandEntry(@Nonnull final ImapRequest cmd, @Nonnull final ImapFuture<ImapAsyncResponse> future, @Nonnull final String tag,
+                final int requestTotalBytes) {
             this.cmd = cmd;
             this.state = CommandState.REQUEST_IN_PREPARATION;
             this.responses = (cmd.getStreamingResponsesQueue() != null) ? cmd.getStreamingResponsesQueue()
@@ -156,6 +167,8 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
             this.future = future;
             this.tag = tag;
             this.requestSentTime = 0;
+            this.requestTotalBytes = requestTotalBytes;
+            this.responseTotalBytes = 0;
         }
 
         /**
@@ -220,6 +233,38 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
          */
         public void debugInfo(@Nonnull final StringBuilder sb) {
             sb.append(CMD_TAG).append(tag).append(CMD_TYPE).append(getRequest().getCommandType()).append(CMD_SENT).append(getRequestSentTime());
+        }
+
+        /**
+         * Records number of bytes in request.
+         *
+         * @param length content length
+         */
+        public void recordRequestBytes(final int length) {
+            requestTotalBytes += length;
+        }
+
+        /**
+         * @return number of bytes in request.
+         */
+        public int getRequestTotalBytes() {
+            return requestTotalBytes;
+        }
+
+        /**
+         * Records number of bytes in response.
+         *
+         * @param length content length
+         */
+        public void recordResponseBytes(final int length) {
+            responseTotalBytes += length;
+        }
+
+        /**
+         * @return number of bytes in response.
+         */
+        public int getResponseTotalBytes() {
+            return responseTotalBytes;
         }
     }
 
@@ -288,7 +333,8 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
 
         final ImapFuture<ImapAsyncResponse> cmdFuture = new ImapFuture<ImapAsyncResponse>();
         final String tag = getNextTag();
-        requestsQueue.add(new ImapCommandEntry(command, cmdFuture, tag));
+        final int requestTotalBytes = tag.getBytes(StandardCharsets.US_ASCII).length + SPACE_LENGTH + command.getCommandLineBytes().readableBytes();
+        requestsQueue.add(new ImapCommandEntry(command, cmdFuture, tag, requestTotalBytes));
 
         final ByteBuf buf = Unpooled.buffer();
 
@@ -463,6 +509,7 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
         final ImapRequest currentCmd = curEntry.getRequest();
         final Collection<IMAPResponse> responses = curEntry.getResponses();
         responses.add(serverResponse);
+        curEntry.recordResponseBytes(serverResponse.toString().getBytes(StandardCharsets.US_ASCII).length + 2);
 
         if (isDebugEnabled()) { // logging all server responses when enabled
             logger.debug(SERVER_LOG_REC, sessionId, getUserInfo(), serverResponse.toString());
@@ -477,6 +524,7 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
                     return; // no data from client after continuation, we leave, this is for Idle
                 }
                 curEntry.setState(ImapCommandEntry.CommandState.REQUEST_IN_PREPARATION, clock); // preparing to send request
+                curEntry.recordRequestBytes(cmdAfterContinue.readableBytes());
                 sendRequest(cmdAfterContinue, currentCmd);
 
             } catch (final ImapAsyncClientException | RuntimeException e) { // when encountering an error on building request from client
@@ -511,7 +559,8 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
                     }
                 }
                 // see rfc3501, page 63 for details, since we always give a tagged command, response completion should be the first tagged response
-                final ImapAsyncResponse doneResponse = new ImapAsyncResponse(responses);
+                final ImapAsyncResponse doneResponse = new ImapAsyncResponse(curEntry.getRequest().getCommandType(), curEntry.getRequestTotalBytes(),
+                        curEntry.getResponseTotalBytes(), responses);
                 removeFirstEntry();
                 curEntry.getFuture().done(doneResponse);
                 return;

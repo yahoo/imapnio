@@ -6,8 +6,13 @@ import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -21,6 +26,10 @@ import org.testng.annotations.Test;
 
 import com.sun.mail.iap.ProtocolException;
 import com.sun.mail.imap.protocol.IMAPResponse;
+import com.yahoo.imapnio.async.data.Capability;
+import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
+import com.yahoo.imapnio.async.request.AuthXoauth2Command;
+import com.yahoo.imapnio.async.request.ImapRequest;
 import com.yahoo.imapnio.async.response.ImapAsyncResponse;
 
 /**
@@ -39,13 +48,19 @@ public class ImapFutureTest {
      *
      * @throws ProtocolException will not throw
      * @throws IOException will not throw
+     * @throws ImapAsyncClientException will not throw
      */
     @BeforeMethod
-    public void beforeMethod() throws IOException, ProtocolException {
+    public void beforeMethod() throws IOException, ProtocolException, ImapAsyncClientException {
         final Collection<IMAPResponse> imapResponses = new ArrayList<IMAPResponse>();
         final IMAPResponse oneImapResponse = new IMAPResponse("a1 OK AUTHENTICATE completed");
         imapResponses.add(oneImapResponse);
-        imapAsyncResp = new ImapAsyncResponse(imapResponses);
+        final Map<String, List<String>> capas = new HashMap<String, List<String>>();
+        capas.put("SASL-IR", Collections.singletonList("SASL-IR"));
+        final ImapRequest imapRequest = new AuthXoauth2Command("username", "token", new Capability(capas));
+        final int requestTotalBytes = "a1".getBytes(StandardCharsets.US_ASCII).length + 1 + imapRequest.getCommandLineBytes().readableBytes();
+        imapAsyncResp = new ImapAsyncResponse(imapRequest.getCommandType(), requestTotalBytes,
+                oneImapResponse.toString().getBytes(StandardCharsets.US_ASCII).length + 2, imapResponses);
     }
 
     /**
