@@ -180,9 +180,8 @@ public class ImapAsyncSessionImplTest {
             Assert.assertEquals(asyncResp.getRequestTotalBytes(),
                     "a1 AUTHENTICATE PLAIN\r\n".getBytes(StandardCharsets.US_ASCII).length + clientResponseLength,
                     "request bytes mismatched.");
-            Assert.assertEquals(asyncResp.getResponseTotalBytes(),
-                    "+\r\n".getBytes(StandardCharsets.US_ASCII).length
-                            + "a1 OK AUTHENTICATE completed\r\n".getBytes(StandardCharsets.US_ASCII).length,
+            Assert.assertEquals(asyncResp.getResponseTotalBytes(), serverResp1.toString().getBytes(StandardCharsets.US_ASCII).length
+                    + serverResp2.toString().getBytes(StandardCharsets.US_ASCII).length,
                     "response bytes mismatched.");
             // verify no log messages
             Mockito.verify(logger, Mockito.times(0)).debug(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
@@ -266,10 +265,10 @@ public class ImapAsyncSessionImplTest {
             Assert.assertEquals(asyncResp.getRequestTotalBytes(), "a2 CAPABILITY\r\n".getBytes(StandardCharsets.US_ASCII).length,
                     "request bytes mismatched.");
             Assert.assertEquals(asyncResp.getResponseTotalBytes(),
-                    (serverResp1String + "\r\n").getBytes(StandardCharsets.US_ASCII).length
-                            + (serverRespJunkString + "\r\n").getBytes(StandardCharsets.US_ASCII).length
-                            + (anotherTaggedRespString + "\r\n").getBytes(StandardCharsets.US_ASCII).length
-                            + (serverResp2String + "\r\n").getBytes(StandardCharsets.US_ASCII).length,
+                    serverResp1.toString().getBytes(StandardCharsets.US_ASCII).length
+                            + serverRespJunk.toString().getBytes(StandardCharsets.US_ASCII).length
+                            + anotherTaggedResp.toString().getBytes(StandardCharsets.US_ASCII).length
+                            + serverResp2.toString().getBytes(StandardCharsets.US_ASCII).length,
                     "response bytes mismatched.");
 
             // verify logging messages
@@ -407,10 +406,9 @@ public class ImapAsyncSessionImplTest {
                             + "*\r\n".getBytes(StandardCharsets.US_ASCII).length,
                     "request bytes mismatched.");
             Assert.assertEquals(asyncResp.getResponseTotalBytes(),
-                    "+\r\n".getBytes(StandardCharsets.US_ASCII).length
-                            + "+ eyJzdGF0dXMiOiI0MDAiLCJzY2hlbWVzIjoiQmVhcmVyIiwic2NvcGUiOiJodHRwczovL21haWwuZ29vZ2xlLmNvbS8ifQ==\r\n"
-                                    .getBytes(StandardCharsets.US_ASCII).length
-                            + "a1 BAD Invalid SASL argument.\r\n".getBytes(StandardCharsets.US_ASCII).length,
+                    serverResp1.toString().getBytes(StandardCharsets.US_ASCII).length
+                            + serverResp2.toString().getBytes(StandardCharsets.US_ASCII).length
+                            + serverResp3.toString().getBytes(StandardCharsets.US_ASCII).length,
                     "response bytes mismatched.");
 
             // verify logging messages
@@ -527,10 +525,8 @@ public class ImapAsyncSessionImplTest {
                             + clientResponse.getBytes(StandardCharsets.US_ASCII).length
                             + "\r\n".getBytes(StandardCharsets.US_ASCII).length,
                     "request bytes mismatched.");
-            Assert.assertEquals(asyncResp.getResponseTotalBytes(),
-                    "+ eyJzdGF0dXMiOiI0MDAiLCJzY2hlbWVzIjoiQmVhcmVyIiwic2NvcGUiOiJodHRwczovL21haWwuZ29vZ2xlLmNvbS8ifQ==\r\n"
-                            .getBytes(StandardCharsets.US_ASCII).length
-                            + "a1 BAD Invalid SASL argument.\r\n".getBytes(StandardCharsets.US_ASCII).length,
+            Assert.assertEquals(asyncResp.getResponseTotalBytes(), serverResp2.toString().getBytes(StandardCharsets.US_ASCII).length
+                    + serverResp3.toString().getBytes(StandardCharsets.US_ASCII).length,
                     "response bytes mismatched.");
 
             // verify logging messages
@@ -632,8 +628,8 @@ public class ImapAsyncSessionImplTest {
             Assert.assertEquals(asyncResp.getRequestTotalBytes(),
                     "a1 AUTHENTICATE PLAIN\r\n".getBytes(StandardCharsets.US_ASCII).length + clientResponseLength, "request bytes mismatched.");
             Assert.assertEquals(asyncResp.getResponseTotalBytes(),
-                    "+\r\n".getBytes(StandardCharsets.US_ASCII).length
-                            + "a1 OK AUTHENTICATE completed\r\n".getBytes(StandardCharsets.US_ASCII).length,
+                    serverResp1.toString().getBytes(StandardCharsets.US_ASCII).length
+                            + serverResp2.toString().getBytes(StandardCharsets.US_ASCII).length,
                     "response bytes mismatched.");
 
             // verify logging messages
@@ -692,7 +688,7 @@ public class ImapAsyncSessionImplTest {
             Assert.assertEquals(asyncResp.getCommandType(), ImapRFCSupportedCommandType.COMPRESS, "command type mismatched.");
             Assert.assertEquals(asyncResp.getRequestTotalBytes(), "a2 COMPRESS DEFLATE\r\n".getBytes(StandardCharsets.US_ASCII).length,
                     "request bytes mismatched.");
-            Assert.assertEquals(asyncResp.getResponseTotalBytes(), "a2 OK Success\r\n".getBytes(StandardCharsets.US_ASCII).length,
+            Assert.assertEquals(asyncResp.getResponseTotalBytes(), serverResp1.toString().getBytes(StandardCharsets.US_ASCII).length,
                     "response bytes mismatched.");
 
             // verify logging messages
@@ -801,8 +797,8 @@ public class ImapAsyncSessionImplTest {
             Assert.assertEquals(asyncResp.getRequestTotalBytes(),
                     "a1 AUTHENTICATE PLAIN\r\n".getBytes(StandardCharsets.US_ASCII).length + clientResponseLength, "request bytes mismatched.");
             Assert.assertEquals(asyncResp.getResponseTotalBytes(),
-                    "+\r\n".getBytes(StandardCharsets.US_ASCII).length
-                            + "a1 OK AUTHENTICATE completed\r\n".getBytes(StandardCharsets.US_ASCII).length,
+                    serverResp1.toString().getBytes(StandardCharsets.US_ASCII).length
+                            + serverResp2.toString().getBytes(StandardCharsets.US_ASCII).length,
                     "response bytes mismatched.");
 
             // verify logging messages
@@ -863,7 +859,7 @@ public class ImapAsyncSessionImplTest {
             Assert.assertEquals(asyncResp.getCommandType(), ImapRFCSupportedCommandType.COMPRESS, "command type mismatched.");
             Assert.assertEquals(asyncResp.getRequestTotalBytes(), "a2 COMPRESS DEFLATE\r\n".getBytes(StandardCharsets.US_ASCII).length,
                     "request bytes mismatched.");
-            Assert.assertEquals(asyncResp.getResponseTotalBytes(), "a2 OK Success\r\n".getBytes(StandardCharsets.US_ASCII).length,
+            Assert.assertEquals(asyncResp.getResponseTotalBytes(), serverResp1.toString().getBytes(StandardCharsets.US_ASCII).length,
                     "response bytes mismatched.");
 
             // verify logging messages
@@ -971,8 +967,8 @@ public class ImapAsyncSessionImplTest {
             Assert.assertEquals(asyncResp.getRequestTotalBytes(),
                     "a1 AUTHENTICATE PLAIN\r\n".getBytes(StandardCharsets.US_ASCII).length + clientResponseLength, "request bytes mismatched.");
             Assert.assertEquals(asyncResp.getResponseTotalBytes(),
-                    "+\r\n".getBytes(StandardCharsets.US_ASCII).length
-                            + "a1 OK AUTHENTICATE completed\r\n".getBytes(StandardCharsets.US_ASCII).length,
+                    serverResp1.toString().getBytes(StandardCharsets.US_ASCII).length
+                            + serverResp2.toString().getBytes(StandardCharsets.US_ASCII).length,
                     "response bytes mismatched.");
 
             // verify logging messages
@@ -1031,7 +1027,7 @@ public class ImapAsyncSessionImplTest {
             Assert.assertEquals(asyncResp.getCommandType(), ImapRFCSupportedCommandType.COMPRESS, "command type mismatched.");
             Assert.assertEquals(asyncResp.getRequestTotalBytes(), "a2 COMPRESS DEFLATE\r\n".getBytes(StandardCharsets.US_ASCII).length,
                     "request bytes mismatched.");
-            Assert.assertEquals(asyncResp.getResponseTotalBytes(), "a2 OK Success\r\n".getBytes(StandardCharsets.US_ASCII).length,
+            Assert.assertEquals(asyncResp.getResponseTotalBytes(), serverResp1.toString().getBytes(StandardCharsets.US_ASCII).length,
                     "response bytes mismatched.");
 
             // verify logging messages
@@ -1528,9 +1524,9 @@ public class ImapAsyncSessionImplTest {
         Assert.assertEquals(asyncResp.getCommandType(), ImapRFCSupportedCommandType.IDLE, "command type mismatched.");
         Assert.assertEquals(asyncResp.getRequestTotalBytes(), "a1 IDLE\r\n".getBytes(StandardCharsets.US_ASCII).length, "request bytes mismatched.");
         Assert.assertEquals(asyncResp.getResponseTotalBytes(),
-                "+ idling\r\n".getBytes(StandardCharsets.US_ASCII).length + "* 2 EXPUNGE\r\n".getBytes(StandardCharsets.US_ASCII).length
-                        + "* 3 EXISTS\r\n".getBytes(StandardCharsets.US_ASCII).length
-                        + "a1 OK IDLE terminated\r\n".getBytes(StandardCharsets.US_ASCII).length,
+                serverResp1.toString().getBytes(StandardCharsets.US_ASCII).length + serverResp2.toString().getBytes(StandardCharsets.US_ASCII).length
+                        + serverResp3.toString().getBytes(StandardCharsets.US_ASCII).length
+                        + serverResp4.toString().getBytes(StandardCharsets.US_ASCII).length,
                 "response bytes mismatched.");
 
         // queue is empty now, calling terminateCommand again
@@ -1883,8 +1879,8 @@ public class ImapAsyncSessionImplTest {
             Assert.assertEquals(asyncResp.getRequestTotalBytes(),
                     "a1 AUTHENTICATE PLAIN\r\n".getBytes(StandardCharsets.US_ASCII).length + clientResponseLength, "request bytes mismatched.");
             Assert.assertEquals(asyncResp.getResponseTotalBytes(),
-                    "+\r\n".getBytes(StandardCharsets.US_ASCII).length
-                            + "a1 OK AUTHENTICATE completed\r\n".getBytes(StandardCharsets.US_ASCII).length,
+                    serverResp1.toString().getBytes(StandardCharsets.US_ASCII).length
+                            + serverResp2.toString().getBytes(StandardCharsets.US_ASCII).length,
                     "response bytes mismatched.");
 
             // verify logging messages
