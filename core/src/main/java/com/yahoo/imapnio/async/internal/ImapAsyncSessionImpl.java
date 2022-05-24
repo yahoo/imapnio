@@ -509,7 +509,7 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
         final ImapRequest currentCmd = curEntry.getRequest();
         final Collection<IMAPResponse> responses = curEntry.getResponses();
         responses.add(serverResponse);
-        curEntry.recordResponseBytes(serverResponse.toString().getBytes(StandardCharsets.US_ASCII).length + 2);
+        curEntry.recordResponseBytes(serverResponse.toString().getBytes(StandardCharsets.US_ASCII).length);
 
         if (isDebugEnabled()) { // logging all server responses when enabled
             logger.debug(SERVER_LOG_REC, sessionId, getUserInfo(), serverResponse.toString());
