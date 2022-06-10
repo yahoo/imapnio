@@ -3,6 +3,7 @@ package com.yahoo.imapnio.async.client;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.util.ArrayList;
 import java.util.List;
@@ -128,8 +129,8 @@ public class ImapAsyncClient {
             // setting all idle timeout to ensure event will only be triggered when both read and write not happened for the given time
             pipeline.addLast(IDLE_STATE_HANDLER_NAME, new IdleStateHandler(0, 0, imapReadTimeoutValue, timeUnit)); // duplex
             pipeline.addLast(IMAP_LINE_DECODER_HANDLER_NAME, new ImapClientRespReader(Integer.MAX_VALUE)); // inbound
-            pipeline.addLast(STRING_DECODER_HANDLER_NAME, new StringDecoder()); // inbound
-            pipeline.addLast(STRING_ENCODER_HANDLER_NAME, new StringEncoder()); // outbound
+            pipeline.addLast(STRING_DECODER_HANDLER_NAME, new StringDecoder(StandardCharsets.US_ASCII)); // inbound
+            pipeline.addLast(STRING_ENCODER_HANDLER_NAME, new StringEncoder(StandardCharsets.US_ASCII)); // outbound
             pipeline.addLast(STRING_IMAP_MSG_RESPONSE_NAME, new ImapClientRespDecoder()); // inbound to convert to IMAPResponse
         }
     }
