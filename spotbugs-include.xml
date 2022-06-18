@@ -9,6 +9,9 @@
                       NP_CLOSING_NULL,
                       NP_NONNULL_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR,
 
+                      DM_CONVERT_CASE,
+                      DM_DEFAULT_ENCODING,
+
                       ODR_OPEN_DATABASE_RESOURCE,
                       ODR_OPEN_DATABASE_RESOURCE_EXCEPTION_PATH,
                       OS_OPEN_STREAM,

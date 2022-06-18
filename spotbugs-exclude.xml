@@ -1,0 +1,503 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+<FindBugsFilter>
+    <Match>
+        <Or>
+            <!-- TODO: The following violations should be investigated and probably fixed. -->
+            <Class name="com.yahoo.ymail.xmas.appbase.service.ServiceContext"/>
+            <Class name="com.yahoo.ymail.xmas.common.content.AccountMetadata$Builder"/>
+            <Class name="com.yahoo.ymail.xmas.common.content.FilterResult"/>
+            <Class name="com.yahoo.ymail.xmas.common.content.AttachmentSaveDescriptor$Builder"/>
+            <Class name="com.yahoo.ymail.xmas.common.content.MessageMetadata$MutableData"/>
+            <Class name="com.yahoo.ymail.xmas.common.content.MessageMetadata$MutableDataBuilder"/>
+            <Class name="com.yahoo.ymail.xmas.common.content.ThreeKey"/>
+            <Class name="com.yahoo.ymail.xmas.common.content.label.FixLabelsResult"/>
+            <Class name="com.yahoo.ymail.xmas.common.net.ReverseDnsMap$MapEntry"/>
+            <Class name="com.yahoo.ymail.xmas.common.queryparser.AllParamVisitor"/>
+            <Class name="com.yahoo.ymail.xmas.common.queryparser.ListMessagesQueryBuilderV3"/>
+            <Class name="com.yahoo.ymail.xmas.common.throttler.ThrottlerService"/>
+            <Class name="com.yahoo.jedi.events.snp.Trigger"/>
+            <Class name="com.yahoo.ymail.xmas.vx.VxGetMsgInfoTxnResp"/>
+            <Class name="com.yahoo.ymail.xmas.vx.VxMailbox"/>
+            <Class name="com.yahoo.ymail.xmas.sal.SALException"/>
+            <Class name="com.yahoo.ymail.xmas.sal.force.SalForceMailbox"/>
+            <Class name="com.yahoo.ymail.xmas.sal.hyb.BatchContentFetcher"/>
+            <Class name="com.yahoo.ymail.xmas.sal.vx.SalVxMailbox"/>
+            <Class name="com.yahoo.ymail.xmas.sal.hyb.HybridSaveMessageOpsImpl"/>
+            <Class name="com.yahoo.ymail.xmas.appbase.service.AccountService"/>
+            <Class name="com.yahoo.ymail.xmas.appbase.thumbnail.ThumbnailUrlCreator"/>
+            <Class name="com.yahoo.ymail.xmas.appbase.userdata.ExternalAccounts"/>
+            <Class name="com.yahoo.ymail.xmas.appbase.userdata.UserDataServicePrefetchedValues$Builder"/>
+            <Class name="com.yahoo.mail.sync.analysis.AppendExternalToInternalMessageTask$ImapMsgBodyResponseHandler"/>
+            <Class name="com.yahoo.mail.sync.analysis.AppendInternalToExternalMessageTask$ImapExtMidResponseHandler"/>
+            <Class name="com.yahoo.mail.sync.analysis.AppendInternalToExternalMessageTask$LinkdataBuilder"/>
+            <Class name="com.yahoo.mail.sync.analysis.MoveInternalMessageTask"/>
+            <Class name="com.yahoo.mail.sync.exec.Account"/>
+            <Class name="com.yahoo.mail.sync.fetch.internal.InternalFetchServiceImpl"/>
+            <Class name="com.yahoo.mail.sync.imap.ImapAppendCommand"/>
+            <Class name="com.yahoo.mail.sync.imap.ImapClientCommand"/>
+            <Class name="com.yahoo.mail.sync.imap.ImapUidCopyCommand"/>
+            <Class name="com.yahoo.mail.sync.imap.uid.AbstractSpan"/>
+            <Class name="com.yahoo.mail.sync.jws.SaveMessageMetadata$SaveMessageMetadataBuilder"/>
+            <Class name="com.yahoo.mail.sync.worker.SyncWorker"/>
+            <Class name="com.yahoo.ymail.xmas.webservice.admin.resources.AliasUpdateAdminResource"/>
+            <Class name="com.yahoo.ymail.xmas.webservice.monitor.DeleteMessageMonitor"/>
+            <Class name="com.yahoo.ymail.xmas.webservice.resources.v3.V3SaveMessageWorkerTest" />
+            <Class name="com.yahoo.ymail.xmas.webservice.resources.v3.V3SaveMessageWorker2Test" />
+            <Class name="com.yahoo.ymail.xmas.webservice.SaveMessageConfigTest" />
+            <Class name="com.yahoo.ymail.xmas.webservice.exception.AlertStoreExceptionTest" />
+            <Class name="com.yahoo.ymail.xmas.webservice.exception.DataFetchFailedExceptionTest" />
+            <Class name="com.yahoo.ymail.xmas.webservice.exception.ThumbnailExceptionTest" />
+            <Class name="com.yahoo.ymail.xmas.webservice.request.handler.v3.EndToEndTest" />
+            <Class name="com.yahoo.ymail.xmas.webservice.request.handler.v3.MailboxDeletionWorkerWSBizmailTest" />
+            <Class name="com.yahoo.ymail.xmas.webservice.request.handler.v3.MailboxDeletionWorkerWSTest" />
+            <Class name="com.yahoo.ymail.xmas.webservice.resources.v2.DisplayMessageTest" />
+            <Class name="com.yahoo.ymail.xmas.webservice.resources.v2.FidTest" />
+            <Class name="com.yahoo.ymail.xmas.webservice.resources.v3.DeliThrottleTest" />
+            <Class name="com.yahoo.ymail.xmas.webservice.resources.v3.MessagesResourceTest" />
+            <Class name="com.yahoo.ymail.xmas.webservice.resources.v3.MixedContentStatusTest" />
+            <Class name="com.yahoo.ymail.xmas.webservice.traps.AttachmentCorruptionTrapTest" />
+            <Class name="com.yahoo.ymail.xmas.webservice.traps.AttachmentDownloadTrapTest" />
+            <Class name="com.yahoo.ymail.xmas.webservice.traps.EntryPointProcessorTrapTest" />
+            <Class name="com.yahoo.ymail.xmas.webservice.traps.FarmSelectionTrapTest" />
+            <Class name="com.yahoo.ymail.xmas.webservice.traps.MaintenanceTrapTest" />
+            <Class name="com.yahoo.ymail.xmas.webservice.traps.OneClickUnsubscribeTrapTest" />
+            <Class name="com.yahoo.ymail.xmas.webservice.traps.ScheduledActionsWorkerTrapTest" />
+            <Class name="com.yahoo.ymail.xmas.webservice.traps.SchedulerCallbackTrapTest" />
+            <!-- TODO: Config beans should have only (or at least mostly) @Nonnull fields. -->
+            <Class name="com.yahoo.ymail.xmas.sal.SALConfig"/>
+            <Class name="com.yahoo.ymail.xmas.appbase.AppBaseConfig"/>
+            <Class name="com.yahoo.ymail.xmas.appbase.service.landspeeder.LandspeederListenerConfig"/>
+            <Class name="com.yahoo.ymail.xmas.appbase.utils.MailboxFinderConfig"/>
+            <Class name="com.yahoo.mail.sync.folder.FolderConfig$Builder"/>
+            <Class name="com.yahoo.ymail.xmas.webservice.WsConfig"/>
+            <!-- V3, admin and other beans should have only (or at least mostly) @Nullable fields. -->
+            <Class name="~com.yahoo.ymail.xmas.beans.admin..*"/>
+            <Class name="~com.yahoo.ymail.xmas.v3.beans..*"/>
+            <Class name="com.yahoo.ymail.xmas.beans.extacct.ExternalAccountRequest"/>
+            <Class name="com.yahoo.ymail.xmas.beans.extacct.SyncRequest"/>
+            <Class name="com.yahoo.ymail.xmas.beans.scheduler.JobDataHandler"/>
+            <Class name="com.yahoo.ymail.xmas.common.beans.AccountBase"/>
+            <Class name="com.yahoo.ymail.xmas.common.beans.Identifier"/>
+            <Class name="com.yahoo.ymail.xmas.common.beans.PopForwardPrefsData"/>
+            <Class name="com.yahoo.ymail.xmas.common.beans.request.SetPopForwardPrefs"/>
+            <Class name="com.yahoo.ymail.xmas.common.beans.request.SetUserForwardPref"/>
+            <Class name="com.yahoo.ymail.xmas.common.beans.request.SetUserForwardPref"/>
+            <Class name="com.yahoo.ymail.xmas.common.beans.request.SetUserPreferences"/>
+            <Class name="com.yahoo.ymail.xmas.common.beans.response.CaptchaCreateResponse"/>
+            <Class name="com.yahoo.ymail.xmas.sal.force.bean.AccountSyncStorageStateBean"/>
+            <Class name="com.yahoo.ymail.xmas.sal.force.bean.MailboxSyncStorageStateBean"/>
+            <Class name="com.yahoo.ymail.xmas.appbase.membership.beans.AccountAttributesRequestBean"/>
+            <Class name="com.yahoo.ymail.xmas.appbase.membership.beans.AddCommunicationChannelGroupBean"/>
+            <Class name="com.yahoo.ymail.xmas.appbase.membership.beans.AddCommunicationChannelListBean"/>
+            <Class name="com.yahoo.ymail.xmas.appbase.membership.beans.ChangeCommunicationChannelsRequestBean"/>
+            <Class name="com.yahoo.ymail.xmas.appbase.membership.beans.ChangeCommunicationChannelsResponseBean"/>
+        </Or>
+        <!-- Non-null field ... is not initialized by ... (NP_NONNULL_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR) -->
+        <Bug pattern="NP_NONNULL_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR"/>
+    </Match>
+    <!-- Do not check integration test classes (QA) for NONNULL violations. -->>
+    <Match>
+        <Class name="com.yahoo.mail.qa.~.*" />
+    </Match>
+    <!-- Do not check unit test classes for NONNULL violations. -->>
+    <Match>
+        <Class name="~.*Test$" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE,
+                      RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE,
+                      NP_NONNULL_PARAM_VIOLATION,
+                      NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE,
+                      NP_CLOSING_NULL,
+                      ODR_OPEN_DATABASE_RESOURCE,
+                      ODR_OPEN_DATABASE_RESOURCE_EXCEPTION_PATH,
+                      OS_OPEN_STREAM,
+                      OS_OPEN_STREAM_EXCEPTION_PATH,
+                      OBL_UNSATISFIED_OBLIGATION,
+                      OBL_UNSATISFIED_OBLIGATION_EXCEPTION_EDGE,
+                      NP_NONNULL_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR,
+                      NP_NULL_ON_SOME_PATH,
+                      NP_NULL_PARAM_DEREF,
+                      NP_NULL_ON_SOME_PATH_MIGHT_BE_INFEASIBLE,
+                      NP_NULL_ON_SOME_PATH_EXCEPTION,
+                      NP_LOAD_OF_KNOWN_NULL_VALUE,
+                      NP_ALWAYS_NULL,
+                      NP_ARGUMENT_MIGHT_BE_NULL,
+                      NP_GUARANTEED_DEREF,
+                      NP_NONNULL_RETURN_VIOLATION,
+                      NP_NULL_INSTANCEOF,
+                      NP_NULL_PARAM_DEREF_ALL_TARGETS_DANGEROUS,
+                      NP_NULL_PARAM_DEREF_NONVIRTUAL,
+                      NP_STORE_INTO_NONNULL_FIELD,
+                      NP_UNWRITTEN_FIELD,
+                      NP_METHOD_PARAMETER_TIGHTENS_ANNOTATION,
+                      NP_METHOD_RETURN_RELAXING_ANNOTATION,
+                      NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE,
+                      NP_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD"/>
+    </Match>
+
+    <!-- Fix these ITs, legacy code -lafa- -->>
+    <Match>
+        <Or>
+            <Class name="com.yahoo.mail.qa.imap.ExternalFolderContraintsIT"/>
+            <Class name="com.yahoo.mail.qa.jedi.test.mailws.calendar.CalendarV3IT"/>
+            <Class name="com.yahoo.mail.qa.jws.CredstoreEndpointsIT"/>
+            <Class name="com.yahoo.mail.qa.jws.GzipEncodingIT"/>
+            <Class name="com.yahoo.mail.qa.jws.test.mailws.messagefilters.V3MultipleCriterionMessageFiltersDontForwardIT"/>
+            <Class name="com.yahoo.mail.qa.jws.test.mailws.messagefilters.V3MultipleCriterionMessageFiltersStoreForwardIT"/>
+            <Class name="com.yahoo.mail.qa.jws.test.mailws.wt.WireTapEventListenerIT"/>
+            <Class name="com.yahoo.mail.qa.jws.test.v3.account.MigrationAccountCreateListDeleteIT"/>
+            <Class name="com.yahoo.mail.qa.jws.test.v3.DeleteMessageIT"/>
+            <Class name="com.yahoo.mail.qa.jws.test.v3.FlagThreadIT"/>
+            <Class name="com.yahoo.mail.qa.jws.test.v3.folders.V3UpdateFolderForceExtAcctPerTestIT"/>
+            <Class name="com.yahoo.mail.qa.jws.test.v3.mailbox.V3CopyMessageBySelectionCriteriaIT"/>
+            <Class name="com.yahoo.mail.qa.jws.test.v3.mailbox.V3MaintenanceCleanupFolderExternalAccountIT"/>
+            <Class name="com.yahoo.mail.qa.jws.test.v3.mailbox.V3MaintenanceCleanupFolderIT"/>
+            <Class name="com.yahoo.mail.qa.jws.test.v3.mailbox.V3MaintenanceIT"/>
+            <Class name="com.yahoo.mail.qa.jws.test.v3.mailbox.V3MaintenanceSchedulerCallBackIT"/>
+            <Class name="com.yahoo.mail.qa.jws.test.v3.mailbox.V3MaintenanceSchedulerCallBackWithNoExternalAccountIT"/>
+            <Class name="com.yahoo.mail.qa.jws.test.v3.mailbox.V3MaintenanceSchedulerCallBackWithSyncExpiredIT"/>
+            <Class name="com.yahoo.mail.qa.jws.test.v3.mailbox.V3MaintenanceSchedulerCallBackWithSyncStoppedIT"/>
+            <Class name="com.yahoo.mail.qa.jws.test.v3.mailbox.V3MaintenanceSchedulerIT"/>
+            <Class name="com.yahoo.mail.qa.jws.test.v3.mailbox.V3SaveMessageScheduleActionIT"/>
+            <Class name="com.yahoo.mail.qa.jws.test.v3.mailbox.V3SaveMessageSubscribeActionExternalAccountIT"/>
+            <Class name="com.yahoo.mail.qa.jws.test.v3.mailbox.V3SaveMessageSubscribeActionIT"/>
+            <Class name="com.yahoo.mail.qa.jws.test.v3.mailbox.V3UndeleteMessageExternalAccountIT"/>
+            <Class name="com.yahoo.mail.qa.jws.test.v3.mailbox.V3UndeleteMessageIT"/>
+            <Class name="com.yahoo.mail.qa.jws.test.v3.mailbox.V3UpdateMessageScheduleActionIT"/>
+            <Class name="com.yahoo.mail.qa.jws.test.v3.messages.V3QuotedTextFullDiffGetDisplayMessageExternalAccountIT"/>
+            <Class name="com.yahoo.mail.qa.jws.test.v3.MoveFlagThreadDedupIT"/>
+            <Class name="com.yahoo.mail.qa.jws.test.v3.MoveThreadIT"/>
+            <Class name="com.yahoo.mail.qa.jws.test.v3.UpdateMessageBySelectionCriteriaIT"/>
+            <Class name="com.yahoo.mail.qa.jws.test.v3.UpdateMessageDedupWithSelectionCriteriaIT"/>
+            <Class name="com.yahoo.mail.qa.jws.V2CoverageV3YcaAuthIT"/>
+            <Class name="com.yahoo.mail.qa.jws.V3YcaAuthIT"/>
+            <Class name="com.yahoo.mail.qa.pop.test.PopDeleCommandIT"/>
+            <Class name="com.yahoo.mail.qa.pop.test.PopPipeliningIT"/>
+            <Class name="com.yahoo.mail.qa.pop.test.PopXoipCommandIT"/>
+            <Class name="com.yahoo.mail.qa.sync.aol.folder.SyncAolSystemFoldersIT"/>
+            <Class name="com.yahoo.mail.qa.sync.aol.listener.SyncNewMessageAolListStatusIT"/>
+            <Class name="com.yahoo.mail.qa.sync.folder.CreateDeleteFolderIT"/>
+            <Class name="com.yahoo.mail.qa.sync.folder.CreateFolderIT"/>
+            <Class name="com.yahoo.mail.qa.sync.folder.CreateRenameFolderIT"/>
+            <Class name="com.yahoo.mail.qa.sync.folder.DeleteFolderIT"/>
+            <Class name="com.yahoo.mail.qa.sync.folder.DeleteFolderWithMessagesIT"/>
+            <Class name="com.yahoo.mail.qa.sync.folder.IgnoreFoldersIT"/>
+            <Class name="com.yahoo.mail.qa.sync.folder.InvisibleFolderIT"/>
+            <Class name="com.yahoo.mail.qa.sync.folder.RenameFolderIT"/>
+            <Class name="com.yahoo.mail.qa.sync.folder.RenameLinkedFolderIT"/>
+            <Class name="com.yahoo.mail.qa.sync.gmail.folder.FolderValidationIT"/>
+            <Class name="com.yahoo.mail.qa.sync.gmail.folder.GmailIgnoreFoldersIT"/>
+            <Class name="com.yahoo.mail.qa.sync.gmail.folder.GmailInternalArchiveAllMailFolderIT"/>
+            <Class name="com.yahoo.mail.qa.sync.gmail.folder.V3SyncGmailValidateLoginCapabilityIT"/>
+            <Class name="com.yahoo.mail.qa.sync.gmail.listener.SyncNewMessageGmailListStatusIT"/>
+            <Class name="com.yahoo.mail.qa.sync.gmail.message.GmailInternalArchiveAllMailMessagesIT"/>
+            <Class name="com.yahoo.mail.qa.sync.gmail.message.SyncAllMailAppendMoveBothMessageIT"/>
+            <Class name="com.yahoo.mail.qa.sync.gmail.message.SyncAllMailAppendMoveExternalMessageIT"/>
+            <Class name="com.yahoo.mail.qa.sync.gmail.message.SyncAllMailAppendMoveInternalMessageIT"/>
+            <Class name="com.yahoo.mail.qa.sync.gmail.message.SyncAllMailDeleteIT"/>
+            <Class name="com.yahoo.mail.qa.sync.gmail.message.SyncAllMailFlagDeleteMessageIT"/>
+            <Class name="com.yahoo.mail.qa.sync.gmail.message.SyncAllMailMoveDeleteMessageIT"/>
+            <Class name="com.yahoo.mail.qa.sync.gmail.message.SyncGmailMultiCopyExternalMessageIT"/>
+            <Class name="com.yahoo.mail.qa.sync.gmail.message.SyncGmailMultiCopyInternalMessageIT"/>
+            <Class name="com.yahoo.mail.qa.sync.gmail.message.SyncGmailMultiCopyWithLinkInternalMessageIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncAppendMessageForBulkIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncAppendMessageForDraftIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncAppendMessageForSentIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncAppendMessageForTrashIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncAppendMessageForUserSubFolderIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncAppendMessageNoMimeIdForInboxIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncAppendMessageNoMimeIdForUserFolderIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncAppendMessageWithoutFieldForInboxIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncAppendMessageWithoutFieldForUserFolderIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncAppendOldAndNewMessageForInboxIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncAppendOldAndNewMessageForUserFolderIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncAppendSameMessageForInboxIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncAppendSameMessageForUserFolderIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncAppendSimilarMessageForInboxIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncAppendSimilarMessageForUserFolderIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncAppendSimilarMessageNoMimeIdForInboxIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncArchiveAppendMoveBothMessageIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncArchiveAppendMoveExternalMessageIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncArchiveAppendMoveInternalMessageIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncArchiveFlagDeleteBothMessageIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncArchiveFlagDeleteExternalMessageIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncArchiveFlagDeleteInternalMessageIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncCopyAndDeleteMessageSystemToUserIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncCopyAndDeleteMessageUserToSystemIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncCopyMessageSystemToUserFolderIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncCopyMessageUserToSystemFolderIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncDeleteAndReappendMessageSystemFolderIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncDeleteAndReappendMessageUserFolderIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncDeleteMessageForSystemFolderIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncDeleteMessageForUserFolderIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncDeleteTrashMessageNoMatchIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncDeleteTrashMessageWithMatchIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncMoveAndCopyMessageUserFolderIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncMoveAndDeleteMessageIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncMoveAndSetFlagsMessageIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncMoveMessageIgnoredFolderIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncMoveMessageUserToSubFolderIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncMoveMessageUserToSystemFolderIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncMoveMessageUserToTrashFolderIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncMultiCopyExternalMessageIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncMultiCopyInternalMessageIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncMultiCopyWithLinkMessageIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncSetAllFlagsMessageIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncSetDifferentFlagsMessageIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncSetFlaggedMessageIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncSetFlagsBothSidesMessageIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncSetMultipleFlagsMessageIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncSetNoFlagsMessageIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncUpdateAccountPasswordExpiryIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncUpdateAccountSyncProgressIT"/>
+            <Class name="com.yahoo.mail.qa.sync.migration.ArchiveMessagesAppendDeleteFlagMigrationIT"/>
+            <Class name="com.yahoo.mail.qa.sync.migration.CreateDeleteMigrationFolderIT"/>
+            <Class name="com.yahoo.mail.qa.sync.migration.DraftMessagesAppendDeleteFlagMigrationIT"/>
+            <Class name="com.yahoo.mail.qa.sync.migration.InboxMessagesAppendDeleteFlagMigrationIT"/>
+            <Class name="com.yahoo.mail.qa.sync.migration.MessagesMoveMigrationIT"/>
+            <Class name="com.yahoo.mail.qa.sync.migration.RenameMigrationFolderIT"/>
+            <Class name="com.yahoo.mail.qa.sync.migration.SentMessagesAppendDeleteFlagMigrationIT"/>
+            <Class name="com.yahoo.mail.qa.sync.migration.SpamMessagesAppendDeleteFlagMigrationIT"/>
+            <Class name="com.yahoo.mail.qa.sync.migration.SyncMigrationAccountSyncProgressIT"/>
+            <Class name="com.yahoo.mail.qa.sync.migration.TrashMessagesAppendDeleteFlagMigrationIT"/>
+            <Class name="com.yahoo.mail.qa.sync.migration.UserFolderMessagesAppendDeleteFlagMigrationIT"/>
+            <Class name="com.yahoo.mail.qa.sync.outlook.folder.SyncOutlookSplFoldersIT"/>
+            <Class name="com.yahoo.mail.qa.sync.outlook.folder.SyncOutlookSystemFoldersIT"/>
+            <Class name="com.yahoo.mail.qa.sync.outlook.listener.SyncNewMessageOutlookListStatusIT"/>
+            <Class name="com.yahoo.mail.qa.sync.outlook.message.SyncOutlookCopyMessageSystemToUserFolderIT"/>
+            <Class name="com.yahoo.mail.qa.sync.outlook.message.SyncOutlookCopyMessageUserToSystemFolderIT"/>
+            <Class name="com.yahoo.mail.qa.sync.ws.v3.SyncAuthFilterIT"/>
+            <Class name="com.yahoo.mail.qa.sync.ws.v3.SyncCreateDeleteAccountIT"/>
+            <Class name="com.yahoo.mail.qa.sync.ws.v3.SyncWarmUpIT"/>
+            <Class name="com.yahoo.mail.qa.sync.ws.v3.V3SyncAccountDeleteIT"/>
+            <Class name="com.yahoo.mail.qa.sync.ws.v3.V3SyncAdminIT"/>
+            <Class name="com.yahoo.mail.qa.sync.ws.v3.V3SyncLatchAcceptIT"/>
+            <Class name="com.yahoo.mail.qa.sync.ws.v3.V3SyncLatchIT"/>
+            <Class name="com.yahoo.mail.qa.sync.ws.v3.V3SyncRefreshIT"/>
+            <Class name="com.yahoo.mail.qa.sync.ws.v3.V3SyncStartStopIT"/>
+            <Class name="com.yahoo.mail.qa.sync.ws.v3.V3SyncStatusIT"/>
+            <Class name="com.yahoo.mail.qa.sync.ws.v3.V3SyncUpdateIT"/>
+            <Class name="com.yahoo.mail.qa.sync.ws.v3.V3SyncValidateCapabilityIT"/>
+            <Class name="com.yahoo.mail.qa.sync.ws.v3.V3SyncValidateLoginIT"/>
+            <Class name="com.yahoo.mail.qa.sync.yahoo.listener.SyncNewMessageYahooListStatusIT"/>
+            <Class name="com.yahoo.mail.qa.yservice.YCryptoGetKeyIT"/>
+            <Class name="com.yahoo.mail.qa.yservice.YserviceInternalWarmupIT"/>
+            <Class name="com.yahoo.mail.qa.yservice.YServiceResourceAdminIT"/>
+        </Or>
+        <Bug pattern="NP_NONNULL_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR"/>
+    </Match>
+ 
+    <!-- Fix these ITs, legacy code -lafa- -->>
+    <Match>
+        <Or>
+            <Class name="com.yahoo.mail.qa.jws.GetMessageSimpleBodyLoadIT" />
+            <Class name="com.yahoo.mail.qa.jws.test.v3.alertstore.V3UpdateAlertStoreIT" />
+            <Class name="com.yahoo.mail.qa.jws.test.v3.mailbox.ActivityIT" />
+            <Class name="com.yahoo.mail.qa.common.TestAccountInfo" />
+            <Class name="com.yahoo.mail.qa.imap.ImapProxyIT"/>
+            <Class name="com.yahoo.mail.qa.imap.MessageCommandsDedupIT"/>
+            <Class name="com.yahoo.mail.qa.jws.test.v3.folders.V3CreateFolderForceIT"/>
+            <Class name="com.yahoo.mail.qa.jws.test.v3.listmessages.ListMessagesV3ExtAcctGroupByConversationIT"/>
+            <Class name="com.yahoo.mail.qa.jws.test.v3.listmessages.ListMessagesV3ScheduleActionIT"/>
+            <Class name="com.yahoo.mail.qa.jws.test.v3.mailbox.V3MaintenanceCleanupFolderExternalAccountIT"/>
+            <Class name="com.yahoo.mail.qa.jws.test.v3.mailbox.V3MaintenanceCleanupFolderIT"/>
+            <Class name="com.yahoo.mail.qa.jws.test.v3.mailbox.V3MaintenanceSchedulerIT"/>
+            <Class name="com.yahoo.mail.qa.jws.test.v3.mailbox.V3SaveMessageWithSavedSearchesDecoIT"/>
+            <Class name="com.yahoo.mail.qa.jws.test.v3.mailbox.V3SendMessageIT"/>
+            <Class name="com.yahoo.mail.qa.jws.test.v3.mailbox.V3UnsendFailedMessageExternalYahooAccIT"/>
+            <Class name="com.yahoo.mail.qa.jws.test.v3.mailbox.V3UpdateMessageScheduleActionIT"/>
+            <Class name="com.yahoo.mail.qa.jws.test.v3.messages.V3GetMessageSimpleBodyFullIT"/>
+            <Class name="com.yahoo.mail.qa.jws.test.v3.messages.V3GetMessageSimpleBodyFullSecureIT"/>
+            <Class name="com.yahoo.mail.qa.jws.test.v3.messages.V3GetMessageSimpleBodyIT"/>
+            <Class name="com.yahoo.mail.qa.jws.test.v3.messages.V3GetMessageSimpleBodySecureIT"/>
+            <Class name="com.yahoo.mail.qa.jws.V3RowBasedSavedSearchesIT"/>
+            <Class name="com.yahoo.mail.qa.jws.V3SavedSearchesIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncAppendMessageWithoutFieldForInboxIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncAppendSameMessageForInboxIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncAppendSimilarMessageForUserFolderIT"/>
+            <Class name="com.yahoo.mail.qa.sync.message.SyncAppendSimilarMessageNoMimeIdForInboxIT"/>
+            <Class name="com.yahoo.mail.qa.sync.migration.MigrationAccountDeletionIT"/>
+        </Or>
+        <Bug pattern="NP_NONNULL_PARAM_VIOLATION"/>
+    </Match>
+
+    <!-- May fail to clean up stream/writers.  -->>
+    <Match>
+        <Or>
+                <Class name="com.yahoo.configloader.ConfigCmd" />
+                <Class name="com.yahoo.mail.yservice.resources.testaccount.persistence.FileOpWrapper" />
+        </Or>
+        <Bug pattern="OBL_UNSATISFIED_OBLIGATION"/>
+    </Match>
+    <!-- Do not check reindex classes for any violations. -->>
+    <Match>
+        <Class name="com.yahoo.ymail.xmas.common.config.ReindexingConfig" />
+        <Bug pattern="NP_NONNULL_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR"/>
+    </Match>
+    <!-- Do not check generated source code. -->
+    <Match>
+        <Class name="com.yahoo.ymail.messageprocessor.MailBodyLex" />
+        <Method name="mDOUBLESPACE" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Or>
+            <Class name="com.yahoo.mail.imap.parser.ImapCommandParser" />
+            <Class name="com.yahoo.mail.imap.parser.SimpleCharStream" />
+            <Class name="com.yahoo.ymail.xmas.imap.parser.ImapCommandParser" />
+            <Class name="com.yahoo.ymail.xmas.imap.parser.SimpleCharStream" />
+            <Class name="com.yahoo.ymail.xmas.appbase.service.quotedtext.parser.JavaCharStream" />
+        </Or>
+        <Bug pattern="DM_DEFAULT_ENCODING"/>
+    </Match>
+    <!-- WTF!? -->
+    <Match>
+        <Class name="com.yahoo.ymail.xmas.sal.lsg.LSGEmailMessageContent" />
+        <Method name="encodedContentBytes" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <!-- Classes which need some cleanup. -->
+    <Match>
+        <Or>
+            <Class name="com.yahoo.ymail.xmas.common.content.FilterResult" />
+            <Class name="com.yahoo.ymail.xmas.common.content.ThreeKey" />
+            <Class name="com.yahoo.ymail.xmas.common.throttler.ThrottlerService" />
+            <Class name="com.yahoo.ymail.xmas.v3.beans.Account" />
+            <Class name="com.yahoo.ymail.xmas.v3.beans.ErrorDetail" />
+            <Class name="com.yahoo.ymail.xmas.force.beans.sub.FolderEntryBean" />
+        </Or>
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.ymail.xmas.sal.SALMailbox" />
+        <Method name="getForceConfig" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.ymail.xmas.sal.hyb.HybridMessageUpdateOps" />
+        <Method name="isForceMailbox" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.ymail.xmas.sal.hyb.HybridQueryMessagesOps" />
+        <Method name="isForceMailbox" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.ymail.xmas.sal.hyb.HybridMetadataTray" />
+        <Method name="equals" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.ymail.xmas.sal.vx.SalVxMailbox" />
+        <Method name="open" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.ymail.xmas.appbase.service.AccountService" />
+        <Method name="getEmailChannelCache" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.ymail.xmas.appbase.service.DuplicateMessageManager" />
+        <Method name="calculateDeDupId" />
+        <Bug pattern="NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.ymail.xmas.appbase.service.LabelService" />
+        <Method name="updateLabel" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.ymail.xmas.appbase.thumbnail.ThumbnailUrlCreator" />
+        <Method name="generateInternal" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.mail.sync.account.ExternalAccount" />
+        <Method name="fromBean" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.mail.sync.exec.Account" />
+        <Method name="toFormattedString" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.mail.sync.fetch.internal.InternalFetchServiceImpl" />
+        <Method name="execute" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.mail.sync.fetch.internal.InternalFetchServiceImpl" />
+        <Method name="init" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.mail.sync.imap.ImapClientCommand" />
+        <Method name="connect" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.mail.sync.worker.SyncWorker" />
+        <Method name="syncFolders" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.ymail.xmas.webservice.request.handler.v3.V3AccountRequestHandler" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.ymail.xmas.webservice.admin.resources.AliasUpdateAdminResource" />
+        <Method name="createExtraEmail" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.ymail.xmas.webservice.bean.BeanFactory" />
+        <Method name="createMessageInfoBean" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.ymail.xmas.webservice.bean.BeanFactory" />
+        <Method name="createMessageMetadataBean" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.ymail.xmas.webservice.request.handler.v2.GetDisplayMessageRequestHandler" />
+        <Method name="buildDisplayMessageResponse" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.ymail.xmas.webservice.request.handler.v2.GetDisplayMessageRequestHandler" />
+        <Method name="shouldShowSourceFolderName" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.ymail.xmas.webservice.request.handler.v3.MailboxRequestHandler" />
+        <Method name="buildSaveMessageResponse" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.ymail.xmas.webservice.thumbnail.ThumbnailServiceImpl" />
+        <Method name="getRawContent" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.ymail.xmas.webservice.request.handler.v3.DeleteMessageRequestHandler" />
+        <Method name="doDeleteMessages" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <Match>
+        <Class name="com.yahoo.ymail.xmas.webservice.filters.V2ExceptionHandlingFilter" />
+        <Method name="doFilter" />
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE"/>
+    </Match>
+    <!--     false positive in Java 11, see https://github.com/spotbugs/spotbugs/issues/756 -->
+    <Match>
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+    <!--     false positive in Java 11, see https://github.com/spotbugs/spotbugs/issues/756 -->
+    <Match>
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE"/>
+    </Match>
+</FindBugsFilter>
