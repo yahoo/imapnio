@@ -1,10 +1,17 @@
 package com.yahoo.imapnio.async.client;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -38,6 +45,8 @@ import com.yahoo.imapnio.client.ImapClientRespReader;
 import com.yahoo.imapnio.command.ImapClientRespDecoder;
 
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandler;
@@ -169,6 +178,107 @@ public class ImapAsyncClientTest {
         // call shutdown
         aclient.shutdown();
         Mockito.verify(group, Mockito.times(1)).shutdownGracefully();
+    }
+
+    /**
+     * Test the right charset is used for encoding/decoding.
+     *
+     * @throws IOException
+     * @throws URISyntaxException
+     * @throws SecurityException
+     * @throws NoSuchFieldException
+     * @throws IllegalAccessException
+     * @throws IllegalArgumentException
+     */
+    @Test
+    public void testCharsetWhenEncodingDecoding()
+            throws IOException, URISyntaxException, NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+        final URL url = getClass().getClassLoader().getResource("imapnio_encoding_decoding_byte_array"); // original message as byte array
+        FileInputStream is = new FileInputStream(url.getPath());
+        InputStreamReader isr = new InputStreamReader(is, StandardCharsets.US_ASCII);
+        BufferedReader buffReader = new BufferedReader(isr);
+        String line = buffReader.readLine();
+        String[] strArray = line.split(", ");
+        byte[] inputBytes = new byte[strArray.length];
+        // convert contents of file to byte array
+        for (int i = 0; i < strArray.length; i++) {
+            Integer val = Integer.parseInt(strArray[i]);
+            inputBytes[i] = val.byteValue();
+        }
+
+        ByteBuf byteBuf = Unpooled.wrappedBuffer(inputBytes);
+        int originalLengthBeforeDecoding = byteBuf.capacity();
+
+        final Bootstrap bootstrap = Mockito.mock(Bootstrap.class);
+        final ChannelFuture nettyConnectFuture = Mockito.mock(ChannelFuture.class);
+        Mockito.when(nettyConnectFuture.isSuccess()).thenReturn(true);
+        final Channel nettyChannel = Mockito.mock(Channel.class);
+        final ChannelPipeline nettyPipeline = Mockito.mock(ChannelPipeline.class);
+        Mockito.when(nettyChannel.pipeline()).thenReturn(nettyPipeline);
+        Mockito.when(nettyConnectFuture.channel()).thenReturn(nettyChannel);
+        Mockito.when(bootstrap.connect(Mockito.anyString(), Mockito.anyInt())).thenReturn(nettyConnectFuture);
+
+        final EventLoopGroup group = Mockito.mock(EventLoopGroup.class);
+        final Logger logger = Mockito.mock(Logger.class);
+        Mockito.when(logger.isTraceEnabled()).thenReturn(true);
+
+        final ImapAsyncClient aclient = new ImapAsyncClient(clock, bootstrap, group, logger);
+
+        final ImapAsyncSessionConfig config = new ImapAsyncSessionConfig();
+        config.setConnectionTimeoutMillis(5000);
+        config.setReadTimeoutMillis(6000);
+        final List<String> sniNames = null;
+
+        // test create session
+        final InetSocketAddress localAddress = null;
+        final URI serverUri = new URI(SERVER_URI_STR);
+
+        final String sessCtx = "abc@nowhere.com";
+        final Future<ImapAsyncCreateSessionResponse> future = aclient.createSession(serverUri, config, localAddress, sniNames, DebugMode.DEBUG_OFF,
+                sessCtx);
+
+        // verify session creation
+        Assert.assertNotNull(future, "Future for ImapAsyncSession should not be null.");
+
+        final ArgumentCaptor<ImapClientChannelInitializer> initializerCaptor = ArgumentCaptor.forClass(ImapClientChannelInitializer.class);
+        Mockito.verify(bootstrap, Mockito.times(1)).handler(initializerCaptor.capture());
+        Assert.assertEquals(initializerCaptor.getAllValues().size(), 1, "Unexpected count of ImapClientChannelInitializer.");
+        final ImapClientChannelInitializer initializer = initializerCaptor.getAllValues().get(0);
+
+        // should not call this connect
+        Mockito.verify(bootstrap, Mockito.times(0)).connect(Mockito.any(SocketAddress.class), Mockito.any(SocketAddress.class));
+        // should call following connect
+        Mockito.verify(bootstrap, Mockito.times(1)).connect(Mockito.anyString(), Mockito.anyInt());
+        final ArgumentCaptor<GenericFutureListener> listenerCaptor = ArgumentCaptor.forClass(GenericFutureListener.class);
+        Mockito.verify(nettyConnectFuture, Mockito.times(1)).addListener(listenerCaptor.capture());
+        Assert.assertEquals(listenerCaptor.getAllValues().size(), 1, "Unexpected count of ImapClientChannelInitializer.");
+
+        // test connection established and channel initialized new
+        final SocketChannel socketChannel = Mockito.mock(SocketChannel.class);
+        final ChannelPipeline socketPipeline = Mockito.mock(ChannelPipeline.class);
+        Mockito.when(socketChannel.pipeline()).thenReturn(socketPipeline);
+        initializer.initChannel(socketChannel);
+
+        // verify initChannel
+        final ArgumentCaptor<ChannelHandler> handlerCaptor = ArgumentCaptor.forClass(ChannelHandler.class);
+        Mockito.verify(socketPipeline, Mockito.times(5)).addLast(Mockito.anyString(), handlerCaptor.capture());
+        Assert.assertEquals(handlerCaptor.getAllValues().size(), 5, "Unexpected count of ChannelHandler added.");
+        // following order should be preserved
+        Assert.assertEquals(handlerCaptor.getAllValues().get(0).getClass(), IdleStateHandler.class, "expected class mismatched.");
+        Assert.assertEquals(handlerCaptor.getAllValues().get(1).getClass(), ImapClientRespReader.class, "expected class mismatched.");
+        Assert.assertEquals(handlerCaptor.getAllValues().get(2).getClass(), StringDecoder.class, "expected class mismatched.");
+        Assert.assertEquals(handlerCaptor.getAllValues().get(3).getClass(), StringEncoder.class, "expected class mismatched.");
+        Assert.assertEquals(handlerCaptor.getAllValues().get(4).getClass(), ImapClientRespDecoder.class, "expected class mismatched.");
+
+        StringDecoder decoder = (StringDecoder) handlerCaptor.getAllValues().get(2);
+
+        Field charsetField = StringDecoder.class.getDeclaredField("charset");
+        charsetField.setAccessible(true);
+        java.nio.charset.Charset charset = (java.nio.charset.Charset) charsetField.get(decoder);
+        String decodedString = byteBuf.toString(charset);
+        Assert.assertEquals(decodedString.length(), originalLengthBeforeDecoding);
+
+
     }
 
     /**
