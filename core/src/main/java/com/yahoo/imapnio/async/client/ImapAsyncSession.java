@@ -13,7 +13,7 @@ public interface ImapAsyncSession {
     /**
      * Flag to turn on or off debugging for this session.
      */
-    public enum DebugMode {
+    enum DebugMode {
         /** Debugging is off for this session. */
         DEBUG_OFF,
         /** Debugging is on for this session. */

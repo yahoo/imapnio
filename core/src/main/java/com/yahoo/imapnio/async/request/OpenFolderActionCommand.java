@@ -48,7 +48,7 @@ abstract class OpenFolderActionCommand extends ImapRequestAdapter {
      * @param folderName folder name to select
      * @param qResyncParameter qresync parameter
      */
-    public OpenFolderActionCommand(@Nonnull final String op, @Nonnull final String folderName, @Nonnull final QResyncParameter qResyncParameter) {
+    OpenFolderActionCommand(@Nonnull final String op, @Nonnull final String folderName, @Nonnull final QResyncParameter qResyncParameter) {
         this.op = op;
         this.folderName = folderName;
         this.qResyncParameter = qResyncParameter;
