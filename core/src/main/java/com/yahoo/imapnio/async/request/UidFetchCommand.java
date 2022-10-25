@@ -1,7 +1,6 @@
 package com.yahoo.imapnio.async.request;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 import com.yahoo.imapnio.async.data.MessageNumberSet;
 import com.yahoo.imapnio.async.data.PartialExtensionUidFetchInfo;
@@ -18,7 +17,7 @@ public class UidFetchCommand extends AbstractFetchCommand {
      * @param items the data items
      */
     public UidFetchCommand(@Nonnull final MessageNumberSet[] msgsets, @Nonnull final String items) {
-        this(msgsets, items, null);
+        super(true, msgsets, items);
     }
 
     /**
@@ -29,7 +28,7 @@ public class UidFetchCommand extends AbstractFetchCommand {
      * @param partialExtUidFetchInfo partial extension uid fetch info
      */
     public UidFetchCommand(@Nonnull final MessageNumberSet[] msgsets, @Nonnull final String items,
-                           @Nullable final PartialExtensionUidFetchInfo partialExtUidFetchInfo) {
+                           @Nonnull final PartialExtensionUidFetchInfo partialExtUidFetchInfo) {
         super(true, msgsets, items, partialExtUidFetchInfo);
     }
 
@@ -40,7 +39,7 @@ public class UidFetchCommand extends AbstractFetchCommand {
      * @param macro the macro, for example, ALL
      */
     public UidFetchCommand(@Nonnull final MessageNumberSet[] msgsets, @Nonnull final FetchMacro macro) {
-        this(msgsets, macro, null);
+        super(true, msgsets, macro);
     }
 
     /**
@@ -51,7 +50,7 @@ public class UidFetchCommand extends AbstractFetchCommand {
      * @param partialExtUidFetchInfo partial extension uid fetch info
      */
     public UidFetchCommand(@Nonnull final MessageNumberSet[] msgsets, @Nonnull final FetchMacro macro,
-                           @Nullable final PartialExtensionUidFetchInfo partialExtUidFetchInfo) {
+                           @Nonnull final PartialExtensionUidFetchInfo partialExtUidFetchInfo) {
         super(true, msgsets, macro, partialExtUidFetchInfo);
     }
 
@@ -62,7 +61,7 @@ public class UidFetchCommand extends AbstractFetchCommand {
      * @param items the data items
      */
     public UidFetchCommand(@Nonnull final String uids, @Nonnull final String items) {
-        this(uids, items, null);
+        super(true, uids, items, null);
     }
 
     /**
@@ -73,7 +72,7 @@ public class UidFetchCommand extends AbstractFetchCommand {
      * @param partialExtUidFetchInfo partial extension uid fetch info
      */
     public UidFetchCommand(@Nonnull final String uids, @Nonnull final String items,
-                           @Nullable final PartialExtensionUidFetchInfo partialExtUidFetchInfo) {
+                           @Nonnull final PartialExtensionUidFetchInfo partialExtUidFetchInfo) {
         super(true, uids, items, partialExtUidFetchInfo);
     }
 
@@ -84,7 +83,7 @@ public class UidFetchCommand extends AbstractFetchCommand {
      * @param macro the macro, for example, ALL
      */
     public UidFetchCommand(@Nonnull final String uids, @Nonnull final FetchMacro macro) {
-        this(uids, macro, null);
+        super(true, uids, macro, null);
     }
 
     /**
@@ -95,7 +94,7 @@ public class UidFetchCommand extends AbstractFetchCommand {
      * @param partialExtUidFetchInfo partial extension uid fetch info
      */
     public UidFetchCommand(@Nonnull final String uids, @Nonnull final FetchMacro macro,
-                           @Nullable final PartialExtensionUidFetchInfo partialExtUidFetchInfo) {
+                           @Nonnull final PartialExtensionUidFetchInfo partialExtUidFetchInfo) {
         super(true, uids, macro, partialExtUidFetchInfo);
     }
 

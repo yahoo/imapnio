@@ -45,7 +45,7 @@ public abstract class AbstractFetchCommand extends ImapRequestAdapter {
     private static final byte[] CRLF_B = { '\r', '\n' };
 
     /** Partial extension. */
-    private static final String PARTIAL_EXTENSION_SP = "PARTIAL ";
+    private static final String PARTIAL_EXTENSION_SP = " (PARTIAL ";
 
     /** Byte array for partial extension. */
     private static final byte [] PARTIAL_EXTENSION_SP_B = PARTIAL_EXTENSION_SP.getBytes(StandardCharsets.US_ASCII);
@@ -172,19 +172,20 @@ public abstract class AbstractFetchCommand extends ImapRequestAdapter {
         }
 
         if (isUid && partialExtUidFetchInfo != null) {
-            bb.writeByte(ImapClientConstants.SPACE);
-            bb.writeByte(ImapClientConstants.L_PAREN);
             bb.writeBytes(PARTIAL_EXTENSION_SP_B);
-            final StringBuilder sb;
             if (partialExtUidFetchInfo.getRange() == PartialExtensionUidFetchInfo.Range.LAST) {
-                sb = new StringBuilder().append(ImapClientConstants.MINUS).append(partialExtUidFetchInfo.getLowestUid())
-                        .append(ImapClientConstants.COLON).append(ImapClientConstants.MINUS)
-                        .append(partialExtUidFetchInfo.getHighestUid()).append(ImapClientConstants.R_PAREN);
+                bb.writeByte(ImapClientConstants.MINUS);
+                bb.writeBytes(String.valueOf(partialExtUidFetchInfo.getLowestUid()).getBytes(StandardCharsets.US_ASCII));
+                bb.writeBytes(ImapClientConstants.COLON.getBytes(StandardCharsets.US_ASCII));
+                bb.writeByte(ImapClientConstants.MINUS);
+                bb.writeBytes(String.valueOf(partialExtUidFetchInfo.getHighestUid()).getBytes(StandardCharsets.US_ASCII));
+                bb.writeByte(ImapClientConstants.R_PAREN);
             } else {
-                sb = new StringBuilder().append(partialExtUidFetchInfo.getLowestUid()).append(ImapClientConstants.COLON)
-                        .append(partialExtUidFetchInfo.getHighestUid()).append(ImapClientConstants.R_PAREN);
+                bb.writeBytes(String.valueOf(partialExtUidFetchInfo.getLowestUid()).getBytes(StandardCharsets.US_ASCII));
+                bb.writeBytes(ImapClientConstants.COLON.getBytes(StandardCharsets.US_ASCII));
+                bb.writeBytes(String.valueOf(partialExtUidFetchInfo.getHighestUid()).getBytes(StandardCharsets.US_ASCII));
+                bb.writeByte(ImapClientConstants.R_PAREN);
             }
-            bb.writeBytes(sb.toString().getBytes(StandardCharsets.US_ASCII));
         }
         bb.writeBytes(CRLF_B);
 
