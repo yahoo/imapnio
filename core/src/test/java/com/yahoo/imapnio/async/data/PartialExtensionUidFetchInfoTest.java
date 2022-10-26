@@ -13,14 +13,12 @@ public class PartialExtensionUidFetchInfoTest {
      */
     @Test
     public void testPartialExtensionUidFetchInfo() {
-        PartialExtensionUidFetchInfo peufi = new PartialExtensionUidFetchInfo(PartialExtensionUidFetchInfo.Range.FIRST, 1, 5);
-        Assert.assertEquals(peufi.getRange(), PartialExtensionUidFetchInfo.Range.FIRST, "Result mismatched.");
+        PartialExtensionUidFetchInfo peufi = new PartialExtensionUidFetchInfo(1, 5);
         Assert.assertEquals(peufi.getLowestUid(), 1, "Result mismatched.");
         Assert.assertEquals(peufi.getHighestUid(), 5, "Result mismatched.");
 
-        peufi = new PartialExtensionUidFetchInfo(PartialExtensionUidFetchInfo.Range.LAST, 1, 5);
-        Assert.assertEquals(peufi.getRange(), PartialExtensionUidFetchInfo.Range.LAST, "Result mismatched.");
-        Assert.assertEquals(peufi.getLowestUid(), 1, "Result mismatched.");
-        Assert.assertEquals(peufi.getHighestUid(), 5, "Result mismatched.");
+        peufi = new PartialExtensionUidFetchInfo(-1, -5);
+        Assert.assertEquals(peufi.getLowestUid(), -1, "Result mismatched.");
+        Assert.assertEquals(peufi.getHighestUid(), -5, "Result mismatched.");
     }
 }

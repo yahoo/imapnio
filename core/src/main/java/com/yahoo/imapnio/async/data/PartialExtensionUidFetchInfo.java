@@ -1,7 +1,5 @@
 package com.yahoo.imapnio.async.data;
 
-import javax.annotation.Nonnull;
-
 /**
  * The PARTIAL extension of the Internet Message Access Protocol (RFC 3501/RFC 9051) allows clients
  * to limit the number of search results returned, as well as to perform incremental (paged) searches.
@@ -29,42 +27,19 @@ import javax.annotation.Nonnull;
  */
 
 public class PartialExtensionUidFetchInfo {
-    /**
-     * Modifier instructs the server to only return FETCH results for messages in the specified range.
-     */
-    public enum Range {
-        /**
-         * partial-range-first = nz-number ":" nz-number
-         * Request to search from oldest (lowest UIDs) to
-         * more recent messages.
-         */
-        FIRST,
-        /**
-         * partial-range-last  = MINUS nz-number ":" MINUS nz-number
-         * Request to search from newest (highest UIDs) to
-         * oldest messages.
-         */
-        LAST
-    }
-
     /** Lowest uid number that needs to be searched. */
     private final int lowestUid;
 
     /** Highest uid number that needs to be searched. */
     private final int highestUid;
 
-    /** Modifier instructs the server to only return FETCH results for messages in the specified range. */
-    private final Range range;
-
     /**
      * Instantiates a {@link PartialExtensionUidFetchInfo} with specific range including lowest and highest uids.
      *
-     * @param range the specified range
      * @param lowestUid lowest uid to be searched
      * @param highestUid highest uid to be searched
      */
-    public PartialExtensionUidFetchInfo(@Nonnull final Range range, final int lowestUid, final int highestUid) {
-        this.range = range;
+    public PartialExtensionUidFetchInfo(final int lowestUid, final int highestUid) {
         this.lowestUid = lowestUid;
         this.highestUid = highestUid;
     }
@@ -85,14 +60,5 @@ public class PartialExtensionUidFetchInfo {
      */
     public int getHighestUid() {
         return highestUid;
-    }
-
-    /**
-     * Returns the range.
-     *
-     * @return the range
-     */
-    public Range getRange() {
-        return range;
     }
 }

@@ -78,12 +78,12 @@ public class UidFetchCommandTest {
 
         final long[] msgs = { 1L, 2L, 3L, 4L, 5L, 6L };
         final MessageNumberSet[] msgsets = MessageNumberSet.createMessageNumberSets(msgs);
-        PartialExtensionUidFetchInfo peufi = new PartialExtensionUidFetchInfo(PartialExtensionUidFetchInfo.Range.FIRST, 1, 5);
+        PartialExtensionUidFetchInfo peufi = new PartialExtensionUidFetchInfo(1, 5);
         ImapRequest cmd = new UidFetchCommand(msgsets, DATA_ITEMS, peufi);
         Assert.assertEquals(cmd.getCommandLine(),
                 "UID FETCH 1:6 (FLAGS BODY[HEADER.FIELDS (DATE FROM)]) (PARTIAL 1:5)\r\n", "Expected result mismatched.");
 
-        peufi = new PartialExtensionUidFetchInfo(PartialExtensionUidFetchInfo.Range.LAST, 1, 5);
+        peufi = new PartialExtensionUidFetchInfo(-1, -5);
         cmd = new UidFetchCommand(msgsets, DATA_ITEMS, peufi);
         Assert.assertEquals(cmd.getCommandLine(),
                 "UID FETCH 1:6 (FLAGS BODY[HEADER.FIELDS (DATE FROM)]) (PARTIAL -1:-5)\r\n", "Expected result mismatched.");
@@ -131,11 +131,11 @@ public class UidFetchCommandTest {
 
         final long[] msgs = { 4294967293L, 4294967294L, 4294967295L };
         final MessageNumberSet[] msgsets = MessageNumberSet.createMessageNumberSets(msgs);
-        PartialExtensionUidFetchInfo peufi = new PartialExtensionUidFetchInfo(PartialExtensionUidFetchInfo.Range.FIRST, 1, 5);
+        PartialExtensionUidFetchInfo peufi = new PartialExtensionUidFetchInfo(1, 5);
         ImapRequest cmd = new UidFetchCommand(msgsets, FetchMacro.FAST, peufi);
         Assert.assertEquals(cmd.getCommandLine(), "UID FETCH 4294967293:4294967295 FAST (PARTIAL 1:5)\r\n", "Expected result mismatched.");
 
-        peufi = new PartialExtensionUidFetchInfo(PartialExtensionUidFetchInfo.Range.LAST, 1, 5);
+        peufi = new PartialExtensionUidFetchInfo(-1, -5);
         cmd = new UidFetchCommand(msgsets, FetchMacro.FAST, peufi);
         Assert.assertEquals(cmd.getCommandLine(), "UID FETCH 4294967293:4294967295 FAST (PARTIAL -1:-5)\r\n", "Expected result mismatched.");
 
@@ -178,12 +178,12 @@ public class UidFetchCommandTest {
     public void testGetCommandLineFromConstructorWithUidStringDataItemsPlusPartialRange()
             throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
 
-        PartialExtensionUidFetchInfo peufi = new PartialExtensionUidFetchInfo(PartialExtensionUidFetchInfo.Range.FIRST, 1, 5);
+        PartialExtensionUidFetchInfo peufi = new PartialExtensionUidFetchInfo(1, 5);
         ImapRequest cmd = new UidFetchCommand("*:4,5:7", DATA_ITEMS, peufi);
         Assert.assertEquals(cmd.getCommandLine(),
                 "UID FETCH *:4,5:7 (FLAGS BODY[HEADER.FIELDS (DATE FROM)]) (PARTIAL 1:5)\r\n", "Expected result mismatched.");
 
-        peufi = new PartialExtensionUidFetchInfo(PartialExtensionUidFetchInfo.Range.LAST, 1, 5);
+        peufi = new PartialExtensionUidFetchInfo(-1, -5);
         cmd = new UidFetchCommand("*:4,5:7", DATA_ITEMS, peufi);
         Assert.assertEquals(cmd.getCommandLine(),
                 "UID FETCH *:4,5:7 (FLAGS BODY[HEADER.FIELDS (DATE FROM)]) (PARTIAL -1:-5)\r\n", "Expected result mismatched.");
@@ -227,11 +227,11 @@ public class UidFetchCommandTest {
     public void testGetCommandLineFromConstructorWithUidStringAndMacroPlusPartialRange()
             throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
 
-        PartialExtensionUidFetchInfo peufi = new PartialExtensionUidFetchInfo(PartialExtensionUidFetchInfo.Range.FIRST, 1, 5);
+        PartialExtensionUidFetchInfo peufi = new PartialExtensionUidFetchInfo(1, 5);
         ImapRequest cmd = new UidFetchCommand("1:*", FetchMacro.FAST, peufi);
         Assert.assertEquals(cmd.getCommandLine(), "UID FETCH 1:* FAST (PARTIAL 1:5)\r\n", "Expected result mismatched.");
 
-        peufi = new PartialExtensionUidFetchInfo(PartialExtensionUidFetchInfo.Range.LAST, 1, 5);
+        peufi = new PartialExtensionUidFetchInfo(-1, -5);
         cmd = new UidFetchCommand("1:*", FetchMacro.FAST, peufi);
         Assert.assertEquals(cmd.getCommandLine(), "UID FETCH 1:* FAST (PARTIAL -1:-5)\r\n", "Expected result mismatched.");
 

@@ -173,19 +173,10 @@ public abstract class AbstractFetchCommand extends ImapRequestAdapter {
 
         if (isUid && partialExtUidFetchInfo != null) {
             bb.writeBytes(PARTIAL_EXTENSION_SP_B);
-            if (partialExtUidFetchInfo.getRange() == PartialExtensionUidFetchInfo.Range.LAST) {
-                bb.writeByte(ImapClientConstants.MINUS);
-                bb.writeBytes(String.valueOf(partialExtUidFetchInfo.getLowestUid()).getBytes(StandardCharsets.US_ASCII));
-                bb.writeBytes(ImapClientConstants.COLON.getBytes(StandardCharsets.US_ASCII));
-                bb.writeByte(ImapClientConstants.MINUS);
-                bb.writeBytes(String.valueOf(partialExtUidFetchInfo.getHighestUid()).getBytes(StandardCharsets.US_ASCII));
-                bb.writeByte(ImapClientConstants.R_PAREN);
-            } else {
-                bb.writeBytes(String.valueOf(partialExtUidFetchInfo.getLowestUid()).getBytes(StandardCharsets.US_ASCII));
-                bb.writeBytes(ImapClientConstants.COLON.getBytes(StandardCharsets.US_ASCII));
-                bb.writeBytes(String.valueOf(partialExtUidFetchInfo.getHighestUid()).getBytes(StandardCharsets.US_ASCII));
-                bb.writeByte(ImapClientConstants.R_PAREN);
-            }
+            bb.writeBytes(String.valueOf(partialExtUidFetchInfo.getLowestUid()).getBytes(StandardCharsets.US_ASCII));
+            bb.writeBytes(ImapClientConstants.COLON.getBytes(StandardCharsets.US_ASCII));
+            bb.writeBytes(String.valueOf(partialExtUidFetchInfo.getHighestUid()).getBytes(StandardCharsets.US_ASCII));
+            bb.writeByte(ImapClientConstants.R_PAREN);
         }
         bb.writeBytes(CRLF_B);
 
