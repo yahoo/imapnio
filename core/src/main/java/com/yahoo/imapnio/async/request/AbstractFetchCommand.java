@@ -173,9 +173,9 @@ public abstract class AbstractFetchCommand extends ImapRequestAdapter {
 
         if (isUid && partialExtUidFetchInfo != null) {
             bb.writeBytes(PARTIAL_EXTENSION_SP_B);
-            bb.writeBytes(String.valueOf(partialExtUidFetchInfo.getLowestUid()).getBytes(StandardCharsets.US_ASCII));
+            bb.writeBytes(String.valueOf(partialExtUidFetchInfo.getFirstUid()).getBytes(StandardCharsets.US_ASCII));
             bb.writeBytes(ImapClientConstants.COLON.getBytes(StandardCharsets.US_ASCII));
-            bb.writeBytes(String.valueOf(partialExtUidFetchInfo.getHighestUid()).getBytes(StandardCharsets.US_ASCII));
+            bb.writeBytes(String.valueOf(partialExtUidFetchInfo.getLastUid()).getBytes(StandardCharsets.US_ASCII));
             bb.writeByte(ImapClientConstants.R_PAREN);
         }
         bb.writeBytes(CRLF_B);
