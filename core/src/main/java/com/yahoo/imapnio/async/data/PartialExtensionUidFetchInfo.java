@@ -27,38 +27,38 @@ package com.yahoo.imapnio.async.data;
  */
 
 public class PartialExtensionUidFetchInfo {
-    /** Lowest uid number that needs to be searched. */
-    private final int lowestUid;
+    /** First uid number that needs to be searched. */
+    private final int firstUid;
 
-    /** Highest uid number that needs to be searched. */
-    private final int highestUid;
+    /** Last uid number that needs to be searched. */
+    private final int lastUid;
 
     /**
-     * Instantiates a {@link PartialExtensionUidFetchInfo} with specific range including lowest and highest uids.
+     * Instantiates a {@link PartialExtensionUidFetchInfo} with specific range including first and last uids.
      *
-     * @param lowestUid lowest uid to be searched
-     * @param highestUid highest uid to be searched
+     * @param firstUid first uid to be searched
+     * @param lastUid last uid to be searched
      */
-    public PartialExtensionUidFetchInfo(final int lowestUid, final int highestUid) {
-        this.lowestUid = lowestUid;
-        this.highestUid = highestUid;
+    public PartialExtensionUidFetchInfo(final int firstUid, final int lastUid) {
+        this.firstUid = firstUid;
+        this.lastUid = lastUid;
     }
 
     /**
-     * Returns lowest uid.
+     * Returns first uid.
      *
-     * @return lowest uid
+     * @return first uid
      */
-    public int getLowestUid() {
-        return lowestUid;
+    public int getFirstUid() {
+        return firstUid;
     }
 
     /**
-     * Returns highest uid.
+     * Returns last uid.
      *
-     * @return highest uid
+     * @return last uid
      */
-    public int getHighestUid() {
-        return highestUid;
+    public int getLastUid() {
+        return lastUid;
     }
 }
