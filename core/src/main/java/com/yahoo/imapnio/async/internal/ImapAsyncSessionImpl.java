@@ -356,7 +356,7 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
     /**
      * @return true if channel is closed; false otherwise
      */
-    boolean isChannelClosed() {
+    public boolean isChannelClosed() {
         return !channelRef.get().isActive();
     }
 

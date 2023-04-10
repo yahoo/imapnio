@@ -64,4 +64,9 @@ public interface ImapAsyncSession {
      */
     ImapFuture<Boolean> close();
 
+    /**
+     * @return true if channel is closed; false otherwise
+     */
+    boolean isChannelClosed();
+
 }
