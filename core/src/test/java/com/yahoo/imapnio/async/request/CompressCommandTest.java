@@ -1,4 +1,4 @@
-package com.yahoo.imapnio.async.internal;
+package com.yahoo.imapnio.async.request;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -10,8 +10,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
-import com.yahoo.imapnio.async.request.ImapRFCSupportedCommandType;
-import com.yahoo.imapnio.async.request.ImapRequest;
 
 /**
  * Unit test for {@link CompressCommand}.
