@@ -19,6 +19,7 @@ import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException.FailureType;
 import com.yahoo.imapnio.async.netty.ImapClientCommandRespHandler;
 import com.yahoo.imapnio.async.netty.ImapCommandChannelEventProcessor;
+import com.yahoo.imapnio.async.request.CompressCommand;
 import com.yahoo.imapnio.async.request.IdleCommand;
 import com.yahoo.imapnio.async.request.ImapRequest;
 import com.yahoo.imapnio.async.response.ImapAsyncResponse;

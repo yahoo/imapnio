@@ -1,24 +1,21 @@
-package com.yahoo.imapnio.async.internal;
-
-import com.yahoo.imapnio.async.request.AbstractNoArgsCommand;
-import com.yahoo.imapnio.async.request.ImapRFCSupportedCommandType;
+package com.yahoo.imapnio.async.request;
 
 /**
  * This class defines imap Compress request from client.
  * 
  * @see "RFC 4978"
  */
-final class CompressCommand extends AbstractNoArgsCommand {
+public final class CompressCommand extends AbstractNoArgsCommand {
 
     /** Command name. */
     private static final String COMPRESS_DEFLATE = "COMPRESS DEFLATE";
 
     /**
-     * Initializes the {@link CompressCommand}. Constructor is only visible to this package so it can only be called by {@link ImapAsyncSessionImpl}.
+     * Initializes the {@link CompressCommand}.
      * 
      * @see "RFC 4978"
      */
-    CompressCommand() {
+    public CompressCommand() {
         super(COMPRESS_DEFLATE);
     }
 

@@ -10,6 +10,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
+import com.yahoo.imapnio.async.request.CompressCommand;
 import com.yahoo.imapnio.async.request.ImapRFCSupportedCommandType;
 import com.yahoo.imapnio.async.request.ImapRequest;
 
