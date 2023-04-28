@@ -440,13 +440,10 @@
                 <version>${maven-surefire-plugin.version}</version>
                 <configuration>
                     <forkMode>once</forkMode>
-                    <!-- do not change the library.path - lafa -->
-                    <argLine>-Dfile.encoding=ANSI_X3.4-1968
+                    <argLine>--add-opens java.base/java.time=ALL-UNNAMED -Dfile.encoding=ANSI_X3.4-1968
                         -Djava.library.path=
                         -javaagent:"${settings.localRepository}"/org/jacoco/org.jacoco.agent/${jacoco-maven-plugin.version}/org.jacoco.agent-${jacoco-maven-plugin.version}-runtime.jar=destfile=${basedir}/target/jacoco.exec</argLine>
                     <excludedGroups>notIsolate,EventListenersRegression</excludedGroups>
-                    <!-- DO NOT TOUCH: SETTINGS BELOW ALLOW THE CONFIG LOADER 
-                        TO FIND CONFIG TEST RESOURCES :- LAFA -->
                     <useSystemClassLoader>true</useSystemClassLoader>
                     <useManifestOnlyJar>false</useManifestOnlyJar>
                 </configuration>
