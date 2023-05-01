@@ -134,8 +134,7 @@ public class ImapAsyncSessionImplTest {
 
         // construct, both class level and session level debugging are off
 
-        final String sessionCtx = USER_ID;
-        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(clock, channel, logger, DebugMode.DEBUG_OFF, SESSION_ID, pipeline, sessionCtx);
+        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(clock, channel, logger, DebugMode.DEBUG_OFF, SESSION_ID, pipeline, USER_ID);
 
         // execute Authenticate plain command
         {
@@ -314,55 +313,23 @@ public class ImapAsyncSessionImplTest {
     }
 
     /**
-     * Tests isChanelClosed when the channel is closed.
+     * Tests isChanelClosed when the channel is open or closedclosed.
      */
     @Test
     public void testIsChannelClosedWhenClosed() {
         final Channel channel = Mockito.mock(Channel.class);
         final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
         Mockito.when(channel.pipeline()).thenReturn(pipeline);
-        Mockito.when(channel.isActive()).thenReturn(false);
-        final ChannelPromise authWritePromise = Mockito.mock(ChannelPromise.class); // first
-        final ChannelPromise authWritePromise2 = Mockito.mock(ChannelPromise.class); // after +
-        final ChannelPromise capaWritePromise = Mockito.mock(ChannelPromise.class);
-        final ChannelPromise closePromise = Mockito.mock(ChannelPromise.class);
-        Mockito.when(channel.newPromise()).thenReturn(authWritePromise).thenReturn(authWritePromise2).thenReturn(capaWritePromise)
-                .thenReturn(closePromise);
-
-        final Logger logger = Mockito.mock(Logger.class);
-        Mockito.when(logger.isDebugEnabled()).thenReturn(false);
-
-        // construct, both class level and session level debugging are off
-
-        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(clock, channel, logger, DebugMode.DEBUG_OFF, SESSION_ID, pipeline, USER_ID);
-
-        Assert.assertTrue(aSession.isChannelClosed());
-    }
-
-    /**
-     * Tests isChanelClosed when the channel is open.
-     */
-    @Test
-    public void testIsChannelClosedWhenOpen() {
-        final Channel channel = Mockito.mock(Channel.class);
-        final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
-        Mockito.when(channel.pipeline()).thenReturn(pipeline);
         Mockito.when(channel.isActive()).thenReturn(true);
-        final ChannelPromise authWritePromise = Mockito.mock(ChannelPromise.class); // first
-        final ChannelPromise authWritePromise2 = Mockito.mock(ChannelPromise.class); // after +
-        final ChannelPromise capaWritePromise = Mockito.mock(ChannelPromise.class);
-        final ChannelPromise closePromise = Mockito.mock(ChannelPromise.class);
-        Mockito.when(channel.newPromise()).thenReturn(authWritePromise).thenReturn(authWritePromise2).thenReturn(capaWritePromise)
-                .thenReturn(closePromise);
 
-        final Logger logger = Mockito.mock(Logger.class);
-        Mockito.when(logger.isDebugEnabled()).thenReturn(false);
-
-        // construct, both class level and session level debugging are off
-
-        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(clock, channel, logger, DebugMode.DEBUG_OFF, SESSION_ID, pipeline, USER_ID);
+        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(clock, channel, Mockito.mock(Logger.class),
+            DebugMode.DEBUG_OFF, SESSION_ID, pipeline, USER_ID);
 
         Assert.assertFalse(aSession.isChannelClosed());
+
+        Mockito.when(channel.isActive()).thenReturn(false);
+
+        Assert.assertTrue(aSession.isChannelClosed());
     }
 
     /**
@@ -391,8 +358,7 @@ public class ImapAsyncSessionImplTest {
         Mockito.when(logger.isTraceEnabled()).thenReturn(true);
 
         // construct, both class level and session level debugging are off
-        final String sessionCtx = USER_ID;
-        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(clock, channel, logger, DebugMode.DEBUG_OFF, SESSION_ID, pipeline, sessionCtx);
+        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(clock, channel, logger, DebugMode.DEBUG_OFF, SESSION_ID, pipeline, USER_ID);
 
         // execute Authenticate XOAUTH2 command
         {
@@ -520,8 +486,7 @@ public class ImapAsyncSessionImplTest {
         Mockito.when(logger.isTraceEnabled()).thenReturn(true);
 
         // construct, both class level and session level debugging are off
-        final String sessionCtx = USER_ID;
-        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(clock, channel, logger, DebugMode.DEBUG_OFF, SESSION_ID, pipeline, sessionCtx);
+        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(clock, channel, logger, DebugMode.DEBUG_OFF, SESSION_ID, pipeline, USER_ID);
 
         // execute Authenticate XOAUTH2 command
         {
@@ -635,8 +600,7 @@ public class ImapAsyncSessionImplTest {
         Mockito.when(logger.isTraceEnabled()).thenReturn(true);
 
         // construct, class level debug is enabled, session level debug is disabled
-        final String sessionCtx = USER_ID;
-        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(clock, channel, logger, DebugMode.DEBUG_OFF, SESSION_ID, pipeline, sessionCtx);
+        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(clock, channel, logger, DebugMode.DEBUG_OFF, SESSION_ID, pipeline, USER_ID);
 
         // execute Authenticate plain command
         {
@@ -804,8 +768,7 @@ public class ImapAsyncSessionImplTest {
         Mockito.when(logger.isDebugEnabled()).thenReturn(true);
 
         // construct, turn on session level debugging by having logger.isDebugEnabled() true and session level debug on
-        final String sessionCtx = USER_ID;
-        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(clock, channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline, sessionCtx);
+        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(clock, channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline, USER_ID);
 
         // execute Authenticate plain command
         {
@@ -973,8 +936,7 @@ public class ImapAsyncSessionImplTest {
         Mockito.when(logger.isDebugEnabled()).thenReturn(true);
 
         // construct, turn on session level debugging by having logger.isDebugEnabled() true and session level debug on
-        final String sessionCtx = USER_ID;
-        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(clock, channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline, sessionCtx);
+        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(clock, channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline, USER_ID);
 
         // execute Authenticate plain command
         {
@@ -1522,8 +1484,7 @@ public class ImapAsyncSessionImplTest {
         Mockito.when(logger.isDebugEnabled()).thenReturn(true);
 
         // construct
-        final String sessionCtx = USER_ID;
-        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(clock, channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline, sessionCtx);
+        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(clock, channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline, USER_ID);
 
         // execute
         final ConcurrentLinkedQueue<IMAPResponse> serverResponseQ = new ConcurrentLinkedQueue<IMAPResponse>();
@@ -1639,8 +1600,7 @@ public class ImapAsyncSessionImplTest {
         final Logger logger = Mockito.mock(Logger.class);
         Mockito.when(logger.isDebugEnabled()).thenReturn(true);
 
-        final String sessionCtx = USER_ID;
-        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(clock, channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline, sessionCtx);
+        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(clock, channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline, USER_ID);
         final ImapRequest cmd = new CapaCommand();
         aSession.execute(cmd);
 
@@ -1681,8 +1641,7 @@ public class ImapAsyncSessionImplTest {
         Mockito.when(logger.isDebugEnabled()).thenReturn(true);
 
         // constructor, class level debug is off, but session level is on
-        final String sessionCtx = USER_ID;
-        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(clock, channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline, sessionCtx);
+        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(clock, channel, logger, DebugMode.DEBUG_ON, SESSION_ID, pipeline, USER_ID);
         final ImapRequest cmd = new CapaCommand();
         ImapAsyncClientException ex = null;
         try {
@@ -1729,8 +1688,7 @@ public class ImapAsyncSessionImplTest {
         Mockito.when(logger.isDebugEnabled()).thenReturn(false);
 
         // construct, both class level and session level debugging are off
-        final String sessionCtx = USER_ID;
-        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(clock, channel, logger, DebugMode.DEBUG_OFF, SESSION_ID, pipeline, sessionCtx);
+        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(clock, channel, logger, DebugMode.DEBUG_OFF, SESSION_ID, pipeline, USER_ID);
 
         // perform close session, isSuccess() returns false
         Mockito.when(closePromise.isSuccess()).thenReturn(false);
