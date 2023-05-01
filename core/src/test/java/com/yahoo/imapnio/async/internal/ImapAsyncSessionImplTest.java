@@ -314,6 +314,58 @@ public class ImapAsyncSessionImplTest {
     }
 
     /**
+     * Tests isChanelClosed when the channel is closed.
+     */
+    @Test
+    public void testIsChannelClosedWhenClosed() {
+        final Channel channel = Mockito.mock(Channel.class);
+        final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
+        Mockito.when(channel.pipeline()).thenReturn(pipeline);
+        Mockito.when(channel.isActive()).thenReturn(false);
+        final ChannelPromise authWritePromise = Mockito.mock(ChannelPromise.class); // first
+        final ChannelPromise authWritePromise2 = Mockito.mock(ChannelPromise.class); // after +
+        final ChannelPromise capaWritePromise = Mockito.mock(ChannelPromise.class);
+        final ChannelPromise closePromise = Mockito.mock(ChannelPromise.class);
+        Mockito.when(channel.newPromise()).thenReturn(authWritePromise).thenReturn(authWritePromise2).thenReturn(capaWritePromise)
+                .thenReturn(closePromise);
+
+        final Logger logger = Mockito.mock(Logger.class);
+        Mockito.when(logger.isDebugEnabled()).thenReturn(false);
+
+        // construct, both class level and session level debugging are off
+
+        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(clock, channel, logger, DebugMode.DEBUG_OFF, SESSION_ID, pipeline, USER_ID);
+
+        Assert.assertTrue(aSession.isChannelClosed());
+    }
+
+    /**
+     * Tests isChanelClosed when the channel is open.
+     */
+    @Test
+    public void testIsChannelClosedWhenOpen() {
+        final Channel channel = Mockito.mock(Channel.class);
+        final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
+        Mockito.when(channel.pipeline()).thenReturn(pipeline);
+        Mockito.when(channel.isActive()).thenReturn(true);
+        final ChannelPromise authWritePromise = Mockito.mock(ChannelPromise.class); // first
+        final ChannelPromise authWritePromise2 = Mockito.mock(ChannelPromise.class); // after +
+        final ChannelPromise capaWritePromise = Mockito.mock(ChannelPromise.class);
+        final ChannelPromise closePromise = Mockito.mock(ChannelPromise.class);
+        Mockito.when(channel.newPromise()).thenReturn(authWritePromise).thenReturn(authWritePromise2).thenReturn(capaWritePromise)
+                .thenReturn(closePromise);
+
+        final Logger logger = Mockito.mock(Logger.class);
+        Mockito.when(logger.isDebugEnabled()).thenReturn(false);
+
+        // construct, both class level and session level debugging are off
+
+        final ImapAsyncSessionImpl aSession = new ImapAsyncSessionImpl(clock, channel, logger, DebugMode.DEBUG_OFF, SESSION_ID, pipeline, USER_ID);
+
+        Assert.assertFalse(aSession.isChannelClosed());
+    }
+
+    /**
      * Tests Xoauth2 command with SASL-IR disabled. Verifies the logging message.
      *
      * @throws IOException will not throw
