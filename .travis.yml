@@ -2,6 +2,7 @@ branches:
   only:
   - master
   - stable
+  - gpg2
 language: java
 jdk:
 - openjdk14
@@ -9,8 +10,8 @@ dist: focal
 before_install:
 install:
 - mvn clean install -Dgpg.skip=true
+- "./ci/deploy.sh"
 before_script: 
 script: 
 after_success:
-- "./ci/deploy.sh"
 after_failure:
