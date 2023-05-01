@@ -557,8 +557,8 @@
                 <gpg.passphrase>${env.GPG_PASSPHRASE}</gpg.passphrase>
                 <gpg.defaultKeyring>false</gpg.defaultKeyring>
                 <gpg.homedir>${main.basedir}/ci/deploy</gpg.homedir>
-                <gpg.publickeyring>pubring.gpg</gpg.publickeyring>
-                <gpg.secretkeyring>secring.gpg</gpg.secretkeyring>
+                <gpg.publickeyring>pubkeys.asc</gpg.publickeyring>
+                <gpg.secretkeyring>prikeys.asc</gpg.secretkeyring>
             </properties>
             <activation>
                 <property>
@@ -571,7 +571,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.6</version>
+                        <version>3.0.1</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
