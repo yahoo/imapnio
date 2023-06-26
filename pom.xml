@@ -556,9 +556,7 @@
                 <gpg.keyname>${env.GPG_KEYNAME}</gpg.keyname>
                 <gpg.passphrase>${env.GPG_PASSPHRASE}</gpg.passphrase>
                 <gpg.defaultKeyring>false</gpg.defaultKeyring>
-                <gpg.homedir>${main.basedir}/ci/deploy</gpg.homedir>
                 <gpg.publickeyring>pubkeys.asc</gpg.publickeyring>
-                <gpg.secretkeyring>prikeys.asc</gpg.secretkeyring>
             </properties>
             <activation>
                 <property>
