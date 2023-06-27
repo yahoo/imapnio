@@ -5,7 +5,7 @@
     <groupId>com.yahoo.imapnio</groupId>
     <artifactId>imapnio</artifactId>
     <packaging>pom</packaging>
-    <version>5.0.11</version>
+    <version>5.0.12</version>
     <name>${project.artifactId}</name>
     <url>https://github.com/yahoo/imapnio</url>
     <description>Parent POM file for imapnio project</description>
@@ -556,9 +556,7 @@
                 <gpg.keyname>${env.GPG_KEYNAME}</gpg.keyname>
                 <gpg.passphrase>${env.GPG_PASSPHRASE}</gpg.passphrase>
                 <gpg.defaultKeyring>false</gpg.defaultKeyring>
-                <gpg.homedir>${main.basedir}/ci/deploy</gpg.homedir>
                 <gpg.publickeyring>pubkeys.asc</gpg.publickeyring>
-                <gpg.secretkeyring>prikeys.asc</gpg.secretkeyring>
             </properties>
             <activation>
                 <property>
