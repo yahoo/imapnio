@@ -11,9 +11,6 @@ final class ImapClientConstants {
     /** Literal to cancel the command when server responds error. */
     static final char CANCEL_B = '*';
 
-    /** String for CR and LF. */
-    static final String CRLF = "\r\n";
-
     /** Literal for CR and LF. */
     static final int CRLFLEN = "\r\n".length();
 

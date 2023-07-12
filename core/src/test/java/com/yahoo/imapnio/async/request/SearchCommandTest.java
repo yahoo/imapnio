@@ -247,7 +247,6 @@ public class SearchCommandTest {
     @Test
     public void testGetCommandLineNullMessageSeqSetsNullSearchTerm() throws IOException, IllegalArgumentException, SearchException {
         final MessageNumberSet[] msgSets = null;
-        final String charset = null;
         ImapAsyncClientException actualEx = null;
         try {
             new SearchCommand(msgSets, null, null);

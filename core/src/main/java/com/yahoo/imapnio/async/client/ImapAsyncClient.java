@@ -257,7 +257,9 @@ public class ImapAsyncClient {
                         } catch (final SSLException e) {
                             final ImapAsyncClientException ex = new ImapAsyncClientException(FailureType.CONNECTION_SSL_EXCEPTION, e);
                             sessionFuture.done(ex);
-                            logger.error(CONNECT_RESULT_REC, "NA", sessionCtx.toString(), "failure", serverUri.toASCIIString(), sniNames, ex);
+                            if (logger.isErrorEnabled()) {
+                                logger.error(CONNECT_RESULT_REC, "NA", sessionCtx.toString(), "failure", serverUri.toASCIIString(), sniNames, ex);
+                            }
                             closeChannel(ch);
                             return;
                         }
@@ -299,7 +301,9 @@ public class ImapAsyncClient {
                     }
                     final ImapAsyncClientException ex = new ImapAsyncClientException(type, cause);
                     sessionFuture.done(ex);
-                    logger.error(CONNECT_RESULT_REC, "NA", sessionCtx.toString(), "failure", serverUri.toASCIIString(), sniNames, ex);
+                    if (logger.isErrorEnabled()) {
+                        logger.error(CONNECT_RESULT_REC, "NA", sessionCtx.toString(), "failure", serverUri.toASCIIString(), sniNames, ex);
+                    }
                     closeChannel(nettyConnectFuture.channel());
                 }
             }

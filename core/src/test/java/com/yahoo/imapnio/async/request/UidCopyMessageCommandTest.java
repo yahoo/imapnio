@@ -17,8 +17,6 @@ import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
  * Unit test for {@link UidCopyMessageCommand}.
  */
 public class UidCopyMessageCommandTest {
-    /** Literal for COPY. */
-    private static final String COPY = "COPY ";
 
     /** Fields to check for cleanup. */
     private Set<Field> fieldsToCheck;
