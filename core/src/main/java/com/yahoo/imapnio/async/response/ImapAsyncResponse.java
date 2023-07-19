@@ -18,6 +18,8 @@ public class ImapAsyncResponse {
     private int responseTotalBytes;
     /** List of IMAPResponse lines. */
     private Collection<IMAPResponse> responses;
+    /** Total time elapsed by command in millis. */
+    private long totalTimeElapsedInMillis;
 
     /**
      * Initializes an {@link ImapAsyncResponse} object.
@@ -26,13 +28,15 @@ public class ImapAsyncResponse {
      * @param requestTotalBytes number of bytes in request
      * @param responseTotalBytes number of bytes in response
      * @param responses list of response lines
+     * @param totalTimeElapsedInMillis total time elapsed in millis
      */
     public ImapAsyncResponse(final ImapCommandType commandType, final int requestTotalBytes, final int responseTotalBytes,
-            final Collection<IMAPResponse> responses) {
+            final Collection<IMAPResponse> responses, final long totalTimeElapsedInMillis) {
         this.responses = responses;
         this.commandType = commandType;
         this.requestTotalBytes = requestTotalBytes;
         this.responseTotalBytes = responseTotalBytes;
+        this.totalTimeElapsedInMillis = totalTimeElapsedInMillis;
     }
 
     /**
@@ -61,5 +65,12 @@ public class ImapAsyncResponse {
      */
     public Collection<IMAPResponse> getResponseLines() {
         return responses;
+    }
+
+    /**
+     * @return total time elapsed in milli seconds.
+     */
+    public long getTotalTimeElapsed() {
+        return totalTimeElapsedInMillis;
     }
 }

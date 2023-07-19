@@ -150,6 +150,9 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
         /** Number of bytes in response. */
         private int responseTotalBytes;
 
+        /** Request start time. */
+        private long requestStartTimeInMillis;
+
         /**
          * Initializes a newly created {@link ImapCommandEntry} object so that it can handle the command responses and determine whether the request
          * is done.
@@ -158,9 +161,10 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
          * @param future ImapFuture instance
          * @param tag the tag associated with this command
          * @param requestTotalBytes request total bytes
+         * @param requestStartTimeInMillis request start time
          */
         ImapCommandEntry(@Nonnull final ImapRequest cmd, @Nonnull final ImapFuture<ImapAsyncResponse> future, @Nonnull final String tag,
-                final int requestTotalBytes) {
+                final int requestTotalBytes, final long requestStartTimeInMillis) {
             this.cmd = cmd;
             this.state = CommandState.REQUEST_IN_PREPARATION;
             this.responses = (cmd.getStreamingResponsesQueue() != null) ? cmd.getStreamingResponsesQueue()
@@ -170,6 +174,7 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
             this.requestSentTime = 0;
             this.requestTotalBytes = requestTotalBytes;
             this.responseTotalBytes = 0;
+            this.requestStartTimeInMillis = requestStartTimeInMillis;
         }
 
         /**
@@ -233,7 +238,8 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
          * @param sb StringBuilder instance to output the entry information
          */
         public void debugInfo(@Nonnull final StringBuilder sb) {
-            sb.append(CMD_TAG).append(tag).append(CMD_TYPE).append(getRequest().getCommandType()).append(CMD_SENT).append(getRequestSentTime());
+            sb.append(CMD_TAG).append(tag).append(CMD_TYPE).append(getRequest().getCommandType()).append(CMD_SENT)
+                    .append(getRequestStartTimeInMillis());
         }
 
         /**
@@ -259,6 +265,13 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
          */
         public void recordResponseBytes(final int length) {
             responseTotalBytes += length;
+        }
+
+        /**
+         * @return request start time.
+         */
+        public long getRequestStartTimeInMillis() {
+            return requestStartTimeInMillis;
         }
 
         /**
@@ -335,7 +348,7 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
         final ImapFuture<ImapAsyncResponse> cmdFuture = new ImapFuture<ImapAsyncResponse>();
         final String tag = getNextTag();
         final int requestTotalBytes = tag.getBytes(StandardCharsets.US_ASCII).length + SPACE_LENGTH + command.getCommandLineBytes().readableBytes();
-        requestsQueue.add(new ImapCommandEntry(command, cmdFuture, tag, requestTotalBytes));
+        requestsQueue.add(new ImapCommandEntry(command, cmdFuture, tag, requestTotalBytes, clock.millis()));
 
         final ByteBuf buf = Unpooled.buffer();
 
@@ -357,6 +370,7 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
     /**
      * @return true if channel is closed; false otherwise
      */
+    @Override
     public boolean isChannelClosed() {
         return !channelRef.get().isActive();
     }
@@ -560,8 +574,9 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
                     }
                 }
                 // see rfc3501, page 63 for details, since we always give a tagged command, response completion should be the first tagged response
+                final long totalTimeElapsedInMillis = clock.millis() - curEntry.getRequestStartTimeInMillis();
                 final ImapAsyncResponse doneResponse = new ImapAsyncResponse(curEntry.getRequest().getCommandType(), curEntry.getRequestTotalBytes(),
-                        curEntry.getResponseTotalBytes(), responses);
+                        curEntry.getResponseTotalBytes(), responses, totalTimeElapsedInMillis);
                 removeFirstEntry();
                 curEntry.getFuture().done(doneResponse);
                 return;
