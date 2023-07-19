@@ -1127,7 +1127,7 @@ public class ImapAsyncSessionImplTest {
         final ImapAsyncClientException asynEx = (ImapAsyncClientException) cause;
         Assert.assertEquals(asynEx.getFailureType(), FailureType.CHANNEL_TIMEOUT, "Failure type mismatched.");
         Assert.assertEquals(asynEx.getMessage(),
-                "failureType=CHANNEL_TIMEOUT,sId=123456,uId=Argentinosaurus@long.enough,cmdTag:a1,cmdType:CAPABILITY,cmdSent:1",
+                "failureType=CHANNEL_TIMEOUT,sId=123456,uId=Argentinosaurus@long.enough,cmdTag:a1,cmdType:CAPABILITY",
                 "Error message mismatched.");
     }
 
@@ -1251,7 +1251,7 @@ public class ImapAsyncSessionImplTest {
             final ImapAsyncClientException asynEx = (ImapAsyncClientException) cause;
             Assert.assertEquals(asynEx.getFailureType(), FailureType.CHANNEL_EXCEPTION, "Failure type mismatched.");
             Assert.assertEquals(asynEx.getMessage(),
-                    "failureType=CHANNEL_EXCEPTION,sId=123456,uId=Argentinosaurus@long.enough,cmdTag:a1,cmdType:CAPABILITY,cmdSent:1",
+                    "failureType=CHANNEL_EXCEPTION,sId=123456,uId=Argentinosaurus@long.enough,cmdTag:a1,cmdType:CAPABILITY",
                     "Error message mismatched.");
         }
 
@@ -1366,7 +1366,7 @@ public class ImapAsyncSessionImplTest {
         final ImapAsyncClientException asynEx = (ImapAsyncClientException) cause;
         Assert.assertEquals(asynEx.getFailureType(), FailureType.CHANNEL_DISCONNECTED, "Failure type mismatched.");
         Assert.assertEquals(asynEx.getMessage(),
-                "failureType=CHANNEL_DISCONNECTED,sId=123456,uId=Argentinosaurus@long.enough,cmdTag:a1,cmdType:CAPABILITY,cmdSent:0",
+                "failureType=CHANNEL_DISCONNECTED,sId=123456,uId=Argentinosaurus@long.enough,cmdTag:a1,cmdType:CAPABILITY",
                 "Error message mismatched.");
 
         // verify logging messages
