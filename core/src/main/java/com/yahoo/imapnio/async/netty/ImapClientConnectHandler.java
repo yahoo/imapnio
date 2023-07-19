@@ -94,7 +94,9 @@ public class ImapClientConnectHandler extends MessageToMessageDecoder<IMAPRespon
             sessionCreatedFuture.done(response);
 
         } else {
-            logger.error("[{},{}] Server response without OK:{}", sessionId, sessionCtx.toString(), serverResponse.toString());
+            if (logger.isErrorEnabled()) {
+                logger.error("[{},{}] Server response without OK:{}", sessionId, sessionCtx.toString(), serverResponse.toString());
+            }
             sessionCreatedFuture.done(new ImapAsyncClientException(FailureType.CONNECTION_FAILED_WITHOUT_OK_RESPONSE));
             close(ctx); // closing the channel if we r not getting a ok greeting
         }
@@ -103,7 +105,9 @@ public class ImapClientConnectHandler extends MessageToMessageDecoder<IMAPRespon
 
     @Override
     public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) {
-        logger.error("[{},{}] Connection failed due to encountering exception:{}.", sessionId, sessionCtx.toString(), cause);
+        if (logger.isErrorEnabled()) {
+            logger.error("[{},{}] Connection failed due to encountering exception:{}.", sessionId, sessionCtx.toString(), cause);
+        }
         FailureType type = null;
         if (cause instanceof UnknownHostException) {
             type = FailureType.UNKNOWN_HOST_EXCEPTION;
@@ -121,7 +125,9 @@ public class ImapClientConnectHandler extends MessageToMessageDecoder<IMAPRespon
         if (msg instanceof IdleStateEvent) { // Handle the IdleState if needed
             final IdleStateEvent event = (IdleStateEvent) msg;
             if (event.state() == IdleState.READER_IDLE) {
-                logger.error("[{},{}] Connection failed due to taking longer than configured allowed time.", sessionId, sessionCtx.toString());
+                if (logger.isErrorEnabled()) {
+                    logger.error("[{},{}] Connection failed due to taking longer than configured allowed time.", sessionId, sessionCtx.toString());
+                }
                 sessionCreatedFuture.done(new ImapAsyncClientException(FailureType.CONNECTION_FAILED_EXCEED_IDLE_MAX));
                 // closing the channel if server is not responding with OK response for max read timeout limit
                 close(ctx);

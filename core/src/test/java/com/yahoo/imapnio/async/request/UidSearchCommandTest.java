@@ -183,7 +183,6 @@ public class UidSearchCommandTest {
     public void testGetCommandLineNullMessageSeqSetsNullSearchTerm()
             throws IOException, IllegalArgumentException, SearchException {
         final MessageNumberSet[] msgSets = null;
-        final String charset = null;
         ImapAsyncClientException actualEx = null;
         final Capability capa = null;
         try {

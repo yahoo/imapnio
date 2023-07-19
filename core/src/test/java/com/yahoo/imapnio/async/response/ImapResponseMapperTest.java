@@ -1270,7 +1270,7 @@ public class ImapResponseMapperTest {
 
         ImapAsyncClientException actual = null;
         try {
-            final SearchResult result = mapper.readValue(content, SearchResult.class);
+            mapper.readValue(content, SearchResult.class);
         } catch (final ImapAsyncClientException e) {
             actual = e;
         }
@@ -1293,7 +1293,7 @@ public class ImapResponseMapperTest {
 
         ImapAsyncClientException actual = null;
         try {
-            final SearchResult result = mapper.readValue(content, SearchResult.class);
+            mapper.readValue(content, SearchResult.class);
         } catch (final ImapAsyncClientException e) {
             actual = e;
         }

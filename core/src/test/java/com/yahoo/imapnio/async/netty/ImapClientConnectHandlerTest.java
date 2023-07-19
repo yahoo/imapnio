@@ -126,6 +126,7 @@ public class ImapClientConnectHandlerTest {
     public void testDecodeConnectFailed() throws IllegalArgumentException, IOException, ProtocolException, InterruptedException, TimeoutException {
         final ImapFuture<ImapAsyncCreateSessionResponse> imapFuture = new ImapFuture<ImapAsyncCreateSessionResponse>();
         final Logger logger = Mockito.mock(Logger.class);
+        Mockito.when(logger.isErrorEnabled()).thenReturn(true).thenReturn(false);
 
         final String sessCtx = "Titanosauria@long.neck";
         final ImapClientConnectHandler handler = new ImapClientConnectHandler(clock, imapFuture, logger, DebugMode.DEBUG_ON, SESSION_ID, sessCtx);
@@ -142,7 +143,8 @@ public class ImapClientConnectHandlerTest {
         final List<Object> out = new ArrayList<Object>();
         handler.decode(ctx, resp, out);
 
-        Mockito.verify(logger, Mockito.times(1)).error(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
+        Mockito.verify(logger, Mockito.times(1)).error(Mockito.eq("[{},{}] Server response without OK:{}"),
+                Mockito.eq(Long.valueOf(SESSION_ID)), Mockito.eq(sessCtx), Mockito.eq(msg));
         Mockito.verify(pipeline, Mockito.times(1)).remove(Mockito.anyString());
 
         Assert.assertTrue(imapFuture.isDone(), "Future should be done");
@@ -158,6 +160,12 @@ public class ImapClientConnectHandlerTest {
         Assert.assertEquals(ex.getCause().getClass(), ImapAsyncClientException.class, "Expected result mismatched.");
         Mockito.verify(ctx, Mockito.times(1)).close();
         Mockito.verify(channel, Mockito.times(1)).isActive();
+
+        // decode again to verify logger when isErrorEnabled() is false
+        final ImapClientConnectHandler handler2 = new ImapClientConnectHandler(clock, imapFuture, logger, DebugMode.DEBUG_ON, SESSION_ID, sessCtx);
+        handler2.decode(ctx, resp, out);
+        Mockito.verify(logger, Mockito.times(1)).error(Mockito.eq("[{},{}] Server response without OK:{}"),
+                Mockito.eq(Long.valueOf(SESSION_ID)), Mockito.eq(sessCtx), Mockito.eq(msg));
     }
 
     /**
@@ -171,6 +179,7 @@ public class ImapClientConnectHandlerTest {
     public void testExceptionCaught() throws IllegalArgumentException, InterruptedException, TimeoutException {
         final ImapFuture<ImapAsyncCreateSessionResponse> imapFuture = new ImapFuture<ImapAsyncCreateSessionResponse>();
         final Logger logger = Mockito.mock(Logger.class);
+        Mockito.when(logger.isErrorEnabled()).thenReturn(true).thenReturn(false);
 
         final String sessCtx = "Titanosauria@long.neck";
         final ImapClientConnectHandler handler = new ImapClientConnectHandler(clock, imapFuture, logger, DebugMode.DEBUG_ON, SESSION_ID, sessCtx);
@@ -195,6 +204,13 @@ public class ImapClientConnectHandlerTest {
         Assert.assertEquals(ex.getCause().getClass(), ImapAsyncClientException.class, "Expected result mismatched.");
         Mockito.verify(ctx, Mockito.times(1)).close();
         Mockito.verify(channel, Mockito.times(1)).isActive();
+        Mockito.verify(logger, Mockito.times(1)).error(Mockito.eq("[{},{}] Connection failed due to encountering exception:{}."),
+                Mockito.eq(Long.valueOf(SESSION_ID)), Mockito.eq(sessCtx), Mockito.eq(timeoutEx));
+
+        // call exceptionCaught method to verify logger when isErrorEnabled() is false
+        handler.exceptionCaught(ctx, timeoutEx);
+        Mockito.verify(logger, Mockito.times(1)).error(Mockito.eq("[{},{}] Connection failed due to encountering exception:{}."),
+                Mockito.eq(Long.valueOf(SESSION_ID)), Mockito.eq(sessCtx), Mockito.eq(timeoutEx));
     }
 
     /**
@@ -325,6 +341,7 @@ public class ImapClientConnectHandlerTest {
     public void testUserEventTriggeredIdleStateEventReadIdle() throws IllegalArgumentException, InterruptedException, TimeoutException {
         final ImapFuture<ImapAsyncCreateSessionResponse> imapFuture = new ImapFuture<ImapAsyncCreateSessionResponse>();
         final Logger logger = Mockito.mock(Logger.class);
+        Mockito.when(logger.isErrorEnabled()).thenReturn(true).thenReturn(false);
 
         final String sessCtx = "Titanosauria@long.neck";
         final ImapClientConnectHandler handler = new ImapClientConnectHandler(clock, imapFuture, logger, DebugMode.DEBUG_ON, SESSION_ID, sessCtx);
@@ -354,9 +371,17 @@ public class ImapClientConnectHandlerTest {
         Assert.assertEquals(aEx.getFailureType(), FailureType.CONNECTION_FAILED_EXCEED_IDLE_MAX, "Failure type mismatched");
         Mockito.verify(ctx, Mockito.times(1)).close();
         Mockito.verify(channel, Mockito.times(1)).isActive();
+        Mockito.verify(logger, Mockito.times(1)).error(Mockito.eq("[{},{}] Connection failed due to taking longer than configured allowed time."),
+                Mockito.eq(Long.valueOf(SESSION_ID)), Mockito.eq(sessCtx));
 
         // call channelInactive, should not encounter npe
         handler.channelInactive(ctx);
+
+        // call userEventTriggered method again to verify logger when isErrorEnabled() is false
+        final ImapClientConnectHandler handler2 = new ImapClientConnectHandler(clock, imapFuture, logger, DebugMode.DEBUG_ON, SESSION_ID, sessCtx);
+        handler2.userEventTriggered(ctx, idleEvent);
+        Mockito.verify(logger, Mockito.times(1)).error(Mockito.eq("[{},{}] Connection failed due to taking longer than configured allowed time."),
+                Mockito.eq(Long.valueOf(SESSION_ID)), Mockito.eq(sessCtx));
     }
 
     /**

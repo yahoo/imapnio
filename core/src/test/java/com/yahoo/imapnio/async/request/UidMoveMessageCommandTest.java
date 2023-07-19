@@ -17,8 +17,6 @@ import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
  * Unit test for {@link UidMoveMessageCommand}.
  */
 public class UidMoveMessageCommandTest {
-    /** Literal for MOVE. */
-    private static final String MOVE = "MOVE ";
 
     /** Fields to check for cleanup. */
     private Set<Field> fieldsToCheck;

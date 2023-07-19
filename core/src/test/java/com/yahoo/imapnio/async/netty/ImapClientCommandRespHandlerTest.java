@@ -149,5 +149,7 @@ public class ImapClientCommandRespHandlerTest {
         for (final Field field : fieldsToCheck) {
             Assert.assertNull(field.get(handler), "Cleanup should set " + field.getName() + " as null");
         }
+        // call again to make sure no exception
+        handler.channelInactive(ctx);
     }
 }
