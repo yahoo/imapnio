@@ -34,7 +34,9 @@ public class ImapAsyncResponseTest {
         final IMAPResponse oneImapResponse = new IMAPResponse("a1 OK CAPABILITY completed");
         imapResponses.add(oneImapResponse);
         final int responseTotalBytes = oneImapResponse.toString().getBytes(StandardCharsets.US_ASCII).length + 2;
-        final ImapAsyncResponse resp = new ImapAsyncResponse(imapRequest.getCommandType(), requestTotalBytes, responseTotalBytes, imapResponses);
+        final long elapsedTime = 1234L;
+        final ImapAsyncResponse resp = new ImapAsyncResponse(imapRequest.getCommandType(), requestTotalBytes, responseTotalBytes, imapResponses,
+                elapsedTime);
 
         Assert.assertEquals(resp.getCommandType(), imapRequest.getCommandType(), "command type mismatched.");
         Assert.assertEquals(resp.getRequestTotalBytes(), requestTotalBytes, "request bytes length mismatched.");
@@ -42,5 +44,6 @@ public class ImapAsyncResponseTest {
         final Collection<IMAPResponse> actual = resp.getResponseLines();
         Assert.assertEquals(actual, imapResponses, "result mismatched.");
         Assert.assertEquals(actual.iterator().next(), oneImapResponse, "result mismatched.");
+        Assert.assertEquals(resp.getTotalTimeElapsed(), elapsedTime);
     }
 }

@@ -59,8 +59,9 @@ public class ImapFutureTest {
         capas.put("SASL-IR", Collections.singletonList("SASL-IR"));
         final ImapRequest imapRequest = new AuthXoauth2Command("username", "token", new Capability(capas));
         final int requestTotalBytes = "a1".getBytes(StandardCharsets.US_ASCII).length + 1 + imapRequest.getCommandLineBytes().readableBytes();
+        final long totalElapsedTime = 1234L;
         imapAsyncResp = new ImapAsyncResponse(imapRequest.getCommandType(), requestTotalBytes,
-                oneImapResponse.toString().getBytes(StandardCharsets.US_ASCII).length + 2, imapResponses);
+                oneImapResponse.toString().getBytes(StandardCharsets.US_ASCII).length + 2, imapResponses, totalElapsedTime);
     }
 
     /**
@@ -544,6 +545,22 @@ public class ImapFutureTest {
         final ImapFuture<ImapAsyncResponse> imapFuture = new ImapFuture<ImapAsyncResponse>();
         final long mockTimeoutForFailure = 1L;
         imapFuture.get(mockTimeoutForFailure, TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * Test total time elapsed by a command.
+     *
+     * @throws TimeoutException should not happen
+     * @throws ExecutionException should not happen
+     * @throws InterruptedException should not happen
+     */
+    @Test
+    public void testTotalTimeElapsed() throws InterruptedException, ExecutionException, TimeoutException {
+        final ImapFuture<ImapAsyncResponse> imapFuture = new ImapFuture<ImapAsyncResponse>();
+        imapFuture.done(imapAsyncResp);
+        final ImapAsyncResponse result = imapFuture.get(TIME_OUT_MILLIS, TimeUnit.MILLISECONDS);
+        Assert.assertNotNull(result);
+        Assert.assertEquals(result.getTotalTimeElapsed(), 1234L);
     }
 
 }
