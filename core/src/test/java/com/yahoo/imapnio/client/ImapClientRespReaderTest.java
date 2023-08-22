@@ -176,7 +176,7 @@ public class ImapClientRespReaderTest {
         Assert.assertNotNull(resultBuf2, "Should return null because not reaching a line yet");
         Assert.assertEquals(inputBuf2.readableBytes(), 0, "should exhaust readable bytes");
         final String result = resultBuf2.toString(StandardCharsets.US_ASCII);
-        Assert.assertEquals(result, "NO CRLF YET, and here u go with CRLF!\r\n", "decode() result mismatched.");
+        Assert.assertEquals(result, literalResponse2, "decode() result mismatched.");
     }
 
     /**
@@ -230,8 +230,10 @@ public class ImapClientRespReaderTest {
         final ByteBuf inputBuf1 = Unpooled.copiedBuffer(responseBytes1, 0, responseBytes1.length);
 
         final ByteBuf resultBuf1 = (ByteBuf) respReader.decode(null, inputBuf1);
-        Assert.assertEquals(inputBuf1.readerIndex(), 0, "ReaderIndex should not be moved.");
-        Assert.assertNull(resultBuf1, "Should return null because not seeing CRLF yet");
+        Assert.assertEquals(inputBuf1.readerIndex(), 12, "ReaderIndex should not be moved.");
+        Assert.assertNotNull(resultBuf1, "Should return null because not seeing CRLF yet");
+        final String result2 = resultBuf1.toString(StandardCharsets.US_ASCII);
+        Assert.assertEquals(result2, literalResponse1, "response doesn't match");
     }
 
     /**
@@ -247,13 +249,20 @@ public class ImapClientRespReaderTest {
         final ByteBuf inputBuf1 = Unpooled.copiedBuffer(responseBytes1, 0, responseBytes1.length);
 
         final ByteBuf resultBuf1 = (ByteBuf) respReader.decode(null, inputBuf1);
-        Assert.assertEquals(inputBuf1.readerIndex(), 0, "ReaderIndex should not be moved.");
-        Assert.assertNull(resultBuf1, "Should return null because not seeing CRLF yet");
+        Assert.assertEquals(inputBuf1.readerIndex(), 12, "ReaderIndex should not be moved.");
+        Assert.assertNotNull(resultBuf1, "Should return null because not seeing CRLF yet");
+
+        final String result2 = resultBuf1.toString(StandardCharsets.US_ASCII);
+        Assert.assertEquals(result2, "Hello\rWorld\n", "response doesn't match");
+
+        final ByteBuf resultBuf2 = (ByteBuf) respReader.decode(null, inputBuf1);
+        Assert.assertEquals(inputBuf1.readerIndex(), 12, "ReaderIndex should not be moved.");
+        Assert.assertNull(resultBuf2, "Should return null because not seeing CRLF yet");
     }
 
     /**
      * Tests 1st buffer ends with CR without LF, the reader index should not change. 2nd time LF comes, it should return complete result.
-     * 
+     *
      * @throws Exception not for this test
      */
     @Test
@@ -303,13 +312,20 @@ public class ImapClientRespReaderTest {
         Assert.assertNull(resultBuf1, "Should return null because not seeing CRLF yet");
 
         final ByteBuf resultBuf2 = (ByteBuf) respReader.decode(null, inputBuf2);
-        Assert.assertEquals(inputBuf2.readerIndex(), 0, "ReaderIndex should not be moved.");
-        Assert.assertNull(resultBuf2, "Should return null because not seeing CRLF yet");
+        Assert.assertEquals(inputBuf2.readerIndex(), 12, "ReaderIndex should not be moved.");
+        Assert.assertNotNull(resultBuf2, "Should return null because not seeing CRLF yet");
 
         final ByteBuf resultBuf3 = (ByteBuf) respReader.decode(null, inputBuf3);
-        Assert.assertEquals(inputBuf3.readableBytes(), 0, "readableBytes should be exhausted.");
+        Assert.assertEquals(inputBuf3.readableBytes(), 28, "readableBytes should be exhausted.");
         Assert.assertNotNull(resultBuf3, "Should have data returned");
         final String result = resultBuf3.toString(StandardCharsets.US_ASCII);
-        Assert.assertEquals(result, literalResponse3, "decode() result mismatched.");
+        Assert.assertEquals(result, literalResponse2, "decode() result mismatched.");
+
+        final ByteBuf resultBuf4 = (ByteBuf) respReader.decode(null, inputBuf3);
+        Assert.assertEquals(inputBuf3.readableBytes(), 0, "readableBytes should be exhausted.");
+        Assert.assertNotNull(resultBuf4, "Should have data returned");
+        final String result2 = resultBuf4.toString(StandardCharsets.US_ASCII);
+        Assert.assertEquals(result2, ", and here u go with CRLF!\r\n", "decode() result mismatched.");
+
     }
 }
