@@ -7,16 +7,16 @@ import com.sun.mail.util.ASCIIUtility;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.DelimiterBasedFrameDecoder;
+import io.netty.handler.codec.LineBasedFrameDecoder;
 import io.netty.util.ReferenceCountUtil;
 
 /**
- * Basic response reader, read response from channel and decode based on line delimiter, also could handle IMAP literal response.
+ * Basic response reader, read response from channel and decode based on line, also could handle IMAP literal response.
  *
  * @author kaituo
  *
  */
-public class ImapClientRespReader extends DelimiterBasedFrameDecoder {
+public class ImapClientRespReader extends LineBasedFrameDecoder {
 
     /** Constant for 4. */
     private static final int FOUR = 4;
@@ -36,16 +36,13 @@ public class ImapClientRespReader extends DelimiterBasedFrameDecoder {
     /** Literal response buffer. */
     private ByteBuf literalBuf;
 
-    /** IMAP response line delimiter, carriage return - new line. */
-    private static final ByteBuf[] DELIMITER = new ByteBuf[] { Unpooled.wrappedBuffer(new byte[] { '\r', '\n' }) };
-
     /**
      * Constructor of IMAP client response reader.
      *
      * @param maxLineLength maximum response line length
      */
     public ImapClientRespReader(final int maxLineLength) {
-        super(maxLineLength, false, DELIMITER);
+        super(maxLineLength, false, true);
         literalCount = -1;
     }
 
@@ -64,7 +61,6 @@ public class ImapClientRespReader extends DelimiterBasedFrameDecoder {
      */
     @Override
     protected Object decode(final ChannelHandlerContext ctx, final ByteBuf inputBuf) throws Exception {
-
         while (inputBuf.readableBytes() > 0) {
 
             if (literalCount <= 0) { // LINE mode - read until CRLF
@@ -162,5 +158,4 @@ public class ImapClientRespReader extends DelimiterBasedFrameDecoder {
             return -1;
         }
     }
-
 }
