@@ -4,7 +4,7 @@ branches:
   - stable
 language: java
 jdk:
-- openjdk14
+- openjdk17
 dist: focal
 before_install:
 install:
