@@ -594,8 +594,8 @@
                       <version>0.11.0</version>
                       <extensions>true</extensions>
                       <configuration>
-                         <publishingServerId>central</publishingServerId>
-                         <autoPublish>true</autoPublish>
+                          <publishingServerId>ossrh</publishingServerId>
+                          <autoPublish>true</autoPublish>
                       </configuration>
                     </plugin>
                 </plugins>
