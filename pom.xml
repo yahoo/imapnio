@@ -5,7 +5,7 @@
     <groupId>com.yahoo.imapnio</groupId>
     <artifactId>imapnio</artifactId>
     <packaging>pom</packaging>
-    <version>5.0.16</version>
+    <version>5.0.17</version>
     <name>${project.artifactId}</name>
     <url>https://github.com/yahoo/imapnio</url>
     <description>Parent POM file for imapnio project</description>
@@ -591,10 +591,11 @@
                     <plugin>
                       <groupId>org.sonatype.central</groupId>
                       <artifactId>central-publishing-maven-plugin</artifactId>
-                      <version>0.9.0</version>
+                      <version>0.11.0</version>
                       <extensions>true</extensions>
                       <configuration>
-                        <publishingServerId>ossrh</publishingServerId>
+                         <publishingServerId>central</publishingServerId>
+                         <autoPublish>true</autoPublish>
                       </configuration>
                     </plugin>
                 </plugins>
