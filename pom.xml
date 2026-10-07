@@ -5,7 +5,7 @@
     <groupId>com.yahoo.imapnio</groupId>
     <artifactId>imapnio</artifactId>
     <packaging>pom</packaging>
-    <version>5.1.0</version>
+    <version>6.0.0</version>
     <name>${project.artifactId}</name>
     <url>https://github.com/yahoo/imapnio</url>
     <description>Parent POM file for imapnio project</description>
@@ -67,13 +67,13 @@
         <project.reporting.outputEncoding>${project.build.sourceEncoding}</project.reporting.outputEncoding>
         <excludedJNILibraries />
         <excludedWarJNILibraries />
-        <jdk.version>1.8</jdk.version>
+        <jdk.version>21</jdk.version>
         <maven-surefire-plugin.version>3.1.2</maven-surefire-plugin.version>
-        <maven-pmd-plugin.version>3.21.0</maven-pmd-plugin.version>
+        <maven-pmd-plugin.version>3.26.0</maven-pmd-plugin.version>
         <maven-checkstyle-plugin.version>3.0.0</maven-checkstyle-plugin.version>
         <jersey.version>2.36</jersey.version>
         <jackson.version>2.10.0</jackson.version>
-        <jacoco-maven-plugin.version>0.8.10</jacoco-maven-plugin.version>
+        <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
         <testTimeLimitInSeconds>0</testTimeLimitInSeconds>
         <main.basedir>${project.basedir}</main.basedir>
     </properties>
@@ -211,7 +211,7 @@
                 <plugin>
                     <groupId>com.github.spotbugs</groupId>
                     <artifactId>spotbugs-maven-plugin</artifactId>
-                    <version>4.7.3.5</version>
+                    <version>4.8.6.6</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -318,8 +318,7 @@
                     <fork>true</fork>
                     <meminitial>128m</meminitial>
                     <maxmem>512m</maxmem>
-                    <source>${jdk.version}</source>
-                    <target>${jdk.version}</target>
+                    <release>${jdk.version}</release>
                     <showDeprecation>true</showDeprecation>
                     <showWarnings>true</showWarnings>
                     <optimize>true</optimize>
@@ -371,12 +370,12 @@
                     <dependency>
                         <groupId>com.github.spotbugs</groupId>
                         <artifactId>spotbugs</artifactId>
-                        <version>4.7.3</version>
+                        <version>4.8.6</version>
                     </dependency>
                     <dependency>
                         <groupId>com.github.spotbugs</groupId>
                         <artifactId>spotbugs-annotations</artifactId>
-                        <version>4.7.3</version>
+                        <version>4.8.6</version>
                     </dependency>
                     <dependency>
                         <groupId>org.dom4j</groupId>
@@ -521,7 +520,7 @@
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>3.4.0</version>
                 <configuration>
-                    <source>8</source>
+                    <source>21</source>
                 </configuration>
                 <executions>
                     <execution>

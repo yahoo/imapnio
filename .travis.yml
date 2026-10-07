@@ -4,8 +4,8 @@ branches:
   - stable
 language: java
 jdk:
-- openjdk17
-dist: focal
+- openjdk21
+dist: jammy
 before_install:
 install:
 - mvn clean install -Dgpg.skip=true
