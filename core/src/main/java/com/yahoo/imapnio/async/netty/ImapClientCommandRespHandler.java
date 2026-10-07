@@ -38,7 +38,9 @@ public class ImapClientCommandRespHandler extends MessageToMessageDecoder<IMAPRe
 
     @Override
     public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) {
-        processor.handleChannelException(cause);
+        if (processor != null) {
+            processor.handleChannelException(cause);
+        }
     }
 
     /**
