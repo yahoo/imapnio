@@ -8,15 +8,11 @@ import com.sun.mail.imap.protocol.BASE64MailboxEncoder;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 
 /**
  * This class defines imap select command request from client.
  */
 abstract class AbstractQueryFoldersCommand extends ImapRequestAdapter {
-
-    /** Byte array for CR and LF, keeping the array local so it cannot be modified by others. */
-    private static final byte[] CRLF_B = { '\r', '\n' };
 
     /** The Command. */
     private String op;
@@ -55,18 +51,13 @@ abstract class AbstractQueryFoldersCommand extends ImapRequestAdapter {
         final String ref64 = BASE64MailboxEncoder.encode(ref);
         final String pat64 = BASE64MailboxEncoder.encode(pattern);
 
-        final int len = 2 * ref64.length() + 2 * pat64.length() + ImapClientConstants.PAD_LEN;
-        final ByteBuf sb = Unpooled.buffer(len);
-        sb.writeBytes(op.getBytes(StandardCharsets.US_ASCII));
-        sb.writeByte(ImapClientConstants.SPACE);
-
-        final ImapArgumentFormatter formatter = new ImapArgumentFormatter();
-        formatter.formatArgument(ref64, sb, false); // already base64 encoded so can be formatted and write to sb
-        sb.writeByte(ImapClientConstants.SPACE);
-
-        formatter.formatArgument(pat64, sb, false);
-        sb.writeBytes(CRLF_B); // already base64 encoded so can be formatted and write to sb
-
-        return sb;
+        // both are already base64 encoded, so neither can need a literal
+        return new ImapCommandLineBuilder(LiteralSupport.DISABLE)
+                .raw(op.getBytes(StandardCharsets.US_ASCII))
+                .raw((byte) ImapClientConstants.SPACE)
+                .astring(ref64, false, "reference name")
+                .raw((byte) ImapClientConstants.SPACE)
+                .astring(pat64, false, "pattern")
+                .finishSingle();
     }
 }

@@ -7,6 +7,7 @@ import javax.annotation.Nonnull;
 import org.apache.commons.codec.binary.Base64;
 
 import com.yahoo.imapnio.async.data.Capability;
+import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 
 import io.netty.buffer.ByteBuf;
 
@@ -84,8 +85,13 @@ public final class AuthOauthBearerCommand extends AbstractAuthCommand {
      * @return an encoded base64 Oauthbearer format
      */
     @Override
-    String buildClientResponse() {
+    String buildClientResponse() throws ImapAsyncClientException {
         // String format: n,a=user@example.com,^Ahost=server.example.com^Aport=993^Aauth=Bearer <oauthtoken>^A^A
+        // SOH separates the fields of the payload, so none of these values may contain one
+        final ImapArgumentFormatter formatter = new ImapArgumentFormatter();
+        formatter.validateNoControlChars(emailId, "email id");
+        formatter.validateNoControlChars(hostname, "hostname");
+        formatter.validateNoControlChars(token, "token");
         final int len = N_A.length() + emailId.length() + hostname.length() + token.length() + EXTRA_LEN;
         final StringBuilder sbOauth2 = new StringBuilder(len).append(N_A).append(emailId).append(COMMA).append(ImapClientConstants.SOH);
         sbOauth2.append("host=").append(hostname).append(ImapClientConstants.SOH).append("port=").append(port).append(ImapClientConstants.SOH);

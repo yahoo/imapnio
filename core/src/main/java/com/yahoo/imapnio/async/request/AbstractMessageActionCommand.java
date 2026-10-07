@@ -10,15 +10,11 @@ import com.yahoo.imapnio.async.data.MessageNumberSet;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 
 /**
  * This class defines imap message change operation command from client. For example, copy message, move message.
  */
 abstract class AbstractMessageActionCommand extends ImapRequestAdapter {
-
-    /** Byte array for CR and LF, keeping the array local so it cannot be modified by others. */
-    private static final byte[] CRLF_B = { '\r', '\n' };
 
     /** UID and space. */
     private static final String UID_SPACE = "UID ";
@@ -107,23 +103,18 @@ abstract class AbstractMessageActionCommand extends ImapRequestAdapter {
         // encode the mbox as per RFC2060
         final String base64Folder = BASE64MailboxEncoder.encode(targetFolder);
         // 2 * base64Folder.length(): assuming every char needs to be escaped, goal is eliminating resizing, and avoid complex length calculation
-        final int len = 2 * base64Folder.length() + ImapClientConstants.PAD_LEN;
-        final ByteBuf sb = Unpooled.buffer(len);
+        final ImapCommandLineBuilder builder = new ImapCommandLineBuilder(LiteralSupport.DISABLE);
 
         if (isUid) {
-            sb.writeBytes(UID_B);
+            builder.raw(UID_B);
         }
 
-        sb.writeBytes(op.getBytes(StandardCharsets.US_ASCII));
-        sb.writeByte(ImapClientConstants.SPACE);
-        sb.writeBytes(msgNumbers.getBytes(StandardCharsets.US_ASCII));
-        sb.writeByte(ImapClientConstants.SPACE);
-
-        final ImapArgumentFormatter argWriter = new ImapArgumentFormatter();
-        argWriter.formatArgument(base64Folder, sb, false);
-
-        sb.writeBytes(CRLF_B);
-
-        return sb;
+        // sequence-set holds only numbers and the separators that join them
+        return builder.raw(op.getBytes(StandardCharsets.US_ASCII))
+                .raw((byte) ImapClientConstants.SPACE)
+                .raw(new ImapArgumentFormatter().validateSequenceSet(msgNumbers, "message number").getBytes(StandardCharsets.US_ASCII))
+                .raw((byte) ImapClientConstants.SPACE)
+                .astring(base64Folder, false, "folder name") // already base64 encoded, so it cannot need a literal
+                .finishSingle();
     }
 }

@@ -4,6 +4,8 @@ import java.nio.charset.StandardCharsets;
 
 import javax.annotation.Nonnull;
 
+import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 
@@ -38,16 +40,17 @@ public class EnableCommand extends ImapRequestAdapter {
     }
 
     @Override
-    public ByteBuf getCommandLineBytes() {
+    public ByteBuf getCommandLineBytes() throws ImapAsyncClientException {
         final ByteBuf sb = Unpooled.buffer(ENABLE_BUF_LEN);
 
         sb.writeBytes(ENABLE_B);
 
+        final ImapArgumentFormatter formatter = new ImapArgumentFormatter();
         for (int i = 0; i < capabilities.length; i++) {
             sb.writeByte(ImapClientConstants.SPACE);
             // capability ABNF is:
             // capability = ("AUTH=" auth-type) / atom
-            sb.writeBytes(capabilities[i].getBytes(StandardCharsets.US_ASCII));
+            sb.writeBytes(formatter.validateAtom(capabilities[i], "capability").getBytes(StandardCharsets.US_ASCII));
         }
         sb.writeBytes(CRLF_B);
         return sb;

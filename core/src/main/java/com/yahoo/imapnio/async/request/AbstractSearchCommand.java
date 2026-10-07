@@ -163,6 +163,8 @@ public abstract class AbstractSearchCommand extends ImapRequestAdapter {
 
     @Override
     public ByteBuf getCommandLineBytes() throws ImapAsyncClientException {
+        // charset is an atom here and sequence-set has its own shape; both are written out bare
+        final ImapArgumentFormatter formatter = new ImapArgumentFormatter();
         final ByteBuf sb = Unpooled.buffer();
         sb.writeBytes(isUid ? UID_SEARCH_B : SEARCH_B);
 
@@ -170,12 +172,12 @@ public abstract class AbstractSearchCommand extends ImapRequestAdapter {
             sb.writeByte(ImapClientConstants.SPACE);
             sb.writeBytes(CHARSET_B);
             sb.writeByte(ImapClientConstants.SPACE);
-            sb.writeBytes(charset.getBytes(StandardCharsets.US_ASCII));
+            sb.writeBytes(formatter.validateAtom(charset, "charset").getBytes(StandardCharsets.US_ASCII));
         }
 
         if (msgNumbers != null) {
             sb.writeByte(ImapClientConstants.SPACE);
-            sb.writeBytes(msgNumbers.getBytes(StandardCharsets.US_ASCII));
+            sb.writeBytes(formatter.validateSequenceSet(msgNumbers, "message number").getBytes(StandardCharsets.US_ASCII));
         }
 
         if (searchExpr != null) {

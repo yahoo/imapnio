@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 import org.apache.commons.codec.binary.Base64;
 
 import com.yahoo.imapnio.async.data.Capability;
+import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 
 import io.netty.buffer.ByteBuf;
 
@@ -87,14 +88,19 @@ public final class AuthPlainCommand extends AbstractAuthCommand {
      * @return an encoded base64 AUTH=PLAIN format
      */
     @Override
-    String buildClientResponse() {
+    String buildClientResponse() throws ImapAsyncClientException {
         /// NOTE: char cannot be passed to StringBuilder constructor, since it becomes int as capacity
         // ex:bob\0bob\0munchkin
+        // NUL separates the three fields of the AUTH=PLAIN payload (rfc4616), so none of them may contain one; a field that did would move the
+        // boundary and let the caller control a field it did not supply
+        final ImapArgumentFormatter formatter = new ImapArgumentFormatter();
+        formatter.validateNoControlChars(username, "username");
+        formatter.validateNoControlChars(dwp, "password");
         final int authLen = (authId != null) ? authId.length() : 0;
         final int len = authLen + username.length() + dwp.length() + TEN;
         final StringBuilder sb = new StringBuilder(len);
         if (authId != null) {
-            sb.append(authId);
+            sb.append(formatter.validateNoControlChars(authId, "authorize id"));
         }
         final byte[] b = sb.append(ImapClientConstants.NULL).append(username).append(ImapClientConstants.NULL).append(dwp).toString()
                 .getBytes(StandardCharsets.UTF_8);

@@ -6,6 +6,7 @@ import javax.annotation.Nonnull;
 
 import com.sun.mail.imap.protocol.UIDSet;
 import com.yahoo.imapnio.async.data.MessageNumberSet;
+import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -60,11 +61,12 @@ public class UidExpungeCommand extends ImapRequestAdapter {
     }
 
     @Override
-    public ByteBuf getCommandLineBytes() {
+    public ByteBuf getCommandLineBytes() throws ImapAsyncClientException {
         final ByteBuf buf = Unpooled.buffer(UID_EXPUNGE.length() + uids.length() + ImapClientConstants.PAD_LEN);
         buf.writeBytes(UID_EXPUNGE_B);
         buf.writeByte(ImapClientConstants.SPACE);
-        buf.writeBytes(uids.getBytes(StandardCharsets.US_ASCII));
+        // uid-set holds only numbers and the separators that join them
+        buf.writeBytes(new ImapArgumentFormatter().validateSequenceSet(uids, "uid").getBytes(StandardCharsets.US_ASCII));
         buf.writeBytes(CRLF_B);
         return buf;
     }

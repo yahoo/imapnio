@@ -26,6 +26,12 @@ final class ImapClientConstants {
     /** Left parenthesis and space. */
     static final char R_PAREN = ')';
 
+    /** Left brace, opening a literal octet count. */
+    static final char L_BRACE = '{';
+
+    /** Right brace, closing a literal octet count. */
+    static final char R_BRACE = '}';
+
     /** Literal for colon. */
     static final String COLON = ":";
 

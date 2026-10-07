@@ -10,7 +10,6 @@ import com.yahoo.imapnio.async.data.QResyncParameter;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 
 /**
  * This class defines imap abstract commands related to open operation on folder, like select and examine folder.
@@ -83,14 +82,11 @@ abstract class OpenFolderActionCommand extends ImapRequestAdapter {
             sb.append("))");
             qResyncParameterSize = sb.length();
         }
-        // 2 * base64Folder.length(): assuming every char needs to be escaped, goal is eliminating resizing, and avoid complex length calculation
-        final int len = 2 * base64Folder.length() + ImapClientConstants.PAD_LEN + qResyncParameterSize;
-        final ByteBuf byteBuf = Unpooled.buffer(len);
-        byteBuf.writeBytes(op.getBytes(StandardCharsets.US_ASCII));
-        byteBuf.writeByte(ImapClientConstants.SPACE);
-
-        final ImapArgumentFormatter formatter = new ImapArgumentFormatter();
-        formatter.formatArgument(base64Folder, byteBuf, false); // already base64 encoded so can be formatted and write to sb
+        final ByteBuf byteBuf = new ImapCommandLineBuilder(LiteralSupport.DISABLE)
+                .raw(op.getBytes(StandardCharsets.US_ASCII))
+                .raw((byte) ImapClientConstants.SPACE)
+                .astring(base64Folder, false, "folder name") // already base64 encoded, so it cannot need a literal
+                .openSingle();
 
         if (qResyncParameterSize > 0) {
             byteBuf.writeByte(ImapClientConstants.SPACE);

@@ -171,7 +171,8 @@ public class AppendCommandTest {
         final AppendCommand cmd = new AppendCommand("Inbox", expectedFlags, internalDate, expectedMsg, LiteralSupport.ENABLE_LITERAL_MINUS);
         final String expectedStart = "APPEND Inbox (\\Flagged \\Seen) \"12-Mar-2019 ";
         final int startLen = expectedStart.length();
-        final String dataLenStr = " {300-}\r\n";
+        // RFC 7888: LITERAL- is marked with "+" exactly as LITERAL+ is, there is no "-" form
+        final String dataLenStr = " {300+}\r\n";
         // we only have ascii in the binary
         final String actualCmdLine = cmd.getCommandLineBytes().toString(StandardCharsets.UTF_8);
         Assert.assertNotNull(actualCmdLine, "Command line mismatched.");

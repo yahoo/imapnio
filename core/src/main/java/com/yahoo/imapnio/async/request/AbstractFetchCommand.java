@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 
 import com.yahoo.imapnio.async.data.MessageNumberSet;
 import com.yahoo.imapnio.async.data.PartialExtensionUidFetchInfo;
+import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -157,15 +158,17 @@ public abstract class AbstractFetchCommand extends ImapRequestAdapter {
 
     @Override
     @Nonnull
-    public ByteBuf getCommandLineBytes() {
+    public ByteBuf getCommandLineBytes() throws ImapAsyncClientException {
+        // sequence-set and fetch-att each have a shape of their own, neither of them an atom
+        final ImapArgumentFormatter formatter = new ImapArgumentFormatter();
         final ByteBuf bb = Unpooled.buffer();
         bb.writeBytes(isUid ? UID_FETCH_SP_B : FETCH_SP_B);
-        bb.writeBytes(msgNumbers.getBytes(StandardCharsets.US_ASCII));
+        bb.writeBytes(formatter.validateSequenceSet(msgNumbers, "message number").getBytes(StandardCharsets.US_ASCII));
         bb.writeByte(ImapClientConstants.SPACE);
 
         if (dataItems != null) {
             bb.writeByte(ImapClientConstants.L_PAREN);
-            bb.writeBytes(dataItems.getBytes(StandardCharsets.US_ASCII));
+            bb.writeBytes(formatter.validateFetchAtt(dataItems, "data item").getBytes(StandardCharsets.US_ASCII));
             bb.writeByte(ImapClientConstants.R_PAREN);
         } else {
             bb.writeBytes(macro.name().getBytes(StandardCharsets.US_ASCII));

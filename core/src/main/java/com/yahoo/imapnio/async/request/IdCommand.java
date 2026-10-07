@@ -1,20 +1,26 @@
 package com.yahoo.imapnio.async.request;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+
+import com.sun.mail.imap.protocol.IMAPResponse;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
+import com.yahoo.imapnio.async.exception.ImapAsyncClientException.FailureType;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 
 /**
  * This class defines imap id command request from client.
+ *
+ * <p>
+ * A field or value carrying CR or LF is sent as a literal, since a quoted string cannot represent one. With a synchronizing literal the
+ * command line is sent in more than one piece, each piece released by a command continuation request from the server.
+ * </p>
  */
 public class IdCommand extends ImapRequestAdapter {
-
-    /** Byte array for CR and LF, keeping the array local so it cannot be modified by others. */
-    private static final byte[] CRLF_B = { '\r', '\n' };
 
     /** NIL literal byte array. */
     private static final byte[] NIL_B = { 'N', 'I', 'L' };
@@ -25,11 +31,17 @@ public class IdCommand extends ImapRequestAdapter {
     /** Byte array for ID and space. */
     private static final byte[] ID_SP_B = ID_SP.getBytes(StandardCharsets.US_ASCII);
 
-    /** ID command line initial space. */
-    private static final int IDLINE_LEN = 200;
-
     /** Key and value pair, key and value should all be ascii. */
     private Map<String, String> params;
+
+    /** Which literal form the server accepts. */
+    private LiteralSupport literalOpt;
+
+    /** The command line pieces, populated when the command line is built. */
+    private List<ByteBuf> segments;
+
+    /** Index of the piece to send on the next command continuation request. */
+    private int nextSegment;
 
     /**
      * Initializes a {@link IdCommand}.
@@ -37,42 +49,64 @@ public class IdCommand extends ImapRequestAdapter {
      * @param params a collection of parameters, key and value should all be ascii.
      */
     public IdCommand(final Map<String, String> params) {
+        this(params, LiteralSupport.DISABLE);
+    }
+
+    /**
+     * Initializes a {@link IdCommand} with a literal form.
+     *
+     * @param params a collection of parameters, key and value should all be ascii.
+     * @param literalOpt the literal form the server accepts, which decides whether a literal costs a round trip
+     */
+    public IdCommand(final Map<String, String> params, @Nonnull final LiteralSupport literalOpt) {
         this.params = params;
+        this.literalOpt = literalOpt;
     }
 
     @Override
     public void cleanup() {
         this.params = null;
+        this.literalOpt = null;
+        this.segments = null;
     }
 
     @Override
     public ByteBuf getCommandLineBytes() throws ImapAsyncClientException {
-        final ByteBuf sb = Unpooled.buffer(IDLINE_LEN);
-        sb.writeBytes(ID_SP_B);
+        final ImapCommandLineBuilder builder = new ImapCommandLineBuilder(literalOpt);
+        builder.raw(ID_SP_B);
 
         if (params == null) {
-            sb.writeBytes(NIL_B);
+            builder.raw(NIL_B);
         } else {
             // every token has to be encoded (double quoted and escaped) if needed
             // ex: a023 ID ("name" "so/"dr" "version" "19.34")
-            final ImapArgumentFormatter formatter = new ImapArgumentFormatter();
-            sb.writeByte(ImapClientConstants.L_PAREN);
+            builder.raw((byte) ImapClientConstants.L_PAREN);
             boolean isFirstEntry = true;
             for (final Map.Entry<String, String> e : params.entrySet()) {
                 if (!isFirstEntry) {
-                    sb.writeByte(ImapClientConstants.SPACE);
+                    builder.raw((byte) ImapClientConstants.SPACE);
                 } else {
                     isFirstEntry = false;
                 }
-                formatter.formatArgument(e.getKey(), sb, true);
-                sb.writeByte(ImapClientConstants.SPACE);
-                formatter.formatArgument(e.getValue(), sb, true);
+                builder.astring(e.getKey(), true, "id field");
+                builder.raw((byte) ImapClientConstants.SPACE);
+                builder.astring(e.getValue(), true, "id value");
             }
-            sb.writeByte(ImapClientConstants.R_PAREN);
+            builder.raw((byte) ImapClientConstants.R_PAREN);
         }
 
-        sb.writeBytes(CRLF_B);
-        return sb;
+        segments = builder.finish();
+        nextSegment = 1;
+        return segments.get(0);
+    }
+
+    @Override
+    public ByteBuf getNextCommandLineAfterContinuation(@Nonnull final IMAPResponse serverResponse) throws ImapAsyncClientException {
+        if (segments == null || nextSegment >= segments.size()) {
+            // the server asked for more than this command line has left to give
+            throw new ImapAsyncClientException(FailureType.OPERATION_NOT_SUPPORTED_FOR_COMMAND);
+        }
+        return segments.get(nextSegment++);
     }
 
     @Override

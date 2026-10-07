@@ -58,11 +58,12 @@ public abstract class AbstractAuthCommand extends ImapRequestAdapter {
      * Builds the IR, aka client Initial Response (RFC4959) and populates to the given {@link ByteBuf} instance.
      *
      * @return a string as a client initial response
+     * @throws ImapAsyncClientException when a field of the response carries a character the SASL mechanism uses as a separator
      */
-    abstract String buildClientResponse();
+    abstract String buildClientResponse() throws ImapAsyncClientException;
 
     @Override
-    public ByteBuf getCommandLineBytes() {
+    public ByteBuf getCommandLineBytes() throws ImapAsyncClientException {
         if (isSaslIREnabled) { // server allows client response in one line
             this.isDataSensitive = true; // containing sensitive data
             final String clientResp = buildClientResponse();
@@ -96,7 +97,7 @@ public abstract class AbstractAuthCommand extends ImapRequestAdapter {
     }
 
     @Override
-    public ByteBuf getNextCommandLineAfterContinuation(final IMAPResponse serverResponse) {
+    public ByteBuf getNextCommandLineAfterContinuation(final IMAPResponse serverResponse) throws ImapAsyncClientException {
         if (isClientResponseSent) { // when server sends "+ [base64 encoded error response]" after client response is sent, we send cancel
             this.isDataSensitive = false;
             final ByteBuf buf = Unpooled.buffer(CANCEL_LEN);

@@ -8,7 +8,6 @@ import com.sun.mail.imap.protocol.BASE64MailboxEncoder;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 
 /**
  * This class defines IMAP LIST-STATUS Command, RFC5819. This extension is part of LIST-EXTENDED extension, RFC5258.
@@ -36,9 +35,6 @@ import io.netty.buffer.Unpooled;
  *      </blockquote>
  */
 public class ListStatusCommand extends ImapRequestAdapter {
-
-    /** Byte array for CR and LF, keeping the array local so it cannot be modified by others. */
-    private static final byte[] CRLF_B = { '\r', '\n' };
 
     /** Double right parenthesis. */
     private static final byte[] DOUBLE_RP_B = { ')', ')' };
@@ -125,56 +121,48 @@ public class ListStatusCommand extends ImapRequestAdapter {
 
         final String ref64 = BASE64MailboxEncoder.encode(ref);
 
-        int listOfMboxSizeOrPatternSize = 0;
-        // estimate size of the patterns
-        for (int i = 0; i < multiPatterns.length; i++) {
-            listOfMboxSizeOrPatternSize += 2 * multiPatterns[i].length();
-        }
-
-        final int len = 2 * ref64.length() + listOfMboxSizeOrPatternSize + ImapClientConstants.PAD_LEN;
-        final ByteBuf bytebuf = Unpooled.buffer(len);
-        // LIST
-        bytebuf.writeBytes(LIST_SP_B);
-
-        // ref
         final ImapArgumentFormatter formatter = new ImapArgumentFormatter();
-        formatter.formatArgument(ref64, bytebuf, false);
-        bytebuf.writeByte(ImapClientConstants.SPACE);
+        final ImapCommandLineBuilder builder = new ImapCommandLineBuilder(LiteralSupport.DISABLE);
+
+        // LIST, then the reference name, which is already base64 encoded and so cannot need a literal
+        builder.raw(LIST_SP_B)
+                .astring(ref64, false, "reference name")
+                .raw((byte) ImapClientConstants.SPACE);
 
         // mbox-or-pat
-        bytebuf.writeByte(ImapClientConstants.L_PAREN);
+        builder.raw((byte) ImapClientConstants.L_PAREN);
         for (int i = 0; i < multiPatterns.length; i++) {
             // if multi patterns, we double quote each one, for 1 pattern, it will base on the content, not "forced"
-            formatter.formatArgument(BASE64MailboxEncoder.encode(multiPatterns[i]), bytebuf, FORCE_DOUBLE_QUOTES);
+            builder.astring(BASE64MailboxEncoder.encode(multiPatterns[i]), FORCE_DOUBLE_QUOTES, "pattern");
 
             if (i != multiPatterns.length - 1) {
-                bytebuf.writeByte(ImapClientConstants.SPACE);
+                builder.raw((byte) ImapClientConstants.SPACE);
             }
         }
-        bytebuf.writeByte(ImapClientConstants.R_PAREN);
+        builder.raw((byte) ImapClientConstants.R_PAREN);
 
         // return keyword
-        bytebuf.writeBytes(SP_RETURN_LP_B); // " RETURN ("
+        builder.raw(SP_RETURN_LP_B); // " RETURN ("
 
         // other returned options than STATUS
         for (int i = 0; i < otherReturnOptions.length; i++) {
-            formatter.formatArgument(otherReturnOptions[i], bytebuf, false);
-            bytebuf.writeByte(ImapClientConstants.SPACE);
+            // return-option is an atom, so atom-specials keeps a space or parenthesis out of it
+            builder.astring(formatter.validateAtom(otherReturnOptions[i], "return option"), false, "return option")
+                    .raw((byte) ImapClientConstants.SPACE);
         }
 
         // status option
-        bytebuf.writeBytes(SP_STATUS_LP_B); // "STATUS ("
+        builder.raw(SP_STATUS_LP_B); // "STATUS ("
         for (int i = 0; i < items.length; i++) {
-            formatter.formatArgument(items[i], bytebuf, false);
+            // status-att is an atom, so atom-specials keeps a space or parenthesis out of it
+            builder.astring(formatter.validateAtom(items[i], "status item"), false, "status item");
 
             if (i < items.length - 1) { // do not add space for last item
-                bytebuf.writeByte(ImapClientConstants.SPACE);
+                builder.raw((byte) ImapClientConstants.SPACE);
             }
         }
-        bytebuf.writeBytes(DOUBLE_RP_B); // "))"
 
-        bytebuf.writeBytes(CRLF_B);
-        return bytebuf;
+        return builder.raw(DOUBLE_RP_B).finishSingle(); // "))"
     }
 
     @Override

@@ -6,6 +6,7 @@ import javax.annotation.Nonnull;
 import javax.mail.Flags;
 
 import com.yahoo.imapnio.async.data.MessageNumberSet;
+import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -118,11 +119,13 @@ public abstract class AbstractStoreFlagsCommand extends ImapRequestAdapter {
     }
 
     @Override
-    public ByteBuf getCommandLineBytes() {
+    public ByteBuf getCommandLineBytes() throws ImapAsyncClientException {
         // Ex:STORE 2:4 +FLAGS (\Deleted)
+        final ImapArgumentFormatter argWriter = new ImapArgumentFormatter();
         final ByteBuf sb = Unpooled.buffer();
         sb.writeBytes(isUid ? UID_STORE_SP_B : STORE_SP_B);
-        sb.writeBytes(msgNumbers.getBytes(StandardCharsets.US_ASCII));
+        // sequence-set holds only numbers and the separators that join them
+        sb.writeBytes(argWriter.validateSequenceSet(msgNumbers, "message number").getBytes(StandardCharsets.US_ASCII));
         sb.writeByte(ImapClientConstants.SPACE);
 
         if (action == FlagsAction.ADD) {
@@ -138,7 +141,6 @@ public abstract class AbstractStoreFlagsCommand extends ImapRequestAdapter {
         }
 
         // buildFlagString generates "(" [flag *(SP flag)] ")"
-        final ImapArgumentFormatter argWriter = new ImapArgumentFormatter();
         sb.writeByte(ImapClientConstants.SPACE);
         sb.writeBytes(argWriter.buildFlagString(flags).getBytes(StandardCharsets.US_ASCII));
         sb.writeBytes(CRLF_B);

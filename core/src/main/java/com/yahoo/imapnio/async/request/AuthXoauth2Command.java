@@ -7,6 +7,7 @@ import javax.annotation.Nonnull;
 import org.apache.commons.codec.binary.Base64;
 
 import com.yahoo.imapnio.async.data.Capability;
+import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 
 import io.netty.buffer.ByteBuf;
 
@@ -69,8 +70,13 @@ public final class AuthXoauth2Command extends AbstractAuthCommand {
      * @return an encoded base64 XOauth2 format
      */
     @Override
-    String buildClientResponse() {
+    String buildClientResponse() throws ImapAsyncClientException {
         // Xoath2 format: "user=%s\001auth=Bearer %s\001\001";
+        // SOH separates the fields of the payload, so neither value may contain one; a username that did would inject a second auth field ahead
+        // of the real one
+        final ImapArgumentFormatter formatter = new ImapArgumentFormatter();
+        formatter.validateNoControlChars(username, "username");
+        formatter.validateNoControlChars(token, "token");
         final int len = USER.length() + username.length() + token.length() + EXTRA_LEN;
         final StringBuilder sbOauth2 = new StringBuilder(len).append(USER).append(username).append(ImapClientConstants.SOH).append(AUTH_BEARER)
                 .append(token).append(ImapClientConstants.SOH).append(ImapClientConstants.SOH);

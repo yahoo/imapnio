@@ -1,28 +1,35 @@
 package com.yahoo.imapnio.async.request;
 
-import java.nio.charset.StandardCharsets;
-
 import javax.annotation.Nonnull;
 import javax.mail.Flags;
 
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException.FailureType;
 
-import io.netty.buffer.ByteBuf;
-
 /**
- * This class encodes/formats imap command arguments properly based on the data value. The input data should be within ASCII chars.
+ * This class checks the imap command arguments that are written to the command line bare, and builds the flag list.
+ *
+ * <p>
+ * An {@code atom} cannot hold any control character: {@code atom-specials} names {@code CTL} outright, and productions such as
+ * {@code flag-keyword}, {@code capability}, {@code fetch-att}, {@code status-att} and {@code sequence-set} are atoms with no quoted or
+ * literal alternative to fall back on, so {@link #validateAtom} refuses every one of them.
+ * </p>
+ *
+ * <p>
+ * Writing an {@code astring}, which may take the atom, quoted or literal form, belongs to {@link ImapCommandLineBuilder} instead, since
+ * choosing the literal form can split the command line.
+ * </p>
  */
 public class ImapArgumentFormatter {
 
-    /** Primitive int 3. */
-    private static final int THREE = 3;
+    /** Highest code point that is an ASCII control character, ie. the last one before SPACE. */
+    private static final char LAST_CONTROL_CHAR = 0x1F;
 
-    /** Ascii code 127, chars after that are symbols. */
-    private static final int ASCII_CODE_127 = 0177;
+    /** The DEL control character, the one control character above SPACE. */
+    private static final char DEL_CHAR = 0x7F;
 
-    /** Low bits mask. */
-    private static final int MASK = 0xff;
+    /** The atom-specials other than CTL, which is checked by code point rather than by lookup. */
+    private static final String ATOM_SPECIALS = "(){ %*\"\\]";
 
     /** Literal. */
     private static final String SEEN = "\\Seen";
@@ -43,136 +50,138 @@ public class ImapArgumentFormatter {
     private static final String ANSWERED = "\\Answered";
 
     /**
-     * Writes out given imap (UTF-7) String. An imap String is defined in RFC 3501, page 16.
+     * Ensures the given value carries no control character.
      *
-     * @param src the source string, assuming it is from ascii code 0000 - 0177 already!
-     * @param out the ButeBuf to write to
-     * @param doQuote whether to quote or not
-     * @throws ImapAsyncClientException when src String that is > 0177
+     * <p>
+     * This is the floor every value written bare into a command line has to clear, whatever its production: a CR or LF would end the line,
+     * and NUL and SOH separate the fields inside the SASL payloads. It says nothing about the shape of the value, so a production with a
+     * shape of its own is checked by one of the methods below instead.
+     * </p>
+     *
+     * @param src the value to check
+     * @param name the name of the argument, used in the failure detail
+     * @return the value, so callers can check inline
+     * @throws ImapAsyncClientException when the value carries a control character
      */
-    void formatArgument(@Nonnull final String src, @Nonnull final ByteBuf out, final boolean doQuote) throws ImapAsyncClientException {
-        int len = src.length();
-
-        // if 0 length, send as quoted-string
-        boolean quote = len == 0 ? true : doQuote;
-        boolean escape = false;
-
-        char b;
-        for (int i = 0; i < len; i++) {
-            b = src.charAt(i);
-            if (b == '\0' || b == '\r' || b == '\n') {
-                // NUL, CR or LF means the bytes need to be sent as literals
-                out.writeBytes(src.getBytes(StandardCharsets.US_ASCII));
-                return;
-            }
-            if ((b & MASK) > ASCII_CODE_127) {
-                throw new ImapAsyncClientException(FailureType.INVALID_INPUT);
-            }
-            if (b == '*' || b == '%' || b == '(' || b == ')' || b == '{' || b == '"' || b == '\\' || ((b & MASK) <= ' ')) {
-                quote = true;
-                if (b == '"' || b == '\\') {
-                    escape = true;
-                }
+    String validateNoControlChars(@Nonnull final String src, @Nonnull final String name) throws ImapAsyncClientException {
+        for (int i = 0; i < src.length(); i++) {
+            final char b = src.charAt(i);
+            if (b <= LAST_CONTROL_CHAR || b == DEL_CHAR) {
+                throw new ImapAsyncClientException(FailureType.INVALID_INPUT, new StringBuilder(name).append(' ').append(describe(b, i)).toString());
             }
         }
-
-        /*
-         * Make sure the (case-independent) string "NIL" is always quoted, so as not to be confused with a real NIL (handled above in nstring). This
-         * is more than is necessary, but it's rare to begin with and this makes it safer than doing the test in nstring above in case some code calls
-         * writeString when it should call writeNString.
-         */
-        if (!quote && len == THREE && (src.charAt(0) == 'N' || src.charAt(0) == 'n') && (src.charAt(1) == 'I' || src.charAt(1) == 'i')
-                && (src.charAt(2) == 'L' || src.charAt(2) == 'l')) {
-            quote = true;
-        }
-
-        if (quote) {
-            out.writeByte('"');
-        }
-
-        if (escape) {
-            // already quoted
-            for (int i = 0; i < len; i++) {
-                b = src.charAt(i);
-                if (b == '"' || b == '\\') {
-                    out.writeByte('\\');
-                }
-                out.writeByte(b);
-            }
-        } else {
-            out.writeBytes(src.getBytes(StandardCharsets.US_ASCII));
-        }
-
-        if (quote) {
-            out.writeByte('"');
-        }
+        return src;
     }
 
     /**
-     * Writes out given imap (UTF-7) String. An imap String is defined in RFC 3501, page 16.
+     * Ensures the given value can be written as an {@code atom}.
      *
-     * @param src the source string, assuming it is UTF-7 already
-     * @param out the StringBuilder to append to
-     * @param doQuote whether to quote or not
-     * @throws ImapAsyncClientException when src String that is > 0177
+     * <p>
+     * {@code atom-specials} is {@code "(" / ")" / "{" / SP / CTL / list-wildcards / quoted-specials / resp-specials}, so besides the control
+     * characters an atom cannot hold a parenthesis, a left brace, a space, {@code %}, {@code *}, a double quote, a backslash or {@code ]}.
+     * Productions such as {@code flag-keyword}, {@code capability}, {@code status-att} and {@code return-option} are atoms with no quoted or
+     * literal alternative, so a value that is not one cannot be sent at all; letting it through would let a caller add a token of their own to
+     * the command.
+     * </p>
+     *
+     * @param src the value to check
+     * @param name the name of the argument, used in the failure detail
+     * @return the value, so callers can check inline
+     * @throws ImapAsyncClientException when the value cannot be written as an atom
      */
-    void formatArgument(@Nonnull final String src, @Nonnull final StringBuilder out, final boolean doQuote) throws ImapAsyncClientException {
-        int len = src.length();
-
-        // if 0 length, send as quoted-string
-        boolean quote = len == 0 ? true : doQuote;
-        boolean escape = false;
-
-        char b;
-        for (int i = 0; i < len; i++) {
-            b = src.charAt(i);
-            if (b == '\0' || b == '\r' || b == '\n') {
-                // NUL, CR or LF means the bytes need to be sent as literals
-                out.append(src);
-                return;
-            }
-
-            if ((b & MASK) > ASCII_CODE_127) {
-                throw new ImapAsyncClientException(FailureType.INVALID_INPUT);
-            }
-            if (b == '*' || b == '%' || b == '(' || b == ')' || b == '{' || b == '"' || b == '\\' || ((b & MASK) <= ' ')) {
-                quote = true;
-                if (b == '"' || b == '\\') {
-                    escape = true;
-                }
+    String validateAtom(@Nonnull final String src, @Nonnull final String name) throws ImapAsyncClientException {
+        validateNoControlChars(src, name);
+        for (int i = 0; i < src.length(); i++) {
+            final char b = src.charAt(i);
+            if (ATOM_SPECIALS.indexOf(b) >= 0) {
+                throw new ImapAsyncClientException(FailureType.INVALID_INPUT, new StringBuilder(name).append(" argument contains '").append(b)
+                        .append("' at index ").append(i).append(", which atom-specials keeps out of an atom.").toString());
             }
         }
+        return src;
+    }
 
-        /*
-         * Make sure the (case-independent) string "NIL" is always quoted, so as not to be confused with a real NIL (handled above in nstring). This
-         * is more than is necessary, but it's rare to begin with and this makes it safer than doing the test in nstring above in case some code calls
-         * writeString when it should call writeNString.
-         */
-        if (!quote && len == THREE && (src.charAt(0) == 'N' || src.charAt(0) == 'n') && (src.charAt(1) == 'I' || src.charAt(1) == 'i')
-                && (src.charAt(2) == 'L' || src.charAt(2) == 'l')) {
-            quote = true;
-        }
-
-        if (quote) {
-            out.append('"');
-        }
-
-        if (escape) {
-            // already quoted
-            for (int i = 0; i < len; i++) {
-                b = src.charAt(i);
-                if (b == '"' || b == '\\') {
-                    out.append('\\');
-                }
-                out.append(b);
+    /**
+     * Ensures the given value can be written as a {@code sequence-set} or a {@code uid-set}.
+     *
+     * <p>
+     * Both are built from numbers, {@code :} for a range, {@code ,} between ranges and {@code *} for the largest number in use. They are not
+     * atoms, since {@code *} is a list-wildcard that {@code atom-specials} keeps out of one, so they get a rule of their own rather than being
+     * held to the atom rule and failing on a perfectly good {@code 1:*}.
+     * </p>
+     *
+     * @param src the value to check
+     * @param name the name of the argument, used in the failure detail
+     * @return the value, so callers can check inline
+     * @throws ImapAsyncClientException when the value holds anything else
+     */
+    String validateSequenceSet(@Nonnull final String src, @Nonnull final String name) throws ImapAsyncClientException {
+        for (int i = 0; i < src.length(); i++) {
+            final char b = src.charAt(i);
+            if ((b < '0' || b > '9') && b != ':' && b != ',' && b != '*') {
+                throw new ImapAsyncClientException(FailureType.INVALID_INPUT, new StringBuilder(name).append(" argument contains '").append(b)
+                        .append("' at index ").append(i).append("; a sequence set holds only digits, ':', ',' and '*'.").toString());
             }
-        } else {
-            out.append(src);
         }
+        return src;
+    }
 
-        if (quote) {
-            out.append('"');
+    /**
+     * Ensures the given value can be written as the body of a {@code fetch-att} list.
+     *
+     * <p>
+     * A fetch-att is not an atom either: {@code BODY[HEADER.FIELDS (DATE FROM)]} holds spaces, brackets and parentheses quite legitimately.
+     * What it cannot do is close a group it never opened, which is how a value like {@code FLAGS) (BODY} escapes the list the caller was given
+     * and adds arguments of its own to the command. The delimiters are therefore required to balance.
+     * </p>
+     *
+     * @param src the value to check
+     * @param name the name of the argument, used in the failure detail
+     * @return the value, so callers can check inline
+     * @throws ImapAsyncClientException when a control character is present or the delimiters do not balance
+     */
+    String validateFetchAtt(@Nonnull final String src, @Nonnull final String name) throws ImapAsyncClientException {
+        validateNoControlChars(src, name);
+        int parens = 0;
+        int brackets = 0;
+        for (int i = 0; i < src.length(); i++) {
+            final char b = src.charAt(i);
+            if (b == '(') {
+                parens++;
+            } else if (b == ')') {
+                parens--;
+            } else if (b == '[') {
+                brackets++;
+            } else if (b == ']') {
+                brackets--;
+            }
+            if (parens < 0 || brackets < 0) {
+                throw new ImapAsyncClientException(FailureType.INVALID_INPUT, new StringBuilder(name).append(" argument closes at index ")
+                        .append(i).append(" a group it did not open.").toString());
+            }
         }
+        if (parens != 0 || brackets != 0) {
+            throw new ImapAsyncClientException(FailureType.INVALID_INPUT,
+                    new StringBuilder(name).append(" argument leaves a group open.").toString());
+        }
+        return src;
+    }
+
+    /**
+     * Describes a rejected character by code point and position.
+     *
+     * <p>
+     * The character itself is named, but the value it came from is deliberately left out: this text is carried in the exception message and so
+     * reaches logs, and a rejected argument may be a password.
+     * </p>
+     *
+     * @param b the offending character
+     * @param i the index it was found at
+     * @return the description
+     */
+    private static String describe(final char b, final int i) {
+        return new StringBuilder("argument contains an illegal control character (0x").append(Integer.toHexString(b)).append(") at index ")
+                .append(i).append('.').toString();
     }
 
     /**
@@ -180,8 +189,9 @@ public class ImapArgumentFormatter {
      *
      * @param flags the flags
      * @return the flag list string
+     * @throws ImapAsyncClientException when a user flag is not a valid {@code flag-keyword}
      */
-    String buildFlagString(@Nonnull final Flags flags) {
+    String buildFlagString(@Nonnull final Flags flags) throws ImapAsyncClientException {
         final StringBuilder sb = new StringBuilder();
         sb.append(ImapClientConstants.L_PAREN); // start of flag_list
 
@@ -220,7 +230,8 @@ public class ImapArgumentFormatter {
             } else {
                 sb.append(ImapClientConstants.SPACE);
             }
-            sb.append(uf[i]);
+            // flag-keyword is an atom, so a user flag has no form able to carry a control character
+            sb.append(validateAtom(uf[i], "user flag"));
         }
 
         sb.append(ImapClientConstants.R_PAREN); // terminate flag_list

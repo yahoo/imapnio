@@ -8,7 +8,6 @@ import com.sun.mail.imap.protocol.BASE64MailboxEncoder;
 import com.yahoo.imapnio.async.exception.ImapAsyncClientException;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 
 /**
  * This class defines imap status command request from client. RFC 3501 ABNF for status command.
@@ -21,9 +20,6 @@ import io.netty.buffer.Unpooled;
  * </pre>
  */
 public class StatusCommand extends ImapRequestAdapter {
-
-    /** Byte array for CR and LF, keeping the array local so it cannot be modified by others. */
-    private static final byte[] CRLF_B = { '\r', '\n' };
 
     /** Status and space. */
     private static final String STATUS_SP = "STATUS ";
@@ -57,27 +53,23 @@ public class StatusCommand extends ImapRequestAdapter {
     @Override
     public ByteBuf getCommandLineBytes() throws ImapAsyncClientException {
 
-        final ByteBuf sb = Unpooled.buffer(ImapClientConstants.PAD_LEN);
         // ex: STATUS "test1" (UIDNEXT MESSAGES UIDVALIDITY RECENT)
-        sb.writeBytes(STATUS_SP_B);
-
         final ImapArgumentFormatter formatter = new ImapArgumentFormatter();
+        final ImapCommandLineBuilder builder = new ImapCommandLineBuilder(LiteralSupport.DISABLE);
+        builder.raw(STATUS_SP_B)
+                .astring(BASE64MailboxEncoder.encode(folderName), false, "folder name") // already base64 encoded, so no literal is needed
+                .raw((byte) ImapClientConstants.SPACE)
+                .raw((byte) ImapClientConstants.L_PAREN);
 
-        final String encoded64Folder = BASE64MailboxEncoder.encode(folderName);
-        formatter.formatArgument(encoded64Folder, sb, false); // already base64 encoded so can be formatted and write to sb
-
-        sb.writeByte(ImapClientConstants.SPACE);
-        sb.writeByte(ImapClientConstants.L_PAREN);
         for (int i = 0, len = items.length; i < len; i++) {
-            formatter.formatArgument(items[i], sb, false);
+            // status-att is an atom, so atom-specials keeps a space or parenthesis out of it
+            builder.astring(formatter.validateAtom(items[i], "status item"), false, "status item");
             if (i < len - 1) { // do not add space for last item
-                sb.writeByte(ImapClientConstants.SPACE);
+                builder.raw((byte) ImapClientConstants.SPACE);
             }
         }
-        sb.writeByte(ImapClientConstants.R_PAREN);
 
-        sb.writeBytes(CRLF_B);
-        return sb;
+        return builder.raw((byte) ImapClientConstants.R_PAREN).finishSingle();
     }
 
     @Override

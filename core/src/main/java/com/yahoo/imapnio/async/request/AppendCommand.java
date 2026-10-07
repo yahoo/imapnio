@@ -96,40 +96,40 @@ public class AppendCommand implements ImapRequest {
         // Ex: APPEND saved-messages (\Seen) {310}
         // encode the folder name as per RFC2060
         final String base64Folder = BASE64MailboxEncoder.encode(folderName);
-        final int len = 2 * base64Folder.length() + ImapClientConstants.PAD_LEN;
 
-        final ByteBuf buf = Unpooled.buffer(len);
-        buf.writeBytes(APPEND_SP.getBytes(StandardCharsets.US_ASCII));
-
-        // folder
+        // folder, already base64 encoded and so unable to need a literal of its own; the message data literal is written further down
         final ImapArgumentFormatter argWriter = new ImapArgumentFormatter();
-        argWriter.formatArgument(base64Folder, buf, false); // already base64 encoded so can be formatted and write to buf
-        buf.writeByte(ImapClientConstants.SPACE);
+        final ImapCommandLineBuilder builder = new ImapCommandLineBuilder(LiteralSupport.DISABLE)
+                .raw(APPEND_SP.getBytes(StandardCharsets.US_ASCII))
+                .astring(base64Folder, false, "folder name")
+                .raw((byte) ImapClientConstants.SPACE);
 
         // flags
         if (flags != null) { // set Flags in appended message
-            buf.writeBytes(argWriter.buildFlagString(flags).getBytes(StandardCharsets.US_ASCII));
-            buf.writeByte(ImapClientConstants.SPACE);
+            builder.raw(argWriter.buildFlagString(flags).getBytes(StandardCharsets.US_ASCII))
+                    .raw((byte) ImapClientConstants.SPACE);
         }
 
-        // date
+        // date, generated here rather than supplied by the caller
         if (date != null) {
-            argWriter.formatArgument(INTERNALDATE.format(date), buf, false);
-            buf.writeByte(ImapClientConstants.SPACE);
+            builder.astring(INTERNALDATE.format(date), false, "internal date")
+                    .raw((byte) ImapClientConstants.SPACE);
         }
+
+        final ByteBuf buf = builder.openSingle();
 
         // length of the literal
         final boolean isLiteralPlus = (literalOpt == LiteralSupport.ENABLE_LITERAL_PLUS);
         final boolean isLiteralMinus = (literalOpt == LiteralSupport.ENABLE_LITERAL_MINUS && data.length < MAX_LITERAL_MINUS_DATA_LEN);
 
-        buf.writeByte('{');
+        buf.writeByte(ImapClientConstants.L_BRACE);
         buf.writeBytes(Integer.toString(data.length).getBytes(StandardCharsets.US_ASCII));
-        if (isLiteralPlus) {
-            buf.writeByte('+');
-        } else if (isLiteralMinus) {
-            buf.writeByte('-');
+        if (isLiteralPlus || isLiteralMinus) {
+            // RFC 7888 section 4: literal = "{" number ["+"] "}" CRLF *CHAR8. LITERAL- is marked with "+" exactly as LITERAL+ is, the two
+            // differ only in the size cap, so there is no "-" form to write here
+            buf.writeByte(ImapClientConstants.PLUS);
         }
-        buf.writeByte('}');
+        buf.writeByte(ImapClientConstants.R_BRACE);
         buf.writeBytes(CRLF_B);
 
         // decide to send literal

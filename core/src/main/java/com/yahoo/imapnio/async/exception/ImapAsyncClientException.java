@@ -99,12 +99,34 @@ public class ImapAsyncClientException extends Exception {
     private String userInfo;
 
     /**
+     * Additional context about this particular failure, beyond what the failure type conveys.
+     */
+    @Nullable
+    private String detail;
+
+    /**
      * Initializes a {code ImapAsyncClientException} with failure type. It is used when session is not created.
      *
      * @param failureType the reason it fails
      */
     public ImapAsyncClientException(@Nonnull final FailureType failureType) {
         this(failureType, null, null, null);
+    }
+
+    /**
+     * Initializes a {code ImapAsyncClientException} with failure type and a detail message.
+     *
+     * <p>
+     * The detail is meant to pinpoint the failure, for example naming the command argument that was rejected. Callers must not put
+     * caller-supplied values in it, since it is carried in {@link #getMessage()} and therefore reaches logs; an argument may hold a credential.
+     * </p>
+     *
+     * @param failureType the reason it fails
+     * @param detail additional context about this particular failure
+     */
+    public ImapAsyncClientException(@Nonnull final FailureType failureType, @Nonnull final String detail) {
+        this(failureType, null, null, null);
+        this.detail = detail;
     }
 
     /**
@@ -159,6 +181,9 @@ public class ImapAsyncClientException extends Exception {
         }
         if (userInfo != null) {
             sb.append(",uId=").append(userInfo);
+        }
+        if (detail != null) {
+            sb.append(",detail=").append(detail);
         }
         return sb.toString();
     }
