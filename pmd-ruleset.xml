@@ -2,9 +2,9 @@
 <ruleset name="PMD-Rules">
     <description>lafaspot PMD rules.</description>
     <!-- String Instantiation -->
-    <rule ref="rulesets/java/strings.xml/StringInstantiation"><priority>1</priority></rule>
+    <rule ref="category/java/performance.xml/StringInstantiation"><priority>1</priority></rule>
     <!-- String Instantiation -->
-    <rule ref="rulesets/java/logging-java.xml/GuardLogStatementJavaUtil"><priority>1</priority></rule>
+    <rule ref="category/java/bestpractices.xml/GuardLogStatement"><priority>1</priority></rule>
     <!-- Cyclomatic Complexity -->
     <!-- <rule ref="rulesets/java/codesize.xml/CyclomaticComplexity"><priority>1</priority></rule> -->
 </ruleset>
