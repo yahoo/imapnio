@@ -39,14 +39,12 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.ConnectTimeoutException;
 import io.netty.channel.EventLoopGroup;
-import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.MultiThreadIoEventLoopGroup;
+import io.netty.channel.nio.NioIoHandler;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
-import io.netty.handler.ssl.ClientAuth;
-import io.netty.handler.ssl.JdkSslContext;
-import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.timeout.IdleStateHandler;
@@ -59,6 +57,9 @@ public class ImapAsyncClient {
 
     /** Literal for imaps. */
     private static final String IMAPS = "imaps";
+
+    /** Endpoint identification algorithm that matches the server certificate against the host name, by the RFC 2818 rules RFC 8314 points to. */
+    private static final String HOSTNAME_VERIFICATION_ALGORITHM = "HTTPS";
 
     /** Handler name for ssl handler. */
     public static final String SSL_HANDLER = "sslHandler";
@@ -142,7 +143,8 @@ public class ImapAsyncClient {
      * @throws SSLException when encountering an error to create a SslContext for this client
      */
     public ImapAsyncClient(final int numOfThreads) throws SSLException {
-        this(Clock.systemUTC(), new Bootstrap(), new NioEventLoopGroup(numOfThreads), LoggerFactory.getLogger(ImapAsyncClient.class));
+        this(Clock.systemUTC(), new Bootstrap(), new MultiThreadIoEventLoopGroup(numOfThreads, NioIoHandler.newFactory()),
+                LoggerFactory.getLogger(ImapAsyncClient.class));
     }
 
     /**
@@ -249,11 +251,14 @@ public class ImapAsyncClient {
                     final boolean isSSL = serverUri.getScheme().toLowerCase().equals(IMAPS);
 
                     if (isSSL) {
-                        SslContext sslContext;
+                        final SSLEngine engine;
                         try {
-                            // if callers want to use their predefined SSLContext, we need to wrap it with JdkSslContext
-                            sslContext = (jdkSslContext == null) ? SslContextBuilder.forClient().build()
-                                    : new JdkSslContext(jdkSslContext, true, ClientAuth.NONE);
+                            if (jdkSslContext == null) {
+                                engine = SslContextBuilder.forClient().build().newEngine(ch.alloc(), serverUri.getHost(), serverUri.getPort());
+                            } else { // callers' predefined SSLContext
+                                engine = jdkSslContext.createSSLEngine(serverUri.getHost(), serverUri.getPort());
+                                engine.setUseClientMode(true);
+                            }
                         } catch (final SSLException e) {
                             final ImapAsyncClientException ex = new ImapAsyncClientException(FailureType.CONNECTION_SSL_EXCEPTION, e);
                             sessionFuture.done(ex);
@@ -263,21 +268,19 @@ public class ImapAsyncClient {
                             closeChannel(ch);
                             return;
                         }
-                        final List<SNIServerName> serverNames = new ArrayList<SNIServerName>();
+                        final SSLParameters params = engine.getSSLParameters();
                         if (null != sniNames && !sniNames.isEmpty()) { // SNI support
+                            final List<SNIServerName> serverNames = new ArrayList<SNIServerName>(sniNames.size());
                             for (final String sni : sniNames) {
                                 serverNames.add(new SNIHostName(sni));
                             }
-                            final SSLParameters params = new SSLParameters();
                             params.setServerNames(serverNames);
-
-                            final SSLEngine engine = sslContext.newEngine(ch.alloc(), serverUri.getHost(), serverUri.getPort());
-                            engine.setSSLParameters(params);
-                            pipeline.addFirst(SSL_HANDLER, new SslHandler(engine)); // in/outbound
-                        } else {
-                            // in/outbound
-                            pipeline.addFirst(SSL_HANDLER, sslContext.newHandler(ch.alloc(), serverUri.getHost(), serverUri.getPort()));
                         }
+                        // verify the host name for both kinds of engine, since a caller's SSLContext does not do it by itself. The certificate is
+                        // matched against the SNI host name when one is sent, and against the URI host otherwise
+                        params.setEndpointIdentificationAlgorithm(HOSTNAME_VERIFICATION_ALGORITHM);
+                        engine.setSSLParameters(params);
+                        pipeline.addFirst(SSL_HANDLER, new SslHandler(engine)); // in/outbound
                     }
 
                     final long sessionId = sessionCount.incrementAndGet();

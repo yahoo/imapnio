@@ -17,8 +17,10 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import javax.net.ssl.SNIHostName;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLParameters;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
@@ -157,6 +159,8 @@ public class ImapAsyncClientTest {
         Mockito.verify(nettyPipeline, Mockito.times(1)).addFirst(Mockito.anyString(), handlerCaptorFirst.capture());
         Assert.assertEquals(handlerCaptorFirst.getAllValues().size(), 1, "number of handlers mismatched.");
         Assert.assertEquals(handlerCaptorFirst.getAllValues().get(0).getClass(), SslHandler.class, "expected class mismatched.");
+        final SSLParameters params = ((SslHandler) handlerCaptorFirst.getAllValues().get(0)).engine().getSSLParameters();
+        Assert.assertEquals(params.getEndpointIdentificationAlgorithm(), "HTTPS", "Host name should be verified.");
 
         final ArgumentCaptor<ChannelHandler> handlerCaptorLast = ArgumentCaptor.forClass(ChannelHandler.class);
         Mockito.verify(nettyPipeline, Mockito.times(1)).addLast(Mockito.anyString(), handlerCaptorLast.capture());
@@ -453,6 +457,9 @@ public class ImapAsyncClientTest {
         Mockito.verify(nettyPipeline, Mockito.times(1)).addFirst(Mockito.anyString(), handlerCaptorFirst.capture());
         Assert.assertEquals(handlerCaptorFirst.getAllValues().size(), 1, "number of handlers mismatched.");
         Assert.assertEquals(handlerCaptorFirst.getAllValues().get(0).getClass(), SslHandler.class, "expected class mismatched.");
+        final SSLParameters sniParams = ((SslHandler) handlerCaptorFirst.getAllValues().get(0)).engine().getSSLParameters();
+        Assert.assertEquals(sniParams.getEndpointIdentificationAlgorithm(), "HTTPS", "Host name should be verified.");
+        Assert.assertEquals(sniParams.getServerNames(), Collections.singletonList(new SNIHostName("one.two.three.com")), "SNI names mismatched.");
 
         final ArgumentCaptor<ChannelHandler> handlerCaptorLast = ArgumentCaptor.forClass(ChannelHandler.class);
         Mockito.verify(nettyPipeline, Mockito.times(1)).addLast(Mockito.anyString(), handlerCaptorLast.capture());
