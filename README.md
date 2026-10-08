@@ -42,7 +42,7 @@ Then, update your project's pom.xml file dependencies, as follows:
   <dependency>
       <groupId>com.yahoo.imapnio</groupId>
       <artifactId>imapnio.core</artifactId>
-      <version>5.1.0</version>
+      <version>5.2.0</version>
   </dependency>
 ```
 Finally, import the relevant classes and use this library according to the usage section below.
@@ -81,6 +81,9 @@ The following code examples demonstrate basic functionality relate to connecting
 	System.out.println("Future is done.");
   }
 ```
+
+For an `imaps` URI, the server certificate must be trusted and must be issued for the server's host name. The name checked is the first SNI name
+when `sniNames` is given, and the URI host otherwise, so a client that connects by IP address can pass the server's name as an SNI name.
 
 ### Execute the IMAP command to IMAP server
 Following codes uses a Capability command as an example.
