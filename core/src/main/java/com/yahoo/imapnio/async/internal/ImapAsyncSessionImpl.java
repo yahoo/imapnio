@@ -547,7 +547,7 @@ public class ImapAsyncSessionImpl implements ImapAsyncSession, ImapCommandChanne
 
                     final Channel ch = channelRef.get();
                     final ChannelPipeline pipeline = ch.pipeline();
-                    final JdkZlibDecoder decoder = new JdkZlibDecoder(ZlibWrapper.NONE);
+                    final JdkZlibDecoder decoder = new JdkZlibDecoder(ZlibWrapper.NONE, 0);
                     final JdkZlibEncoder encoder = new JdkZlibEncoder(ZlibWrapper.NONE, 5);
                     if (pipeline.get(ImapAsyncClient.SSL_HANDLER) == null) {
                         // no SSL handler, deflater/enflater has to be first
