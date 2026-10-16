@@ -47,11 +47,10 @@ public class UidFetchCommandTest {
      *
      * @throws ImapAsyncClientException will not throw
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      */
     @Test
     public void testGetCommandLineFromConstructorWithDataItems()
-            throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
+            throws ImapAsyncClientException, IllegalAccessException {
 
         final long[] msgs = { 1L, 2L, 3L };
         final MessageNumberSet[] msgsets = MessageNumberSet.createMessageNumberSets(msgs);
@@ -70,11 +69,10 @@ public class UidFetchCommandTest {
      *
      * @throws ImapAsyncClientException will not throw
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      */
     @Test
     public void testGetCommandLineFromConstructorWithDataItemsPlusPartialRange()
-            throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
+            throws ImapAsyncClientException, IllegalAccessException {
 
         final long[] msgs = { 1L, 2L, 3L, 4L, 5L, 6L };
         final MessageNumberSet[] msgsets = MessageNumberSet.createMessageNumberSets(msgs);
@@ -100,11 +98,10 @@ public class UidFetchCommandTest {
      *
      * @throws ImapAsyncClientException will not throw
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      */
     @Test
     public void testGetCommandLineFromConstructorWithMacro()
-            throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
+            throws ImapAsyncClientException, IllegalAccessException {
 
         final long[] msgs = { 4294967293L, 4294967294L, 4294967295L };
         final MessageNumberSet[] msgsets = MessageNumberSet.createMessageNumberSets(msgs);
@@ -123,11 +120,10 @@ public class UidFetchCommandTest {
      *
      * @throws ImapAsyncClientException will not throw
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      */
     @Test
     public void testGetCommandLineFromConstructorWithMacroPlusPartialRange()
-            throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
+            throws ImapAsyncClientException, IllegalAccessException {
 
         final long[] msgs = { 4294967293L, 4294967294L, 4294967295L };
         final MessageNumberSet[] msgsets = MessageNumberSet.createMessageNumberSets(msgs);
@@ -151,11 +147,10 @@ public class UidFetchCommandTest {
      *
      * @throws ImapAsyncClientException will not throw
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      */
     @Test
     public void testGetCommandLineFromConstructorWithUidStringDataItems()
-            throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
+            throws ImapAsyncClientException, IllegalAccessException {
 
         final ImapRequest cmd = new UidFetchCommand("*:4,5:7", DATA_ITEMS);
         Assert.assertEquals(cmd.getCommandLine(), "UID FETCH *:4,5:7 (FLAGS BODY[HEADER.FIELDS (DATE FROM)])\r\n", "Expected result mismatched.");
@@ -172,11 +167,10 @@ public class UidFetchCommandTest {
      *
      * @throws ImapAsyncClientException will not throw
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      */
     @Test
     public void testGetCommandLineFromConstructorWithUidStringDataItemsPlusPartialRange()
-            throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
+            throws ImapAsyncClientException, IllegalAccessException {
 
         PartialExtensionUidFetchInfo peufi = new PartialExtensionUidFetchInfo(1, 5);
         ImapRequest cmd = new UidFetchCommand("*:4,5:7", DATA_ITEMS, peufi);
@@ -200,11 +194,10 @@ public class UidFetchCommandTest {
      *
      * @throws ImapAsyncClientException will not throw
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      */
     @Test
     public void testGetCommandLineFromConstructorWithUidStringAndMacro()
-            throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
+            throws ImapAsyncClientException, IllegalAccessException {
 
         final ImapRequest cmd = new UidFetchCommand("1:*", FetchMacro.FAST);
         Assert.assertEquals(cmd.getCommandLine(), "UID FETCH 1:* FAST\r\n", "Expected result mismatched.");
@@ -221,11 +214,10 @@ public class UidFetchCommandTest {
      *
      * @throws ImapAsyncClientException will not throw
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      */
     @Test
     public void testGetCommandLineFromConstructorWithUidStringAndMacroPlusPartialRange()
-            throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
+            throws ImapAsyncClientException, IllegalAccessException {
 
         PartialExtensionUidFetchInfo peufi = new PartialExtensionUidFetchInfo(1, 5);
         ImapRequest cmd = new UidFetchCommand("1:*", FetchMacro.FAST, peufi);

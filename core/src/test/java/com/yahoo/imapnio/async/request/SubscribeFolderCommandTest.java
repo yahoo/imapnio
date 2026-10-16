@@ -44,10 +44,9 @@ public class SubscribeFolderCommandTest {
      * 
      * @throws ImapAsyncClientException will not throw
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      */
     @Test
-    public void testGetCommandLine() throws IllegalArgumentException, IllegalAccessException, ImapAsyncClientException {
+    public void testGetCommandLine() throws IllegalAccessException, ImapAsyncClientException {
         final String folderName = "folderABC";
         final ImapRequest cmd = new SubscribeFolderCommand(folderName);
         Assert.assertEquals(cmd.getCommandLine(), SUBSCRIBE + folderName + "\r\n", "Expected result mismatched.");

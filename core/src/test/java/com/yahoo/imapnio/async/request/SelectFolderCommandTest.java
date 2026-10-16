@@ -47,10 +47,9 @@ public class SelectFolderCommandTest {
      *
      * @throws ImapAsyncClientException will not throw
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      */
     @Test
-    public void testGetCommandLine() throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
+    public void testGetCommandLine() throws ImapAsyncClientException, IllegalAccessException {
         final String folderName = "folderABC";
         final ImapRequest cmd = new SelectFolderCommand(folderName);
         Assert.assertEquals(cmd.getCommandLine(), SELECT + folderName + "\r\n", "Expected result mismatched.");

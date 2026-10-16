@@ -53,11 +53,10 @@ public class AuthXoauth2CommandTest {
      *
      * @throws ImapAsyncClientException will not throw
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      */
     @Test
     public void testGetCommandLineSaslIREnabled()
-            throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
+            throws ImapAsyncClientException, IllegalAccessException {
         final String username = "tesla";
         final String token = "selfdriving";
         final Map<String, List<String>> capas = new HashMap<String, List<String>>();
@@ -81,11 +80,10 @@ public class AuthXoauth2CommandTest {
      * Tests getCommandLine method.
      *
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testGetCommandLineSaslIRDisabled() throws IllegalArgumentException, IllegalAccessException, ImapAsyncClientException {
+    public void testGetCommandLineSaslIRDisabled() throws IllegalAccessException, ImapAsyncClientException {
         final String username = "tesla";
         final String token = "selfdriving";
         final Map<String, List<String>> capas = new HashMap<String, List<String>>();

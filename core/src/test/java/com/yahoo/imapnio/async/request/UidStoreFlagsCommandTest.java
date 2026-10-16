@@ -44,12 +44,11 @@ public class UidStoreFlagsCommandTest {
      * Tests getCommandLine method using message sequences, flags, adding flags and not silent.
      *
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      * @throws ImapAsyncClientException will not throw
      */
     @Test
     public void testGetCommandLineWithFlagsAddedNotSilent()
-            throws IllegalArgumentException, IllegalAccessException, ImapAsyncClientException {
+            throws IllegalAccessException, ImapAsyncClientException {
 
         final int[] msgs = { 1, 2, 3 };
         final MessageNumberSet[] msgsets = MessageNumberSet.createMessageNumberSets(msgs);
@@ -70,12 +69,11 @@ public class UidStoreFlagsCommandTest {
      * Tests getCommandLine method using message sequences, flags, replacing flags and not silent.
      *
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      * @throws ImapAsyncClientException will not throw
      */
     @Test
     public void testGetCommandLineWithFlagsReplacedNotSilent()
-            throws IllegalArgumentException, IllegalAccessException, ImapAsyncClientException {
+            throws IllegalAccessException, ImapAsyncClientException {
 
         final int[] msgs = { 1, 2, 3 };
         final MessageNumberSet[] msgsets = MessageNumberSet.createMessageNumberSets(msgs);
@@ -96,12 +94,11 @@ public class UidStoreFlagsCommandTest {
      * Tests getCommandLine method using message sequences, flags, adding flags and silent.
      *
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      * @throws ImapAsyncClientException will not throw
      */
     @Test
     public void testGetCommandLineWithFlagsAddedSilent()
-            throws IllegalArgumentException, IllegalAccessException, ImapAsyncClientException {
+            throws IllegalAccessException, ImapAsyncClientException {
 
         final int[] msgs = { 1, 2, 3 };
         final MessageNumberSet[] msgsets = MessageNumberSet.createMessageNumberSets(msgs);
@@ -123,12 +120,11 @@ public class UidStoreFlagsCommandTest {
      * Tests getCommandLine method using message sequences, flags, replacing flags and silent.
      *
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      * @throws ImapAsyncClientException will not throw
      */
     @Test
     public void testGetCommandLineWithFlagsReplacedSilent()
-            throws IllegalArgumentException, IllegalAccessException, ImapAsyncClientException {
+            throws IllegalAccessException, ImapAsyncClientException {
 
         final int[] msgs = { 1, 2, 3 };
         final MessageNumberSet[] msgsets = MessageNumberSet.createMessageNumberSets(msgs);

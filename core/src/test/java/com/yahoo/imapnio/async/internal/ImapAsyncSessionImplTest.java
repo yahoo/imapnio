@@ -1321,11 +1321,10 @@ public class ImapAsyncSessionImplTest {
      * @throws ImapAsyncClientException will not throw
      * @throws TimeoutException will not throw
      * @throws InterruptedException will not throw
-     * @throws IllegalArgumentException will not throw
      */
     @Test
     public void testExecuteChannelCloseBeforeServerResponseArrived()
-            throws ImapAsyncClientException, InterruptedException, TimeoutException, IllegalArgumentException {
+            throws ImapAsyncClientException, InterruptedException, TimeoutException {
 
         final Channel channel = Mockito.mock(Channel.class);
         final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
@@ -1407,11 +1406,10 @@ public class ImapAsyncSessionImplTest {
      * @throws ImapAsyncClientException will not throw
      * @throws TimeoutException will not throw
      * @throws InterruptedException will not throw
-     * @throws IllegalArgumentException will not throw
      */
     @Test
     public void testExecuteChannelCloseBeforeServerResponseArrivedLogLevelInfo()
-            throws ImapAsyncClientException, InterruptedException, TimeoutException, IllegalArgumentException {
+            throws ImapAsyncClientException, InterruptedException, TimeoutException {
 
         final Channel channel = Mockito.mock(Channel.class);
         final ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);

@@ -43,10 +43,9 @@ public class ListStatusCommandTest {
      *
      * @throws ImapAsyncClientException will not throw
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      */
     @Test
-    public void testGetCommandLineOnePattern1() throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
+    public void testGetCommandLineOnePattern1() throws ImapAsyncClientException, IllegalAccessException {
         final String[] someItems = { "UIDVALIDITY", "UIDNEXT", "MESSAGES", "HIGHESTMODSEQ", "UNSEEN", "RECENT", "MAILBOXID" };
         final String[] patterns = { "*" };
         {
@@ -82,10 +81,9 @@ public class ListStatusCommandTest {
      *
      * @throws ImapAsyncClientException will not throw
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      */
     @Test
-    public void testGetCommandLineOnePatternEscapeChars() throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
+    public void testGetCommandLineOnePatternEscapeChars() throws ImapAsyncClientException, IllegalAccessException {
         final String[] someItems = { "UIDVALIDITY", "UIDNEXT" };
         final String[] patterns = { "&iber " };
         {
@@ -118,10 +116,9 @@ public class ListStatusCommandTest {
      *
      * @throws ImapAsyncClientException will not throw
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      */
     @Test
-    public void testGetCommandLineMultiPatterns() throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
+    public void testGetCommandLineMultiPatterns() throws ImapAsyncClientException, IllegalAccessException {
         final String[] someItems = { "UIDVALIDITY", "UIDNEXT", "MESSAGES", "HIGHESTMODSEQ", "UNSEEN", "RECENT" };
         final String[] patterns = { "INBOX", "Drafts", "Sent/%" };
         {
@@ -156,10 +153,9 @@ public class ListStatusCommandTest {
      *
      * @throws ImapAsyncClientException will not throw
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      */
     @Test
-    public void testGetCommandLineMultiPatternsEscapeChars() throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
+    public void testGetCommandLineMultiPatternsEscapeChars() throws ImapAsyncClientException, IllegalAccessException {
         final String[] someItems = { "UIDVALIDITY", "UIDNEXT", "MESSAGES", "HIGHESTMODSEQ", "UNSEEN", "RECENT" };
         final String[] patterns = { "*", "&iber ", "Drafts", "Sent/%" };
         {
@@ -192,10 +188,9 @@ public class ListStatusCommandTest {
      *
      * @throws ImapAsyncClientException will not throw
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      */
     @Test
-    public void testGetCommandLineMultiPatternsNoneAsciiChars() throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
+    public void testGetCommandLineMultiPatternsNoneAsciiChars() throws ImapAsyncClientException, IllegalAccessException {
         final String[] someItems = { "UIDVALIDITY", "UIDNEXT", "MESSAGES", "HIGHESTMODSEQ", "UNSEEN", "RECENT" };
         final String[] patterns = { "ΩΩ", "Sent/%" };
         {

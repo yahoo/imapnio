@@ -42,10 +42,9 @@ public class NoopCommandTest {
      *
      * @throws ImapAsyncClientException will not throw
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      */
     @Test
-    public void testGetCommandLine() throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
+    public void testGetCommandLine() throws ImapAsyncClientException, IllegalAccessException {
         final ImapRequest cmd = new NoopCommand();
         Assert.assertEquals(cmd.getCommandLine(), "NOOP\r\n", "Expected result mismatched.");
 

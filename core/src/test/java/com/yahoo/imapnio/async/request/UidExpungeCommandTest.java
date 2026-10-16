@@ -44,11 +44,10 @@ public class UidExpungeCommandTest {
      *
      * @throws ImapAsyncClientException will not throw
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      */
     @Test
     public void testGetCommandLineWithUIDSet()
-            throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
+            throws ImapAsyncClientException, IllegalAccessException {
         {
             final UIDSet[] uidsets = { new UIDSet(43, 4294967295L) };
             final ImapRequest cmd = new UidExpungeCommand(uidsets);
@@ -79,11 +78,10 @@ public class UidExpungeCommandTest {
      *
      * @throws ImapAsyncClientException will not throw
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      */
     @Test
     public void testGetCommandLineWithMessageNumberSet()
-            throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
+            throws ImapAsyncClientException, IllegalAccessException {
         {
             final MessageNumberSet[] sets = { new MessageNumberSet(43, 4294967295L) };
             final ImapRequest cmd = new UidExpungeCommand(sets);
@@ -114,10 +112,9 @@ public class UidExpungeCommandTest {
      *
      * @throws ImapAsyncClientException will not throw
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      */
     @Test
-    public void testGetCommandLine() throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
+    public void testGetCommandLine() throws ImapAsyncClientException, IllegalAccessException {
         final ImapRequest cmd = new UidExpungeCommand("43:44,99");
         Assert.assertEquals(cmd.getCommandLine(), "UID EXPUNGE 43:44,99\r\n", "Expected result mismatched.");
 

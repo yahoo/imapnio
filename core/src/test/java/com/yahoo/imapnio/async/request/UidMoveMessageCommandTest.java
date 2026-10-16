@@ -44,11 +44,10 @@ public class UidMoveMessageCommandTest {
      *
      * @throws ImapAsyncClientException will not throw
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      */
     @Test
     public void testMessageSequenceGetCommandLine()
-            throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
+            throws ImapAsyncClientException, IllegalAccessException {
         final String folderName = "folderABC";
         final long[] uids = { 4294967293L, 4294967294L, 4294967295L };
         final UIDSet[] msgsets = UIDSet.createUIDSets(uids);
@@ -67,11 +66,10 @@ public class UidMoveMessageCommandTest {
      *
      * @throws ImapAsyncClientException will not throw
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      */
     @Test
     public void testMessageUidGetCommandLine()
-            throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
+            throws ImapAsyncClientException, IllegalAccessException {
         final String folderName = "folderABC";
         final ImapRequest cmd = new UidMoveMessageCommand("37850:37852", folderName);
         Assert.assertEquals(cmd.getCommandLine(), "UID MOVE 37850:37852 folderABC\r\n", "Expected result mismatched.");
@@ -88,11 +86,10 @@ public class UidMoveMessageCommandTest {
      *
      * @throws ImapAsyncClientException will not throw
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      */
     @Test
     public void testConstructorMessageNumberSetGetCommandLine()
-            throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
+            throws ImapAsyncClientException, IllegalAccessException {
         final String folderName = "folderABC";
         final MessageNumberSet[] mset = MessageNumberSet.createMessageNumberSets(new long[] { 37850L, 37851L, 37852L });
         final ImapRequest cmd = new UidMoveMessageCommand(mset, folderName);

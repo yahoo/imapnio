@@ -44,10 +44,9 @@ public class RenameFolderCommandTest {
      * 
      * @throws ImapAsyncClientException will not throw
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      */
     @Test
-    public void testGetCommandLine() throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
+    public void testGetCommandLine() throws ImapAsyncClientException, IllegalAccessException {
         final String oldName = "folderABC";
         final String newName = "folderDEF";
         final ImapRequest cmd = new RenameFolderCommand(oldName, newName);

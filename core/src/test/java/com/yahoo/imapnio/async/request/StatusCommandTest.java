@@ -46,10 +46,9 @@ public class StatusCommandTest {
      *
      * @throws ImapAsyncClientException will not throw
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      */
     @Test
-    public void testGetCommandLine() throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
+    public void testGetCommandLine() throws ImapAsyncClientException, IllegalAccessException {
         final ImapRequest cmd = new StatusCommand("inbox", ALL_ITEMS);
         Assert.assertEquals(cmd.getCommandLine(), "STATUS inbox (UIDVALIDITY UIDNEXT MESSAGES HIGHESTMODSEQ UNSEEN)\r\n",
                 "Expected result mismatched.");
@@ -66,11 +65,10 @@ public class StatusCommandTest {
      *
      * @throws ImapAsyncClientException will not throw
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      */
     @Test
     public void testGetCommandLineEscapeChars()
-            throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
+            throws ImapAsyncClientException, IllegalAccessException {
         final ImapRequest cmd = new StatusCommand("F\"iber", ALL_ITEMS);
         Assert.assertEquals(cmd.getCommandLine(), "STATUS \"F\\\"iber\" (UIDVALIDITY UIDNEXT MESSAGES HIGHESTMODSEQ UNSEEN)\r\n",
                 "Expected result mismatched.");

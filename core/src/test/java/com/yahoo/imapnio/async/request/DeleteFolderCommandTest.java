@@ -44,10 +44,9 @@ public class DeleteFolderCommandTest {
      *
      * @throws ImapAsyncClientException will not throw
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      */
     @Test
-    public void testGetCommandLine() throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
+    public void testGetCommandLine() throws ImapAsyncClientException, IllegalAccessException {
         final String folderName = "folderABC";
         final ImapRequest cmd = new DeleteFolderCommand(folderName);
         Assert.assertEquals(cmd.getCommandLine(), DELETE + folderName + "\r\n", "Expected result mismatched.");
