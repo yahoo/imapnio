@@ -43,10 +43,9 @@ public class CapaCommandTest {
      *
      * @throws ImapAsyncClientException will not throw
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      */
     @Test
-    public void testGetCommandLine() throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
+    public void testGetCommandLine() throws ImapAsyncClientException, IllegalAccessException {
         final ImapRequest cmd = new CapaCommand();
         Assert.assertEquals(cmd.getCommandLine(), "CAPABILITY\r\n", "Expected result mismatched.");
         Assert.assertFalse(cmd.isCommandLineDataSensitive(), "isCommandLineDataSensitive() result mismatched.");

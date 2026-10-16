@@ -60,11 +60,10 @@ public class AppendCommandTest {
      * Tests getCommandLine method.
      *
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testGetCommandLineAndContinuation() throws IllegalArgumentException, IllegalAccessException, ImapAsyncClientException {
+    public void testGetCommandLineAndContinuation() throws IllegalAccessException, ImapAsyncClientException {
         final Date internalDate = new Date(1552413335000L);
         final Flags expectedFlags = new Flags();
         expectedFlags.add(Flags.Flag.FLAGGED);
@@ -106,11 +105,10 @@ public class AppendCommandTest {
      * Tests getCommandLine method.
      *
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testLiteralPlus() throws IllegalArgumentException, IllegalAccessException, ImapAsyncClientException {
+    public void testLiteralPlus() throws IllegalAccessException, ImapAsyncClientException {
         final Date internalDate = new Date(1552413335000L);
         final Flags expectedFlags = new Flags();
         expectedFlags.add(Flags.Flag.FLAGGED);
@@ -155,11 +153,10 @@ public class AppendCommandTest {
      * Tests getCommandLine method.
      *
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testLiteralMinus() throws IllegalArgumentException, IllegalAccessException, ImapAsyncClientException {
+    public void testLiteralMinus() throws IllegalAccessException, ImapAsyncClientException {
         final Date internalDate = new Date(1552413335000L);
         final Flags expectedFlags = new Flags();
         expectedFlags.add(Flags.Flag.FLAGGED);
@@ -204,11 +201,10 @@ public class AppendCommandTest {
     /**
      * Tests getCommandLine method.
      *
-     * @throws IllegalArgumentException will not throw
      * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testGetCommandLineNullFlagsNullDate() throws IllegalArgumentException, ImapAsyncClientException {
+    public void testGetCommandLineNullFlagsNullDate() throws ImapAsyncClientException {
         final Date internalDate = null;
         final Flags expectedFlags = null;
         final byte[] expectedMsg = TEST_MSG_BYTE;

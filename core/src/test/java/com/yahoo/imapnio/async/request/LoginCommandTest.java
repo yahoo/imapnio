@@ -43,10 +43,9 @@ public class LoginCommandTest {
      *
      * @throws ImapAsyncClientException will not throw
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      */
     @Test
-    public void testGetCommandLine() throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
+    public void testGetCommandLine() throws ImapAsyncClientException, IllegalAccessException {
         final String username = "tesla";
         final String pwd = "selfdriving";
         final ImapRequest cmd = new LoginCommand(username, pwd);
@@ -66,11 +65,10 @@ public class LoginCommandTest {
      *
      * @throws ImapAsyncClientException will not throw
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      */
     @Test
     public void testGetCommandLineEmptyString()
-            throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
+            throws ImapAsyncClientException, IllegalAccessException {
         final String username = "";
         final String pwd = "";
         final ImapRequest cmd = new LoginCommand(username, pwd);

@@ -47,10 +47,9 @@ public class IdleCommandTest {
      *
      * @throws ImapAsyncClientException will not throw
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      */
     @Test
-    public void testGetCommandLine() throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
+    public void testGetCommandLine() throws ImapAsyncClientException, IllegalAccessException {
         final ConcurrentLinkedQueue<IMAPResponse> serverStreamingResponses = new ConcurrentLinkedQueue<IMAPResponse>();
         final ImapRequest cmd = new IdleCommand(serverStreamingResponses);
         Assert.assertEquals(cmd.getCommandLine(), "IDLE\r\n", "Expected result mismatched.");
@@ -91,10 +90,9 @@ public class IdleCommandTest {
      *
      * @throws ImapAsyncClientException will not throw
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      */
     @Test
-    public void testGetTerminateCommandLine() throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
+    public void testGetTerminateCommandLine() throws ImapAsyncClientException, IllegalAccessException {
         final ConcurrentLinkedQueue<IMAPResponse> serverStreamingResponses = new ConcurrentLinkedQueue<IMAPResponse>();
         final ImapRequest cmd = new IdleCommand(serverStreamingResponses);
         Assert.assertEquals(cmd.getTerminateCommandLine().toString(StandardCharsets.US_ASCII), "DONE\r\n", "Expected result mismatched.");

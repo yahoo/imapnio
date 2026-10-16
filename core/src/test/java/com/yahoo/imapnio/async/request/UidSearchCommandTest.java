@@ -63,13 +63,12 @@ public class UidSearchCommandTest {
      *
      * @throws IOException will not throw
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      * @throws ImapAsyncClientException will not throw
      * @throws SearchException will not throw
      */
     @Test
     public void testGetCommandLineNoneNullMessageSeqSetsNonNullSearchTerm()
-            throws IOException, IllegalArgumentException, IllegalAccessException, SearchException, ImapAsyncClientException {
+            throws IOException, IllegalAccessException, SearchException, ImapAsyncClientException {
         final int[] msgNos = { 1, 2, 3 };
         final MessageNumberSet[] msgsets = MessageNumberSet.createMessageNumberSets(msgNos);
         final Flags flags = new Flags();
@@ -92,13 +91,12 @@ public class UidSearchCommandTest {
      *
      * @throws IOException will not throw
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      * @throws ImapAsyncClientException will not throw
      * @throws SearchException will not throw
      */
     @Test
     public void testGetCommandLineNoneNullMessageSeqStringNonNullSearchTerm()
-            throws IOException, IllegalArgumentException, IllegalAccessException, SearchException, ImapAsyncClientException {
+            throws IOException, IllegalAccessException, SearchException, ImapAsyncClientException {
 
         final Flags flags = new Flags();
         flags.add(Flags.Flag.SEEN);
@@ -120,13 +118,12 @@ public class UidSearchCommandTest {
      *
      * @throws IOException will not throw
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      * @throws ImapAsyncClientException will not throw
      * @throws SearchException will not throw
      */
     @Test
     public void testGetCommandLineNullMessageSeqSetsNonNullSearchTerm()
-            throws IOException, IllegalArgumentException, IllegalAccessException, SearchException, ImapAsyncClientException {
+            throws IOException, IllegalAccessException, SearchException, ImapAsyncClientException {
 
         final MessageNumberSet[] msgsets = null;
         final Flags flags = new Flags();
@@ -150,13 +147,12 @@ public class UidSearchCommandTest {
      *
      * @throws IOException will not throw
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      * @throws ImapAsyncClientException will not throw
      * @throws SearchException will not throw
      */
     @Test
     public void testGetCommandLineNoneNullMessageSeqSetsNullSearchTermNullCharset()
-            throws IOException, IllegalArgumentException, IllegalAccessException, SearchException, ImapAsyncClientException {
+            throws IOException, IllegalAccessException, SearchException, ImapAsyncClientException {
         final int[] msgNos = { 1, 2, 3, 4 };
         final MessageNumberSet[] msgsets = MessageNumberSet.createMessageNumberSets(msgNos);
         final FlagTerm messageFlagTerms = null;
@@ -176,12 +172,11 @@ public class UidSearchCommandTest {
      * Tests getCommandLine method with none-null message sequences set, null SearchTerm.
      *
      * @throws IOException will not throw
-     * @throws IllegalArgumentException will not throw
      * @throws SearchException will not throw
      */
     @Test
     public void testGetCommandLineNullMessageSeqSetsNullSearchTerm()
-            throws IOException, IllegalArgumentException, SearchException {
+            throws IOException, SearchException {
         final MessageNumberSet[] msgSets = null;
         ImapAsyncClientException actualEx = null;
         final Capability capa = null;
@@ -199,13 +194,12 @@ public class UidSearchCommandTest {
      *
      * @throws IOException will not throw
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      * @throws ImapAsyncClientException will not throw
      * @throws SearchException will not throw
      */
     @Test
     public void testGetCommandLineWithNoneAscii()
-            throws IOException, IllegalArgumentException, IllegalAccessException, SearchException, ImapAsyncClientException {
+            throws IOException, IllegalAccessException, SearchException, ImapAsyncClientException {
         final int[] msgNos = { 1, 2, 3 };
         final MessageNumberSet[] msgsets = MessageNumberSet.createMessageNumberSets(msgNos);
 
@@ -229,12 +223,11 @@ public class UidSearchCommandTest {
      *
      * @throws IOException will not throw
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      * @throws ImapAsyncClientException will not throw
      */
     @Test
     public void testGetCommandLineWithLiteralPlusCapaEnabled()
-            throws IOException, IllegalArgumentException, IllegalAccessException, ImapAsyncClientException {
+            throws IOException, IllegalAccessException, ImapAsyncClientException {
 
         final Argument args = new Argument();
 
@@ -272,12 +265,11 @@ public class UidSearchCommandTest {
      *
      * @throws IOException will not throw
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      * @throws ImapAsyncClientException will not throw
      */
     @Test
     public void testGetCommandLineWithoutLiteralPlusCapaEnabled()
-            throws IOException, IllegalArgumentException, IllegalAccessException, ImapAsyncClientException {
+            throws IOException, IllegalAccessException, ImapAsyncClientException {
 
         final Argument args = new Argument();
 
@@ -314,12 +306,11 @@ public class UidSearchCommandTest {
      *
      * @throws IOException will not throw
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      * @throws ImapAsyncClientException will not throw
      */
     @Test
     public void testGetCommandLineNullArgumentNoneNullMessageSequence()
-            throws IOException, IllegalArgumentException, IllegalAccessException, ImapAsyncClientException {
+            throws IOException, IllegalAccessException, ImapAsyncClientException {
 
         final Argument args = null;
         final String msgSeq = "1:*";
@@ -349,12 +340,11 @@ public class UidSearchCommandTest {
      *
      * @throws IOException will not throw
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      * @throws ImapAsyncClientException will not throw
      */
     @Test
     public void testGetCommandLineNoneNullMessageSequenceNoneNullArgument()
-            throws IOException, IllegalArgumentException, IllegalAccessException, ImapAsyncClientException {
+            throws IOException, IllegalAccessException, ImapAsyncClientException {
 
         final Argument args = new Argument();
         args.writeAtom("ALL");

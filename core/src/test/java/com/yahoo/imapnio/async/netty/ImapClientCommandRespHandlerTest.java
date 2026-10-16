@@ -49,12 +49,11 @@ public class ImapClientCommandRespHandlerTest {
     /**
      * Tests decode method.
      *
-     * @throws IllegalArgumentException will not throw
      * @throws ProtocolException will not throw
      * @throws IOException will not throw
      */
     @Test
-    public void testDecode() throws IllegalArgumentException, IOException, ProtocolException {
+    public void testDecode() throws IOException, ProtocolException {
         final ImapCommandChannelEventProcessor processor = Mockito.mock(ImapCommandChannelEventProcessor.class);
         final ImapClientCommandRespHandler handler = new ImapClientCommandRespHandler(processor);
 
@@ -68,10 +67,9 @@ public class ImapClientCommandRespHandlerTest {
     /**
      * Tests exceptionCaught method.
      *
-     * @throws IllegalArgumentException will not throw
      */
     @Test
-    public void testExceptionCaught() throws IllegalArgumentException {
+    public void testExceptionCaught() {
         final ImapCommandChannelEventProcessor processor = Mockito.mock(ImapCommandChannelEventProcessor.class);
         final ImapClientCommandRespHandler handler = new ImapClientCommandRespHandler(processor);
 
@@ -84,10 +82,9 @@ public class ImapClientCommandRespHandlerTest {
     /**
      * Tests userEventTriggered method and the event is IdleStateEvent, state is READ_IDLE.
      *
-     * @throws IllegalArgumentException will not throw
      */
     @Test
-    public void testUserEventTriggeredIdleStateEventReadIdle() throws IllegalArgumentException {
+    public void testUserEventTriggeredIdleStateEventReadIdle() {
         final ImapCommandChannelEventProcessor processor = Mockito.mock(ImapCommandChannelEventProcessor.class);
         final ImapClientCommandRespHandler handler = new ImapClientCommandRespHandler(processor);
 
@@ -101,10 +98,9 @@ public class ImapClientCommandRespHandlerTest {
     /**
      * Tests userEventTriggered method and the event is IdleStateEvent, state is NOT READ_IDLE.
      *
-     * @throws IllegalArgumentException will not throw
      */
     @Test
-    public void testUserEventTriggeredIdleStateEventNotReadIdle() throws IllegalArgumentException {
+    public void testUserEventTriggeredIdleStateEventNotReadIdle() {
         final ImapCommandChannelEventProcessor processor = Mockito.mock(ImapCommandChannelEventProcessor.class);
         final ImapClientCommandRespHandler handler = new ImapClientCommandRespHandler(processor);
 
@@ -118,10 +114,9 @@ public class ImapClientCommandRespHandlerTest {
     /**
      * Tests userEventTriggered method and the event is NOT IdleStateEvent.
      *
-     * @throws IllegalArgumentException will not throw
      */
     @Test
-    public void testUserEventTriggeredNotIdleStateEvent() throws IllegalArgumentException {
+    public void testUserEventTriggeredNotIdleStateEvent() {
         final ImapCommandChannelEventProcessor processor = Mockito.mock(ImapCommandChannelEventProcessor.class);
         final ImapClientCommandRespHandler handler = new ImapClientCommandRespHandler(processor);
 
@@ -135,10 +130,9 @@ public class ImapClientCommandRespHandlerTest {
      * Tests channelInactive method.
      *
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      */
     @Test
-    public void testChannelInactive() throws IllegalArgumentException, IllegalAccessException {
+    public void testChannelInactive() throws IllegalAccessException {
         final ImapCommandChannelEventProcessor processor = Mockito.mock(ImapCommandChannelEventProcessor.class);
         final ImapClientCommandRespHandler handler = new ImapClientCommandRespHandler(processor);
 

@@ -42,10 +42,9 @@ public class ExpungeCommandTest {
      *
      * @throws ImapAsyncClientException will not throw
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      */
     @Test
-    public void testGetCommandLine() throws ImapAsyncClientException, IllegalArgumentException, IllegalAccessException {
+    public void testGetCommandLine() throws ImapAsyncClientException, IllegalAccessException {
         final ImapRequest cmd = new ExpungeCommand();
         Assert.assertEquals(cmd.getCommandLine(), "EXPUNGE\r\n", "Expected result mismatched.");
 

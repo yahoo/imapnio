@@ -208,7 +208,7 @@ public class ImapFutureTest {
                 called.set(true);
             }
         });
-        imapFuture.done(new RuntimeException());
+        imapFuture.done(new ImapAsyncClientException(ImapAsyncClientException.FailureType.CHANNEL_EXCEPTION));
 
         Assert.assertTrue(called.get(), "Callback should be run");
     }
@@ -262,7 +262,7 @@ public class ImapFutureTest {
                 called.set(true);
             }
         });
-        imapFuture.done(new RuntimeException());
+        imapFuture.done(new ImapAsyncClientException(ImapAsyncClientException.FailureType.CHANNEL_EXCEPTION));
 
         Assert.assertFalse(called.get(), "Callback should not be run");
     }
@@ -316,7 +316,7 @@ public class ImapFutureTest {
                 called.set(true);
             }
         });
-        imapFuture.done(new RuntimeException());
+        imapFuture.done(new ImapAsyncClientException(ImapAsyncClientException.FailureType.CHANNEL_EXCEPTION));
 
         Assert.assertFalse(called.get(), "Callback should not be run");
     }
@@ -370,7 +370,7 @@ public class ImapFutureTest {
     public void testFutureErrorCallbackUponExceptionWhenFinished() {
         final AtomicBoolean called = new AtomicBoolean(false);
         final ImapFuture<Boolean> imapFuture = new ImapFuture<Boolean>();
-        imapFuture.done(new RuntimeException());
+        imapFuture.done(new ImapAsyncClientException(ImapAsyncClientException.FailureType.CHANNEL_EXCEPTION));
         imapFuture.setExceptionCallback(new Consumer<Exception>() {
             @Override
             public void accept(final Exception e) {
@@ -430,7 +430,7 @@ public class ImapFutureTest {
     public void testFutureDoneCallbackUponExceptionWhenFinished() {
         final AtomicBoolean called = new AtomicBoolean(false);
         final ImapFuture<Boolean> imapFuture = new ImapFuture<Boolean>();
-        imapFuture.done(new RuntimeException());
+        imapFuture.done(new ImapAsyncClientException(ImapAsyncClientException.FailureType.CHANNEL_EXCEPTION));
         imapFuture.setDoneCallback(new Consumer<Boolean>() {
             @Override
             public void accept(final Boolean r) {
@@ -490,7 +490,7 @@ public class ImapFutureTest {
     public void testFutureCancelCallbackUponExceptionWhenFinished() {
         final AtomicBoolean called = new AtomicBoolean(false);
         final ImapFuture<Boolean> imapFuture = new ImapFuture<Boolean>();
-        imapFuture.done(new RuntimeException());
+        imapFuture.done(new ImapAsyncClientException(ImapAsyncClientException.FailureType.CHANNEL_EXCEPTION));
         imapFuture.setCanceledCallback(new Runnable() {
             @Override
             public void run() {

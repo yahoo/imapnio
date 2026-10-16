@@ -42,10 +42,9 @@ public class UnselectCommandTest {
      * 
      * @throws ImapAsyncClientException will not throw
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      */
     @Test
-    public void testGetCommandLine() throws IllegalArgumentException, IllegalAccessException, ImapAsyncClientException {
+    public void testGetCommandLine() throws IllegalAccessException, ImapAsyncClientException {
         final ImapRequest cmd = new UnselectCommand();
         Assert.assertEquals(cmd.getCommandLine(), "UNSELECT\r\n", "Expected result mismatched.");
 

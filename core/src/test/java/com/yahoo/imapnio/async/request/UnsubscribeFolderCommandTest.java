@@ -43,11 +43,10 @@ public class UnsubscribeFolderCommandTest {
      * Tests getCommandLine method.
      *
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testGetCommandLine() throws IllegalArgumentException, IllegalAccessException, ImapAsyncClientException {
+    public void testGetCommandLine() throws IllegalAccessException, ImapAsyncClientException {
         final String folderName = "folderABC";
         final ImapRequest cmd = new UnsubscribeFolderCommand(folderName);
         Assert.assertEquals(cmd.getCommandLine(), UNSUBSCRIBE + folderName + "\r\n", "Expected result mismatched.");

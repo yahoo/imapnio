@@ -53,13 +53,12 @@ public class AuthPlainCommandTest {
      *
      * @throws IOException will not throw
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      * @throws ImapAsyncClientException will not throw
      * @throws ProtocolException will not throw
      */
     @Test
     public void testGetCommandLineSASLIREnabled()
-            throws IOException, IllegalArgumentException, IllegalAccessException, ImapAsyncClientException, ProtocolException {
+            throws IOException, IllegalAccessException, ImapAsyncClientException, ProtocolException {
         final String username = "tesla";
         final String pwd = "selfdriving";
         final Map<String, List<String>> capas = new HashMap<String, List<String>>();
@@ -91,13 +90,12 @@ public class AuthPlainCommandTest {
      *
      * @throws IOException will not throw
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      * @throws ImapAsyncClientException will not throw
      * @throws ProtocolException will not throw
      */
     @Test
     public void testGetCommandLineAuthIdPresent()
-            throws IOException, IllegalArgumentException, IllegalAccessException, ImapAsyncClientException, ProtocolException {
+            throws IOException, IllegalAccessException, ImapAsyncClientException, ProtocolException {
         final String authId = "testla";
         final String username = "modelx";
         final String token = "selfdriving";
@@ -130,11 +128,10 @@ public class AuthPlainCommandTest {
      * Tests getCommandLine method when SASL-IR is not enabled, we send next command after server challenge.
      *
      * @throws IllegalAccessException will not throw
-     * @throws IllegalArgumentException will not throw
      * @throws ImapAsyncClientException will not throw
      */
     @Test
-    public void testGetCommandLineAndContinuation() throws IllegalArgumentException, IllegalAccessException, ImapAsyncClientException {
+    public void testGetCommandLineAndContinuation() throws IllegalAccessException, ImapAsyncClientException {
         final String username = "tesla";
         final String pwd = "selfdriving";
         final Map<String, List<String>> capas = new HashMap<String, List<String>>();
