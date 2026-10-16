@@ -1,0 +1,19 @@
+# Build output
+target/
+
+# IDE
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+.vscode/
+
+# Decrypted release signing keys (created by ci/deploy.sh)
+ci/deploy/
+
+# Local agent settings
+.claude/settings.local.json
+
+# OS
+.DS_Store
