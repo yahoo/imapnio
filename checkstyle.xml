@@ -5,34 +5,38 @@
 <module name="Checker">
 	<property name="severity" value="error" />
 	<module name="SuppressWarningsFilter" />
-	<module name="SuppressWithNearbyCommentFilter" />
-	<module name="SuppressWarningsFilter" />
-	<module name="SuppressionCommentFilter">
-		<metadata name="net.sf.eclipsecs.core.comment" value="Single warning" />
-		<property name="offCommentFormat" value="CHECKSTYLE\:OFF\: ([\w\|]+)" />
-		<property name="onCommentFormat" value="CHECKSTYLE\:ON\: ([\w\|]+)" />
-		<property name="checkFormat" value="$1" />
+	<module name="LineLength">
+		<property name="max" value="150" />
 	</module>
 
 	<module name="TreeWalker">
 		<property name="tabWidth" value="4" />
-		<module name="FileContentsHolder" />
+		<module name="SuppressWithNearbyCommentFilter" />
+		<module name="SuppressionCommentFilter">
+			<metadata name="net.sf.eclipsecs.core.comment" value="Single warning" />
+			<property name="offCommentFormat" value="CHECKSTYLE\:OFF\: ([\w\|]+)" />
+			<property name="onCommentFormat" value="CHECKSTYLE\:ON\: ([\w\|]+)" />
+			<property name="checkFormat" value="$1" />
+		</module>
 		<module name="SuppressWarningsHolder" />
 		<module name="JavadocMethod">
-			<property name="scope" value="public" />
-			<property name="suppressLoadErrors" value="false" />
-			<property name="allowUndeclaredRTE" value="false" />
+			<property name="accessModifiers" value="public" />
 			<property name="allowMissingParamTags" value="false" />
 			<property name="allowMissingReturnTag" value="false" />
-			<property name="allowMissingThrowsTags" value="false" />
+			<property name="validateThrows" value="true" />
+		</module>
+		<module name="MissingJavadocMethod">
+			<property name="scope" value="public" />
 		</module>
 		<module name="JavadocType">
 			<property name="scope" value="public" />
 		</module>
-		<module name="JavadocVariable">
+		<module name="MissingJavadocType">
 			<property name="scope" value="public" />
 		</module>
-		<module name="JavadocStyle" />
+		<module name="JavadocVariable">
+			<property name="accessModifiers" value="public" />
+		</module>
 		<module name="ConstantName" />
 		<module name="LocalFinalVariableName" />
 		<module name="LocalVariableName" />
@@ -46,9 +50,6 @@
 		<module name="IllegalImport" />
 		<module name="RedundantImport" />
 		<module name="UnusedImports" />
-		<module name="LineLength">
-			<property name="max" value="150" />
-		</module>
 		<module name="ParameterNumber" />
 		<module name="EmptyForIteratorPad" />
 		<module name="MethodParamPad" />

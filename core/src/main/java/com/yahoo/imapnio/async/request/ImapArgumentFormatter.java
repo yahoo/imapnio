@@ -77,8 +77,8 @@ public class ImapArgumentFormatter {
      * Ensures the given value can be written as an {@code atom}.
      *
      * <p>
-     * {@code atom-specials} is {@code "(" / ")" / "{" / SP / CTL / list-wildcards / quoted-specials / resp-specials}, so besides the control
-     * characters an atom cannot hold a parenthesis, a left brace, a space, {@code %}, {@code *}, a double quote, a backslash or {@code ]}.
+     * {@code atom-specials} is <code>"(" / ")" / "&#123;" / SP / CTL / list-wildcards / quoted-specials / resp-specials</code>, so besides the
+     * control characters an atom cannot hold a parenthesis, a left brace, a space, {@code %}, {@code *}, a double quote, a backslash or {@code ]}.
      * Productions such as {@code flag-keyword}, {@code capability}, {@code status-att} and {@code return-option} are atoms with no quoted or
      * literal alternative, so a value that is not one cannot be sent at all; letting it through would let a caller add a token of their own to
      * the command.

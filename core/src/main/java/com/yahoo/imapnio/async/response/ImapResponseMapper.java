@@ -113,7 +113,7 @@ public class ImapResponseMapper {
     /**
      * Inner class to perform the parsing of IMAPResponse to various objects.
      */
-    private class ImapResponseParser {
+    private final class ImapResponseParser {
 
         /** Capability string. */
         private static final String CAPABILITY = "CAPABILITY";

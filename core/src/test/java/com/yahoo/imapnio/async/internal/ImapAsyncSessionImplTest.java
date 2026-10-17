@@ -20,7 +20,7 @@ import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.codec.binary.Base64;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Matchers;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.testng.Assert;
@@ -142,8 +142,8 @@ public class ImapAsyncSessionImplTest {
             final ImapRequest cmd = new AuthPlainCommand("orange", "juicy", new Capability(capas));
             final ImapFuture<ImapAsyncResponse> future = aSession.execute(cmd);
             Mockito.verify(authWritePromise, Mockito.times(1)).addListener(Mockito.any(ImapAsyncSessionImpl.class));
-            Mockito.verify(channel, Mockito.times(1)).writeAndFlush(Mockito.anyString(), Mockito.isA(ChannelPromise.class));
-            Mockito.verify(logger, Mockito.times(0)).debug(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
+            Mockito.verify(channel, Mockito.times(1)).writeAndFlush(Mockito.any(), Mockito.isA(ChannelPromise.class));
+            Mockito.verify(logger, Mockito.times(0)).debug(Mockito.anyString(), Mockito.any(), Mockito.any(), Mockito.any());
 
             // simulate write to server completed successfully
             Mockito.when(authWritePromise.isSuccess()).thenReturn(true);
@@ -153,7 +153,7 @@ public class ImapAsyncSessionImplTest {
             final IMAPResponse serverResp1 = new IMAPResponse("+");
             // following will call getNextCommandLineAfterContinuation
             aSession.handleChannelResponse(serverResp1);
-            Mockito.verify(channel, Mockito.times(2)).writeAndFlush(Mockito.anyString(), Mockito.isA(ChannelPromise.class));
+            Mockito.verify(channel, Mockito.times(2)).writeAndFlush(Mockito.any(), Mockito.isA(ChannelPromise.class));
 
             final IMAPResponse serverResp2 = new IMAPResponse("a1 OK AUTHENTICATE completed");
             aSession.handleChannelResponse(serverResp2);
@@ -183,7 +183,7 @@ public class ImapAsyncSessionImplTest {
                     + serverResp2.toString().getBytes(StandardCharsets.US_ASCII).length,
                     "response bytes mismatched.");
             // verify no log messages
-            Mockito.verify(logger, Mockito.times(0)).debug(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
+            Mockito.verify(logger, Mockito.times(0)).debug(Mockito.anyString(), Mockito.any(), Mockito.any(), Mockito.any());
         }
 
         {
@@ -195,8 +195,8 @@ public class ImapAsyncSessionImplTest {
             final ImapFuture<ImapAsyncResponse> future = aSession.execute(cmd);
 
             Mockito.verify(capaWritePromise, Mockito.times(1)).addListener(Mockito.any(ImapAsyncSessionImpl.class));
-            Mockito.verify(channel, Mockito.times(3)).writeAndFlush(Mockito.anyString(), Mockito.isA(ChannelPromise.class));
-            Mockito.verify(logger, Mockito.times(1)).debug(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
+            Mockito.verify(channel, Mockito.times(3)).writeAndFlush(Mockito.any(), Mockito.isA(ChannelPromise.class));
+            Mockito.verify(logger, Mockito.times(1)).debug(Mockito.anyString(), Mockito.any(), Mockito.any(), Mockito.any());
 
             // simulate write to server completed successfully
             Mockito.when(capaWritePromise.isSuccess()).thenReturn(true);
@@ -367,8 +367,8 @@ public class ImapAsyncSessionImplTest {
             final ImapRequest cmd = new AuthXoauth2Command("orange", "someToken", new Capability(capas));
             final ImapFuture<ImapAsyncResponse> future = aSession.execute(cmd);
             Mockito.verify(authWritePromise, Mockito.times(1)).addListener(Mockito.any(ImapAsyncSessionImpl.class));
-            Mockito.verify(channel, Mockito.times(1)).writeAndFlush(Mockito.anyString(), Mockito.isA(ChannelPromise.class));
-            Mockito.verify(logger, Mockito.times(1)).debug(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
+            Mockito.verify(channel, Mockito.times(1)).writeAndFlush(Mockito.any(), Mockito.isA(ChannelPromise.class));
+            Mockito.verify(logger, Mockito.times(1)).debug(Mockito.anyString(), Mockito.any(), Mockito.any(), Mockito.any());
 
             // simulate write to server completed successfully
             Mockito.when(authWritePromise.isSuccess()).thenReturn(true);
@@ -378,7 +378,7 @@ public class ImapAsyncSessionImplTest {
             final IMAPResponse serverResp1 = new IMAPResponse("+");
             // following will call getNextCommandLineAfterContinuation
             aSession.handleChannelResponse(serverResp1);
-            Mockito.verify(channel, Mockito.times(2)).writeAndFlush(Mockito.anyString(), Mockito.isA(ChannelPromise.class));
+            Mockito.verify(channel, Mockito.times(2)).writeAndFlush(Mockito.any(), Mockito.isA(ChannelPromise.class));
 
             // invalid token message from server
             final IMAPResponse serverResp2 = new IMAPResponse(
@@ -496,8 +496,8 @@ public class ImapAsyncSessionImplTest {
             final ImapRequest cmd = new AuthXoauth2Command("orange", "someToken", new Capability(capas));
             final ImapFuture<ImapAsyncResponse> future = aSession.execute(cmd);
             Mockito.verify(authWritePromise, Mockito.times(1)).addListener(Mockito.any(ImapAsyncSessionImpl.class));
-            Mockito.verify(channel, Mockito.times(1)).writeAndFlush(Mockito.anyString(), Mockito.isA(ChannelPromise.class));
-            Mockito.verify(logger, Mockito.times(1)).debug(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
+            Mockito.verify(channel, Mockito.times(1)).writeAndFlush(Mockito.any(), Mockito.isA(ChannelPromise.class));
+            Mockito.verify(logger, Mockito.times(1)).debug(Mockito.anyString(), Mockito.any(), Mockito.any(), Mockito.any());
 
             // simulate write to server completed successfully
             Mockito.when(authWritePromise.isSuccess()).thenReturn(true);
@@ -609,7 +609,7 @@ public class ImapAsyncSessionImplTest {
             final ImapRequest cmd = new AuthPlainCommand("orange", "juicy", new Capability(capas));
             final ImapFuture<ImapAsyncResponse> future = aSession.execute(cmd);
             Mockito.verify(authWritePromise, Mockito.times(1)).addListener(Mockito.any(ImapAsyncSessionImpl.class));
-            Mockito.verify(channel, Mockito.times(1)).writeAndFlush(Mockito.anyString(), Mockito.isA(ChannelPromise.class));
+            Mockito.verify(channel, Mockito.times(1)).writeAndFlush(Mockito.any(), Mockito.isA(ChannelPromise.class));
 
             // simulate write to server completed successfully
             Mockito.when(authWritePromise.isSuccess()).thenReturn(true);
@@ -619,7 +619,7 @@ public class ImapAsyncSessionImplTest {
             final IMAPResponse serverResp1 = new IMAPResponse("+");
             // following will call getNextCommandLineAfterContinuation
             aSession.handleChannelResponse(serverResp1);
-            Mockito.verify(channel, Mockito.times(2)).writeAndFlush(Mockito.anyString(), Mockito.isA(ChannelPromise.class));
+            Mockito.verify(channel, Mockito.times(2)).writeAndFlush(Mockito.any(), Mockito.isA(ChannelPromise.class));
 
             final IMAPResponse serverResp2 = new IMAPResponse("a1 OK AUTHENTICATE completed");
             aSession.handleChannelResponse(serverResp2);
@@ -677,7 +677,7 @@ public class ImapAsyncSessionImplTest {
             final ImapFuture<ImapAsyncResponse> future = aSession.startCompression();
 
             Mockito.verify(compressWritePromise, Mockito.times(1)).addListener(Mockito.any(ImapAsyncSessionImpl.class));
-            Mockito.verify(channel, Mockito.times(3)).writeAndFlush(Mockito.anyString(), Mockito.isA(ChannelPromise.class));
+            Mockito.verify(channel, Mockito.times(3)).writeAndFlush(Mockito.any(), Mockito.isA(ChannelPromise.class));
 
             // simulate write to server completed successfully
             Mockito.when(compressWritePromise.isSuccess()).thenReturn(true);
@@ -687,8 +687,8 @@ public class ImapAsyncSessionImplTest {
             final IMAPResponse serverResp1 = new IMAPResponse("a2 OK Success");
             aSession.handleChannelResponse(serverResp1);
 
-            Mockito.verify(pipeline, Mockito.times(1)).addFirst(Matchers.eq("DEFLATER"), Matchers.isA(JdkZlibDecoder.class));
-            Mockito.verify(pipeline, Mockito.times(1)).addFirst(Matchers.eq("INFLATER"), Matchers.isA(JdkZlibEncoder.class));
+            Mockito.verify(pipeline, Mockito.times(1)).addFirst(ArgumentMatchers.eq("DEFLATER"), ArgumentMatchers.isA(JdkZlibDecoder.class));
+            Mockito.verify(pipeline, Mockito.times(1)).addFirst(ArgumentMatchers.eq("INFLATER"), ArgumentMatchers.isA(JdkZlibEncoder.class));
             // verify that future should be done now
             Assert.assertTrue(future.isDone(), "isDone() should be true now");
             final ImapAsyncResponse asyncResp = future.get(FUTURE_GET_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
@@ -777,7 +777,7 @@ public class ImapAsyncSessionImplTest {
             final ImapRequest cmd = new AuthPlainCommand("orange", "juicy", new Capability(capas));
             final ImapFuture<ImapAsyncResponse> future = aSession.execute(cmd);
             Mockito.verify(authWritePromise, Mockito.times(1)).addListener(Mockito.any(ImapAsyncSessionImpl.class));
-            Mockito.verify(channel, Mockito.times(1)).writeAndFlush(Mockito.anyString(), Mockito.isA(ChannelPromise.class));
+            Mockito.verify(channel, Mockito.times(1)).writeAndFlush(Mockito.any(), Mockito.isA(ChannelPromise.class));
 
             // simulate write to server completed successfully
             Mockito.when(authWritePromise.isSuccess()).thenReturn(true);
@@ -787,7 +787,7 @@ public class ImapAsyncSessionImplTest {
             final IMAPResponse serverResp1 = new IMAPResponse("+");
             // following will call getNextCommandLineAfterContinuation
             aSession.handleChannelResponse(serverResp1);
-            Mockito.verify(channel, Mockito.times(2)).writeAndFlush(Mockito.anyString(), Mockito.isA(ChannelPromise.class));
+            Mockito.verify(channel, Mockito.times(2)).writeAndFlush(Mockito.any(), Mockito.isA(ChannelPromise.class));
 
             final IMAPResponse serverResp2 = new IMAPResponse("a1 OK AUTHENTICATE completed");
             aSession.handleChannelResponse(serverResp2);
@@ -845,7 +845,7 @@ public class ImapAsyncSessionImplTest {
             final ImapFuture<ImapAsyncResponse> future = aSession.startCompression();
 
             Mockito.verify(compressWritePromise, Mockito.times(1)).addListener(Mockito.any(ImapAsyncSessionImpl.class));
-            Mockito.verify(channel, Mockito.times(3)).writeAndFlush(Mockito.anyString(), Mockito.isA(ChannelPromise.class));
+            Mockito.verify(channel, Mockito.times(3)).writeAndFlush(Mockito.any(), Mockito.isA(ChannelPromise.class));
 
             // simulate write to server completed successfully
             Mockito.when(compressWritePromise.isSuccess()).thenReturn(true);
@@ -855,10 +855,10 @@ public class ImapAsyncSessionImplTest {
             final IMAPResponse serverResp1 = new IMAPResponse("a2 OK Success");
             aSession.handleChannelResponse(serverResp1);
 
-            Mockito.verify(pipeline, Mockito.times(1)).addAfter(Matchers.eq(ImapAsyncClient.SSL_HANDLER), Matchers.eq("DEFLATER"),
-                    Matchers.isA(JdkZlibDecoder.class));
-            Mockito.verify(pipeline, Mockito.times(1)).addAfter(Matchers.eq(ImapAsyncClient.SSL_HANDLER), Matchers.eq("INFLATER"),
-                    Matchers.isA(JdkZlibEncoder.class));
+            Mockito.verify(pipeline, Mockito.times(1)).addAfter(ArgumentMatchers.eq(ImapAsyncClient.SSL_HANDLER), ArgumentMatchers.eq("DEFLATER"),
+                    ArgumentMatchers.isA(JdkZlibDecoder.class));
+            Mockito.verify(pipeline, Mockito.times(1)).addAfter(ArgumentMatchers.eq(ImapAsyncClient.SSL_HANDLER), ArgumentMatchers.eq("INFLATER"),
+                    ArgumentMatchers.isA(JdkZlibEncoder.class));
             // verify that future should be done now
             Assert.assertTrue(future.isDone(), "isDone() should be true now");
             final ImapAsyncResponse asyncResp = future.get(FUTURE_GET_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
@@ -945,8 +945,8 @@ public class ImapAsyncSessionImplTest {
             final ImapRequest cmd = new AuthPlainCommand("orange", "juicy", new Capability(capas));
             final ImapFuture<ImapAsyncResponse> future = aSession.execute(cmd);
             Mockito.verify(authWritePromise, Mockito.times(1)).addListener(Mockito.any(ImapAsyncSessionImpl.class));
-            Mockito.verify(channel, Mockito.times(1)).writeAndFlush(Mockito.anyString(), Mockito.isA(ChannelPromise.class));
-            Mockito.verify(logger, Mockito.times(1)).debug(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
+            Mockito.verify(channel, Mockito.times(1)).writeAndFlush(Mockito.any(), Mockito.isA(ChannelPromise.class));
+            Mockito.verify(logger, Mockito.times(1)).debug(Mockito.anyString(), Mockito.any(), Mockito.any(), Mockito.any());
 
             // simulate write to server completed successfully
             Mockito.when(authWritePromise.isSuccess()).thenReturn(true);
@@ -956,7 +956,7 @@ public class ImapAsyncSessionImplTest {
             final IMAPResponse serverResp1 = new IMAPResponse("+");
             // following will call getNextCommandLineAfterContinuation
             aSession.handleChannelResponse(serverResp1);
-            Mockito.verify(channel, Mockito.times(2)).writeAndFlush(Mockito.anyString(), Mockito.isA(ChannelPromise.class));
+            Mockito.verify(channel, Mockito.times(2)).writeAndFlush(Mockito.any(), Mockito.isA(ChannelPromise.class));
 
             final IMAPResponse serverResp2 = new IMAPResponse("a1 OK AUTHENTICATE completed");
             aSession.handleChannelResponse(serverResp2);
@@ -1014,7 +1014,7 @@ public class ImapAsyncSessionImplTest {
             final ImapFuture<ImapAsyncResponse> future = aSession.startCompression();
 
             Mockito.verify(compressWritePromise, Mockito.times(1)).addListener(Mockito.any(ImapAsyncSessionImpl.class));
-            Mockito.verify(channel, Mockito.times(3)).writeAndFlush(Mockito.anyString(), Mockito.isA(ChannelPromise.class));
+            Mockito.verify(channel, Mockito.times(3)).writeAndFlush(Mockito.any(), Mockito.isA(ChannelPromise.class));
 
             // simulate write to server completed successfully
             Mockito.when(compressWritePromise.isSuccess()).thenReturn(true);
@@ -1024,8 +1024,8 @@ public class ImapAsyncSessionImplTest {
             final IMAPResponse serverResp1 = new IMAPResponse("a2 NO Success");
             aSession.handleChannelResponse(serverResp1);
 
-            Mockito.verify(pipeline, Mockito.times(0)).addFirst(Matchers.eq("DEFLATER"), Matchers.isA(JdkZlibDecoder.class));
-            Mockito.verify(pipeline, Mockito.times(0)).addFirst(Matchers.eq("INFLATER"), Matchers.isA(JdkZlibEncoder.class));
+            Mockito.verify(pipeline, Mockito.times(0)).addFirst(ArgumentMatchers.eq("DEFLATER"), ArgumentMatchers.isA(JdkZlibDecoder.class));
+            Mockito.verify(pipeline, Mockito.times(0)).addFirst(ArgumentMatchers.eq("INFLATER"), ArgumentMatchers.isA(JdkZlibEncoder.class));
             // verify that future should be done now
             Assert.assertTrue(future.isDone(), "isDone() should be true now");
             final ImapAsyncResponse asyncResp = future.get(FUTURE_GET_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
@@ -1226,8 +1226,8 @@ public class ImapAsyncSessionImplTest {
         final ImapFuture<ImapAsyncResponse> cmdFuture = aSession.execute(cmd);
 
         Mockito.verify(writeToServerPromise, Mockito.times(1)).addListener(Mockito.any(ImapAsyncSessionImpl.class));
-        Mockito.verify(channel, Mockito.times(1)).writeAndFlush(Mockito.anyString(), Mockito.isA(ChannelPromise.class));
-        Mockito.verify(logger, Mockito.times(1)).debug(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
+        Mockito.verify(channel, Mockito.times(1)).writeAndFlush(Mockito.any(), Mockito.isA(ChannelPromise.class));
+        Mockito.verify(logger, Mockito.times(1)).debug(Mockito.anyString(), Mockito.any(), Mockito.any(), Mockito.any());
 
         // simulate write to server completed with isSuccess() false
         Mockito.when(writeToServerPromise.isSuccess()).thenReturn(false);
@@ -1345,8 +1345,8 @@ public class ImapAsyncSessionImplTest {
         final ImapFuture<ImapAsyncResponse> future = aSession.execute(cmd);
 
         Mockito.verify(writePromise, Mockito.times(1)).addListener(Mockito.any(ImapAsyncSessionImpl.class));
-        Mockito.verify(channel, Mockito.times(1)).writeAndFlush(Mockito.anyString(), Mockito.isA(ChannelPromise.class));
-        Mockito.verify(logger, Mockito.times(1)).debug(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
+        Mockito.verify(channel, Mockito.times(1)).writeAndFlush(Mockito.any(), Mockito.isA(ChannelPromise.class));
+        Mockito.verify(logger, Mockito.times(1)).debug(Mockito.anyString(), Mockito.any(), Mockito.any(), Mockito.any());
 
         // simulate channel closed
         aSession.handleChannelClosed();
@@ -1431,9 +1431,9 @@ public class ImapAsyncSessionImplTest {
         final ImapFuture<ImapAsyncResponse> future = aSession.execute(cmd);
 
         Mockito.verify(writePromise, Mockito.times(1)).addListener(Mockito.any(ImapAsyncSessionImpl.class));
-        Mockito.verify(channel, Mockito.times(1)).writeAndFlush(Mockito.anyString(), Mockito.isA(ChannelPromise.class));
+        Mockito.verify(channel, Mockito.times(1)).writeAndFlush(Mockito.any(), Mockito.isA(ChannelPromise.class));
         // Ensure there is no call to debug() method
-        Mockito.verify(logger, Mockito.times(0)).debug(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
+        Mockito.verify(logger, Mockito.times(0)).debug(Mockito.anyString(), Mockito.any(), Mockito.any(), Mockito.any());
 
         // simulate channel closed
         aSession.handleChannelClosed();
@@ -1491,8 +1491,8 @@ public class ImapAsyncSessionImplTest {
         ImapFuture<ImapAsyncResponse> future = aSession.execute(cmd);
 
         Mockito.verify(writePromise, Mockito.times(1)).addListener(Mockito.any(ImapAsyncSessionImpl.class));
-        Mockito.verify(channel, Mockito.times(1)).writeAndFlush(Mockito.anyString(), Mockito.isA(ChannelPromise.class));
-        Mockito.verify(logger, Mockito.times(1)).debug(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
+        Mockito.verify(channel, Mockito.times(1)).writeAndFlush(Mockito.any(), Mockito.isA(ChannelPromise.class));
+        Mockito.verify(logger, Mockito.times(1)).debug(Mockito.anyString(), Mockito.any(), Mockito.any(), Mockito.any());
 
         // simulate write to server completed successfully
         Mockito.when(writePromise.isSuccess()).thenReturn(true);
@@ -1604,7 +1604,7 @@ public class ImapAsyncSessionImplTest {
         aSession.execute(cmd);
 
         Mockito.verify(writePromise, Mockito.times(1)).addListener(Mockito.any(ImapAsyncSessionImpl.class));
-        Mockito.verify(channel, Mockito.times(1)).writeAndFlush(Mockito.anyString(), Mockito.isA(ChannelPromise.class));
+        Mockito.verify(channel, Mockito.times(1)).writeAndFlush(Mockito.any(), Mockito.isA(ChannelPromise.class));
 
         ImapAsyncClientException ex = null;
         try {
@@ -1615,7 +1615,7 @@ public class ImapAsyncSessionImplTest {
         }
         Assert.assertNotNull(ex, "Exception should occur.");
         Assert.assertEquals(ex.getFailureType(), FailureType.COMMAND_NOT_ALLOWED, "Failure type mismatched.");
-        Mockito.verify(logger, Mockito.times(1)).debug(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
+        Mockito.verify(logger, Mockito.times(1)).debug(Mockito.anyString(), Mockito.any(), Mockito.any(), Mockito.any());
     }
 
     /**
@@ -1653,9 +1653,9 @@ public class ImapAsyncSessionImplTest {
         Assert.assertEquals(ex.getFailureType(), FailureType.OPERATION_PROHIBITED_ON_CLOSED_CHANNEL, "Failure type mismatched.");
 
         Mockito.verify(writePromise, Mockito.times(0)).addListener(Mockito.any(ImapAsyncSessionImpl.class));
-        Mockito.verify(channel, Mockito.times(0)).writeAndFlush(Mockito.anyString(), Mockito.isA(ChannelPromise.class));
+        Mockito.verify(channel, Mockito.times(0)).writeAndFlush(Mockito.any(), Mockito.isA(ChannelPromise.class));
         // encountering the above exception in execute(), will not log the command sent over the wire
-        Mockito.verify(logger, Mockito.times(0)).debug(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
+        Mockito.verify(logger, Mockito.times(0)).debug(Mockito.anyString(), Mockito.any(), Mockito.any(), Mockito.any());
 
         Mockito.when(closePromise.isSuccess()).thenReturn(true);
         final ImapFuture<Boolean> closeFuture = aSession.close();
@@ -1751,8 +1751,8 @@ public class ImapAsyncSessionImplTest {
             final ImapRequest cmd = new AuthPlainCommand("orange", "juicy", new Capability(capas));
             final ImapFuture<ImapAsyncResponse> future = aSession.execute(cmd);
             Mockito.verify(authWritePromise, Mockito.times(1)).addListener(Mockito.any(ImapAsyncSessionImpl.class));
-            Mockito.verify(channel, Mockito.times(1)).writeAndFlush(Mockito.anyString(), Mockito.isA(ChannelPromise.class));
-            Mockito.verify(logger, Mockito.times(0)).debug(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
+            Mockito.verify(channel, Mockito.times(1)).writeAndFlush(Mockito.any(), Mockito.isA(ChannelPromise.class));
+            Mockito.verify(logger, Mockito.times(0)).debug(Mockito.anyString(), Mockito.any(), Mockito.any(), Mockito.any());
 
             // simulate write to server completed successfully
             Mockito.when(authWritePromise.isSuccess()).thenReturn(true);
@@ -1852,7 +1852,7 @@ public class ImapAsyncSessionImplTest {
             final ImapRequest cmd = new AuthPlainCommand("orange", "juicy", new Capability(capas));
             final ImapFuture<ImapAsyncResponse> future = aSession.execute(cmd);
             Mockito.verify(authWritePromise, Mockito.times(1)).addListener(Mockito.any(ImapAsyncSessionImpl.class));
-            Mockito.verify(channel, Mockito.times(1)).writeAndFlush(Mockito.anyString(), Mockito.isA(ChannelPromise.class));
+            Mockito.verify(channel, Mockito.times(1)).writeAndFlush(Mockito.any(), Mockito.isA(ChannelPromise.class));
 
             // simulate write to server completed successfully
             Mockito.when(authWritePromise.isSuccess()).thenReturn(true);
@@ -1862,7 +1862,7 @@ public class ImapAsyncSessionImplTest {
             final IMAPResponse serverResp1 = new IMAPResponse("+");
             // following will call getNextCommandLineAfterContinuation
             aSession.handleChannelResponse(serverResp1);
-            Mockito.verify(channel, Mockito.times(2)).writeAndFlush(Mockito.anyString(), Mockito.isA(ChannelPromise.class));
+            Mockito.verify(channel, Mockito.times(2)).writeAndFlush(Mockito.any(), Mockito.isA(ChannelPromise.class));
 
             final IMAPResponse serverResp2 = new IMAPResponse("a1 OK AUTHENTICATE completed");
             aSession.handleChannelResponse(serverResp2);
@@ -1920,7 +1920,7 @@ public class ImapAsyncSessionImplTest {
             final ImapFuture<ImapAsyncResponse> future = aSession.startCompression();
 
             Mockito.verify(compressWritePromise, Mockito.times(1)).addListener(Mockito.any(ImapAsyncSessionImpl.class));
-            Mockito.verify(channel, Mockito.times(3)).writeAndFlush(Mockito.anyString(), Mockito.isA(ChannelPromise.class));
+            Mockito.verify(channel, Mockito.times(3)).writeAndFlush(Mockito.any(), Mockito.isA(ChannelPromise.class));
 
             // simulate write to server completed successfully
             Mockito.when(compressWritePromise.isSuccess()).thenReturn(true);
@@ -1933,8 +1933,8 @@ public class ImapAsyncSessionImplTest {
             aSession.handleChannelResponse(serverResp1);
 
             // verify deflater and inflater handlers are not added
-            Mockito.verify(pipeline, Mockito.times(0)).addFirst(Matchers.eq("DEFLATER"), Matchers.isA(JdkZlibDecoder.class));
-            Mockito.verify(pipeline, Mockito.times(0)).addFirst(Matchers.eq("INFLATER"), Matchers.isA(JdkZlibEncoder.class));
+            Mockito.verify(pipeline, Mockito.times(0)).addFirst(ArgumentMatchers.eq("DEFLATER"), ArgumentMatchers.isA(JdkZlibDecoder.class));
+            Mockito.verify(pipeline, Mockito.times(0)).addFirst(ArgumentMatchers.eq("INFLATER"), ArgumentMatchers.isA(JdkZlibEncoder.class));
             // verify that future should be done now
             Assert.assertTrue(future.isDone(), "isDone() should be true now");
             ExecutionException ex = null;
