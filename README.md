@@ -34,7 +34,7 @@ This project is ideal for applications that have a high requirement to optimize 
  
 ## Install
 
-This is a Java library. After downloading it, compile it using `mvn clean install`
+This is a Java library. It requires Java 17 or later, starting with version 6.0.0. After downloading it, compile it using `mvn clean install`
 
 Then, update your project's pom.xml file dependencies, as follows:
 
@@ -42,7 +42,7 @@ Then, update your project's pom.xml file dependencies, as follows:
   <dependency>
       <groupId>com.yahoo.imapnio</groupId>
       <artifactId>imapnio.core</artifactId>
-      <version>5.2.0</version>
+      <version>6.0.0</version>
   </dependency>
 ```
 Finally, import the relevant classes and use this library according to the usage section below.
